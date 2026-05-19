@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\application\GameManager\GameManager.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\PhaseParent\PhaseParent.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.cpp" />
+    <ClCompile Include="src\engine\Camera\Camera.cpp" />
+    <ClCompile Include="src\engine\Camera\CameraManager.cpp" />
+    <ClCompile Include="src\engine\definition\definition.cpp" />
+    <ClCompile Include="src\engine\DirectX\CommandContextManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeapManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DSV\DSVManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\RTV\RTVManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\SRV_UAVManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\DeviceManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\DirectXManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\FrameCbAllocator\FrameCbAllocator.cpp" />
+    <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp" />
+    <ClCompile Include="src\engine\DirectX\RenderTextureManager\RenderTextureManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceFactory.cpp" />
+    <ClCompile Include="src\engine\DirectX\SwapChainManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\SynchronizationManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\ViewportScissorManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\View\Dx12ViewFactory.cpp" />
+    <ClCompile Include="src\engine\DrawSystem\DrawSystem.cpp" />
+    <ClCompile Include="src\engine\DrawSystem\RenderData\RenderData.cpp" />
+    <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp" />
+    <ClCompile Include="src\engine\Engine.cpp" />
+    <ClCompile Include="src\engine\Facade\Game.cpp" />
+    <ClCompile Include="src\engine\FixFPS\FixFPS.cpp" />
+    <ClCompile Include="src\engine\ImGuiManager\ImGuiManager.cpp" />
+    <ClCompile Include="src\engine\IO\IOManager.cpp" />
+    <ClCompile Include="src\engine\IO\KeyboardController.cpp" />
+    <ClCompile Include="src\engine\IO\MouseController.cpp" />
+    <ClCompile Include="src\engine\IO\PadController.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Audio\AudioManager.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Model\ModelManager.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\ResourceManager.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Texture\TextureManager.cpp" />
+    <ClCompile Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.cpp" />
+    <ClCompile Include="src\engine\Utilities\Converter\ColorConverter\ColorConverter.cpp" />
+    <ClCompile Include="src\engine\Utilities\Converter\CoordinateConverter\CoordinateConverter.cpp" />
+    <ClCompile Include="src\engine\Utilities\Converter\StringConverter\StringConverter.cpp" />
+    <ClCompile Include="src\engine\Utilities\Easing\Easing.cpp" />
+    <ClCompile Include="src\engine\Utilities\functions.cpp" />
+    <ClCompile Include="src\engine\Utilities\Json\JsonManager.cpp" />
+    <ClCompile Include="src\engine\Utilities\Logger\Logger.cpp" />
+    <ClCompile Include="src\engine\Utilities\PerlinNoise.cpp" />
+    <ClCompile Include="src\engine\Utilities\Random\Random.cpp" />
+    <ClCompile Include="src\engine\Utilities\SimpleModelBody.cpp" />
+    <ClCompile Include="src\engine\Window\WindowManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\application\GameManager\GameManager.h" />
+    <ClInclude Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.h" />
+    <ClInclude Include="src\application\GameManager\Phase\PhaseParent\PhaseParent.h" />
+    <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h" />
+    <ClInclude Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.h" />
+    <ClInclude Include="src\engine\Camera\Camera.h" />
+    <ClInclude Include="src\engine\Camera\CameraManager.h" />
+    <ClInclude Include="src\engine\definition\definition.h" />
+    <ClInclude Include="src\engine\DirectX\CommandContextManager.h" />
+    <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeapManager.h" />
+    <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DSV\DSVManager.h" />
+    <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\RTV\RTVManager.h" />
+    <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\SRV_UAVManager.h" />
+    <ClInclude Include="src\engine\DirectX\DeviceManager.h" />
+    <ClInclude Include="src\engine\DirectX\DirectXManager.h" />
+    <ClInclude Include="src\engine\DirectX\FrameCbAllocator\FrameCbAllocator.h" />
+    <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h" />
+    <ClInclude Include="src\engine\DirectX\Pipeline\RenderPipelineTypes.h" />
+    <ClInclude Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h" />
+    <ClInclude Include="src\engine\DirectX\RenderTextureManager\RenderTextureManager.h" />
+    <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceFactory.h" />
+    <ClInclude Include="src\engine\DirectX\SwapChainManager.h" />
+    <ClInclude Include="src\engine\DirectX\SynchronizationManager.h" />
+    <ClInclude Include="src\engine\DirectX\ViewportScissorManager.h" />
+    <ClInclude Include="src\engine\DirectX\View\Dx12ViewFactory.h" />
+    <ClInclude Include="src\engine\DrawSystem\DrawSystem.h" />
+    <ClInclude Include="src\engine\DrawSystem\RenderData\RenderData.h" />
+    <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h" />
+    <ClInclude Include="src\engine\Engine.h" />
+    <ClInclude Include="src\engine\Facade\Game.h" />
+    <ClInclude Include="src\engine\FixFPS\FixFPS.h" />
+    <ClInclude Include="src\engine\ImGuiManager\ImGuiManager.h" />
+    <ClInclude Include="src\engine\IO\IOManager.h" />
+    <ClInclude Include="src\engine\IO\KeyboardController.h" />
+    <ClInclude Include="src\engine\IO\MouseController.h" />
+    <ClInclude Include="src\engine\IO\PadController.h" />
+    <ClInclude Include="src\engine\ResourceManager\Audio\AudioManager.h" />
+    <ClInclude Include="src\engine\ResourceManager\Model\ModelManager.h" />
+    <ClInclude Include="src\engine\ResourceManager\ResourceManager.h" />
+    <ClInclude Include="src\engine\ResourceManager\Texture\TextureManager.h" />
+    <ClInclude Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.h" />
+    <ClInclude Include="src\engine\Utilities\Converter\ColorConverter\ColorConverter.h" />
+    <ClInclude Include="src\engine\Utilities\Converter\CoordinateConverter\CoordinateConverter.h" />
+    <ClInclude Include="src\engine\Utilities\Converter\StringConverter\StringConverter.h" />
+    <ClInclude Include="src\engine\Utilities\Easing\Easing.h" />
+    <ClInclude Include="src\engine\Utilities\functions.h" />
+    <ClInclude Include="src\engine\Utilities\Json\JsonManager.h" />
+    <ClInclude Include="src\engine\Utilities\Logger\Logger.h" />
+    <ClInclude Include="src\engine\Utilities\PerlinNoise.h" />
+    <ClInclude Include="src\engine\Utilities\Random\Random.h" />
+    <ClInclude Include="src\engine\Utilities\SimpleModelBody.h" />
+    <ClInclude Include="src\engine\Window\WindowManager.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{fe937ad5-f3af-4aae-8c46-2c0155852ee8}</ProjectGuid>
+    <RootNamespace>NobleEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)generated\outputs\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)generated\obj\$(ProjectName)$(Configuration)\</IntDir>
+    <LibraryPath>$(SolutionDir)generated\outputs\$(Configuration)\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)generated\outputs\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)generated\obj\$(ProjectName)$(Configuration)\</IntDir>
+    <LibraryPath>$(SolutionDir)generated\outputs\$(Configuration)\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp23</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>imgui.lib;DirectXTex.lib</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4049 /ignore:4048 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
+    <PostBuildEvent>
+      <Command>copy "$(ProjectDir)externals\dxc\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
+copy "$(ProjectDir)externals\dxc\dxil.dll" "$(TargetDir)dxil.dll"
+xcopy /E /I /Y "$(ProjectDir)resources*" "$(TargetDir)resources"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp23</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>imgui.lib;DirectXTex.lib</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4049 /ignore:4048 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <Manifest>
+      <EnableSegmentHeap>true</EnableSegmentHeap>
+    </Manifest>
+    <PostBuildEvent>
+      <Command>copy "$(ProjectDir)externals\dxc\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
+copy "$(ProjectDir)externals\dxc\dxil.dll" "$(TargetDir)dxil.dll"
+xcopy /E /I /Y "$(ProjectDir)resources*" "$(TargetDir)resources"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

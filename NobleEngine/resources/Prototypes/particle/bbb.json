@@ -1,0 +1,218 @@
+{
+  "color": [
+    0.7254902124404907,
+    0.6196078658103943,
+    0.2666666805744171,
+    1.0
+  ],
+  "emissionDelay": 5,
+  "emitFromInside": false,
+  "emitterAABB": {
+    "max": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "min": [
+      -1.0,
+      -1.0,
+      -1.0
+    ]
+  },
+  "emitterSphere": {
+    "center": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "radius": [
+      5.0,
+      5.0,
+      5.0
+    ]
+  },
+  "filePath": "resources/Prototypes/particle/bbb",
+  "isBillboard": false,
+  "liveMax": 300,
+  "model": 1,
+  "particlesPerEmission": 1,
+  "rotate": {
+    "acceleration": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "isRandom_acceleration": false,
+    "isRandom_value": false,
+    "isRandom_velocity": true,
+    "randomRange_acceleration": {
+      "max": [
+        5.0,
+        5.0,
+        5.0
+      ],
+      "min": [
+        -5.0,
+        -5.0,
+        -5.0
+      ]
+    },
+    "randomRange_value": {
+      "max": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "randomRange_velocity": {
+      "max": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "min": [
+        -2.0,
+        -2.0,
+        -2.0
+      ]
+    },
+    "value": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "scale": {
+    "acceleration": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "isRandom_acceleration": false,
+    "isRandom_value": false,
+    "isRandom_velocity": false,
+    "randomRange_acceleration": {
+      "max": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "randomRange_value": {
+      "max": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "randomRange_velocity": {
+      "max": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "value": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "velocity": [
+      -0.20000000298023224,
+      -0.20000000298023224,
+      -0.20000000298023224
+    ]
+  },
+  "spawnDependent": false,
+  "speed": 1.0,
+  "spreadAngle": 0.0,
+  "target": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "texture": 0,
+  "translate": {
+    "acceleration": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "isRandom_acceleration": false,
+    "isRandom_value": false,
+    "isRandom_velocity": false,
+    "randomRange_acceleration": {
+      "max": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "randomRange_value": {
+      "max": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "randomRange_velocity": {
+      "max": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "value": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "velocity": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "useSphereEmitter": true,
+  "useTarget": true
+}
