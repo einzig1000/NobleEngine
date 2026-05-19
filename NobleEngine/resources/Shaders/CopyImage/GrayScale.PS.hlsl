@@ -17,5 +17,7 @@ PSOutput main(PSInput input)
 {
     PSOutput output;
     output.Color = gTexture.Sample(gSampler, input.TexCoord);
+    float value = dot(output.Color.rgb, float3(0.2125f, 0.7154f, 0.0721f));
+    output.Color.rgb = float3(value, value, value);
     return output;
 }

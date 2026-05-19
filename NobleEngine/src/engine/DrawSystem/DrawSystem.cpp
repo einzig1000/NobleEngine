@@ -25,6 +25,7 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 
 DrawSystem::~DrawSystem()
 {}
+
 uint32_t DrawSystem::GetFrameIndex() const
 {
 	// BeginFrame() 後はここで最新が取れる
@@ -82,8 +83,8 @@ void DrawSystem::ScreenDraw()
 	outParams.push_back(p);
 
 	PSOConfig psoConfig{};
-	psoConfig.vs = "resources/shaders/CopyImage/CopyImage.VS.hlsl";
-	psoConfig.ps = "resources/shaders/CopyImage/CopyImage.PS.hlsl";
+	psoConfig.vs = "resources/shaders/CopyImage/FullScreen.VP.hlsl";
+	psoConfig.ps = "resources/shaders/CopyImage/GrayScale.PS.hlsl";
 	psoConfig.dsvFormatID = DSVFormatID::Unknown;
 
 	// 1) RootSignatureセット
