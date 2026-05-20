@@ -185,7 +185,7 @@
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)externals\dxc\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
 copy "$(ProjectDir)externals\dxc\dxil.dll" "$(TargetDir)dxil.dll"
-xcopy /E /I /Y "$(ProjectDir)resources*" "$(TargetDir)resources"</Command>
+xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -214,7 +214,7 @@ xcopy /E /I /Y "$(ProjectDir)resources*" "$(TargetDir)resources"</Command>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)externals\dxc\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
 copy "$(ProjectDir)externals\dxc\dxil.dll" "$(TargetDir)dxil.dll"
-xcopy /E /I /Y "$(ProjectDir)resources*" "$(TargetDir)resources"</Command>
+xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
