@@ -102,9 +102,9 @@ enum class DSVFormatID : uint8_t
 struct PSOConfig
 {
     /// 頂点シェーダーファイル名
-    std::string vs = "Object3d.VS.hlsl";
+    std::string vs = "unknown";
     /// ピクセルシェーダーファイル名
-    std::string ps = "Object3d.PS.hlsl";
+    std::string ps = "unknown";
     /// ブレンドステートID
     BlendStateID blendID = BlendStateID::Normal;
     /// 深度ステンシルID

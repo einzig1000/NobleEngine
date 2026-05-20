@@ -7,9 +7,12 @@ TestPhase::TestPhase()
 	int32_t tex2 = Game::Resource::LoadTexture("resources/Prototypes/texture/monsterBall.png");
 	int32_t tex3 = Game::Resource::LoadTexture("resources/Prototypes/texture/white1x1.png");
 	int32_t tex4 = Game::Resource::LoadTexture("resources/Prototypes/texture/rostock_laage_airport_4k.dds");
+	int32_t tex5 = Game::Resource::GetRenderTextureID("mainRenderTexture");
+	//int32_t tex6 = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "test");
 
 	int32_t model1 = Game::Resource::LoadModel("resources/Prototypes/model/cube.obj");
 	int32_t model2 = Game::Resource::LoadModel("resources/Prototypes/model/sphere.obj");
+	int32_t model3 = Game::Resource::LoadModel("resources/Prototypes/model/plane.obj");
 
 	audio1 = Game::Resource::LoadAudio("resources/Prototypes/audio/BGM/InGame.mp3");
 	audio2 = Game::Resource::LoadAudio("resources/Prototypes/audio/SE/バトル用/氷魔法1.mp3");
@@ -55,6 +58,14 @@ TestPhase::TestPhase()
 	environmentMap_->psoConfig_.vs = "resources/Shaders/EnvironmentMap/EnvironmentMap.VS.hlsl";
 	environmentMap_->SetupFromShaders();
 
+	postEffect_ = std::make_unique<RenderObject>();
+	postEffect_->modelID = model3;
+	postEffect_->textureID = tex5;
+	postEffect_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreenQuad.VS.hlsl";
+	postEffect_->psoConfig_.ps = "resources/shaders/FullScreen/BoxFilter.PS.hlsl";
+	postEffect_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	postEffect_->SetupFromShaders();
+
 	transform1_.scale = { 11.0f,11.0f,11.0f };
 	color1_ = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 	for (int i = 0; i < 10; ++i)
@@ -66,6 +77,9 @@ TestPhase::TestPhase()
 	}
 
 	lightData_.LightCount = 1;
+
+	postEffectTransform_.scale.x = 18.0f;
+	postEffectTransform_.scale.y = 10.1f;
 }
 
 TestPhase::~TestPhase()
@@ -132,6 +146,13 @@ void TestPhase::Update()
 	environmentMap_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
 	environmentMap_->SetCBufferData(3, ShaderType::PixelShader, &environmentMap_->textureID);
 	environmentMap_->SetCBufferData(4, ShaderType::PixelShader, &skyboxTextureID);
+
+
+	Matrix4x4 postEffectWorldMatrix = Matrix4x4::MakeAffineMatrix(postEffectTransform_.scale, postEffectTransform_.rotate, postEffectTransform_.translate);
+	Matrix4x4 postEffectWorldViewProjection = postEffectWorldMatrix * viewProjection;
+	Matrix4x4 identityMatrix = Matrix4x4::MakeIdentity4x4();
+	postEffect_->SetCBufferData(0, ShaderType::VertexShader, &postEffectWorldViewProjection);
+	postEffect_->SetCBufferData(0, ShaderType::PixelShader, &postEffect_->textureID);
 }
 
 void TestPhase::Draw()
@@ -142,6 +163,7 @@ void TestPhase::Draw()
 	skybox_->Draw();
 	//PunctualLight_->Draw();
 	environmentMap_->Draw();
+	postEffect_->TestPostEffectDraw();
 }
 
 
@@ -152,10 +174,6 @@ void TestPhase::DrawImGui()
 	{
 		if (ImGui::BeginTabItem("RenderObject Test"))
 		{
-
-			Vector3 cameraPos = Game::Camera::Getter::GetCurrentTranslate();
-			ImGui::Text("cameraPos: (%.2f, %.2f, %.2f)", cameraPos.x, cameraPos.y, cameraPos.z);
-
 			if (ImGui::TreeNode("cbvOnly_"))
 			{
 				ImGui::ColorEdit4("color1", &color1_.x, 1);
@@ -201,6 +219,16 @@ void TestPhase::DrawImGui()
 				ImGui::ColorEdit3("material specular", &materialData_.diffuseColor.x, 1);
 				ImGui::ColorEdit3("material diffuse", &materialData_.specularColor.x, 1);
 				ImGui::DragFloat("material shininess", &materialData_.shininess, 0.1f, 0.0f, 100.0f);
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("postEffect_"))
+			{
+				ImGui::DragInt("textureID", &postEffect_->textureID, 1, 0, 10);
+				ImGui::DragFloat3("scale", &postEffectTransform_.scale.x, 0.1f, 0.1f, 100.0f);
+				ImGui::DragFloat3("rotate", &postEffectTransform_.rotate.x, 0.1f);
+				ImGui::DragFloat3("translate", &postEffectTransform_.translate.x, 0.1f, -100.0f, 100.0f);
+
 				ImGui::TreePop();
 			}
 

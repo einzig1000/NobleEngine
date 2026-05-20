@@ -30,8 +30,19 @@ namespace Game
 		/// オーディオ読み込み
 		/// </summary>
 		/// <param name="filePath">例:"Resources/Prototypes/audio/BGM/InGame.mp3"</param>
-		/// <returns></returns>
+		/// <returns>オーディオID</returns>
 		uint32_t LoadAudio(const std::string& filePath);
+
+		/// <summary>
+		/// レンダーテクスチャ作成
+		/// </summary>
+		/// <param name="label">識別用ラベル</param>
+		/// <param name="width">横幅</param>
+		/// <param name="height">縦幅</param>
+		/// <returns>テクスチャID</returns>
+		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& label);
+
+		uint32_t GetRenderTextureID(const std::string& label);
 
 		/// <summary>
 		/// テクスチャデータ取得
@@ -592,6 +603,24 @@ namespace Game
 		/// </summary>
 		void ClearDynamicAll();
 	};
+
+	namespace Window
+	{
+		/// <summary>
+		/// ウィンドウの幅取得
+		/// </summary>
+		uint32_t GetWidth();
+
+		/// <summary>
+		/// ウィンドウの高さ取得
+		/// </summary>
+		uint32_t GetHeight();
+
+		/// <summary>
+		/// フルスクリーン切り替え
+		/// </summary>
+		void ToggleFullscreen();
+	}
 
 	void quit();
 };

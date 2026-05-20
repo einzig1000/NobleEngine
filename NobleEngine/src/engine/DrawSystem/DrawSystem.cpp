@@ -14,19 +14,20 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 	{
 		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
 	}
-
-	// 1フレームに呼び出せるDrawCallの最大数
-	kMaxDrawCallPerFrame_ = 4096;
-
-	// 描画コールカウント初期化
-	drawCallIndex_ = 0;
-
-	// そのフレームで使用されている頂点データのサイズ
-	vertexDataUsed_ = 0;
 }
 
 DrawSystem::~DrawSystem()
 {}
+
+void DrawSystem::AddSceneDrawList(const RenderObject* renderObject)
+{
+	sceneRenderObjects_.push_back(renderObject);
+}
+
+void DrawSystem::AddScreenDrawList(const RenderObject* renderObject)
+{
+	screenRenderObjects_.push_back(renderObject);
+}
 
 uint32_t DrawSystem::GetFrameIndex() const
 {
@@ -39,98 +40,44 @@ void DrawSystem::Reset()
 	// CBアロケータをリセット
 	cbAllocators_[GetFrameIndex()].Reset();
 
-	// 描画コールの初期化
-	drawCallIndex_ = 0;
-
-	// 三角形用頂点データの初期化
-	vertexDataUsed_ = 0;
-
-
-	renderObjects_.clear();
+	sceneRenderObjects_.clear();
+	screenRenderObjects_.clear();
 }
 
-void DrawSystem::SceneDraw()
-{
-	///// いつかRenderObjectリストをソートしたい
-	//① PSO
-	//② トポロジ
-	//③ ルートシグネチャ
+///// いつかRenderObjectリストをソートしたい
+//① PSO
+//② トポロジ
+//③ ルートシグネチャ
 
-	DrawRenderObject();
+//// 形状を設定 (三角形)
+//dxManager_->GetCommandContextManager()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//// ルートシグネチャを設定
+//dxManager_->GetCommandContextManager()->GetCommandList()->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature());
+//// ルートシグネチャを設定
+//dxManager_->GetCommandContextManager()->GetCommandList()->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature_block());
+//// 形状を設定 (線)
+//dxManager_->GetCommandContextManager()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+//// PSOを設定 (線はNormal固定)
+//dxManager_->GetCommandContextManager()->GetCommandList()->SetPipelineState(dxManager_->GetPipelineStateManager()->GetLinePipelineState(BlendMode::kBlendModeNormal));
 
-	//// 形状を設定 (三角形)
-	//dxManager_->GetCommandContextManager()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	//// ルートシグネチャを設定
-	//dxManager_->GetCommandContextManager()->GetCommandList()->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature());
-	//// ルートシグネチャを設定
-	//dxManager_->GetCommandContextManager()->GetCommandList()->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature_block());
-	//// 形状を設定 (線)
-	//dxManager_->GetCommandContextManager()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-	//// PSOを設定 (線はNormal固定)
-	//dxManager_->GetCommandContextManager()->GetCommandList()->SetPipelineState(dxManager_->GetPipelineStateManager()->GetLinePipelineState(BlendMode::kBlendModeNormal));
-}
 
 void DrawSystem::ScreenDraw()
-{
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-
-	std::vector<RootParam> outParams{};
-
-	PSOConfig psoConfig{};
-	psoConfig.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	psoConfig.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
-	psoConfig.dsvFormatID = DSVFormatID::Unknown;
-
-	std::wstring vsPath = StringConverter::Convert(psoConfig.vs);
-	std::wstring psPath = StringConverter::Convert(psoConfig.ps);
-	auto vsBlob = dxManager_->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_0");
-	auto psBlob = dxManager_->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_0");
-
-	uint32_t cbvSizeOffset = 0;
-	uint32_t srvIndexOffset = 0;
-
-	// VS の CBV / SRV を反映
-	ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, outParams, cbvSizeOffset, srvIndexOffset);
-	// PS の CBV / SRV を反映
-	ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, outParams, cbvSizeOffset, srvIndexOffset);
-
-	// 1) RootSignatureセット
-	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(outParams).Get());
-	// 2) PSOセット
-	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(psoConfig, outParams).Get());
-	// 3) トポロジーセット
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// 4) テクスチャセット
-	cmdList->SetGraphicsRootDescriptorTable(0, dxManager_->GetRenderTextureManager()->Get("RenderTarget_0")->srvAlloc.gpu);
-
-	cmdList->DrawInstanced(3, 1, 0, 0);
-}
-
-void DrawSystem::AddDrawList(const RenderObject* renderObject)
-{
-	renderObjects_.push_back(renderObject);
-}
-
-void DrawSystem::DrawRenderObject()
 {
 	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
 	auto& cb = cbAllocators_[GetFrameIndex()];
 	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
-	for (auto* renderObject : renderObjects_)
+	// 1) トポロジーセット
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	for (auto* renderObject : screenRenderObjects_)
 	{
-		// 1) RootSignatureセット
+		// 2) RootSignatureセット
 		cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
-		// 2) PSOセット
+		// 3) PSOセット
 		cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
-
-		// 3) トポロジーセット
-		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
-
 		// 4) CBV・SRVセット
 		const auto& cpuStrage = renderObject->GetCpuStorage();
-		const auto& rootParams = renderObject->GetRootParams(); 
+		const auto& rootParams = renderObject->GetRootParams();
 		for (size_t i = 0; i < rootParams.size(); ++i)
 		{
 			const auto& param = rootParams[i];
@@ -155,11 +102,91 @@ void DrawSystem::DrawRenderObject()
 		const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
 		// 5)頂点バッファをバインド
 		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
+		
+		// 6)描画
+		cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
+
+		//cmdList->DrawInstanced(3, 1, 0, 0);
+	}
+
+	//std::vector<RootParam> outParams{};
+
+	//PSOConfig psoConfig{};
+	//psoConfig.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//psoConfig.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	//psoConfig.dsvFormatID = DSVFormatID::Unknown;
+
+	//std::wstring vsPath = StringConverter::Convert(psoConfig.vs);
+	//std::wstring psPath = StringConverter::Convert(psoConfig.ps);
+	//auto vsBlob = dxManager_->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_0");
+	//auto psBlob = dxManager_->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_0");
+
+	//uint32_t cbvSizeOffset = 0;
+	//uint32_t srvIndexOffset = 0;
+
+	//// VS の CBV / SRV を反映
+	//ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, outParams, cbvSizeOffset, srvIndexOffset);
+	//// PS の CBV / SRV を反映
+	//ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, outParams, cbvSizeOffset, srvIndexOffset);
+
+	//// 1) RootSignatureセット
+	//cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(outParams).Get());
+	//// 2) PSOセット
+	//cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(psoConfig, outParams).Get());
+	//// 3) トポロジーセット
+	//cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//// 4) テクスチャセット
+	//cmdList->SetGraphicsRootDescriptorTable(0, dxManager_->GetRenderTextureManager()->Get("RenderTarget_0")->srvAlloc.gpu);
+
+	//cmdList->DrawInstanced(3, 1, 0, 0);
+}
+
+void DrawSystem::SceneDraw()
+{
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
+	auto& cb = cbAllocators_[GetFrameIndex()];
+	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+
+	for (auto* renderObject : sceneRenderObjects_)
+	{
+		// 1) RootSignatureセット
+		cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
+		// 2) PSOセット
+		cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
+		// 3) トポロジーセット
+		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
+		// 4) CBV・SRVセット
+		const auto& cpuStrage = renderObject->GetCpuStorage();
+		const auto& rootParams = renderObject->GetRootParams(); 
+		for (size_t i = 0; i < rootParams.size(); ++i)
+		{
+			const auto& param = rootParams[i];
+
+			if (param.paramType == ParamType::CBV)
+			{
+				const auto alloc = cb.Allocate(param.sizeBytes);
+				std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
+				cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
+			}
+			else if (param.paramType == ParamType::SRV)
+			{
+				assert(param.srvAllocIndex != UINT32_MAX);
+				cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
+			}
+		}
+		// モデルの検索
+		const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID);
+		if (!obj) continue;
+		// 頂点数の取得
+		const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
+		// 5)頂点バッファをバインド
+		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
 
 		// 6)描画
 		cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
 	}
 }
+
 
 
 

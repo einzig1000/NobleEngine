@@ -34,7 +34,7 @@ public:
 	~RenderTextureManager();
 
     // 作成
-    RenderTexture* CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format);
+    RenderTexture* CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, const std::string& label);
     RenderTexture* CreateDepthTexture(UINT width, UINT height, DXGI_FORMAT format);
 
     // 取得

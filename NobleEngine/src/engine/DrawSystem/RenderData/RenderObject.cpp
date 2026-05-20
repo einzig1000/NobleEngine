@@ -121,6 +121,11 @@ void RenderObject::SetCBufferData(const uint32_t key, ShaderType shaderType, con
 
 void RenderObject::Draw() const
 {
-	Engine::Instance().GetDrawSystem()->AddDrawList(this);
+	Engine::Instance().GetDrawSystem()->AddSceneDrawList(this);
+}
+
+void RenderObject::TestPostEffectDraw() const
+{
+	Engine::Instance().GetDrawSystem()->AddScreenDrawList(this);
 }
 

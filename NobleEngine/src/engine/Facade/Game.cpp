@@ -10,6 +10,8 @@
 #include <IO/MouseController.h>
 #include <FixFPS/FixFPS.h>
 #include <Physics/PhysicsSystem.h>
+#include <DirectX/DirectXManager.h>
+#include <Window/WindowManager.h>
 #include <Utilities/Easing/Easing.h>
 #include <Utilities/Converter/ColorConverter/ColorConverter.h>
 #include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
@@ -24,13 +26,21 @@ namespace Game
 		{
 			return Engine::Instance().GetResourceManager()->GetModelManager()->LoadModel(filePath);
 		}
+		uint32_t LoadAudio(const std::string& filePath)
+		{
+			return Engine::Instance().GetResourceManager()->GetAudioManager()->LoadAudio(filePath);
+		}
 		uint32_t LoadTexture(const std::string& filePath)
 		{
 			return Engine::Instance().GetResourceManager()->GetTextureManager()->LoadTexture(filePath);
 		}
-		uint32_t LoadAudio(const std::string& filePath)
+		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& label)
 		{
-			return Engine::Instance().GetResourceManager()->GetAudioManager()->LoadAudio(filePath);
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, label)->srvAlloc.index;
+		}
+		uint32_t GetRenderTextureID(const std::string& label)
+		{
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(label)->srvAlloc.index;
 		}
 
 		TextureData* GetTextureData(uint32_t textureNumber)
@@ -507,6 +517,31 @@ namespace Game
 		//{
 		//	return Engine::Instance().GetGravity();
 		//}
+	}
+
+	namespace Window
+	{
+		uint32_t GetWidth()
+		{
+			return WindowManager::winWidth_;
+		}
+
+		uint32_t GetHeight()
+		{
+			return WindowManager::winHeight_;
+		}
+
+		void ToggleFullscreen()
+		{
+			// ウィンドウサイズ変更
+			Engine::Instance().GetWindowManager()->ToggleFullscreen();
+
+			// DirectXのリサイズ処理
+			Engine::Instance().GetDirectXManager()->Resize();
+			
+			// カメラのアスペクト比更新
+			Engine::Instance().GetCameraManager()->Resize();
+		}
 	}
 
 	void Game::quit()

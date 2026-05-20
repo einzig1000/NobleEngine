@@ -39,13 +39,11 @@ public:
 	void Quit();
 	void Finalize();
 
-	// フルスクリーン切り替え
-	void ToggleFullscreen();
-
 public:
 
 	DirectXManager* GetDirectXManager() { return dxManager_.get(); }
 	//PhysicsSystem* GetPhysicsSystem() { return physicsSystem_.get(); }
+	WindowManager* GetWindowManager() { return windowManager_.get(); }
 	DrawSystem* GetDrawSystem() { return drawSystem_.get(); }
 	IOManager* GetIOManager() { return ioManager_.get(); }
 	ResourceManager* GetResourceManager() { return resourceManager_.get(); }

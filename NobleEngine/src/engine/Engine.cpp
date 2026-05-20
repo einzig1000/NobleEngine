@@ -91,23 +91,18 @@ void Engine::EndFrame()
 
 	// オフスクリーン描画用のRTV･DSVをセット
 	dxManager_->PreSceneDraw();
-
 	// シーン描画
 	drawSystem_->SceneDraw();
-
 	// オフスクリーン描画終了
 	dxManager_->PostSceneDraw();
 
 	// スクリーン描画用のRTVをセット
 	dxManager_->PreScreenDraw();
-
 	// スクリーン描画
 	drawSystem_->ScreenDraw();
-
 	// ImGui描画
 	imguiManager_->EndFrame();
 	imguiManager_->Draw();
-
 	// スクリーン描画終了
 	dxManager_->PostScreenDraw();
 
@@ -225,10 +220,6 @@ void Engine::UpdateDebugInfo()
 	{
 		cameraManager_->ToggleCamera();
 	}
-	if (Game::IO::Key::IsJustPressed(DIK_F12))
-	{
-		ToggleFullscreen();
-	}
 
 	cameraManager_->Draw();
 
@@ -278,14 +269,3 @@ void Engine::Finalize()
 	CoUninitialize();
 }
 
-// ウィンドウ操作
-void Engine::ToggleFullscreen()
-{
-	windowManager_->ToggleFullscreen();
-
-	// DirectXのリサイズ処理
-	dxManager_->Resize();
-
-	// カメラのアスペクト比を更新
-	cameraManager_->Resize();
-}

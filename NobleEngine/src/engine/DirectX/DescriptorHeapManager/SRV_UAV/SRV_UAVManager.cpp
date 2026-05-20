@@ -127,7 +127,7 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforRenderTarget(ID3D12Resour
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = 1;
-    return CreateSRV(resource, &srvDesc, ResourceType::StructuredBuffer);
+    return CreateSRV(resource, &srvDesc, ResourceType::Texture2D);
 }
 
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride)

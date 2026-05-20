@@ -31,6 +31,8 @@ private:
 	LightDataForGPU lightData_;
 	Material materialData_;
 	std::unique_ptr<RenderObject> environmentMap_;
+	std::unique_ptr<RenderObject> postEffect_;
+	Transforms postEffectTransform_;
 
 	uint32_t audio1;
 	uint32_t audio2;

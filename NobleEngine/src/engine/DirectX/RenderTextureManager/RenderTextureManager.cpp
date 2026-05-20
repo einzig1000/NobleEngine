@@ -5,13 +5,13 @@
 RenderTextureManager::RenderTextureManager(ID3D12Device* device, DescriptorHeapManager* descriptorHeapManager)
     : device_(device), descriptorHeapManager_(descriptorHeapManager)
 {
-	CreateRenderTarget(UINT(WindowManager::winWidth_), UINT(WindowManager::winHeight_), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
+    CreateRenderTarget(UINT(WindowManager::winWidth_), UINT(WindowManager::winHeight_), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "mainRenderTexture");
 }
 
 RenderTextureManager::~RenderTextureManager()
 {}
 
-RenderTexture* RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format)
+RenderTexture* RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, const std::string& label)
 {
     auto rt = std::make_unique<RenderTexture>();
     rt->width = width;
@@ -45,7 +45,7 @@ RenderTexture* RenderTextureManager::CreateRenderTarget(UINT width, UINT height,
     rt->scissorRect.right = static_cast<LONG>(width);
     rt->scissorRect.bottom = static_cast<LONG>(height);
 
-	std::string name = "RenderTarget_" + std::to_string(textures_.size());
+    std::string name = label;
     textures_.emplace(name, std::move(rt));
 	return textures_.at(name).get();
 }

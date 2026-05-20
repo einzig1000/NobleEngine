@@ -33,7 +33,7 @@ void DirectXManager::BeginFrame()
 void DirectXManager::PreSceneDraw()
 {
     // オフスクリーンレンダリング用のRenderTextureを取得
-    RenderTexture* offscreenRenderTarget = renderTextureManager->Get("RenderTarget_0");
+    RenderTexture* offscreenRenderTarget = renderTextureManager->Get("mainRenderTexture");
 
     // オフスクリーンをRenderTargetにセット
     D3D12_RESOURCE_BARRIER barriers[2] = {};
@@ -76,7 +76,7 @@ void DirectXManager::PreSceneDraw()
 void DirectXManager::PostSceneDraw()
 {
     // オフスクリーンレンダリング用のRenderTextureを取得
-    RenderTexture* offscreenRenderTarget = renderTextureManager->Get("RenderTarget_0");
+    RenderTexture* offscreenRenderTarget = renderTextureManager->Get("mainRenderTexture");
 
     // オフスクリーンをRenderTargetにセット
     D3D12_RESOURCE_BARRIER barriers[2] = {};
@@ -96,7 +96,6 @@ void DirectXManager::PostSceneDraw()
 
 	// rtvResourceとdsvResourceのResourceStateを遷移
 	commandContextManager->GetCommandList()->ResourceBarrier(2, barriers);
-
 }
 
 void DirectXManager::PreScreenDraw()

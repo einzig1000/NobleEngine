@@ -25,6 +25,7 @@ public:
 	};
 
 	void Draw() const;
+	void TestPostEffectDraw() const;
 
 	void SetupFromShaders();
 
