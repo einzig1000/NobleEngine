@@ -3,8 +3,8 @@ static const uint kNumVertex = 3;
 static const float4 kPosition[kNumVertex] =
 {
     float4(-1.0f, 1.0f, 0.0f, 1.0f), // 左上
-    float4(3.0f, 1.0f, 0.0f, 1.0f),  // 右上
-    float4(-1.0f, -3.0f, 0.0f, 1.0f)   // 左下
+    float4(3.0f, 1.0f, 0.0f, 1.0f), // 右上
+    float4(-1.0f, -3.0f, 0.0f, 1.0f) // 左下
 };
 static const float2 kTexCoord[kNumVertex] =
 {

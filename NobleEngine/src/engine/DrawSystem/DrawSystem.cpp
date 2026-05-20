@@ -78,8 +78,8 @@ void DrawSystem::ScreenDraw()
 	std::vector<RootParam> outParams{};
 
 	PSOConfig psoConfig{};
-	psoConfig.vs = "resources/shaders/CopyImage/FullScreen.VP.hlsl";
-	psoConfig.ps = "resources/shaders/CopyImage/GrayScale.PS.hlsl";
+	psoConfig.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	psoConfig.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
 	psoConfig.dsvFormatID = DSVFormatID::Unknown;
 
 	std::wstring vsPath = StringConverter::Convert(psoConfig.vs);
