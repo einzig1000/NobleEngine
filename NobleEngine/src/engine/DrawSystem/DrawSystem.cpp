@@ -3,6 +3,8 @@
 #include <ResourceManager/ResourceManager.h>
 #include <Window/WindowManager.h>
 #include <DirectX/RenderTextureManager/RenderTextureManager.h>
+#include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
+#include <Utilities/Converter/StringConverter/StringConverter.h>
 #include <numbers>
 
 DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager)
@@ -74,18 +76,24 @@ void DrawSystem::ScreenDraw()
 	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
 	std::vector<RootParam> outParams{};
-	RootParam p{};
-	p.shaderType = ShaderType::PixelShader;
-	p.paramType = ParamType::SRV;
-	p.key = 0;
-	p.registerSpace = 0;
-	p.ComputeHash();
-	outParams.push_back(p);
 
 	PSOConfig psoConfig{};
 	psoConfig.vs = "resources/shaders/CopyImage/FullScreen.VP.hlsl";
 	psoConfig.ps = "resources/shaders/CopyImage/GrayScale.PS.hlsl";
 	psoConfig.dsvFormatID = DSVFormatID::Unknown;
+
+	std::wstring vsPath = StringConverter::Convert(psoConfig.vs);
+	std::wstring psPath = StringConverter::Convert(psoConfig.ps);
+	auto vsBlob = dxManager_->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_0");
+	auto psBlob = dxManager_->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_0");
+
+	uint32_t cbvSizeOffset = 0;
+	uint32_t srvIndexOffset = 0;
+
+	// VS の CBV / SRV を反映
+	ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, outParams, cbvSizeOffset, srvIndexOffset);
+	// PS の CBV / SRV を反映
+	ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, outParams, cbvSizeOffset, srvIndexOffset);
 
 	// 1) RootSignatureセット
 	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(outParams).Get());
