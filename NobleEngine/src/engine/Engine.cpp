@@ -93,6 +93,7 @@ void Engine::EndFrame()
 	dxManager_->PreSceneDraw();
 	// シーン描画
 	drawSystem_->SceneDraw();
+	drawSystem_->PostEffectDraw();
 	// オフスクリーン描画終了
 	dxManager_->PostSceneDraw();
 

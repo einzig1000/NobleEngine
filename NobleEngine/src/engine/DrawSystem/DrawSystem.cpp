@@ -14,24 +14,38 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 	{
 		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
 	}
+
+	ScreenDrawPSOConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	ScreenDrawPSOConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	ScreenDrawPSOConfig_.dsvFormatID = DSVFormatID::Unknown;
+
+	RootParam rootParam{};
+	rootParam.paramType = ParamType::CBV;
+	rootParam.shaderType = ShaderType::PixelShader;
+	rootParam.ComputeHash();
+	ScreenDrawRootParams_.push_back(rootParam);
+	rootParam.paramType = ParamType::SRV;
+	rootParam.shaderType = ShaderType::PixelShader;
+	rootParam.ComputeHash(); 
+	rootParam.srvAllocIndex = 0;
+	ScreenDrawRootParams_.push_back(rootParam);
 }
 
 DrawSystem::~DrawSystem()
 {}
 
-void DrawSystem::AddSceneDrawList(const RenderObject* renderObject)
+void DrawSystem::AddSceneDrawList(const RenderObject* renderObject, RenderTextureID renderTextureID)
 {
-	sceneRenderObjects_.push_back(renderObject);
+	sceneRenderObjects_[renderTextureID].push_back(renderObject);
 }
 
-void DrawSystem::AddScreenDrawList(const RenderObject* renderObject)
+void DrawSystem::AddScreenDrawList(const RenderObject* renderObject, RenderTextureID renderTextureID)
 {
-	screenRenderObjects_.push_back(renderObject);
+	screenRenderObjects_[renderTextureID].push_back(renderObject);
 }
 
 uint32_t DrawSystem::GetFrameIndex() const
 {
-	// BeginFrame() 後はここで最新が取れる
 	return dxManager_->GetSwapChain()->GetCurrentBackBufferIndex() % kFramesInFlight_;
 }
 
@@ -61,133 +75,298 @@ void DrawSystem::Reset()
 //dxManager_->GetCommandContextManager()->GetCommandList()->SetPipelineState(dxManager_->GetPipelineStateManager()->GetLinePipelineState(BlendMode::kBlendModeNormal));
 
 
-void DrawSystem::ScreenDraw()
+void DrawSystem::BeginRenderPass(RenderTextureID renderTextureID, RenderPassType passType)
+{
+	// コマンドリストを取得
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
+	// RenderTextureを取得
+	RenderTexture* rt = dxManager_->GetRenderTextureManager()->Get(renderTextureID);
+
+	switch (passType)
+	{
+	case DrawSystem::RenderPassType::Scene:
+	{
+		// オフスクリーンをRenderTargetにセット
+		D3D12_RESOURCE_BARRIER barriers[2] = {};
+		barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barriers[0].Transition.pResource = rt->resource.Get();
+		barriers[0].Transition.StateBefore = rt->currentState;
+		barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		barriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		rt->currentState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+		barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barriers[1].Transition.pResource = rt->dsvResource.Get();
+		barriers[1].Transition.StateBefore = rt->dsvCurrentState;
+		barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+		barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		rt->dsvCurrentState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+
+		// rtvResourceとdsvResourceのResourceStateを遷移
+		cmdList->ResourceBarrier(2, barriers);
+
+		// 描画先のRTVとDSVを指定
+		cmdList->OMSetRenderTargets(1, &rt->rtvAlloc.handle, false, &rt->dsvAlloc.handle);
+
+		// クリア
+		float clearColor[] = { 0.396078f, 0.894117f, 1.0f, 0.0f };
+		cmdList->ClearRenderTargetView(rt->rtvAlloc.handle, clearColor, 0, nullptr);
+		cmdList->ClearDepthStencilView(rt->dsvAlloc.handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+		break;
+	}
+	case DrawSystem::RenderPassType::PostEffect:
+	{
+		// オフスクリーンをRenderTargetにセット
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = rt->resource.Get();
+		barrier.Transition.StateBefore = rt->currentState;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		rt->currentState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		cmdList->ResourceBarrier(1, &barrier);
+
+		// 描画先のRTVとDSVを指定
+		cmdList->OMSetRenderTargets(1, &rt->rtvAlloc.handle, false, nullptr);
+
+		break;
+	}
+	}
+
+	// ViewportとScissorを設定
+	cmdList->RSSetViewports(1, &rt->viewport);
+	cmdList->RSSetScissorRects(1, &rt->scissorRect);
+}
+
+void DrawSystem::EndRenderPass(RenderTextureID renderTextureID, RenderPassType passType)
+{
+	// コマンドリストを取得
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
+	// RenderTextureを取得
+	RenderTexture* rt = dxManager_->GetRenderTextureManager()->Get(renderTextureID);
+
+	switch (passType)
+	{
+	case DrawSystem::RenderPassType::Scene:
+	{
+		D3D12_RESOURCE_BARRIER barriers[2] = {};
+		barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barriers[0].Transition.pResource = rt->resource.Get();
+		barriers[0].Transition.StateBefore = rt->currentState;
+		barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		barriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		rt->currentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+		barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barriers[1].Transition.pResource = rt->dsvResource.Get();
+		barriers[1].Transition.StateBefore = rt->dsvCurrentState;
+		// 深度が死んだ時は下の行をコメントアウトして、D3D12_RESOURCE_STATE_DEPTH_WRITEのままにする
+		barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		rt->dsvCurrentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+		cmdList->ResourceBarrier(2, barriers);
+		break;
+	}
+	case DrawSystem::RenderPassType::PostEffect:
+	{
+		D3D12_RESOURCE_BARRIER barrier = {};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Transition.pResource = rt->resource.Get();
+		barrier.Transition.StateBefore = rt->currentState;
+		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		rt->currentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+		cmdList->ResourceBarrier(1, &barrier);
+
+		break;
+	}
+	}
+}
+
+void DrawSystem::DrawObject(const RenderObject* renderObject)
 {
 	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
 	auto& cb = cbAllocators_[GetFrameIndex()];
 	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
-	// 1) トポロジーセット
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	for (auto* renderObject : screenRenderObjects_)
+	// 1) RootSignatureセット
+	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
+	// 2) PSOセット
+	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
+	// 3) トポロジーセット
+	cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
+	// 4) CBV・SRVセット
+	const auto& cpuStrage = renderObject->GetCpuStorage();
+	const auto& rootParams = renderObject->GetRootParams();
+	for (size_t i = 0; i < rootParams.size(); ++i)
 	{
-		// 2) RootSignatureセット
-		cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
-		// 3) PSOセット
-		cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
-		// 4) CBV・SRVセット
-		const auto& cpuStrage = renderObject->GetCpuStorage();
-		const auto& rootParams = renderObject->GetRootParams();
-		for (size_t i = 0; i < rootParams.size(); ++i)
+		const auto& param = rootParams[i];
+
+		if (param.paramType == ParamType::CBV)
 		{
-			const auto& param = rootParams[i];
-
-			if (param.paramType == ParamType::CBV)
-			{
-				const auto alloc = cb.Allocate(param.sizeBytes);
-				std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
-				cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
-			}
-			else if (param.paramType == ParamType::SRV)
-			{
-				assert(param.srvAllocIndex != UINT32_MAX);
-				cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
-			}
+			const auto alloc = cb.Allocate(param.sizeBytes);
+			std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
+			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
 		}
-
-		// モデルの検索
-		const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID);
-		if (!obj) continue;
-		// 頂点数の取得
-		const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
-		// 5)頂点バッファをバインド
-		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-		
-		// 6)描画
-		cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
-
-		//cmdList->DrawInstanced(3, 1, 0, 0);
+		else if (param.paramType == ParamType::SRV)
+		{
+			assert(param.srvAllocIndex != UINT32_MAX);
+			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
+		}
 	}
+	// モデルの検索
+	const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID_);
+	if (!obj) return;
+	// 頂点数の取得
+	const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
+	// 5)頂点バッファをバインド
+	cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
 
-	//std::vector<RootParam> outParams{};
-
-	//PSOConfig psoConfig{};
-	//psoConfig.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//psoConfig.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
-	//psoConfig.dsvFormatID = DSVFormatID::Unknown;
-
-	//std::wstring vsPath = StringConverter::Convert(psoConfig.vs);
-	//std::wstring psPath = StringConverter::Convert(psoConfig.ps);
-	//auto vsBlob = dxManager_->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_0");
-	//auto psBlob = dxManager_->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_0");
-
-	//uint32_t cbvSizeOffset = 0;
-	//uint32_t srvIndexOffset = 0;
-
-	//// VS の CBV / SRV を反映
-	//ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, outParams, cbvSizeOffset, srvIndexOffset);
-	//// PS の CBV / SRV を反映
-	//ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, outParams, cbvSizeOffset, srvIndexOffset);
-
-	//// 1) RootSignatureセット
-	//cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(outParams).Get());
-	//// 2) PSOセット
-	//cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(psoConfig, outParams).Get());
-	//// 3) トポロジーセット
-	//cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	//// 4) テクスチャセット
-	//cmdList->SetGraphicsRootDescriptorTable(0, dxManager_->GetRenderTextureManager()->Get("RenderTarget_0")->srvAlloc.gpu);
-
-	//cmdList->DrawInstanced(3, 1, 0, 0);
+	// 6)描画
+	cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
 }
 
 void DrawSystem::SceneDraw()
 {
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-	auto& cb = cbAllocators_[GetFrameIndex()];
-	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-
-	for (auto* renderObject : sceneRenderObjects_)
+	for (const auto& [rtID, renderObjects] : sceneRenderObjects_)
 	{
-		// 1) RootSignatureセット
-		cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
-		// 2) PSOセット
-		cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
-		// 3) トポロジーセット
-		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
-		// 4) CBV・SRVセット
-		const auto& cpuStrage = renderObject->GetCpuStorage();
-		const auto& rootParams = renderObject->GetRootParams(); 
-		for (size_t i = 0; i < rootParams.size(); ++i)
+		BeginRenderPass(rtID, RenderPassType::Scene);
+		for (const auto* renderObject : renderObjects)
 		{
-			const auto& param = rootParams[i];
-
-			if (param.paramType == ParamType::CBV)
-			{
-				const auto alloc = cb.Allocate(param.sizeBytes);
-				std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
-				cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
-			}
-			else if (param.paramType == ParamType::SRV)
-			{
-				assert(param.srvAllocIndex != UINT32_MAX);
-				cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
-			}
+			DrawObject(renderObject);
 		}
-		// モデルの検索
-		const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID);
-		if (!obj) continue;
-		// 頂点数の取得
-		const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
-		// 5)頂点バッファをバインド
-		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-
-		// 6)描画
-		cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
+		EndRenderPass(rtID, RenderPassType::Scene);
 	}
 }
 
+void DrawSystem::PostEffectDraw()
+{
+	for (const auto& [rtID, renderObjects] : screenRenderObjects_)
+	{
+		BeginRenderPass(rtID, RenderPassType::PostEffect);
+		for (const auto* renderObject : renderObjects)
+		{
+			DrawObject(renderObject);
+		}
+		EndRenderPass(rtID, RenderPassType::PostEffect);
+	}
+}
 
+void DrawSystem::ScreenDraw()
+{
+	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
+	auto& cb = cbAllocators_[GetFrameIndex()];
+
+	// 1) RootSignatureセット
+	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(ScreenDrawRootParams_).Get());
+	// 2) PSOセット
+	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(ScreenDrawPSOConfig_, ScreenDrawRootParams_).Get());
+	// 3) トポロジーセット
+	cmdList->IASetPrimitiveTopology(ScreenDrawPSOConfig_.topology);
+	// 4) CBV・SRVセット
+
+	// dxManager_->GetRenderTextureManager()->Get(RenderTextureID::PreBackBuffer)->srvAlloc.indexを送る
+	const auto alloc = cb.Allocate(sizeof(uint32_t));
+	//std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
+	std::memcpy(alloc.cpu, &dxManager_->GetRenderTextureManager()->Get(RenderTextureID::PreBackBuffer)->srvAlloc.index, sizeof(uint32_t));
+	cmdList->SetGraphicsRootConstantBufferView(0, alloc.gpu);
+	cmdList->SetGraphicsRootDescriptorTable(1, srvManager->GetGPUHandleAt(0));
+	// 6)描画
+	cmdList->DrawInstanced(3, 1, 0, 0);
+}
+
+/// 既にいろいろいじってしまった過去のScreenDraw()。
+//void DrawSystem::ScreenDraw()
+//{
+//	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
+//	auto& cb = cbAllocators_[GetFrameIndex()];
+//	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+//
+//	// トポロジーセット
+//	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//	// RootSignatureセット
+//	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
+//	// PSOセット
+//	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
+//	// CBV・SRVセット
+//	const auto& cpuStrage = renderObject->GetCpuStorage();
+//	const auto& rootParams = renderObject->GetRootParams();
+//	for (size_t i = 0; i < rootParams.size(); ++i)
+//	{
+//		const auto& param = rootParams[i];
+//
+//		if (param.paramType == ParamType::CBV)
+//		{
+//			const auto alloc = cb.Allocate(param.sizeBytes);
+//			std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
+//			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
+//		}
+//		else if (param.paramType == ParamType::SRV)
+//		{
+//			assert(param.srvAllocIndex != UINT32_MAX);
+//			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
+//		}
+//	}
+//
+//	// モデルの検索
+//	const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID);
+//	if (!obj) return;
+//	// 頂点数の取得
+//	const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
+//	// 頂点バッファをバインド
+//	cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
+//
+//	// 描画
+//	cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
+//}
+
+/// 過去のSceneDraw()。RenderTexture指定がない
+//void DrawSystem::SceneDraw()
+//{
+//	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
+//	auto& cb = cbAllocators_[GetFrameIndex()];
+//	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+//
+//	for (auto* renderObject : sceneRenderObjects_)
+//	{
+//		// 1) RootSignatureセット
+//		cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
+//		// 2) PSOセット
+//		cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
+//		// 3) トポロジーセット
+//		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
+//		// 4) CBV・SRVセット
+//		const auto& cpuStrage = renderObject->GetCpuStorage();
+//		const auto& rootParams = renderObject->GetRootParams();
+//		for (size_t i = 0; i < rootParams.size(); ++i)
+//		{
+//			const auto& param = rootParams[i];
+//
+//			if (param.paramType == ParamType::CBV)
+//			{
+//				const auto alloc = cb.Allocate(param.sizeBytes);
+//				std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
+//				cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
+//			}
+//			else if (param.paramType == ParamType::SRV)
+//			{
+//				assert(param.srvAllocIndex != UINT32_MAX);
+//				cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
+//			}
+//		}
+//		// モデルの検索
+//		const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID);
+//		if (!obj) continue;
+//		// 頂点数の取得
+//		const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
+//		// 5)頂点バッファをバインド
+//		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
+//
+//		// 6)描画
+//		cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
+//	}
+//}
 
 
 
@@ -344,8 +523,6 @@ void DrawSystem::AddAABB(const AABB& aabb, uint32_t color)
 	AddDebugLineList(p[3], p[7], color);
 }
 
-
-//
 //void DrawSystem::DrawAllModel()
 //{
 //	/// 描画順をソート

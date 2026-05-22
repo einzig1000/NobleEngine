@@ -4,8 +4,9 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <unordered_map>
-#include "DirectX/PipeLine/RenderPipelineTypes.h"
-#include "DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h"
+#include <DirectX/RenderTextureManager/RenderTextureID.h>
+#include <DirectX/PipeLine/RenderPipelineTypes.h>
+#include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
 
 /// <summary>
 // ・PSO 設定（どのシェーダ・どのブレンド・どのラスタライザか）
@@ -24,8 +25,8 @@ public:
 		SRV_UAVManager::Allocation srvAllocations[kMaxFramesInFlight];
 	};
 
-	void Draw() const;
-	void TestPostEffectDraw() const;
+	void Draw(RenderTextureID renderTextureID = RenderTextureID::Test) const;
+	void TestPostEffectDraw(RenderTextureID renderTextureID = RenderTextureID::PreBackBuffer) const;
 
 	void SetupFromShaders();
 
@@ -41,12 +42,11 @@ public:
 	// インスタンス数
 	uint32_t instanceNum_ = 1;
 
-	int32_t modelID = -1;
-	int32_t textureID = -1;
+	int32_t modelID_ = -1;
+	int32_t textureID_ = -1;
 
 private:
 	// RootParameterにいれるものリスト。CBVもSRVもここで管理する
-	//std::unordered_map<uint32_t, RootParam> rootParams_{};
 	std::vector<RootParam> rootParams_{};
 	std::unordered_map<uint32_t, size_t> rootParamHashToIndexMap_{};
 

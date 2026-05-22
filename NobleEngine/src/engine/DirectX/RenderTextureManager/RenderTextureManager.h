@@ -6,8 +6,9 @@
 #include <dxgiformat.h>
 #include <unordered_map>
 #include <memory>
-#include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
 #include <string>
+#include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
+#include <DirectX/RenderTextureManager/RenderTextureID.h>
 
 struct RenderTexture
 {
@@ -34,21 +35,21 @@ public:
 	~RenderTextureManager();
 
     // 作成
-    RenderTexture* CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, const std::string& label);
+    RenderTexture* CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, RenderTextureID renderTextureID);
     RenderTexture* CreateDepthTexture(UINT width, UINT height, DXGI_FORMAT format);
 
     // 取得
-    RenderTexture* Get(const std::string& name) const;
+    RenderTexture* Get(RenderTextureID renderTextureID) const;
 
     // リサイズ
     void ResizeAllWindowDependent(UINT newWidth, UINT newHeight);
 
     // 破棄
-    void Destroy(const std::string& name);
+    void Destroy(RenderTextureID renderTextureID);
 
 private:
     ID3D12Device* device_;
     DescriptorHeapManager* descriptorHeapManager_;
-    std::unordered_map<std::string, std::unique_ptr<RenderTexture>> textures_;
+    std::unordered_map<RenderTextureID, std::unique_ptr<RenderTexture>> textures_;
 };
 

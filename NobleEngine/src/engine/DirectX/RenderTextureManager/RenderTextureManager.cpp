@@ -1,17 +1,16 @@
 #include "RenderTextureManager.h"
 #include <DirectX/Resource/Dx12ResourceFactory.h>
-#include <Window/WindowManager.h>
 
 RenderTextureManager::RenderTextureManager(ID3D12Device* device, DescriptorHeapManager* descriptorHeapManager)
     : device_(device), descriptorHeapManager_(descriptorHeapManager)
 {
-    CreateRenderTarget(UINT(WindowManager::winWidth_), UINT(WindowManager::winHeight_), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "mainRenderTexture");
+    //CreateRenderTarget(UINT(WindowManager::winWidth_), UINT(WindowManager::winHeight_), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, RenderTextureID::Test);
 }
 
 RenderTextureManager::~RenderTextureManager()
 {}
 
-RenderTexture* RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, const std::string& label)
+RenderTexture* RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, RenderTextureID renderTextureID)
 {
     auto rt = std::make_unique<RenderTexture>();
     rt->width = width;
@@ -45,9 +44,11 @@ RenderTexture* RenderTextureManager::CreateRenderTarget(UINT width, UINT height,
     rt->scissorRect.right = static_cast<LONG>(width);
     rt->scissorRect.bottom = static_cast<LONG>(height);
 
-    std::string name = label;
-    textures_.emplace(name, std::move(rt));
-	return textures_.at(name).get();
+	rt->currentState = D3D12_RESOURCE_STATE_COMMON;
+    rt->dsvCurrentState = D3D12_RESOURCE_STATE_COMMON;
+
+    textures_.emplace(renderTextureID, std::move(rt));
+	return textures_.at(renderTextureID).get();
 }
 
 
@@ -56,20 +57,20 @@ RenderTexture* RenderTextureManager::CreateDepthTexture(UINT width, UINT height,
 	return nullptr;
 }
 
-RenderTexture* RenderTextureManager::Get(const std::string& name) const
+RenderTexture* RenderTextureManager::Get(RenderTextureID renderTextureID) const
 {
-	if (textures_.find(name) != textures_.end())
-	{
-		return textures_.at(name).get();
-	}
-	else
-	{
-		return nullptr;
-	}
+    auto it = textures_.find(renderTextureID);
+    if (it != textures_.end())
+    {
+        return it->second.get();
+    }
+    return nullptr;
 }
 
 void RenderTextureManager::ResizeAllWindowDependent(UINT newWidth, UINT newHeight)
 {}
 
-void RenderTextureManager::Destroy(const std::string & name)
-{}
+void RenderTextureManager::Destroy(RenderTextureID renderTextureID)
+{
+    textures_.erase(renderTextureID);
+}

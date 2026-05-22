@@ -34,13 +34,13 @@ namespace Game
 		{
 			return Engine::Instance().GetResourceManager()->GetTextureManager()->LoadTexture(filePath);
 		}
-		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& label)
+		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const RenderTextureID& id)
 		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, label)->srvAlloc.index;
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, id)->srvAlloc.index;
 		}
-		uint32_t GetRenderTextureID(const std::string& label)
+		uint32_t GetRenderTextureID(const RenderTextureID& id)
 		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(label)->srvAlloc.index;
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(id)->srvAlloc.index;
 		}
 
 		TextureData* GetTextureData(uint32_t textureNumber)

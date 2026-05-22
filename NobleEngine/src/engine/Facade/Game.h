@@ -1,5 +1,8 @@
 #pragma once
-#include "definition/definition.h"
+#include <definition/definition.h>
+#include <DirectX/RenderTextureManager/RenderTextureID.h>
+
+
 
 class IWorldCollider;
 class IPhysicsBody;
@@ -40,9 +43,9 @@ namespace Game
 		/// <param name="width">横幅</param>
 		/// <param name="height">縦幅</param>
 		/// <returns>テクスチャID</returns>
-		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& label);
+		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const RenderTextureID& id);
 
-		uint32_t GetRenderTextureID(const std::string& label);
+		uint32_t GetRenderTextureID(const RenderTextureID& id);
 
 		/// <summary>
 		/// テクスチャデータ取得

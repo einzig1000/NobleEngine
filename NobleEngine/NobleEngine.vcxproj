@@ -84,6 +84,7 @@
     <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\RenderPipelineTypes.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h" />
+    <ClInclude Include="src\engine\DirectX\RenderTextureManager\RenderTextureID.h" />
     <ClInclude Include="src\engine\DirectX\RenderTextureManager\RenderTextureManager.h" />
     <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceFactory.h" />
     <ClInclude Include="src\engine\DirectX\SwapChainManager.h" />

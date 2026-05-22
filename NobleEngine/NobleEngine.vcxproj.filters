@@ -329,5 +329,8 @@
     <ClInclude Include="src\application\GameManager\GameManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\DirectX\RenderTextureManager\RenderTextureID.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

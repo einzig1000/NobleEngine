@@ -9,6 +9,7 @@
 #include <cstdint>
 
 
+
 void RenderObject::SetupFromShaders()
 {
 	std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
@@ -119,13 +120,12 @@ void RenderObject::SetCBufferData(const uint32_t key, ShaderType shaderType, con
 	}
 }
 
-void RenderObject::Draw() const
+void RenderObject::Draw(RenderTextureID renderTextureID) const
 {
-	Engine::Instance().GetDrawSystem()->AddSceneDrawList(this);
+	Engine::Instance().GetDrawSystem()->AddSceneDrawList(this, renderTextureID);
 }
 
-void RenderObject::TestPostEffectDraw() const
+void RenderObject::TestPostEffectDraw(RenderTextureID renderTextureID) const
 {
-	Engine::Instance().GetDrawSystem()->AddScreenDrawList(this);
+	Engine::Instance().GetDrawSystem()->AddScreenDrawList(this, renderTextureID);
 }
-

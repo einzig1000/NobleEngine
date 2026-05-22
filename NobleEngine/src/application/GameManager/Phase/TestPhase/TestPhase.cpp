@@ -3,12 +3,14 @@
 
 TestPhase::TestPhase()
 {
+	renderTextureID_test_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), RenderTextureID::Test);
+	renderTextureID_UI_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), RenderTextureID::UI);
+	renderTextureID_preBackBuffer_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), RenderTextureID::PreBackBuffer);
+
 	int32_t tex1 = Game::Resource::LoadTexture("resources/Prototypes/texture/uvChecker.png");
 	int32_t tex2 = Game::Resource::LoadTexture("resources/Prototypes/texture/monsterBall.png");
 	int32_t tex3 = Game::Resource::LoadTexture("resources/Prototypes/texture/white1x1.png");
 	int32_t tex4 = Game::Resource::LoadTexture("resources/Prototypes/texture/rostock_laage_airport_4k.dds");
-	int32_t tex5 = Game::Resource::GetRenderTextureID("mainRenderTexture");
-	//int32_t tex6 = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "test");
 
 	int32_t model1 = Game::Resource::LoadModel("resources/Prototypes/model/cube.obj");
 	int32_t model2 = Game::Resource::LoadModel("resources/Prototypes/model/sphere.obj");
@@ -18,15 +20,15 @@ TestPhase::TestPhase()
 	audio2 = Game::Resource::LoadAudio("resources/Prototypes/audio/SE/バトル用/氷魔法1.mp3");
 
 	cbvOnly_ = std::make_unique<RenderObject>();
-	cbvOnly_->modelID = model1;
-	cbvOnly_->textureID = tex1;
+	cbvOnly_->modelID_ = model1;
+	cbvOnly_->textureID_ = tex1;
 	cbvOnly_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
 	cbvOnly_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
 	cbvOnly_->SetupFromShaders();
 
 	cbvAndSrv_ = std::make_unique<RenderObject>();
-	cbvAndSrv_->modelID = model1;
-	cbvAndSrv_->textureID = tex1;
+	cbvAndSrv_->modelID_ = model1;
+	cbvAndSrv_->textureID_ = tex1;
 	cbvAndSrv_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModels.PS.hlsl";
 	cbvAndSrv_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModels.VS.hlsl";
 	cbvAndSrv_->instanceNum_ = 10;
@@ -38,33 +40,39 @@ TestPhase::TestPhase()
 	line_->SetupFromShaders();
 
 	skybox_ = std::make_unique<RenderObject>();
-	skybox_->modelID = model1;
-	skybox_->textureID = tex4;
+	skybox_->modelID_ = model1;
+	skybox_->textureID_ = tex4;
 	skybox_->psoConfig_.ps = "resources/Shaders/SkyBox/SkyBox.PS.hlsl";
 	skybox_->psoConfig_.vs = "resources/Shaders/SkyBox/SkyBox.VS.hlsl";
 	skybox_->SetupFromShaders();
 
 	PunctualLight_ = std::make_unique<RenderObject>();
-	PunctualLight_->modelID = model2;
-	PunctualLight_->textureID = tex2;
+	PunctualLight_->modelID_ = model2;
+	PunctualLight_->textureID_ = tex2;
 	PunctualLight_->psoConfig_.ps = "resources/Shaders/PunctualLight/PunctualLight.PS.hlsl";
 	PunctualLight_->psoConfig_.vs = "resources/Shaders/PunctualLight/PunctualLight.VS.hlsl";
 	PunctualLight_->SetupFromShaders();
 
 	environmentMap_ = std::make_unique<RenderObject>();
-	environmentMap_->modelID = model2;
-	environmentMap_->textureID = tex3;
+	environmentMap_->modelID_ = model2;
+	environmentMap_->textureID_ = tex3;
 	environmentMap_->psoConfig_.ps = "resources/Shaders/EnvironmentMap/EnvironmentMap.PS.hlsl";
 	environmentMap_->psoConfig_.vs = "resources/Shaders/EnvironmentMap/EnvironmentMap.VS.hlsl";
 	environmentMap_->SetupFromShaders();
 
-	postEffect_ = std::make_unique<RenderObject>();
-	postEffect_->modelID = model3;
-	postEffect_->textureID = tex5;
-	postEffect_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreenQuad.VS.hlsl";
-	postEffect_->psoConfig_.ps = "resources/shaders/FullScreen/BoxFilter.PS.hlsl";
-	postEffect_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
-	postEffect_->SetupFromShaders();
+	postEffect1_ = std::make_unique<RenderObject>();
+	postEffect1_->modelID_ = model3;
+	postEffect1_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreenQuad.VS.hlsl";
+	postEffect1_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	postEffect1_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	postEffect1_->SetupFromShaders();
+
+	postEffect2_ = std::make_unique<RenderObject>();
+	postEffect2_->modelID_ = model3;
+	postEffect2_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreenQuad.VS.hlsl";
+	postEffect2_->psoConfig_.ps = "resources/shaders/FullScreen/GrayScale.PS.hlsl";
+	postEffect2_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	postEffect2_->SetupFromShaders();
 
 	transform1_.scale = { 11.0f,11.0f,11.0f };
 	color1_ = Vector4{ 1.0f,1.0f,1.0f,1.0f };
@@ -78,8 +86,15 @@ TestPhase::TestPhase()
 
 	lightData_.LightCount = 1;
 
-	postEffectTransform_.scale.x = 18.0f;
-	postEffectTransform_.scale.y = 10.1f;
+	postEffectTransform_.scale.x = 10.0f;
+	postEffectTransform_.scale.y = 2.5f;
+	postEffectTransform_.scale.z = 1.0f;
+	postEffectTransform_.translate.x = -9.0f;
+	postEffectTransform_.translate.y = -4.5f;
+	postEffectTransform_.translate.z = -5.0f;
+	postEffectTransform_.rotate.x = -0.5f;
+	postEffectTransform_.rotate.y = 1.0f;
+	postEffectTransform_.rotate.z = 0.2f;
 }
 
 TestPhase::~TestPhase()
@@ -102,7 +117,7 @@ void TestPhase::Update()
 	Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
 	
 	cbvOnly_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	cbvOnly_->SetCBufferData(1, ShaderType::PixelShader, &cbvOnly_->textureID);
+	cbvOnly_->SetCBufferData(1, ShaderType::PixelShader, &cbvOnly_->textureID_);
 	cbvOnly_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 	cbvOnly_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 
@@ -127,7 +142,7 @@ void TestPhase::Update()
 	noTranslateView.m[3][2] = 0.0f;
 	Matrix4x4 noTranslateViewProjection = noTranslateView * projectionMatrix;
 
-	int32_t skyboxTextureID = skybox_->textureID;
+	int32_t skyboxTextureID = skybox_->textureID_;
 
 	skybox_->SetCBufferData(0, ShaderType::VertexShader, &noTranslateViewProjection);
 	skybox_->SetCBufferData(0, ShaderType::PixelShader, &skyboxTextureID);
@@ -137,33 +152,38 @@ void TestPhase::Update()
 	PunctualLight_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos);
 	PunctualLight_->SetCBufferData(1, ShaderType::PixelShader, &lightData_);
 	PunctualLight_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
-	PunctualLight_->SetCBufferData(3, ShaderType::PixelShader, &PunctualLight_->textureID);
+	PunctualLight_->SetCBufferData(3, ShaderType::PixelShader, &PunctualLight_->textureID_);
 
 	environmentMap_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 	environmentMap_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 	environmentMap_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos);
 	environmentMap_->SetCBufferData(1, ShaderType::PixelShader, &lightData_);
 	environmentMap_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
-	environmentMap_->SetCBufferData(3, ShaderType::PixelShader, &environmentMap_->textureID);
+	environmentMap_->SetCBufferData(3, ShaderType::PixelShader, &environmentMap_->textureID_);
 	environmentMap_->SetCBufferData(4, ShaderType::PixelShader, &skyboxTextureID);
 
 
 	Matrix4x4 postEffectWorldMatrix = Matrix4x4::MakeAffineMatrix(postEffectTransform_.scale, postEffectTransform_.rotate, postEffectTransform_.translate);
 	Matrix4x4 postEffectWorldViewProjection = postEffectWorldMatrix * viewProjection;
 	Matrix4x4 identityMatrix = Matrix4x4::MakeIdentity4x4();
-	postEffect_->SetCBufferData(0, ShaderType::VertexShader, &postEffectWorldViewProjection);
-	postEffect_->SetCBufferData(0, ShaderType::PixelShader, &postEffect_->textureID);
+	postEffect1_->SetCBufferData(0, ShaderType::VertexShader, &identityMatrix);
+	postEffect1_->SetCBufferData(0, ShaderType::PixelShader, &renderTextureID_test_);
+
+	postEffect2_->SetCBufferData(0, ShaderType::VertexShader, &postEffectWorldViewProjection);
+	postEffect2_->SetCBufferData(0, ShaderType::PixelShader, &renderTextureID_UI_);
 }
 
 void TestPhase::Draw()
 {
-	//cbvOnly_->Draw();
-	//cbvAndSrv_->Draw();
+	cbvOnly_->Draw(RenderTextureID::UI);
+	cbvAndSrv_->Draw(RenderTextureID::UI);
 	//line_->Draw();
 	skybox_->Draw();
 	//PunctualLight_->Draw();
 	environmentMap_->Draw();
-	postEffect_->TestPostEffectDraw();
+
+	postEffect1_->TestPostEffectDraw(RenderTextureID::PreBackBuffer);
+	postEffect2_->TestPostEffectDraw(RenderTextureID::PreBackBuffer);
 }
 
 
@@ -177,7 +197,7 @@ void TestPhase::DrawImGui()
 			if (ImGui::TreeNode("cbvOnly_"))
 			{
 				ImGui::ColorEdit4("color1", &color1_.x, 1);
-				ImGui::DragInt("textureID", &cbvOnly_->textureID, 1, 0, 10);
+				ImGui::DragInt("textureID", &cbvOnly_->textureID_, 1, 0, 10);
 				ImGui::DragFloat3("scale", &transform1_.scale.x, 0.1f, 0.1f, 100.0f);
 				ImGui::DragFloat3("rotate", &transform1_.rotate.x, 0.1f);
 				ImGui::DragFloat3("translate", &transform1_.translate.x, 0.1f, -100.0f, 100.0f);
@@ -222,9 +242,9 @@ void TestPhase::DrawImGui()
 				ImGui::TreePop();
 			}
 
-			if (ImGui::TreeNode("postEffect_"))
+			if (ImGui::TreeNode("postEffect1_"))
 			{
-				ImGui::DragInt("textureID", &postEffect_->textureID, 1, 0, 10);
+				ImGui::DragInt("textureID", &postEffect1_->textureID_, 1, 0, 10);
 				ImGui::DragFloat3("scale", &postEffectTransform_.scale.x, 0.1f, 0.1f, 100.0f);
 				ImGui::DragFloat3("rotate", &postEffectTransform_.rotate.x, 0.1f);
 				ImGui::DragFloat3("translate", &postEffectTransform_.translate.x, 0.1f, -100.0f, 100.0f);

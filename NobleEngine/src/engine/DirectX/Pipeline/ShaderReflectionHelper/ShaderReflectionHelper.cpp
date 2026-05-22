@@ -192,6 +192,7 @@ namespace ShaderReflection
 
                 outParams.push_back(p);
             }
+			// 通常のテクスチャSRV 
             else if (bind.Type == D3D_SIT_TEXTURE && bind.BindCount > 0)
             {
                 RootParam p{};
