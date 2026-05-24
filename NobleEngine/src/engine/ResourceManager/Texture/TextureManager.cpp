@@ -23,8 +23,6 @@ TextureManager::~TextureManager()
 
 int32_t TextureManager::LoadTexture(const std::string& filePath)
 {
-	Log("テクスチャ読み込み開始:%s", filePath.c_str());
-
 	HRESULT hr = S_OK;
 
 	// ファイルパス型に変換
@@ -36,6 +34,8 @@ int32_t TextureManager::LoadTexture(const std::string& filePath)
     {
 		return it->second;
     }
+
+	Log("テクスチャ読み込み開始:%s", filePath.c_str());
 
     // 識別子を判定
     std::string ext = path.extension().string();

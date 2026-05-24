@@ -34,13 +34,13 @@ namespace Game
 		{
 			return Engine::Instance().GetResourceManager()->GetTextureManager()->LoadTexture(filePath);
 		}
-		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const RenderTextureID& id)
+		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName)
 		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, id)->srvAlloc.index;
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
 		}
-		uint32_t GetRenderTextureID(const RenderTextureID& id)
+		uint32_t GetRenderTextureID(const std::string textureName)
 		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(id)->srvAlloc.index;
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->srvAlloc.index;
 		}
 
 		TextureData* GetTextureData(uint32_t textureNumber)
@@ -341,6 +341,10 @@ namespace Game
 			Matrix4x4 GetCurrentViewProjectionMatrix()
 			{
 				return Engine::Instance().GetCameraManager()->GetCurrentViewProjectionMatrix();
+			}
+			Matrix4x4 GetCurrentOrthoProjectionMatrix()
+			{
+				return Engine::Instance().GetCameraManager()->GetCurrentOrthoProjectionMatrix();
 			}
 			Matrix4x4 GetCurrentViewMatrix()
 			{

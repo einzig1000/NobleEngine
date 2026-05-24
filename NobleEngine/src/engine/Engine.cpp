@@ -89,23 +89,14 @@ void Engine::EndFrame()
 	// 入力終了処理
 	ioManager_->EndFrame();
 
-	// オフスクリーン描画用のRTV･DSVをセット
-	dxManager_->PreSceneDraw();
-	// シーン描画
+	// 描画処理
 	drawSystem_->SceneDraw();
 	drawSystem_->PostEffectDraw();
-	// オフスクリーン描画終了
-	dxManager_->PostSceneDraw();
-
-	// スクリーン描画用のRTVをセット
-	dxManager_->PreScreenDraw();
-	// スクリーン描画
-	drawSystem_->ScreenDraw();
-	// ImGui描画
+	dxManager_->BeginRenderPass(dxManager_->GetSwapChain()->GetCurrentRenderTarget(), true);
 	imguiManager_->EndFrame();
+	drawSystem_->ScreenDraw();
 	imguiManager_->Draw();
-	// スクリーン描画終了
-	dxManager_->PostScreenDraw();
+	dxManager_->EndRenderPass(dxManager_->GetSwapChain()->GetCurrentRenderTarget(), true, D3D12_RESOURCE_STATE_PRESENT);
 
 	// DirectX終了処理
 	dxManager_->EndFrame();

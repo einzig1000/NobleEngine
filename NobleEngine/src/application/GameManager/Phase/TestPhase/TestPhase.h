@@ -31,13 +31,24 @@ private:
 	LightDataForGPU lightData_;
 	Material materialData_;
 	std::unique_ptr<RenderObject> environmentMap_;
+
 	std::unique_ptr<RenderObject> postEffect1_;
 	std::unique_ptr<RenderObject> postEffect2_;
-	Transforms postEffectTransform_;
 
-	int32_t renderTextureID_test_;
-	int32_t renderTextureID_UI_;
-	int32_t renderTextureID_preBackBuffer_;
+	std::unique_ptr<RenderObject> screenDrawObjectMain_;
+	Transforms mainScreenTransform_;
+	std::unique_ptr<RenderObject> screenDrawObjectMiniMap_;
+	Transforms miniMapScreenTransform_;
+
+
+	int32_t rt_main_;
+	int32_t rt_miniMap_;
+	int32_t rt_Vignette_;
+	int32_t rt_GrayScale_;
+	int32_t t_uvChecker;
+	int32_t t_monsterBall_;
+	int32_t t_white1x1_;
+	int32_t t_dds_;
 
 	uint32_t audio1;
 	uint32_t audio2;

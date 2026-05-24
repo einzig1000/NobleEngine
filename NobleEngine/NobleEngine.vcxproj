@@ -30,9 +30,9 @@
     <ClCompile Include="src\engine\DirectX\FrameCbAllocator\FrameCbAllocator.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp" />
-    <ClCompile Include="src\engine\DirectX\RenderTextureManager\RenderTextureManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.cpp" />
     <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceFactory.cpp" />
-    <ClCompile Include="src\engine\DirectX\SwapChainManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.cpp" />
     <ClCompile Include="src\engine\DirectX\SynchronizationManager.cpp" />
     <ClCompile Include="src\engine\DirectX\ViewportScissorManager.cpp" />
     <ClCompile Include="src\engine\DirectX\View\Dx12ViewFactory.cpp" />
@@ -84,10 +84,11 @@
     <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\RenderPipelineTypes.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h" />
-    <ClInclude Include="src\engine\DirectX\RenderTextureManager\RenderTextureID.h" />
-    <ClInclude Include="src\engine\DirectX\RenderTextureManager\RenderTextureManager.h" />
+    <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTargetStruct.h" />
+    <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureID.h" />
+    <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.h" />
     <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceFactory.h" />
-    <ClInclude Include="src\engine\DirectX\SwapChainManager.h" />
+    <ClInclude Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.h" />
     <ClInclude Include="src\engine\DirectX\SynchronizationManager.h" />
     <ClInclude Include="src\engine\DirectX\ViewportScissorManager.h" />
     <ClInclude Include="src\engine\DirectX\View\Dx12ViewFactory.h" />

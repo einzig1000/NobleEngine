@@ -166,6 +166,10 @@ Matrix4x4 CameraManager::GetCurrentProjectionMatrix() const
 {
 	return camera_[currentCameraID_].GetProjectionMatrix();
 }
+Matrix4x4 CameraManager::GetCurrentOrthoProjectionMatrix() const
+{
+	return camera_[currentCameraID_].GetOrthoProjectionMatrix();
+}
 float CameraManager::GetCurrentDistance() const
 {
 	return camera_[currentCameraID_].GetDistance();

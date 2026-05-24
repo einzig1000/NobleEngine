@@ -22,8 +22,8 @@ public:
 	void ToggleDraw() { isDraw_ = !isDraw_; }
 
 private:
-	DirectXManager* dxManager_;
-	WindowManager* windowManager_;
+	DirectXManager* dxManager_ = nullptr;
+	WindowManager* windowManager_ = nullptr;
 	bool isDraw_ = true;
 };
 

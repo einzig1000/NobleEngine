@@ -45,7 +45,7 @@
     <ClCompile Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DirectX\RenderTextureManager\RenderTextureManager.cpp">
+    <ClCompile Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceFactory.cpp">
@@ -63,7 +63,7 @@
     <ClCompile Include="src\engine\DirectX\DirectXManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DirectX\SwapChainManager.cpp">
+    <ClCompile Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\SynchronizationManager.cpp">
@@ -206,7 +206,7 @@
     <ClInclude Include="src\engine\DirectX\Pipeline\RenderPipelineTypes.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\RenderTextureManager\RenderTextureManager.h">
+    <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceFactory.h">
@@ -224,7 +224,7 @@
     <ClInclude Include="src\engine\DirectX\DirectXManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\SwapChainManager.h">
+    <ClInclude Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\SynchronizationManager.h">
@@ -329,7 +329,10 @@
     <ClInclude Include="src\application\GameManager\GameManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\RenderTextureManager\RenderTextureID.h">
+    <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureID.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTargetStruct.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

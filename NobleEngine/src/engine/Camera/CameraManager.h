@@ -34,8 +34,9 @@ public:
 	Vector3 GetCurrentTranslate() const;		// カメラ位置
 	Vector3 GetCurrentRotate() const;
 	Matrix4x4 GetCurrentViewProjectionMatrix() const; // ビュープロジェクション行列
-	Matrix4x4 GetCurrentViewMatrix() const; // ビュー行列
-	Matrix4x4 GetCurrentProjectionMatrix() const; // プロジェクション行列
+	Matrix4x4 GetCurrentViewMatrix() const;			// ビュー行列
+	Matrix4x4 GetCurrentProjectionMatrix() const;	// プロジェクション行列
+	Matrix4x4 GetCurrentOrthoProjectionMatrix() const;		// 正射影行列
 	float GetCurrentDistance() const;			// カメラ距離
 	void SetCameraMode(CameraMode_ORBIT_FPS mode);
 

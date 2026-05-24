@@ -1,7 +1,8 @@
-#include <DirectX/SwapChainManager.h>
+#include "SwapChainManager.h"
 #include <Utilities/Logger/Logger.h>
 #include <Window/WindowManager.h>
 #include <DirectX/Resource/Dx12ResourceFactory.h>
+#include "DirectX/DescriptorHeapManager/DescriptorHeapManager.h"
 #include <Windows.h> 
 #include <cassert>
 
@@ -13,12 +14,31 @@ SwapChainManager::SwapChainManager(ID3D12Device* device, ID3D12CommandQueue* com
 	InitializeDepthStencilView(device);
 	backBufferIndex_ = 0;
 
+	renderTargets_[0] = std::make_unique<RenderTarget>();
+	renderTargets_[1] = std::make_unique<RenderTarget>();
+
 	Log("コンストラクタ実行成功 : SwapChainManager");
 }
 
 SwapChainManager::~SwapChainManager()
 {
 	Log("デストラクタ実行成功 : SwapChainManager");
+}
+
+RenderTarget* SwapChainManager::GetCurrentRenderTarget() const
+{
+	RenderTarget* rt = renderTargets_[backBufferIndex_].get();
+	rt->resource = swapChainResources_[backBufferIndex_];
+    rt->dsvResource = nullptr;
+	rt->rtvAlloc = rtvAllocations_[backBufferIndex_];
+	rt->dsvResource = depthStencilResource_;
+	rt->dsvAlloc = dsvAllocation_;
+	rt->width = swapChainDesc_.Width;
+	rt->height = swapChainDesc_.Height;
+	rt->format = swapChainDesc_.Format;
+	rt->viewport = { 0.0f, 0.0f, static_cast<float>(swapChainDesc_.Width), static_cast<float>(swapChainDesc_.Height), 0.0f, 1.0f };
+	rt->scissorRect = { 0, 0, static_cast<LONG>(swapChainDesc_.Width), static_cast<LONG>(swapChainDesc_.Height) };
+	return rt;
 }
 
 void SwapChainManager::InitializeSwapChainInternal(ID3D12Device* device, ID3D12CommandQueue* commandQueue, HWND hwnd)
@@ -76,9 +96,9 @@ void SwapChainManager::InitializeDepthStencilView(ID3D12Device* device)
     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
     dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-    if (mainDepthDSV_.index == UINT32_MAX)
+    if (dsvAllocation_.index == UINT32_MAX)
     {
-		mainDepthDSV_ = descriptorHeapManager_->GetDSVManager()->CreateDSV(depthStencilResource_.Get(), &dsvDesc);
+		dsvAllocation_ = descriptorHeapManager_->GetDSVManager()->CreateDSV(depthStencilResource_.Get(), &dsvDesc);
     }
 }
 

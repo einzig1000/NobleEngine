@@ -1,8 +1,5 @@
 #pragma once
 #include <definition/definition.h>
-#include <DirectX/RenderTextureManager/RenderTextureID.h>
-
-
 
 class IWorldCollider;
 class IPhysicsBody;
@@ -43,9 +40,9 @@ namespace Game
 		/// <param name="width">横幅</param>
 		/// <param name="height">縦幅</param>
 		/// <returns>テクスチャID</returns>
-		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const RenderTextureID& id);
+		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName);
 
-		uint32_t GetRenderTextureID(const RenderTextureID& id);
+		uint32_t GetRenderTextureID(const std::string textureName);
 
 		/// <summary>
 		/// テクスチャデータ取得
@@ -384,6 +381,8 @@ namespace Game
 			float GetCurrentDistance();
 			/// <returns>カメラのビュープロジェクション行列</returns>
 			Matrix4x4 GetCurrentViewProjectionMatrix();
+			// / <returns>カメラの正射影プロジェクション行列</returns>
+			Matrix4x4 GetCurrentOrthoProjectionMatrix();
 			/// <returns>カメラのビュー行列</returns>
 			Matrix4x4 GetCurrentViewMatrix();
 			/// <returns>カメラのプロジェクション行列</returns>

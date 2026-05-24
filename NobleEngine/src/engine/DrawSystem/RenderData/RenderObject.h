@@ -4,7 +4,7 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <unordered_map>
-#include <DirectX/RenderTextureManager/RenderTextureID.h>
+#include <DirectX/RenderTarget/RenderTextureID.h>
 #include <DirectX/PipeLine/RenderPipelineTypes.h>
 #include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
 
@@ -25,8 +25,10 @@ public:
 		SRV_UAVManager::Allocation srvAllocations[kMaxFramesInFlight];
 	};
 
-	void Draw(RenderTextureID renderTextureID = RenderTextureID::Test) const;
-	void TestPostEffectDraw(RenderTextureID renderTextureID = RenderTextureID::PreBackBuffer) const;
+	// いずれ統合予定
+	void Draw(int32_t renderTextureID) const;
+	void PostEffectDraw(int32_t renderTextureID) const;
+	void ScreenDraw() const;
 
 	void SetupFromShaders();
 
@@ -43,7 +45,6 @@ public:
 	uint32_t instanceNum_ = 1;
 
 	int32_t modelID_ = -1;
-	int32_t textureID_ = -1;
 
 private:
 	// RootParameterにいれるものリスト。CBVもSRVもここで管理する

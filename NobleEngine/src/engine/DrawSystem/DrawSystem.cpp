@@ -2,7 +2,6 @@
 #include <DirectX/DirectXManager.h>
 #include <ResourceManager/ResourceManager.h>
 #include <Window/WindowManager.h>
-#include <DirectX/RenderTextureManager/RenderTextureManager.h>
 #include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
 #include <Utilities/Converter/StringConverter/StringConverter.h>
 #include <numbers>
@@ -34,16 +33,6 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 DrawSystem::~DrawSystem()
 {}
 
-void DrawSystem::AddSceneDrawList(const RenderObject* renderObject, RenderTextureID renderTextureID)
-{
-	sceneRenderObjects_[renderTextureID].push_back(renderObject);
-}
-
-void DrawSystem::AddScreenDrawList(const RenderObject* renderObject, RenderTextureID renderTextureID)
-{
-	screenRenderObjects_[renderTextureID].push_back(renderObject);
-}
-
 uint32_t DrawSystem::GetFrameIndex() const
 {
 	return dxManager_->GetSwapChain()->GetCurrentBackBufferIndex() % kFramesInFlight_;
@@ -55,6 +44,7 @@ void DrawSystem::Reset()
 	cbAllocators_[GetFrameIndex()].Reset();
 
 	sceneRenderObjects_.clear();
+	postEffectRenderObjects_.clear();
 	screenRenderObjects_.clear();
 }
 
@@ -62,7 +52,6 @@ void DrawSystem::Reset()
 //① PSO
 //② トポロジ
 //③ ルートシグネチャ
-
 //// 形状を設定 (三角形)
 //dxManager_->GetCommandContextManager()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 //// ルートシグネチャを設定
@@ -75,112 +64,19 @@ void DrawSystem::Reset()
 //dxManager_->GetCommandContextManager()->GetCommandList()->SetPipelineState(dxManager_->GetPipelineStateManager()->GetLinePipelineState(BlendMode::kBlendModeNormal));
 
 
-void DrawSystem::BeginRenderPass(RenderTextureID renderTextureID, RenderPassType passType)
+void DrawSystem::AddSceneDrawList(const RenderObject* renderObject, int32_t renderTextureID)
 {
-	// コマンドリストを取得
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-	// RenderTextureを取得
-	RenderTexture* rt = dxManager_->GetRenderTextureManager()->Get(renderTextureID);
-
-	switch (passType)
-	{
-	case DrawSystem::RenderPassType::Scene:
-	{
-		// オフスクリーンをRenderTargetにセット
-		D3D12_RESOURCE_BARRIER barriers[2] = {};
-		barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barriers[0].Transition.pResource = rt->resource.Get();
-		barriers[0].Transition.StateBefore = rt->currentState;
-		barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		barriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		rt->currentState = D3D12_RESOURCE_STATE_RENDER_TARGET;
-
-		barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barriers[1].Transition.pResource = rt->dsvResource.Get();
-		barriers[1].Transition.StateBefore = rt->dsvCurrentState;
-		barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_DEPTH_WRITE;
-		barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		rt->dsvCurrentState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
-
-		// rtvResourceとdsvResourceのResourceStateを遷移
-		cmdList->ResourceBarrier(2, barriers);
-
-		// 描画先のRTVとDSVを指定
-		cmdList->OMSetRenderTargets(1, &rt->rtvAlloc.handle, false, &rt->dsvAlloc.handle);
-
-		// クリア
-		float clearColor[] = { 0.396078f, 0.894117f, 1.0f, 0.0f };
-		cmdList->ClearRenderTargetView(rt->rtvAlloc.handle, clearColor, 0, nullptr);
-		cmdList->ClearDepthStencilView(rt->dsvAlloc.handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-
-		break;
-	}
-	case DrawSystem::RenderPassType::PostEffect:
-	{
-		// オフスクリーンをRenderTargetにセット
-		D3D12_RESOURCE_BARRIER barrier = {};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Transition.pResource = rt->resource.Get();
-		barrier.Transition.StateBefore = rt->currentState;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		rt->currentState = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		cmdList->ResourceBarrier(1, &barrier);
-
-		// 描画先のRTVとDSVを指定
-		cmdList->OMSetRenderTargets(1, &rt->rtvAlloc.handle, false, nullptr);
-
-		break;
-	}
-	}
-
-	// ViewportとScissorを設定
-	cmdList->RSSetViewports(1, &rt->viewport);
-	cmdList->RSSetScissorRects(1, &rt->scissorRect);
+	sceneRenderObjects_[renderTextureID].push_back(renderObject);
 }
 
-void DrawSystem::EndRenderPass(RenderTextureID renderTextureID, RenderPassType passType)
+void DrawSystem::AddPostEffectDrawList(const RenderObject* renderObject, int32_t renderTextureID)
 {
-	// コマンドリストを取得
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-	// RenderTextureを取得
-	RenderTexture* rt = dxManager_->GetRenderTextureManager()->Get(renderTextureID);
+	postEffectRenderObjects_[renderTextureID].push_back(renderObject);
+}
 
-	switch (passType)
-	{
-	case DrawSystem::RenderPassType::Scene:
-	{
-		D3D12_RESOURCE_BARRIER barriers[2] = {};
-		barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barriers[0].Transition.pResource = rt->resource.Get();
-		barriers[0].Transition.StateBefore = rt->currentState;
-		barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		barriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		rt->currentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-
-		barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barriers[1].Transition.pResource = rt->dsvResource.Get();
-		barriers[1].Transition.StateBefore = rt->dsvCurrentState;
-		// 深度が死んだ時は下の行をコメントアウトして、D3D12_RESOURCE_STATE_DEPTH_WRITEのままにする
-		barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		rt->dsvCurrentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-
-		cmdList->ResourceBarrier(2, barriers);
-		break;
-	}
-	case DrawSystem::RenderPassType::PostEffect:
-	{
-		D3D12_RESOURCE_BARRIER barrier = {};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Transition.pResource = rt->resource.Get();
-		barrier.Transition.StateBefore = rt->currentState;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		rt->currentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		cmdList->ResourceBarrier(1, &barrier);
-
-		break;
-	}
-	}
+void DrawSystem::AddScreenDrawList(const RenderObject* renderObject)
+{
+	screenRenderObjects_.push_back(renderObject);
 }
 
 void DrawSystem::DrawObject(const RenderObject* renderObject)
@@ -230,51 +126,57 @@ void DrawSystem::SceneDraw()
 {
 	for (const auto& [rtID, renderObjects] : sceneRenderObjects_)
 	{
-		BeginRenderPass(rtID, RenderPassType::Scene);
+		dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), true);
 		for (const auto* renderObject : renderObjects)
 		{
 			DrawObject(renderObject);
 		}
-		EndRenderPass(rtID, RenderPassType::Scene);
+		dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), true);
 	}
 }
 
 void DrawSystem::PostEffectDraw()
 {
-	for (const auto& [rtID, renderObjects] : screenRenderObjects_)
+	for (const auto& [rtID, renderObjects] : postEffectRenderObjects_)
 	{
-		BeginRenderPass(rtID, RenderPassType::PostEffect);
+		dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), false);
 		for (const auto* renderObject : renderObjects)
 		{
 			DrawObject(renderObject);
 		}
-		EndRenderPass(rtID, RenderPassType::PostEffect);
+		dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), false);
 	}
 }
 
 void DrawSystem::ScreenDraw()
 {
-	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-	auto& cb = cbAllocators_[GetFrameIndex()];
-
-	// 1) RootSignatureセット
-	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(ScreenDrawRootParams_).Get());
-	// 2) PSOセット
-	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(ScreenDrawPSOConfig_, ScreenDrawRootParams_).Get());
-	// 3) トポロジーセット
-	cmdList->IASetPrimitiveTopology(ScreenDrawPSOConfig_.topology);
-	// 4) CBV・SRVセット
-
-	// dxManager_->GetRenderTextureManager()->Get(RenderTextureID::PreBackBuffer)->srvAlloc.indexを送る
-	const auto alloc = cb.Allocate(sizeof(uint32_t));
-	//std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
-	std::memcpy(alloc.cpu, &dxManager_->GetRenderTextureManager()->Get(RenderTextureID::PreBackBuffer)->srvAlloc.index, sizeof(uint32_t));
-	cmdList->SetGraphicsRootConstantBufferView(0, alloc.gpu);
-	cmdList->SetGraphicsRootDescriptorTable(1, srvManager->GetGPUHandleAt(0));
-	// 6)描画
-	cmdList->DrawInstanced(3, 1, 0, 0);
+	for (const auto* renderObject : screenRenderObjects_)
+	{
+		DrawObject(renderObject);
+	}
 }
+
+
+//auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+//auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
+//auto& cb = cbAllocators_[GetFrameIndex()];
+//
+//// 1) RootSignatureセット
+//cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(ScreenDrawRootParams_).Get());
+//// 2) PSOセット
+//cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(ScreenDrawPSOConfig_, ScreenDrawRootParams_).Get());
+//// 3) トポロジーセット
+//cmdList->IASetPrimitiveTopology(ScreenDrawPSOConfig_.topology);
+//// 4) CBV・SRVセット
+//
+//// dxManager_->GetRenderTextureManager()->Get(RenderTextureID::PreBackBuffer)->srvAlloc.indexを送る
+//const auto alloc = cb.Allocate(sizeof(uint32_t));
+////std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
+//std::memcpy(alloc.cpu, &dxManager_->GetRenderTextureManager()->Get(RenderTextureID::PreBackBuffer)->srvAlloc.index, sizeof(uint32_t));
+//cmdList->SetGraphicsRootConstantBufferView(0, alloc.gpu);
+//cmdList->SetGraphicsRootDescriptorTable(1, srvManager->GetGPUHandleAt(0));
+//// 6)描画
+//cmdList->DrawInstanced(3, 1, 0, 0);
 
 /// 既にいろいろいじってしまった過去のScreenDraw()。
 //void DrawSystem::ScreenDraw()

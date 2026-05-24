@@ -120,12 +120,18 @@ void RenderObject::SetCBufferData(const uint32_t key, ShaderType shaderType, con
 	}
 }
 
-void RenderObject::Draw(RenderTextureID renderTextureID) const
+void RenderObject::Draw(int32_t renderTextureID) const
 {
 	Engine::Instance().GetDrawSystem()->AddSceneDrawList(this, renderTextureID);
 }
 
-void RenderObject::TestPostEffectDraw(RenderTextureID renderTextureID) const
+// textureにレンダーテクスチャを利用している場合はこっち
+void RenderObject::PostEffectDraw(int32_t renderTextureID) const
 {
-	Engine::Instance().GetDrawSystem()->AddScreenDrawList(this, renderTextureID);
+	Engine::Instance().GetDrawSystem()->AddPostEffectDrawList(this, renderTextureID);
+}
+
+void RenderObject::ScreenDraw() const
+{
+	Engine::Instance().GetDrawSystem()->AddScreenDrawList(this);
 }

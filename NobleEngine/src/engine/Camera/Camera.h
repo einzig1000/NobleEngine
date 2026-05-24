@@ -45,6 +45,7 @@ public:
     Matrix4x4 GetViewMatrix() const { return viewMatrix_; }
 	Matrix4x4 GetViewportMatrix() const { return viewportMatrix; }
 	Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }
+	Matrix4x4 GetOrthoProjectionMatrix() const { return orthoProjectionMatrix_; }
 	Vector3 GetCenter() const { return center_; }
     Vector3 GetTranslate() const { return eye; }
     Vector3 GetRotate() const { return Vector3{}; }
@@ -85,15 +86,15 @@ private:
     /// 視錐台判定用
     void CreateFrustumPlanes();
     std::array<Plane, 6> frustumPlanes_;// 視錐台を構成する6つの平面
-	
-    /// カメラシェイク
-
 
 	// ビューポート行列
     Matrix4x4 viewportMatrix;
 
 	// ビュー行列
     Matrix4x4 viewMatrix_;
+
+	// 正射影行列
+	Matrix4x4 orthoProjectionMatrix_;
 
     /// プロジェクション行列関連データ
     Matrix4x4 projectionMatrix_;

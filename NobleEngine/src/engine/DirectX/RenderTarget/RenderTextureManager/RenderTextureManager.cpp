@@ -1,18 +1,26 @@
 #include "RenderTextureManager.h"
+#include <Utilities/Logger/Logger.h>
 #include <DirectX/Resource/Dx12ResourceFactory.h>
+#include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
 
 RenderTextureManager::RenderTextureManager(ID3D12Device* device, DescriptorHeapManager* descriptorHeapManager)
     : device_(device), descriptorHeapManager_(descriptorHeapManager)
 {
-    //CreateRenderTarget(UINT(WindowManager::winWidth_), UINT(WindowManager::winHeight_), DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, RenderTextureID::Test);
 }
 
 RenderTextureManager::~RenderTextureManager()
 {}
 
-RenderTexture* RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, RenderTextureID renderTextureID)
+int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName)
 {
-    auto rt = std::make_unique<RenderTexture>();
+	// 既に作成されていたらそのIDを返す
+	auto it = nameToIDMap_.find(textureName);
+	if (it != nameToIDMap_.end())
+	{
+		return it->second;
+	}
+
+    auto rt = std::make_unique<RenderTarget>();
     rt->width = width;
     rt->height = height;
     rt->format = format;
@@ -44,33 +52,45 @@ RenderTexture* RenderTextureManager::CreateRenderTarget(UINT width, UINT height,
     rt->scissorRect.right = static_cast<LONG>(width);
     rt->scissorRect.bottom = static_cast<LONG>(height);
 
-	rt->currentState = D3D12_RESOURCE_STATE_COMMON;
-    rt->dsvCurrentState = D3D12_RESOURCE_STATE_COMMON;
+	rt->state = D3D12_RESOURCE_STATE_COMMON;
+    rt->dsvState = D3D12_RESOURCE_STATE_COMMON;
 
-    textures_.emplace(renderTextureID, std::move(rt));
-	return textures_.at(renderTextureID).get();
+	nameToIDMap_[textureName] = rt->srvAlloc.index;
+	if (textures_.size() <= static_cast<size_t>(rt->srvAlloc.index))
+	{
+		textures_.resize(rt->srvAlloc.index + 1);
+	}
+	textures_[rt->srvAlloc.index] = std::move(rt);
+
+	return nameToIDMap_[textureName];
 }
 
-
-RenderTexture* RenderTextureManager::CreateDepthTexture(UINT width, UINT height, DXGI_FORMAT format)
+RenderTarget* RenderTextureManager::CreateDepthTexture(UINT width, UINT height, DXGI_FORMAT format)
 {
 	return nullptr;
 }
 
-RenderTexture* RenderTextureManager::Get(RenderTextureID renderTextureID) const
+RenderTarget* RenderTextureManager::Get(int32_t textureID) const
 {
-    auto it = textures_.find(renderTextureID);
-    if (it != textures_.end())
-    {
-        return it->second.get();
-    }
-    return nullptr;
+	if (textureID < 0 || textureID >= static_cast<int32_t>(textures_.size()))
+	{
+		// IDが範囲外の場合はエラー
+		Log("テクスチャIDが範囲外です:%d", textureID);
+		assert(false);
+		return nullptr;
+	}
+    return textures_[textureID].get();
+}
+
+RenderTarget* RenderTextureManager::Get(const std::string& textureName) const
+{
+	auto it = nameToIDMap_.find(textureName);
+	if (it != nameToIDMap_.end())
+	{
+		return textures_[it->second].get();
+	}
+	return nullptr;
 }
 
 void RenderTextureManager::ResizeAllWindowDependent(UINT newWidth, UINT newHeight)
 {}
-
-void RenderTextureManager::Destroy(RenderTextureID renderTextureID)
-{
-    textures_.erase(renderTextureID);
-}

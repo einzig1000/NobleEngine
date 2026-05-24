@@ -4,12 +4,12 @@
 
 #include <DirectX/DeviceManager.h>
 #include <DirectX/CommandContextManager.h>
-#include <DirectX/SwapChainManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
+#include <DirectX/RenderTarget/RenderTextureManager/RenderTextureManager.h>
 #include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
 #include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
 #include <DirectX/SynchronizationManager.h>
 #include <DirectX/ViewportScissorManager.h>
-#include <DirectX/RenderTextureManager/RenderTextureManager.h>
 
 /// <summary>
 /// DirectX管理クラス
@@ -29,14 +29,12 @@ public:
     RenderTextureManager* GetRenderTextureManager() const { return renderTextureManager.get(); }
     // フレーム開始処理
     void BeginFrame();
-	// オブジェクト描画前に呼び出す。
-	void PreSceneDraw();
-	// オブジェクト描画後に呼び出す。
-	void PostSceneDraw();
-	// スクリーン描画前に呼び出す。
-	void PreScreenDraw();
-	// スクリーン描画後に呼び出す。
-	void PostScreenDraw();
+
+    // 書き込みたいRenderTextureを指定してResourceのStateをD3D12_RESOURCE_STATE_RENDER_TARGETに遷移させる。
+	void BeginRenderPass(RenderTarget* target, bool isDepthWrite);
+    // SetRenderTargetで変えたResouruceのStateをD3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCEに遷移させる。
+	void EndRenderPass(RenderTarget* target, bool isDepthWrite, D3D12_RESOURCE_STATES nextState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
     // フレーム終了処理
     void EndFrame();
     void Resize();

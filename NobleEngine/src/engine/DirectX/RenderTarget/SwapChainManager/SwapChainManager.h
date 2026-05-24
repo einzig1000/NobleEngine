@@ -2,7 +2,9 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <wrl.h>
-#include "DirectX/DescriptorHeapManager/DescriptorHeapManager.h"
+#include <DirectX/RenderTarget/RenderTargetStruct.h>
+
+class DescriptorHeapManager;
 
 class SwapChainManager
 {
@@ -11,9 +13,7 @@ public:
 	~SwapChainManager();
 
 	UINT GetCurrentBackBufferIndex() const { return backBufferIndex_; }
-	ID3D12Resource* GetCurrentBackBufferResource() const { return swapChainResources_[backBufferIndex_].Get(); }
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentRTVHandle() const { return rtvAllocations_[backBufferIndex_].handle; }
-	D3D12_CPU_DESCRIPTOR_HANDLE GetDSVHandle() const { return mainDepthDSV_.handle; }
+	RenderTarget* GetCurrentRenderTarget() const;
 
 	const DXGI_SWAP_CHAIN_DESC1& GetSwapChainDesc() const { return swapChainDesc_; }
 	const D3D12_RENDER_TARGET_VIEW_DESC& GetRtvDesc() const { return rtvDesc_; }
@@ -26,11 +26,12 @@ public:
 private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources_[2];
+	std::unique_ptr<RenderTarget> renderTargets_[2];
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
 
 
 	RTVManager::Allocation rtvAllocations_[2]{ {UINT32_MAX}, {UINT32_MAX} };
-	DSVManager::Allocation mainDepthDSV_{ UINT32_MAX };
+	DSVManager::Allocation dsvAllocation_{ UINT32_MAX };
 
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc_;

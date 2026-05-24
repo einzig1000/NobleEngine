@@ -49,8 +49,8 @@ std::unique_ptr<PhaseParent> GameManager::CreatePhase(PHASE phase)
 	case PHASE::Phase_GameScene:
 		//return std::make_unique<GameScenePhase>();
 	default:
-		assert(false);
 		Log("Error : 該当するフェーズクラスが存在しません");
+		assert(false);
 		return nullptr;
 	}
 }

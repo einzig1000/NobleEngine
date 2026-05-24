@@ -125,6 +125,7 @@ void Camera::Resize()
 	aspect_ = float(WindowManager::winWidth_) / float(WindowManager::winHeight_);
     projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
     viewportMatrix = Matrix4x4::MakeViewPortMatrix(0.0f, 0.0f, float(WindowManager::winWidth_), float(WindowManager::winHeight_), 0.0f, 1.0f);
+	orthoProjectionMatrix_ = Matrix4x4::MakeOrthographicMatrix(0.0f, 0.0f, float(WindowManager::winWidth_), float(WindowManager::winHeight_), nearZ_, farZ_);
 }
 
 void Camera::Draw()
