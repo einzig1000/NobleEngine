@@ -199,20 +199,16 @@ void TestPhase::Update()
 
 void TestPhase::Draw()
 {
-	if (rt_main_ != Game::Resource::GetRenderTextureID("Main"))
-	{
-		DebugBreak();
-	}
-
 	// mainに書き込む
 	cbvOnly_->Draw(rt_main_);
+	skybox_->Draw(rt_main_);
+
 	// miniMapに書き込む
 	cbvAndSrv_->Draw(rt_miniMap_);
+	environmentMap_->Draw(rt_miniMap_);
 
 	//line_->Draw();
-	skybox_->Draw(rt_main_);
 	//PunctualLight_->Draw();
-	//environmentMap_->Draw(rt_main_);
 
 	// mainの画像をSetCBufferDataしrt_Vignetteに書き込む
 	postEffect1_->PostEffectDraw(rt_Vignette_);

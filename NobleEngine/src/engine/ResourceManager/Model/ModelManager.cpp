@@ -3,6 +3,9 @@
 #include <DirectX/Resource/Dx12ResourceFactory.h>
 #include <filesystem> 
 #include <fstream>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 
 ModelManager::ModelManager(ID3D12Device* device)
@@ -216,125 +219,36 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& filePath)
 	return materialData;
 }
 
-// objファイルを読み込む関数
+// モデルファイルを読み込む関数
 std::vector<VertexData> ModelManager::LoadModelFile(const std::string& filePath)
 {
-    /////////////////
-    // 変数宣言
-    /////////////////
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_ConvertToLeftHanded | aiProcess_Triangulate);
+    assert(scene->HasMeshes());
+
     std::vector<VertexData> vertices;
-    std::vector<Vector4> positions;
-    std::vector<Vector3> normals;
-    std::vector<Vector2> texcoords;
-    std::string line;
 
-    /////////////////
-    // ファイルをひらく
-    /////////////////
-    std::ifstream file(filePath);
-    assert(file.is_open());
+    aiMesh* mesh = scene->mMeshes[0];
 
-    /////////////////
-    // VertexAndMaterialDataを構築する
-    /////////////////
-    while (std::getline(file, line))
+    for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex)
     {
-        std::string identifier;
-        std::istringstream s(line);
-        s >> identifier;
-        // 頂点位置
-        if (identifier == "v")
+        aiFace& face = mesh->mFaces[faceIndex];
+        assert(face.mNumIndices == 3); // 三角形であることを確認
+
+        for (uint32_t vertexIndex = 0; vertexIndex < face.mNumIndices; ++vertexIndex)
         {
-            Vector4 position;
-            s >> position.x >> position.y >> position.z;
-            position.x *= -1.0f;
-            position.w = 1.0f;
-            positions.push_back(position);
-        }
-        // 頂点テクスチャ座標
-        else if (identifier == "vt")
-        {
-            Vector2 texcoord;
-            s >> texcoord.x >> texcoord.y;
-            texcoord.y = 1.0f - texcoord.y;
-            texcoords.push_back(texcoord);
-        }
-        // 頂点法線
-        else if (identifier == "vn")
-        {
-            Vector3 normal;
-            s >> normal.x >> normal.y >> normal.z;
-            normal.x *= -1.0f;
-            normals.push_back(normal);
-        }
-        // 面
-        else if (identifier == "f")
-        {
-            // 1行分の頂点定義をすべて取得
-            std::vector<std::string> vertexDefs;
-            std::string vertexDefinition;
-            while (s >> vertexDefinition)
-            {
-                vertexDefs.push_back(vertexDefinition);
-            }
-
-            // 3頂点未満は無視
-            if (vertexDefs.size() < 3) continue;
-
-            // 四角形を三角形２つに五角形を三角形３つに変換
-            for (size_t i = 1; i + 1 < vertexDefs.size(); ++i)
-            {
-                VertexData triangle[3];
-                std::string vdefs[3] = { vertexDefs[0], vertexDefs[i], vertexDefs[i + 1] };
-
-                for (int faceVertex = 0; faceVertex < 3; ++faceVertex)
-                {
-                    std::istringstream v(vdefs[faceVertex]);
-                    std::vector<std::string> components;
-                    std::string index;
-                    while (std::getline(v, index, '/'))
-                    {
-                        components.push_back(index);
-                    }
-
-                    uint32_t posIndex = (components.size() > 0 && !components[0].empty()) ? std::stoi(components[0]) : 0;
-                    uint32_t uvIndex = (components.size() > 1 && !components[1].empty()) ? std::stoi(components[1]) : 0;
-                    uint32_t normIndex = (components.size() > 2 && !components[2].empty()) ? std::stoi(components[2]) : 0;
-
-                    Vector4 position = { 0,0,0,1 };
-                    Vector2 texcoord = { 0,0 };
-                    Vector3 normal = { 0,0,0 };
-
-                    if (posIndex > 0 && posIndex <= positions.size())
-                        position = positions[posIndex - 1];
-                    if (uvIndex > 0 && uvIndex <= texcoords.size())
-                        texcoord = texcoords[uvIndex - 1];
-                    if (normIndex > 0 && normIndex <= normals.size())
-                        normal = normals[normIndex - 1];
-
-                    triangle[faceVertex] = { position, texcoord, normal };
-                }
-
-                // 頂点の順序を逆にして追加（右手系→左手系変換のため）
-                vertices.push_back(triangle[2]);
-                vertices.push_back(triangle[1]);
-                vertices.push_back(triangle[0]);
-            }
-        }
-
-        // mtllib
-        else if (identifier == "mtllib")
-        {
-            // materialTemplateLibraryファイルの名前を取得する
-            std::string materialFilename;
-            s >> materialFilename;
-            // 基本的にmtlはobjファイルと同一階層に配置指せるので、ディレクトリ名とファイル名を渡す
-            //modelData = LoadMaterialTemplateFile(directoryPath, materialFilename);
+            uint32_t index = face.mIndices[vertexIndex];
+            aiVector3D& position = mesh->mVertices[index];
+            aiVector3D& normal = mesh->mNormals[index];
+            aiVector3D& texcoord = mesh->mTextureCoords[0][index]; // テクスチャ座標がある場合
+            VertexData vertex;
+            vertex.position = { position.x, position.y, position.z, 1.0f };
+            vertex.normal = { normal.x, normal.y, normal.z };
+            vertex.texcoord = { texcoord.x, texcoord.y };
+            vertices.push_back(vertex);
         }
     }
 
-    /////////////////
-    // 構築したVertexAndMaterialDataをreturnする
-    /////////////////
-	return vertices;
+    return vertices;
 }
+
