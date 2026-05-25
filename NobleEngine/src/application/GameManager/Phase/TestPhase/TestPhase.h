@@ -1,5 +1,6 @@
 #pragma once
-#include "GameManager/Phase/PhaseParent/PhaseParent.h"
+#include <GameManager/Phase/PhaseParent/PhaseParent.h>
+#include <TestAnimation/TestAnimation.h>
 #include <memory>
 
 class TestPhase :
@@ -40,6 +41,8 @@ private:
 	std::unique_ptr<RenderObject> screenDrawObjectMiniMap_;
 	Transforms miniMapScreenTransform_;
 
+
+	std::unique_ptr< TestAnimation> testAnimation_;
 
 	int32_t rt_main_;
 	int32_t rt_miniMap_;

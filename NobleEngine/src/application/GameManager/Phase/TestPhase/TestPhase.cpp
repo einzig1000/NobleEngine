@@ -102,6 +102,10 @@ TestPhase::TestPhase()
 	miniMapScreenTransform_.scale = { 0.3f,0.3f,0.3f };
 	miniMapScreenTransform_.translate = { 0.6f, -0.6f, 0.0f };
 	miniMapScreenTransform_.rotate = { 0.0f, 0.0f, 0.0f };
+
+	
+	testAnimation_ = std::make_unique<TestAnimation>();
+	testAnimation_->Initialize();
 }
 
 TestPhase::~TestPhase()
@@ -195,13 +199,17 @@ void TestPhase::Update()
 	screenDrawObjectMiniMap_->SetCBufferData(1, ShaderType::PixelShader, &rt_GrayScale_);
 	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::VertexShader, &miniMapWorldViewProjection);
 	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::VertexShader, &miniMapWorldMatrix);
+
+
+	testAnimation_->Update(Game::Time::GetDeltaTime());
 }
 
 void TestPhase::Draw()
 {
 	// mainに書き込む
-	cbvOnly_->Draw(rt_main_);
-	skybox_->Draw(rt_main_);
+	//cbvOnly_->Draw(rt_main_);
+	//skybox_->Draw(rt_main_);
+	testAnimation_->Draw();
 
 	// miniMapに書き込む
 	cbvAndSrv_->Draw(rt_miniMap_);

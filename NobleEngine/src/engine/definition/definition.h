@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <map>
 
 #include <initguid.h>
 #include <dxgidebug.h>
@@ -723,7 +724,10 @@ struct Matrix4x4
     // Ｚ軸回転行列
     static Matrix4x4 MakeRotateZMatrix(float radian);
     // ３次元アフィン変換行列
-    static Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
+    static Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate); 
+    static Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate);
+
+
     // 透視投影行列
     static Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
     // 正射影行列(平行投影行列)
@@ -760,6 +764,8 @@ struct Quaternion
     static Quaternion MakeIdentityQuaternion();
     // 共役Quaternion
 	Quaternion MakeConjugateQuaternion() const;
+
+	float Dot(const Quaternion& rhs) const;
     // Quaternionのnormを返す
 	float Norm() const;
     // 正規化したQuaternion
@@ -774,6 +780,8 @@ struct Quaternion
 	Vector3 ToEuler() const;
 	// オイラー角からQuaternionを作成
 	static Quaternion MakeFromEuler(const Vector3& euler);
+	// 2つのQuaternionの球面線形補間を返す
+    static Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t);
 };
 
 #pragma endregion
@@ -978,6 +986,43 @@ struct VectorDynamics
     Vector3 velocity;
     Vector3 acceleration;
 };
+struct TransformationMatrix
+{
+    Matrix4x4 WVP;
+    Matrix4x4 World;
+};
+
+#pragma region アニメーションデータ構造体
+
+template <typename tValue>
+struct Keyframe
+{
+    tValue value;
+    float time;
+};
+using KeyframeVector3 = Keyframe<Vector3>;
+using KeyframeQuaternion = Keyframe<Quaternion>;
+
+template <typename tValue>
+struct AnimationCurve
+{
+    std::vector<Keyframe<tValue>> keyFrames;
+};
+
+struct NodeAnimation
+{
+    AnimationCurve<Vector3> translate;
+    AnimationCurve<Quaternion> rotate;
+    AnimationCurve<Vector3> scale;
+};
+
+struct Animation
+{
+    float duration = 0.0f;  // アニメーション全体の長さ(秒)
+    std::map<std::string, NodeAnimation> nodeAnimations;
+};
+
+#pragma endregion
 
 #pragma region モデルデータ構造体
 
@@ -1060,11 +1105,6 @@ struct AudioData
 
 #pragma endregion
 
-struct TransformationMatrix
-{
-    Matrix4x4 WVP;
-    Matrix4x4 World;
-};
 
 
 #pragma region 入力構造体

@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\ResourceManager\Animation\AnimationManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\application\GameManager\GameManager.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.cpp" />
@@ -63,8 +64,10 @@
     <ClCompile Include="src\engine\Utilities\Random\Random.cpp" />
     <ClCompile Include="src\engine\Utilities\SimpleModelBody.cpp" />
     <ClCompile Include="src\engine\Window\WindowManager.cpp" />
+    <ClCompile Include="src\application\TestAnimation\TestAnimation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\ResourceManager\Animation\AnimationManager.h" />
     <ClInclude Include="src\application\GameManager\GameManager.h" />
     <ClInclude Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\PhaseParent\PhaseParent.h" />
@@ -119,6 +122,7 @@
     <ClInclude Include="src\engine\Utilities\Random\Random.h" />
     <ClInclude Include="src\engine\Utilities\SimpleModelBody.h" />
     <ClInclude Include="src\engine\Window\WindowManager.h" />
+    <ClInclude Include="src\application\TestAnimation\TestAnimation.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

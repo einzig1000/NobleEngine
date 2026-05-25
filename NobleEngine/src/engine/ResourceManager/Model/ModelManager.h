@@ -1,5 +1,5 @@
 #pragma once
-#include "definition/definition.h"
+#include <definition/definition.h>
 
 /// <summary>
 /// モデル管理クラス
@@ -22,8 +22,6 @@ public:
 	// モデルリストを取得
 	std::vector<ModelData>& GetModelList() { return objects; }
 
-
-
 private:
 	ID3D12Device* device_;
 
@@ -36,8 +34,6 @@ private:
 	// objファイルを読み込む関数
 	std::vector<VertexData> LoadModelFile(const std::string& filePath);
 
-	
-
 	// １，AABB読み込み
 	std::vector<AABB> LoadAABB(const std::string& filePath, const std::vector<VertexData>& vertices);
 
@@ -49,7 +45,5 @@ private:
 
 	// ３、AABBをCSVに保存
 	void SaveAABBToCSV(const std::string& filePath, const std::vector<AABB>& aabbs);
-
-
 };
 

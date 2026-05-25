@@ -18,8 +18,6 @@ ModelManager::~ModelManager()
 
 int32_t ModelManager::LoadModel(const std::string& filePath)
 {
-    Log("モデル読み込み開始:%s", filePath.c_str());
-  
     auto path = std::filesystem::path(filePath);
 
 	// ディレクトリ名
@@ -35,6 +33,8 @@ int32_t ModelManager::LoadModel(const std::string& filePath)
     {
         return exists->number;
     }
+
+    Log("モデル読み込み開始:%s", filePath.c_str());
 
     // ボックスを作成
     ModelData obj;
@@ -251,4 +251,3 @@ std::vector<VertexData> ModelManager::LoadModelFile(const std::string& filePath)
 
     return vertices;
 }
-

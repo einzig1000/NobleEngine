@@ -284,6 +284,18 @@ Matrix4x4 Matrix4x4::MakeAffineMatrix(const Vector3& scale, const Vector3& rotat
     return resultMatrix;
 }
 
+Matrix4x4 Matrix4x4::MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate)
+{
+    Matrix4x4 Return{};
+
+    Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+    Matrix4x4 rotateMatrix = rotate.MakeRotateMatrix();
+    Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+    Matrix4x4 resultMatrix = scaleMatrix * rotateMatrix * translateMatrix;
+
+    return resultMatrix;
+}
+
 Matrix4x4 Matrix4x4::MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip)
 {
     Matrix4x4 Return{};
@@ -449,6 +461,11 @@ Quaternion Quaternion::MakeConjugateQuaternion() const
 	return Quaternion(-x, -y, -z, w);
 }
 
+float Quaternion::Dot(const Quaternion& rhs) const
+{
+	return x * rhs.x + y * rhs.y + z * rhs.z + w * rhs.w;
+}
+
 float Quaternion::Norm() const
 {
 	return std::sqrt(x * x + y * y + z * z + w * w);
@@ -554,6 +571,48 @@ Quaternion Quaternion::MakeFromEuler(const Vector3& euler)
 
     return q;
 }
+
+Quaternion Quaternion::Slerp(const Quaternion& a, const Quaternion& b, float t)
+{
+    // 内積を取る
+    float dot = a.Dot(b);
+
+    // 反転（最短経路補正）
+    Quaternion b2 = b;
+    if (dot < 0.0f)
+    {
+        dot = -dot;
+        b2 = Quaternion(-b.x, -b.y, -b.z, -b.w);
+    }
+
+    // しきい値以下なら Lerp で十分（精度と速度のため）
+    const float threshold = 0.9995f;
+    if (dot > threshold)
+    {
+        Quaternion result(
+            a.x + t * (b2.x - a.x),
+            a.y + t * (b2.y - a.y),
+            a.z + t * (b2.z - a.z),
+            a.w + t * (b2.w - a.w)
+        );
+        return result.Normalize();
+    }
+
+    // Slerp 本体
+    float theta = std::acos(dot);
+    float sinTheta = std::sin(theta);
+
+    float w1 = std::sin((1.0f - t) * theta) / sinTheta;
+    float w2 = std::sin(t * theta) / sinTheta;
+
+    return Quaternion(
+        a.x * w1 + b2.x * w2,
+        a.y * w1 + b2.y * w2,
+        a.z * w1 + b2.z * w2,
+        a.w * w1 + b2.w * w2
+    );
+}
+
 
 
 #pragma endregion
