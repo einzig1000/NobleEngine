@@ -65,6 +65,7 @@
     <ClCompile Include="src\engine\Utilities\SimpleModelBody.cpp" />
     <ClCompile Include="src\engine\Window\WindowManager.cpp" />
     <ClCompile Include="src\application\TestAnimation\TestAnimation.cpp" />
+    <ClCompile Include="src\application\TestParticle\TestParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\ResourceManager\Animation\AnimationManager.h" />
@@ -123,6 +124,7 @@
     <ClInclude Include="src\engine\Utilities\SimpleModelBody.h" />
     <ClInclude Include="src\engine\Window\WindowManager.h" />
     <ClInclude Include="src\application\TestAnimation\TestAnimation.h" />
+    <ClInclude Include="src\application\TestParticle\TestParticle.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

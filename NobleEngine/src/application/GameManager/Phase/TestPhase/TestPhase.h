@@ -1,6 +1,7 @@
 #pragma once
 #include <GameManager/Phase/PhaseParent/PhaseParent.h>
 #include <TestAnimation/TestAnimation.h>
+#include <TestParticle/TestParticle.h>
 #include <memory>
 
 class TestPhase :
@@ -42,7 +43,8 @@ private:
 	Transforms miniMapScreenTransform_;
 
 
-	std::unique_ptr< TestAnimation> testAnimation_;
+	std::unique_ptr<TestAnimation> testAnimation_;
+	std::unique_ptr<TestParticle> testParticle_;
 
 	int32_t rt_main_;
 	int32_t rt_miniMap_;

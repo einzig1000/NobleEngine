@@ -106,6 +106,8 @@ TestPhase::TestPhase()
 	
 	testAnimation_ = std::make_unique<TestAnimation>();
 	testAnimation_->Initialize();
+	testParticle_ = std::make_unique<TestParticle>();
+	testParticle_->Initialize();
 }
 
 TestPhase::~TestPhase()
@@ -202,6 +204,7 @@ void TestPhase::Update()
 
 
 	testAnimation_->Update(Game::Time::GetDeltaTime());
+	testParticle_->Update();
 }
 
 void TestPhase::Draw()
@@ -209,7 +212,8 @@ void TestPhase::Draw()
 	// mainに書き込む
 	//cbvOnly_->Draw(rt_main_);
 	//skybox_->Draw(rt_main_);
-	testAnimation_->Draw();
+	//testAnimation_->Draw();
+	testParticle_->Draw();
 
 	// miniMapに書き込む
 	cbvAndSrv_->Draw(rt_miniMap_);

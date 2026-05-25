@@ -70,6 +70,7 @@ struct RootParam
 enum class BlendStateID : uint8_t
 {
     Opaque,
+	Alpha,
     Normal,
     Add,
     Sub,
