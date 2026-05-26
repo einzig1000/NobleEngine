@@ -3,7 +3,8 @@
 
 TestParticle::TestParticle()
 {
-	t_uvChecker = Game::Resource::LoadTexture("resources/Prototypes/texture/circle2.png");
+	t_uvChecker = Game::Resource::LoadTexture("resources/Prototypes/texture/particle/circle2.png");
+	//t_uvChecker = Game::Resource::LoadTexture("resources/Prototypes/texture/uvChecker.png");
 	renderObjects_.resize(10);
 	color.resize(10);
 	transforms.resize(10);
@@ -56,5 +57,6 @@ void TestParticle::Draw()
 	for (int i = 0; i < 10; ++i)
 	{
 		renderObjects_[i]->Draw(rtID);
+		//renderObjects_[i]->ScreenDraw();
 	}
 }

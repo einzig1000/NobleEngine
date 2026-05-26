@@ -67,7 +67,7 @@ namespace
         // 
         d.IndependentBlendEnable = FALSE;
         auto& rt = d.RenderTarget[0];
-        rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+        rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL & ~D3D12_COLOR_WRITE_ENABLE_ALPHA;
 
         switch (id)
         {
@@ -88,8 +88,7 @@ namespace
             rt.SrcBlendAlpha = D3D12_BLEND_ONE;
             rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
             rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-			break;
-
+            break;
         case BlendStateID::Add:
             rt.BlendEnable = TRUE;
             rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
@@ -177,9 +176,9 @@ namespace
             d.DepthEnable = FALSE;
             d.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
             d.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+            d.StencilEnable = false;
             break;
         }
-
 
         return d;
     }

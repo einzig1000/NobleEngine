@@ -83,7 +83,7 @@ TestPhase::TestPhase()
 	screenDrawObjectMiniMap_->SetupFromShaders();
 
 
-	transform1_.scale = { 11.0f,11.0f,11.0f };
+	transform1_.scale = { 1.0f,1.0f,1.0f };
 	color1_ = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 	for (int i = 0; i < 10; ++i)
 	{
@@ -210,10 +210,10 @@ void TestPhase::Update()
 void TestPhase::Draw()
 {
 	// mainに書き込む
-	//cbvOnly_->Draw(rt_main_);
-	//skybox_->Draw(rt_main_);
-	//testAnimation_->Draw();
+	cbvOnly_->Draw(rt_main_);
+	skybox_->Draw(rt_main_);
 	testParticle_->Draw();
+	//testAnimation_->Draw();
 
 	// miniMapに書き込む
 	cbvAndSrv_->Draw(rt_miniMap_);
