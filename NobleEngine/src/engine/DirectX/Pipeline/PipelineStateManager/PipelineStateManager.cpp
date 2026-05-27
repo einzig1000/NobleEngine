@@ -135,9 +135,40 @@ namespace
     static D3D12_RASTERIZER_DESC MakeRasterizerDesc(RasterizerID id)
     {
         D3D12_RASTERIZER_DESC d{};
-        d.CullMode = D3D12_CULL_MODE_NONE;
-        d.FillMode = (id == RasterizerID::Fill) ? D3D12_FILL_MODE_SOLID : D3D12_FILL_MODE_WIREFRAME;
-        d.DepthClipEnable = TRUE;
+		d.DepthClipEnable = TRUE;
+
+        switch (id)
+        {
+        case RasterizerID::Solid_BackCull:
+            d.FillMode = D3D12_FILL_MODE_SOLID;
+            d.CullMode = D3D12_CULL_MODE_BACK;
+            break;
+
+        case RasterizerID::Solid_FrontCull:
+            d.FillMode = D3D12_FILL_MODE_SOLID;
+            d.CullMode = D3D12_CULL_MODE_FRONT;
+            break;
+
+        case RasterizerID::Solid_NoCull:
+            d.FillMode = D3D12_FILL_MODE_SOLID;
+            d.CullMode = D3D12_CULL_MODE_NONE;
+            break;
+
+        case RasterizerID::Wireframe_NoCull:
+            d.FillMode = D3D12_FILL_MODE_WIREFRAME;
+            d.CullMode = D3D12_CULL_MODE_NONE;
+            break;
+
+        case RasterizerID::Wireframe_BackCull:
+            d.FillMode = D3D12_FILL_MODE_WIREFRAME;
+            d.CullMode = D3D12_CULL_MODE_BACK;
+            break;
+
+        default:
+            d.FillMode = D3D12_FILL_MODE_SOLID;
+            d.CullMode = D3D12_CULL_MODE_NONE;
+            break;
+        }
         return d;
     }
 
@@ -272,7 +303,6 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::GetOrCompileShader(const 
     shaderCache_.emplace(std::move(key), blob);
     return blob;
 }
-
 
 
 Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSignature(const std::vector<RootParam>& params)

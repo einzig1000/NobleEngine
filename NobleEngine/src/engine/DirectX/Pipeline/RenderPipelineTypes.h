@@ -89,8 +89,12 @@ enum class DepthStencilID : uint8_t
 // ラスタライザの種類
 enum class RasterizerID : uint8_t
 {
-    Fill,
-    Wireframe,
+    Solid_BackCull,      // Fill: Solid, Cull: Back
+    Solid_FrontCull,     // Fill: Solid, Cull: Front
+    Solid_NoCull,        // Fill: Solid, Cull: None
+
+    Wireframe_NoCull,    // Fill: Wireframe, Cull: None
+    Wireframe_BackCull,  // Fill: Wireframe, Cull: Back
 };
 
 // DSVformatの種類
@@ -111,7 +115,7 @@ struct PSOConfig
     /// 深度ステンシルID
     DepthStencilID depthStencilID = DepthStencilID::Default;
     /// ラスタライザーID
-    RasterizerID rasterizerID = RasterizerID::Fill;
+    RasterizerID rasterizerID = RasterizerID::Solid_NoCull;
     /// プリミティブトポロジ
     D3D12_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	/// DSVフォーマットID

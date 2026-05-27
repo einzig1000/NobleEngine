@@ -40,6 +40,18 @@ TestParticle::TestParticle()
 		ringTransforms[i].translate = { 0.0f, 0.0f, 0.0f };
 		ringTransforms[i].rotate = { Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1) };
 	}
+
+	renderCylinder_ = std::make_unique<RenderObject>();
+	renderCylinder_->modelID_ = Game::Resource::LoadModel("resources/Prototypes/model/cylinder.obj");
+	renderCylinder_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
+	renderCylinder_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+	renderCylinder_->psoConfig_.blendID = BlendStateID::Add;
+	renderCylinder_->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
+	renderCylinder_->SetupFromShaders();
+	cylinderColor = Vector4{ 0.1f,1.0f,1.0f,1.0f };
+	cylinderTransform.scale = { 1.0f,1.0f,1.0f };
+	cylinderTransform.translate = { 0.0f, 0.0f, 0.0f };
+	cylinderTransform.rotate = { 0.0f, 0.0f, 3.141592f };
 }
 
 TestParticle::~TestParticle()
@@ -81,18 +93,29 @@ void TestParticle::Update()
 		renderRings_[i]->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 		renderRings_[i]->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 	}
+
+	{
+		cylinderTransform.rotate.y += 0.002f;
+		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(cylinderTransform.scale, cylinderTransform.rotate, cylinderTransform.translate);
+		Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
+		renderCylinder_->SetCBufferData(0, ShaderType::PixelShader, &cylinderColor);
+		renderCylinder_->SetCBufferData(1, ShaderType::PixelShader, &t_gradationLine);
+		renderCylinder_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
+		renderCylinder_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+	}
 }
 
 void TestParticle::Draw()
 {
 	uint32_t rtID = Game::Resource::GetRenderTextureID("Main");
 
-	for (int i = 0; i < 10; ++i)
-	{
-		renderPlanes_[i]->Draw(rtID);
-	}
-	for (int i = 0; i < 10; ++i)
-	{
-		renderRings_[i]->Draw(rtID);
-	}
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderPlanes_[i]->Draw(rtID);
+	//}
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderRings_[i]->Draw(rtID);
+	//}
+	renderCylinder_->Draw(rtID);
 }

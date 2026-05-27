@@ -19,8 +19,11 @@ private:
 	int32_t t_uvChecker;
 	std::vector<std::unique_ptr<RenderObject>> renderRings_;
 	std::vector<Vector4> ringColors;
-	std::vector<Transforms> ringTransforms;
+	std::vector<Transforms> ringTransforms;;
 	int32_t t_gradationLine;
+	std::unique_ptr<RenderObject> renderCylinder_;
+	Vector4 cylinderColor;
+	Transforms cylinderTransform;
 };
 
 

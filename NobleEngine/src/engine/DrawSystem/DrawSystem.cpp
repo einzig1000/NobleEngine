@@ -1016,7 +1016,6 @@ void DrawSystem::AddAABB(const AABB& aabb, uint32_t color)
 //		// スプライトの中心座標
 //		Vector2 center = { renderData->transforms.translate.x, renderData->transforms.translate.y };
 //
-//
 //		halfWidth *= renderData->transforms.scale.x;
 //		halfHeight *= renderData->transforms.scale.y;
 //
