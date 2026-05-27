@@ -182,9 +182,9 @@ void TestPhase::Update()
 	Matrix4x4 identityMatrix = Matrix4x4::MakeIdentity4x4();
 
 	Matrix4x4 mainScreenWorldMatrix = Matrix4x4::MakeAffineMatrix(mainScreenTransform_.scale, mainScreenTransform_.rotate, mainScreenTransform_.translate);
-	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * viewProjection;
+	Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * viewProjection;
 	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProje;
-	Matrix4x4 mainScreenWorldViewProjection = identityMatrix;
+	//Matrix4x4 mainScreenWorldViewProjection = identityMatrix;
 
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
@@ -193,8 +193,8 @@ void TestPhase::Update()
 	screenDrawObjectMain_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
 
 	Matrix4x4 miniMapWorldMatrix = Matrix4x4::MakeAffineMatrix(miniMapScreenTransform_.scale, miniMapScreenTransform_.rotate, miniMapScreenTransform_.translate);
-	//Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * viewProjection;
-	Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * orthoProje;
+	Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * viewProjection;
+	//Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * orthoProje;
 
 	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::PixelShader, &color1_);

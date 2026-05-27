@@ -13,10 +13,14 @@ public:
 	void Draw();
 
 private:
-	std::vector<std::unique_ptr<RenderObject>> renderObjects_;
-	std::vector<Vector4> color;
+	std::vector<std::unique_ptr<RenderObject>> renderPlanes_;
+	std::vector<Vector4> planeColors;
+	std::vector<Transforms> planeTransforms;
 	int32_t t_uvChecker;
-	std::vector<Transforms> transforms;
+	std::vector<std::unique_ptr<RenderObject>> renderRings_;
+	std::vector<Vector4> ringColors;
+	std::vector<Transforms> ringTransforms;
+	int32_t t_gradationLine;
 };
 
 
