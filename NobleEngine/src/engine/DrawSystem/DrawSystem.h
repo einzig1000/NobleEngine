@@ -3,7 +3,7 @@
 
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <DirectX/FrameCbAllocator/FrameCbAllocator.h>
-#include <DirectX/RenderTarget/RenderTextureID.h>
+#include <definition/constexprs.h>
 
 class DirectXManager;
 class ResourceManager;
@@ -15,10 +15,7 @@ class ResourceManager;
 class DrawSystem
 {
 private:
-	static constexpr uint32_t kFramesInFlight_ = 2;
-	FrameCbAllocator cbAllocators_[kFramesInFlight_]{};
-
-	uint32_t GetFrameIndex() const;
+	FrameCbAllocator cbAllocators_[kFrameCount]{};
 
 public:
 	DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager);

@@ -99,10 +99,9 @@ TestPhase::TestPhase()
 	mainScreenTransform_.translate = { 0.0f, 0.0f, 0.0f };
 	mainScreenTransform_.rotate = { 0.0f, 0.0f, 0.0f };
 
-	miniMapScreenTransform_.scale = { 0.3f,0.3f,0.3f };
-	miniMapScreenTransform_.translate = { 0.6f, -0.6f, 0.0f };
+	miniMapScreenTransform_.scale = { 12.8f / 4.0f,7.2f / 4.0f,0.0f };
+	miniMapScreenTransform_.translate = { -8.0f, -4.0f, 0.0f };
 	miniMapScreenTransform_.rotate = { 0.0f, 0.0f, 0.0f };
-
 	
 	testAnimation_ = std::make_unique<TestAnimation>();
 	testAnimation_->Initialize();
@@ -189,7 +188,7 @@ void TestPhase::Update()
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
 	screenDrawObjectMain_->SetCBufferData(1, ShaderType::PixelShader, &rt_Vignette_);
-	screenDrawObjectMain_->SetCBufferData(0, ShaderType::VertexShader, &mainScreenWorldViewProjection);
+	screenDrawObjectMain_->SetCBufferData(0, ShaderType::VertexShader, &identityMatrix);
 	screenDrawObjectMain_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
 
 	Matrix4x4 miniMapWorldMatrix = Matrix4x4::MakeAffineMatrix(miniMapScreenTransform_.scale, miniMapScreenTransform_.rotate, miniMapScreenTransform_.translate);
@@ -199,18 +198,28 @@ void TestPhase::Update()
 	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
 	screenDrawObjectMiniMap_->SetCBufferData(1, ShaderType::PixelShader, &rt_GrayScale_);
-	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::VertexShader, &miniMapWorldViewProjection);
-	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::VertexShader, &miniMapWorldMatrix);
+	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::VertexShader, &identityMatrix);
+	screenDrawObjectMiniMap_->SetCBufferData(1, ShaderType::VertexShader, &miniMapWorldMatrix);
 
 
 	testAnimation_->Update(Game::Time::GetDeltaTime());
 	testParticle_->Update();
+
+
+	if (Game::IO::Key::IsHeld(DIK_F12))
+	{
+		Game::Window::ToggleFullscreen();
+	}
+	if (Game::IO::Key::IsHeld(DIK_ESCAPE))
+	{
+		Game::quit();
+	}
 }
 
 void TestPhase::Draw()
 {
 	// mainに書き込む
-	cbvOnly_->Draw(rt_main_);
+	//cbvOnly_->Draw(rt_main_);
 	skybox_->Draw(rt_main_);
 	testParticle_->Draw();
 	//testAnimation_->Draw();
@@ -230,7 +239,7 @@ void TestPhase::Draw()
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->ScreenDraw();
 	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMiniMap_->ScreenDraw();
+	//screenDrawObjectMiniMap_->ScreenDraw();
 }
 
 

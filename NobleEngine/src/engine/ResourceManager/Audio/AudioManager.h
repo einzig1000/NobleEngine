@@ -40,33 +40,33 @@ public:
     ~AudioManager();
 
 	// オーディオ読み込み
-    uint32_t LoadAudio(const std::string& filePath);
+    int32_t LoadAudio(const std::string& filePath);
 
 	// データ取得
-	AudioData* GetAudioData(uint32_t audioId);
+	AudioData* GetAudioData(int32_t audioId);
 
 	// オーディオ数を取得
 	size_t GetAudioCount() const { return loadedAudio.size(); }
 
     // 読み込まれたオーディオを再生
-    void PlayAudio(const uint32_t& audioId, bool loop);
+    void PlayAudio(const int32_t& audioId, bool loop);
 
     // 特定のオーディオの再生を停止
-    void StopAudio(const uint32_t& audioId);
+    void StopAudio(const int32_t& audioId);
 
     // 特定のオーディオまたはマスターボリュームを設定
-    void SetVolume(const uint32_t& audioId, float volume);
+    void SetVolume(const int32_t& audioId, float volume);
     void SetMasterVolume(float volume);
 
     // 特定のオーディオまたはマスターボリュームを返す
-    float GetVolume(const uint32_t& audioId);
+    float GetVolume(const int32_t& audioId);
     float GetMasterVolume();
 
     // 現在再生してるか？
-    bool IsAudioPlaying(const uint32_t& audioId);
+    bool IsAudioPlaying(const int32_t& audioId);
 
 private:
-    std::map<uint32_t, AudioData> loadedAudio;
+    std::map<int32_t, AudioData> loadedAudio;
 
     // 初期化
     HRESULT Initialize();

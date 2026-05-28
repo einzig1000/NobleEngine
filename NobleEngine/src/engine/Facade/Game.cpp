@@ -22,36 +22,40 @@ namespace Game
 {
 	namespace Resource
 	{
-		uint32_t LoadModel(const std::string& filePath)
+		int32_t LoadModel(const std::string& filePath)
 		{
 			return Engine::Instance().GetResourceManager()->GetModelManager()->LoadModel(filePath);
 		}
-		uint32_t LoadAudio(const std::string& filePath)
+		int32_t LoadAudio(const std::string& filePath)
 		{
 			return Engine::Instance().GetResourceManager()->GetAudioManager()->LoadAudio(filePath);
 		}
-		uint32_t LoadTexture(const std::string& filePath)
+		int32_t LoadTexture(const std::string& filePath)
 		{
 			return Engine::Instance().GetResourceManager()->GetTextureManager()->LoadTexture(filePath);
 		}
-		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName)
+		int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName)
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
 		}
-		uint32_t GetRenderTextureID(const std::string textureName)
+		int32_t CreateModel(const std::vector<VertexData>& vertices)
+		{
+			return Engine::Instance().GetResourceManager()->GetModelManager()->CreateModel(vertices);
+		}
+		int32_t GetRenderTextureID(const std::string textureName)
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->srvAlloc.index;
 		}
 
-		TextureData* GetTextureData(uint32_t textureNumber)
+		TextureData* GetTextureData(int32_t textureNumber)
 		{	
 			return Engine::Instance().GetResourceManager()->GetTextureManager()->GetTextureData(textureNumber);
 		}
-		ModelData* GetModelData(uint32_t modelID)
+		ModelData* GetModelData(int32_t modelID)
 		{
 			return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelData(modelID);
 		}
-		AudioData* GetAudioData(uint32_t audioID)
+		AudioData* GetAudioData(int32_t audioID)
 		{
 			return Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioData(audioID);
 		}
@@ -96,15 +100,15 @@ namespace Game
 
 	namespace Audio
 	{
-		void PlayAudio(const uint32_t& audioId, bool loop)
+		void PlayAudio(const int32_t& audioId, bool loop)
 		{
 			Engine::Instance().GetResourceManager()->GetAudioManager()->PlayAudio(audioId, loop);
 		}
-		void StopAudio(const uint32_t& audioId)
+		void StopAudio(const int32_t& audioId)
 		{
 			Engine::Instance().GetResourceManager()->GetAudioManager()->StopAudio(audioId);
 		}
-		void SetAudioVolume(const uint32_t& audioId, float volume)
+		void SetAudioVolume(const int32_t& audioId, float volume)
 		{
 			Engine::Instance().GetResourceManager()->GetAudioManager()->SetVolume(audioId, volume);
 		}
@@ -112,7 +116,7 @@ namespace Game
 		{
 			Engine::Instance().GetResourceManager()->GetAudioManager()->SetMasterVolume(volume);
 		}
-		float GetVolume(const uint32_t& audioId)
+		float GetVolume(const int32_t& audioId)
 		{
 			return Engine::Instance().GetResourceManager()->GetAudioManager()->GetVolume(audioId);
 		}
@@ -120,7 +124,7 @@ namespace Game
 		{
 			return Engine::Instance().GetResourceManager()->GetAudioManager()->GetMasterVolume();
 		}
-		bool IsAudioPlaying(const uint32_t& audioId)
+		bool IsAudioPlaying(const int32_t& audioId)
 		{
 			return Engine::Instance().GetResourceManager()->GetAudioManager()->IsAudioPlaying(audioId);
 		}

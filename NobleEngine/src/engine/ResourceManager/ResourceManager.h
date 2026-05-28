@@ -1,10 +1,10 @@
 #pragma once
-#include <d3d12.h>
-#include <wrl.h>
 #include "ResourceManager/Audio/AudioManager.h"
 #include "ResourceManager/Texture/TextureManager.h"
 #include "ResourceManager/Model/ModelManager.h"
 #include <memory> 
+
+class DirectXManager;
 
 /// <summary>
 /// リソース管理クラス
@@ -12,9 +12,8 @@
 class ResourceManager
 {
 public:
-	ResourceManager(ID3D12GraphicsCommandList* commandList, DescriptorHeapManager* descriptorHeap, ID3D12Device* device);
+	ResourceManager(DirectXManager* dxManager);
 	~ResourceManager();
-
 
 	AudioManager* GetAudioManager() const { return audioManager_.get(); }
 	TextureManager* GetTextureManager() const { return textureManager_.get(); }

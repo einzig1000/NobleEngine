@@ -2,14 +2,16 @@
 #include "Utilities/Logger/Logger.h"
 
 SynchronizationManager::SynchronizationManager(ID3D12Device* device)
-    : fenceValue(0)
+    : currentFenceValue(0)
 {
     HRESULT hr = device->CreateFence(
-        fenceValue,
+        currentFenceValue,
         D3D12_FENCE_FLAG_NONE,
         IID_PPV_ARGS(&fence)
     );
     assert(SUCCEEDED(hr));
+
+    for (UINT i = 0; i < kFrameCount; ++i) fenceValues[i] = 0;
 
     fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(fenceEvent != nullptr);
@@ -26,36 +28,31 @@ SynchronizationManager::~SynchronizationManager()
     Log("デストラクタ実行成功 : SynchronizationManager");
 }
 
-void SynchronizationManager::Signal(ID3D12CommandQueue* commandQueue)
+void SynchronizationManager::Signal(ID3D12CommandQueue* commandQueue, UINT frameIndex)
 {
-    fenceValue++;
-    HRESULT hr = commandQueue->Signal(fence.Get(), fenceValue);
+    currentFenceValue++;
+	fenceValues[frameIndex] = currentFenceValue;
+    HRESULT hr = commandQueue->Signal(fence.Get(), fenceValues[frameIndex]);
     assert(SUCCEEDED(hr));
+}
+
+void SynchronizationManager::WaitForGPU(UINT frameIndex)
+{
+	const UINT64 completedValue = fence->GetCompletedValue();
+	if (completedValue < fenceValues[frameIndex])
+	{
+		HRESULT hr = fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent);
+		assert(SUCCEEDED(hr));
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
 }
 
 void SynchronizationManager::WaitForGPU()
 {
-    //auto gpuFenceValue = fence->GetCompletedValue();
-    //if (gpuFenceValue < fenceValue)
-    //{
-    //    HANDLE eventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-    //    if (eventHandle == nullptr)
-    //    {
-    //         エラー処理: イベントの作成に失敗した場合
-    //        Log("エラー: GPU待機用イベントの作成に失敗しました");
-    //        assert(false);
-    //        return;
-    //    }
-    //    HRESULT hr = fence->SetEventOnCompletion(fenceValue, eventHandle);
-    //    assert(SUCCEEDED(hr));
-    //    WaitForSingleObject(eventHandle, INFINITE);
-    //    CloseHandle(eventHandle);
-    //}
-
-    const UINT64 gpuFenceValue = fence->GetCompletedValue();
-    if (gpuFenceValue < fenceValue)
+    const UINT64 completedValue = fence->GetCompletedValue();
+    if (completedValue < currentFenceValue)
     {
-        HRESULT hr = fence->SetEventOnCompletion(fenceValue, fenceEvent);
+        HRESULT hr = fence->SetEventOnCompletion(currentFenceValue, fenceEvent);
         assert(SUCCEEDED(hr));
         WaitForSingleObject(fenceEvent, INFINITE);
     }

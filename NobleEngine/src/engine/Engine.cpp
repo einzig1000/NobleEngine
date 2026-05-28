@@ -33,7 +33,7 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 
 	windowManager_ = std::make_unique<WindowManager>(width, height, title);
 	dxManager_ = std::make_unique<DirectXManager>(windowManager_->GetHwnd());
-	resourceManager_ = std::make_unique<ResourceManager>(dxManager_->GetCommandContextManager()->GetCommandList(), dxManager_->GetDescriptorHeapManager(), dxManager_->GetDevice());
+	resourceManager_ = std::make_unique<ResourceManager>(dxManager_.get());
 	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), resourceManager_.get());
 	cameraManager_ = std::make_unique<CameraManager>();
 	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd(), cameraManager_.get());
@@ -64,7 +64,7 @@ bool Engine::ProcessMessage()
 void Engine::BeginFrame()
 {
 	// GPU同期
-	dxManager_->GetSynchronizationManager()->WaitForGPU();
+	//dxManager_->GetSynchronizationManager()->WaitForGPU();
 
 	// imguiを更新
 	imguiManager_->BeginFrame();
@@ -104,104 +104,6 @@ void Engine::EndFrame()
 	// FPS制限
 	fixFPS_->UpdateFixFPS();
 }
-void Engine::UpdateTransforms()
-{
-	//if (RenderData_Model::renderModels.size() == 0)return;
-
-	//if (Game::IO::Key::IsHeld(DIK_RSHIFT))
-	//{
-	//	if (!Game::IO::Key::IsJustPressed(DIK_RIGHTARROW))
-	//	{
-	//		return;
-	//	}
-	//}
-
-#pragma region モデルリスト取得
-
-	//const auto& modelList = RenderData_Model::renderModels;
-
-#pragma endregion
-
-#pragma region 座標更新 & 描画範囲内判定
-
-	// オブジェクト更新
-	//std::vector<ModelData> objects = resourceManager_->GetModelManager()->GetModelList();
-
-	//for (auto& rd : modelList)
-	//{
-	//	//rd->Update1();
-	//}
-	//for (auto& rd : modelList)
-	//{
-	//	//rd->Update2();
-	//}
-	//for (auto& rd : modelList)
-	//{
-	//	// 座標更新,衝突ペア・深度の保存
-	//	//rd->Update3();
-	//}
-	//for (auto& rd : modelList)
-	//{
-	//	// 衝突時の更新、それに伴う座標修正など
-	//	//rd->Update4();
-	//}
-	//for (auto& rd : modelList)
-	//{
-	//	//rd->Update5();
-	//}
-
-#pragma endregion
-
-#pragma region マウスレイ衝突判定
-
-	//// マウスレイ取得
-	//Ray mouseRay = ioManager_->GetMouseController()->GetRay();
-
-	//// モデルと衝突までの距離セット構造体
-	//struct HitInfo { RenderData_Model* rdm; float distance; };
-	//// のリスト
-	//std::vector<HitInfo> hits;
-	//// のリサイズ(リサイズではない)
-	//hits.reserve(modelList.size());
-
-	//for (auto& rd : modelList)
-	//{
-	//	rd->isCollisionMouseRay = -1;
-	//	// 描画範囲内なら判定
-	//	if (rd->inPicture && rd->isCheckMouseRay)
-	//	{
-	//		// 最近接衝突点を取得
-	//		std::optional<Vector3> colPos = IntersectRayModel(
-	//			mouseRay,
-	//			objects[rd->GetModel()].modelData.vertices, rd
-	//		);
-	//		// 衝突していたらリストに登録
-	//		if (colPos)
-	//		{
-	//			float minDistance = (colPos.value() - mouseRay.origin).Length();
-	//			hits.push_back({ rd, minDistance });
-	//		}
-	//	}
-	//}
-
-	//// 距離の昇順でソート
-	//std::sort(hits.begin(), hits.end(),
-	//	[](auto& a, auto& b) { return a.distance < b.distance; });
-
-	//// ソート後に順序を割り当て
-	//for (int order = 0; order < (int)hits.size(); ++order)
-	//{
-	//	hits[order].rdm->isCollisionMouseRay = order;
-	//}
-
-#pragma endregion
-
-}
-void Engine::UpdateParticles()
-{
-	// パーティクル更新
-	//RenderData_Particle::UpdateAllParticles();
-}
 void Engine::UpdateDebugInfo()
 {
 	if (Game::IO::Key::IsJustPressed(DIK_F1))
@@ -235,6 +137,8 @@ void Engine::Quit()
 // 終了処理
 void Engine::Finalize()
 {
+	dxManager_->GetSynchronizationManager()->WaitForGPU();
+
 	// ImGuiの終了処理
 	imguiManager_->Finalize();
 

@@ -353,5 +353,8 @@
     <ClInclude Include="src\application\TestParticle\TestParticle.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\definition\constexprs.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

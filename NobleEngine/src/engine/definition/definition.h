@@ -974,18 +974,20 @@ struct EasingSetFloat
 
 
 // 変換情報
-struct Transforms
+struct EulerTransforms
 {
     Vector3 scale = { 1,1,1 };
     Vector3 rotate = { 0,0,0 };
     Vector3 translate = { 0,0,0 };
 };
+
 struct VectorDynamics
 {
     Vector3 value = { 1.0f,1.0f,1.0f };
     Vector3 velocity;
     Vector3 acceleration;
 };
+
 struct TransformationMatrix
 {
     Matrix4x4 WVP;
@@ -1000,8 +1002,6 @@ struct Keyframe
     tValue value;
     float time;
 };
-using KeyframeVector3 = Keyframe<Vector3>;
-using KeyframeQuaternion = Keyframe<Quaternion>;
 
 template <typename tValue>
 struct AnimationCurve

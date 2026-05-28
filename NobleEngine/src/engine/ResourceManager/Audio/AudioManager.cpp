@@ -83,7 +83,7 @@ HRESULT AudioManager::Initialize()
 }
 
 // 読み込み
-uint32_t AudioManager::LoadAudio(const std::string& filePath)
+int32_t AudioManager::LoadAudio(const std::string& filePath)
 {
 	Log("オーディオ読み込み開始 パス:%s", filePath.c_str());
 
@@ -265,14 +265,14 @@ uint32_t AudioManager::LoadAudio(const std::string& filePath)
 
 
     // マップに格納
-    uint32_t id = nextAudioId++;
+    int32_t id = nextAudioId++;
     loadedAudio[id] = std::move(entry);
     Log("成功 ID: %u", id);
 
     return id;
 }
 
-AudioData* AudioManager::GetAudioData(uint32_t audioId)
+AudioData* AudioManager::GetAudioData(int32_t audioId)
 {
     auto it = loadedAudio.find(audioId);
 	if (it != loadedAudio.end())
@@ -288,7 +288,7 @@ AudioData* AudioManager::GetAudioData(uint32_t audioId)
 }
 
 // 再生
-void AudioManager::PlayAudio(const uint32_t& audioId, bool loop)
+void AudioManager::PlayAudio(const int32_t& audioId, bool loop)
 {
     auto it = loadedAudio.find(audioId);
     if (it != loadedAudio.end())
@@ -327,7 +327,7 @@ void AudioManager::PlayAudio(const uint32_t& audioId, bool loop)
 }
 
 // 再生中のオーディオ停止
-void AudioManager::StopAudio(const uint32_t& audioId)
+void AudioManager::StopAudio(const int32_t& audioId)
 {
     auto it = loadedAudio.find(audioId);
     if (it != loadedAudio.end())
@@ -344,7 +344,7 @@ void AudioManager::StopAudio(const uint32_t& audioId)
 }
 
 // 特定のオーディオ音量のセッターゲッター
-void AudioManager::SetVolume(const uint32_t& audioId, float volume)
+void AudioManager::SetVolume(const int32_t& audioId, float volume)
 {
     auto it = loadedAudio.find(audioId);
     // findできなかった場合はloadedAudio.end()がかえってくる。
@@ -364,7 +364,7 @@ void AudioManager::SetVolume(const uint32_t& audioId, float volume)
         assert(0);
     }
 }
-float AudioManager::GetVolume(const uint32_t& audioId)
+float AudioManager::GetVolume(const int32_t& audioId)
 {
     auto it = loadedAudio.find(audioId);
     if (it != loadedAudio.end() && it->second.pSourceVoice)
@@ -408,7 +408,7 @@ float AudioManager::GetMasterVolume()
 }
 
 // 現在再生してるか？
-bool AudioManager::IsAudioPlaying(const uint32_t& audioId)
+bool AudioManager::IsAudioPlaying(const int32_t& audioId)
 {
     auto it = loadedAudio.find(audioId);
     if (it != loadedAudio.end())

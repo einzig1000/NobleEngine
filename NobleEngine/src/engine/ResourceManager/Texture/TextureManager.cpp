@@ -2,24 +2,22 @@
 #include <externals/DirectXTex/d3dx12.h>
 #include <externals/DirectXTex/DirectXTex.h>
 #include <Utilities/Logger/Logger.h>
-#include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
 #include <DirectX/Resource/Dx12ResourceFactory.h>
+#include <DirectX/DirectXManager.h>
 #include <definition/definition.h>
 #include <filesystem>
 #include <cassert>
 #include <cctype>
 #include <algorithm>
 
-TextureManager::TextureManager(ID3D12GraphicsCommandList* commandList, DescriptorHeapManager* descriptorHeap, ID3D12Device* device)
-	:commandList_(commandList), descriptorHeap_(descriptorHeap), device_(device)
-{
-}
+TextureManager::TextureManager(DirectXManager* dxManager)
+    : dxManager_(dxManager)
+{}
 
 TextureManager::~TextureManager()
 {
     intermediateUploadResources_.clear();
 }
-
 
 int32_t TextureManager::LoadTexture(const std::string& filePath)
 {
@@ -41,6 +39,11 @@ int32_t TextureManager::LoadTexture(const std::string& filePath)
     std::string ext = path.extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 	bool dds = (ext == ".dds");
+
+    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+	auto* device = dxManager_->GetDevice();
+    auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
     // ボックスを作成
     TextureData text;
@@ -84,18 +87,18 @@ int32_t TextureManager::LoadTexture(const std::string& filePath)
     text.mipImage = std::move(mipImageLocal);
 
     // テクスチャリソースとSRVの作成
-    text.textureResource = Dx12ResourceFactory::CreateTextureResource(device_, text.metadata);
-    Microsoft::WRL::ComPtr<ID3D12Resource> tempIntermediateResource = UploadTextureData(text.textureResource.Get(), text.mipImage, device_, commandList_);
+    text.textureResource = Dx12ResourceFactory::CreateTextureResource(device, text.metadata);
+    Microsoft::WRL::ComPtr<ID3D12Resource> tempIntermediateResource = UploadTextureData(text.textureResource.Get(), text.mipImage, device, cmdList);
     intermediateUploadResources_.push_back(tempIntermediateResource);
 
 	SRV_UAVManager::Allocation srvAllocation{};
     if (dds)
     {
-        srvAllocation = descriptorHeap_->GetSRV_UAVManager()->CreateSRVforDDS(text.textureResource.Get(), text.metadata);
+        srvAllocation = srvManager->CreateSRVforDDS(text.textureResource.Get(), text.metadata);
     }
     else
     {
-        srvAllocation = descriptorHeap_->GetSRV_UAVManager()->CreateSRVforTexture(text.textureResource.Get(), text.metadata);
+        srvAllocation = srvManager->CreateSRVforTexture(text.textureResource.Get(), text.metadata);
     }
 
 	// SRVのGPUハンドルとテクスチャIDを保存

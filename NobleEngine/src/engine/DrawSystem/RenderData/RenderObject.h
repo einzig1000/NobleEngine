@@ -7,6 +7,7 @@
 #include <DirectX/RenderTarget/RenderTextureID.h>
 #include <DirectX/PipeLine/RenderPipelineTypes.h>
 #include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
+#include <definition/constexprs.h>
 
 /// <summary>
 // ・PSO 設定（どのシェーダ・どのブレンド・どのラスタライザか）
@@ -16,13 +17,12 @@
 class RenderObject
 {
 public:
-	static constexpr uint32_t kMaxFramesInFlight = 2;
 
 	struct DynamicSRVData
 	{
-		Microsoft::WRL::ComPtr<ID3D12Resource> buffers[kMaxFramesInFlight];
-		void* mappedData[kMaxFramesInFlight] = { nullptr };
-		SRV_UAVManager::Allocation srvAllocations[kMaxFramesInFlight];
+		Microsoft::WRL::ComPtr<ID3D12Resource> buffers[kFrameCount];
+		void* mappedData[kFrameCount] = { nullptr };
+		SRV_UAVManager::Allocation srvAllocations[kFrameCount];
 	};
 
 	// いずれ統合予定

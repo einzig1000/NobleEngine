@@ -55,8 +55,6 @@ private:
 	~Engine() = default;
 
 	void UpdateDebugInfo();
-	void UpdateTransforms();
-	void UpdateParticles();
 
 
 	// ウィンドウ関連

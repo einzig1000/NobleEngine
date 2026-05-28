@@ -58,7 +58,8 @@ void RenderObject::SetSBufferData(const uint32_t key, ShaderType shaderType, con
 	{
 		auto* dxManager = Engine::Instance().GetDirectXManager();
 		// フレームインデックスを取得
-		const uint32_t frameIndex = dxManager->GetSwapChain()->GetCurrentBackBufferIndex() % kMaxFramesInFlight;
+		//const uint32_t frameIndex = dxManager->GetSwapChain()->GetCurrentBackBufferIndex() % kMaxFramesInFlight;
+		const uint32_t frameIndex = dxManager->GetSwapChain()->GetCurrentBackBufferIndex();
 
 		auto& srvData = dynamicSrvStorage_.at(param.srvStorageIndex);
 		auto& alloc = srvData.srvAllocations[frameIndex];

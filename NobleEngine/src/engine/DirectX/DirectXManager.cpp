@@ -42,78 +42,90 @@ DirectXManager::~DirectXManager()
 
 void DirectXManager::BeginFrame()
 {
-    // コマンドリストをリセット
-    commandContextManager->ResetCommandList();
-
     // バックバッファのインデックスを更新
     swapChainManager->UpdateBackBufferIndex();
     UINT backBufferIndex = swapChainManager->GetCurrentBackBufferIndex();
 
+    // フレーム単位の GPU 完了待ち（このフレームで使う CommandAllocator が GPU によってまだ使われている場合は待つ）
+    synchronizationManager->WaitForGPU(backBufferIndex);
+
+    // コマンドリストをリセット
+    commandContextManager->ResetCommandList(backBufferIndex);
+
 	// SRV/UAV用のDescriptorHeapをセット
     ID3D12DescriptorHeap* descriptorHeaps[] = { descriptorHeapManager->GetSRV_UAVManager()->GetSRVDescriptorHeap() };
-    commandContextManager->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps);
+    commandContextManager->GetCommandList(backBufferIndex)->SetDescriptorHeaps(1, descriptorHeaps);
 }
 
 void DirectXManager::BeginRenderPass(RenderTarget* target, bool isDepthWrite)
 {
+	// バックバッファのインデックスを取得
+    UINT backBufferIndex = swapChainManager->GetCurrentBackBufferIndex();
+
     // リソースの状態をRenderTargetに遷移
-    Transition(commandContextManager->GetCommandList(), target, false, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    Transition(commandContextManager->GetCommandList(backBufferIndex), target, false, D3D12_RESOURCE_STATE_RENDER_TARGET);
     if (isDepthWrite)
     {
-        Transition(commandContextManager->GetCommandList(), target, true, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        Transition(commandContextManager->GetCommandList(backBufferIndex), target, true, D3D12_RESOURCE_STATE_DEPTH_WRITE);
     }
 
     // 描画先のRTVとDSVを指定
     if (isDepthWrite)
     {
-        commandContextManager->GetCommandList()->OMSetRenderTargets(1, &target->rtvAlloc.handle, false, &target->dsvAlloc.handle);
+        commandContextManager->GetCommandList(backBufferIndex)->OMSetRenderTargets(1, &target->rtvAlloc.handle, false, &target->dsvAlloc.handle);
     }
     else
     {
-        commandContextManager->GetCommandList()->OMSetRenderTargets(1, &target->rtvAlloc.handle, false, nullptr);
+        commandContextManager->GetCommandList(backBufferIndex)->OMSetRenderTargets(1, &target->rtvAlloc.handle, false, nullptr);
     }
 
     // RTVのクリア
-    float clearColor[] = { 0.396078f, 0.894117f, 1.0f, 1.0f };
-    commandContextManager->GetCommandList()->ClearRenderTargetView(target->rtvAlloc.handle, clearColor, 0, nullptr);
+    float clearColor[4] = { 0.396078f, 0.894117f, 1.0f, 1.0f };
+    commandContextManager->GetCommandList(backBufferIndex)->ClearRenderTargetView(target->rtvAlloc.handle, clearColor, 0, nullptr);
     // DSVのクリア
     if (isDepthWrite)
     {
-        commandContextManager->GetCommandList()->ClearDepthStencilView(target->dsvAlloc.handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+        commandContextManager->GetCommandList(backBufferIndex)->ClearDepthStencilView(target->dsvAlloc.handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
     }
 
     // ViewportとScissorを設定
-    commandContextManager->GetCommandList()->RSSetViewports(1, &target->viewport);
-    commandContextManager->GetCommandList()->RSSetScissorRects(1, &target->scissorRect);
+    commandContextManager->GetCommandList(backBufferIndex)->RSSetViewports(1, &target->viewport);
+    commandContextManager->GetCommandList(backBufferIndex)->RSSetScissorRects(1, &target->scissorRect);
 }
 
 void DirectXManager::EndRenderPass(RenderTarget* target, bool isDepthWrite, D3D12_RESOURCE_STATES nextState)
 {
+    // バックバッファのインデックスを取得
+    UINT backBufferIndex = swapChainManager->GetCurrentBackBufferIndex();
+
 	// リソースの状態をPixelShaderResourceに遷移
-	Transition(commandContextManager->GetCommandList(), target, false, nextState);
+	Transition(commandContextManager->GetCommandList(backBufferIndex), target, false, nextState);
 	if (isDepthWrite)
 	{
-		Transition(commandContextManager->GetCommandList(), target, true, nextState);
+		Transition(commandContextManager->GetCommandList(backBufferIndex), target, true, nextState);
 	}
 }
 
 void DirectXManager::EndFrame()
 {
+    // バックバッファのインデックスを取得
+    UINT backBufferIndex = swapChainManager->GetCurrentBackBufferIndex();
+
     // コマンドリストを確定・実行
-    HRESULT hr = commandContextManager->GetCommandList()->Close();
+    HRESULT hr = commandContextManager->GetCommandList(backBufferIndex)->Close();
     if (FAILED(hr))
     {
         Log("コマンドリストの確定に失敗 %s", HrToString(hr));
         assert(false);
     }
-    ID3D12CommandList* commandLists[] = { commandContextManager->GetCommandList() };
+    ID3D12CommandList* commandLists[] = { commandContextManager->GetCommandList(backBufferIndex) };
     commandContextManager->GetCommandQueue()->ExecuteCommandLists(1, commandLists);
 
     // スワップチェーンをプレゼンテーション
     swapChainManager->Present();
 
     // フェンスシグナル
-    synchronizationManager->Signal(commandContextManager->GetCommandQueue());
+    synchronizationManager->Signal(commandContextManager->GetCommandQueue(), backBufferIndex);
 }
 
 void DirectXManager::Resize()

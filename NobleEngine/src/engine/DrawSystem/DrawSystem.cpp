@@ -9,7 +9,7 @@
 DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager)
 	:dxManager_(dxManager), resourceManager_(resourceManager)
 {
-	for (uint32_t i = 0; i < kFramesInFlight_; ++i)
+	for (uint32_t i = 0; i < kFrameCount; ++i)
 	{
 		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
 	}
@@ -33,15 +33,15 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 DrawSystem::~DrawSystem()
 {}
 
-uint32_t DrawSystem::GetFrameIndex() const
-{
-	return dxManager_->GetSwapChain()->GetCurrentBackBufferIndex() % kFramesInFlight_;
-}
-
 void DrawSystem::Reset()
 {
 	// CBアロケータをリセット
-	cbAllocators_[GetFrameIndex()].Reset();
+	//for (uint32_t i = 0; i < kFrameCount; ++i)
+	//{
+	//	cbAllocators_[i].Reset();
+	//}
+	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	cbAllocators_[backBufferIndex].Reset();
 
 	sceneRenderObjects_.clear();
 	postEffectRenderObjects_.clear();
@@ -81,8 +81,9 @@ void DrawSystem::AddScreenDrawList(const RenderObject* renderObject)
 
 void DrawSystem::DrawObject(const RenderObject* renderObject)
 {
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-	auto& cb = cbAllocators_[GetFrameIndex()];
+	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+	auto& cb = cbAllocators_[backBufferIndex];
 	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
 	// 1) RootSignatureセット

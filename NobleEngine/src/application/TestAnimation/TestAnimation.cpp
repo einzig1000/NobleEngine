@@ -25,8 +25,6 @@ namespace
 		return curve.keyFrames.back().value;
 	}
 
-
-
 	Quaternion CalculateValue(float time, const AnimationCurve<Quaternion>& curve)
 	{
 		assert(!curve.keyFrames.empty());
@@ -48,8 +46,6 @@ namespace
 
 		return curve.keyFrames.back().value;
 	}
-
-
 }
 
 

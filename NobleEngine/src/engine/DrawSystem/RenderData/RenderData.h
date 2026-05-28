@@ -56,7 +56,7 @@
 //    // 今フレームの移動量
 //    Vector3 lastMove;
 //    // UV座標
-//    Transforms uvTransform;
+//    EulerTransforms uvTransform;
 //    // 色
 //    Vector4 color = { 0xFF, 0xFF, 0xFF, 0xFF };
 //    // 描画オプション
@@ -154,9 +154,9 @@
 //    ~RenderData_Sprite();
 //
 //    // 位置、回転、スケール
-//    Transforms transforms;
+//    EulerTransforms transforms;
 //    // UV座標
-//    Transforms uvTransform;
+//    EulerTransforms uvTransform;
 //    // アンカー
 //    Anchor anchor = Anchor::Center;
 //    // 親のワールドマトリックス
@@ -196,9 +196,9 @@
 //    ~RenderData_Triangle();
 //
 //    // 位置、回転、スケール
-//    Transforms transforms;
+//    EulerTransforms transforms;
 //    // UV座標
-//    Transforms uvTransform;
+//    EulerTransforms uvTransform;
 //    // 上
 //    Vector3 pos1 = { 0.0f,  0.5f, 0.0f };
 //    // 右下
@@ -231,9 +231,9 @@
 //    ~RenderData_Rect();
 //
 //    // 位置、回転、スケール
-//    Transforms transforms;
+//    EulerTransforms transforms;
 //    // UV座標
-//    Transforms uvTransform;
+//    EulerTransforms uvTransform;
 //
 //    // 右上
 //    Vector3 pos1;

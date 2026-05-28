@@ -1,10 +1,11 @@
 #include "ResourceManager.h"
+#include <DirectX/DirectXManager.h>
 
-ResourceManager::ResourceManager(ID3D12GraphicsCommandList* commandList, DescriptorHeapManager* descriptorHeap, ID3D12Device* device)
+ResourceManager::ResourceManager(DirectXManager* dxManager)
 {
     audioManager_ = std::make_unique<AudioManager>();
-    textureManager_ = std::make_unique<TextureManager>(commandList, descriptorHeap, device);
-    modelManager_ = std::make_unique<ModelManager>(device);
+    textureManager_ = std::make_unique<TextureManager>(dxManager);
+    modelManager_ = std::make_unique<ModelManager>(dxManager->GetDevice());
 }
 
 ResourceManager::~ResourceManager()

@@ -68,6 +68,7 @@
     <ClCompile Include="src\application\TestParticle\TestParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\definition\constexprs.h" />
     <ClInclude Include="src\engine\ResourceManager\Animation\AnimationManager.h" />
     <ClInclude Include="src\application\GameManager\GameManager.h" />
     <ClInclude Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.h" />

@@ -69,6 +69,34 @@ int32_t ModelManager::LoadModel(const std::string& filePath)
     return ref.number;
 }
 
+int32_t ModelManager::CreateModel(const std::vector<VertexData>& vertices)
+{
+    ModelData obj;
+    obj.vertices = vertices;
+    obj.aabb = LoadAABBFromCSV("default_aabb.csv"); // 仮のCSVファイル名
+    obj.number = static_cast<uint32_t>(objects.size());
+    obj.filePath = "default_model.obj"; // 仮のファイルパス
+
+    objects.push_back(obj);
+    ModelData& ref = objects.back();
+
+    // 頂点バッファ作成
+    ref.vertexBufferSize = sizeof(VertexData) * UINT(ref.vertices.size());
+    ref.vertexBuffer = Dx12ResourceFactory::CreateBufferResource(device_, ref.vertexBufferSize);
+    VertexData* vData = nullptr;
+    ref.vertexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vData));
+    std::memcpy(vData, ref.vertices.data(), ref.vertexBufferSize);
+    ref.vertexBuffer->Unmap(0, nullptr);
+
+    ref.vertexBufferView.BufferLocation = ref.vertexBuffer->GetGPUVirtualAddress();
+    ref.vertexBufferView.SizeInBytes = static_cast<UINT>(ref.vertexBufferSize);
+    ref.vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+    Log("成功 ID:%d", ref.number);
+
+    return ref.number;
+}
+
 ModelData* ModelManager::GetModelData(int32_t modelID)
 {
     if (modelID < 0)

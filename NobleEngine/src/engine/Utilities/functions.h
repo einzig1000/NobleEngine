@@ -73,11 +73,11 @@ bool IsOverLap(const AABB& aabb1, const AABB& aabb2);
 bool IsLooseCollision(const AABB& aabb1, const AABB& aabb2, float threshold = 0.1f);
 bool IsCollision(const AABB& aabb, const Sphere& s);
 bool IsCollision(const AABB& aabb, const Segment& s);
-//bool IsCollision(const Ray& ray, const std::vector<VertexData>& vertices, const AABB& aabb, const Transforms& data);
+//bool IsCollision(const Ray& ray, const std::vector<VertexData>& vertices, const AABB& aabb, const EulerTransforms& data);
 //bool IsCollision(const Ray& ray, const std::vector<VertexData>& vertices, const RenderData_Model* data);
 
 std::optional<Vector3> IntersectRayTriangle(const Ray& ray, const Triangle& t);
-//std::optional<Vector3> IntersectRayModel(const Ray& ray, const std::vector<VertexData>& vertices, const AABB& aabb, const Transforms& data);
+//std::optional<Vector3> IntersectRayModel(const Ray& ray, const std::vector<VertexData>& vertices, const AABB& aabb, const EulerTransforms& data);
 std::optional<Vector3> IntersectRayModel(const Ray& ray, const std::vector<VertexData>& vertices, const RenderData_Model* data);
 std::optional<Vector3> IntersectRayAABB(const Ray& ray, const AABB& box);
 

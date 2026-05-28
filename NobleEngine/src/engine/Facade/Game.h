@@ -17,21 +17,23 @@ namespace Game
 		/// <param name="directoryPath">例:"Resources/Prototypes/model/"</param>
 		/// <param name="filename">"cube.obj"</param>
 		/// <returns>モデルID</returns>
-		uint32_t LoadModel(const std::string& filePath);
+		int32_t LoadModel(const std::string& filePath);
 
 		/// <summary>
 		/// テクスチャ読み込み
 		/// </summary>
 		/// <param name="filePath">例:"Resources/Prototypes/texture/uvChecker.png"</param>
 		/// <returns>テクスチャID</returns>
-		uint32_t LoadTexture(const std::string& filePath);
+		int32_t LoadTexture(const std::string& filePath);
 
 		/// <summary>
 		/// オーディオ読み込み
 		/// </summary>
 		/// <param name="filePath">例:"Resources/Prototypes/audio/BGM/InGame.mp3"</param>
 		/// <returns>オーディオID</returns>
-		uint32_t LoadAudio(const std::string& filePath);
+		int32_t LoadAudio(const std::string& filePath);
+
+		int32_t GetRenderTextureID(const std::string textureName);
 
 		/// <summary>
 		/// レンダーテクスチャ作成
@@ -40,30 +42,35 @@ namespace Game
 		/// <param name="width">横幅</param>
 		/// <param name="height">縦幅</param>
 		/// <returns>テクスチャID</returns>
-		uint32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName);
+		int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName);
 
-		uint32_t GetRenderTextureID(const std::string textureName);
+		/// <summary>
+		/// モデル作成
+		/// </summary>
+		/// <param name="vertices"></param>
+		/// <returns></returns>
+		int32_t CreateModel(const std::vector<VertexData>& vertices);
 
 		/// <summary>
 		/// テクスチャデータ取得
 		/// </summary>
 		/// <param name="textureID">テクスチャID</param>
 		/// <returns>メタデータを含むテクスチャデータ</returns>
-		TextureData* GetTextureData(uint32_t textureID);
+		TextureData* GetTextureData(int32_t textureID);
 
 		/// <summary>
 		/// モデルデータ取得
 		/// </summary>
 		/// <param name="modelID">モデルID</param>
 		/// <returns>モデルデータ</returns>
-		ModelData* GetModelData(uint32_t modelID);
+		ModelData* GetModelData(int32_t modelID);
 
 		/// <summary>
 		/// オーディオデータ取得
 		/// </summary>
 		/// <param name="audioID">オーディオID</param>
 		/// <returns>オーディオデータ</returns>
-		AudioData* GetAudioData(uint32_t audioID);
+		AudioData* GetAudioData(int32_t audioID);
 
 		/// <summary>
 		/// 読み込んだテクスチャ数取得
@@ -132,20 +139,20 @@ namespace Game
 		/// </summary>
 		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
 		/// <param name="loop">trueなら自動ループ</param>
-		void PlayAudio(const uint32_t& audioId, bool loop);
+		void PlayAudio(const int32_t& audioId, bool loop);
 
 		/// <summary>
 		/// オーディオ停止
 		/// </summary>
 		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
-		void StopAudio(const uint32_t& audioId);
+		void StopAudio(const int32_t& audioId);
 
 		/// <summary>
 		/// オーディオボリューム設定
 		/// </summary>
 		/// <param name="audioId"Resource::LoadAudioで取得したオーディオID></param>
 		/// <param name="volume">0.0f～1.0f</param>
-		void SetAudioVolume(const uint32_t& audioId, float volume);
+		void SetAudioVolume(const int32_t& audioId, float volume);
 
 		/// <summary>
 		/// マスターボリューム設定
@@ -158,7 +165,7 @@ namespace Game
 		/// </summary>
 		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
 		/// <returns>現在の音量</returns>
-		float GetVolume(const uint32_t& audioId);
+		float GetVolume(const int32_t& audioId);
 
 		/// <summary>
 		/// マスターボリューム取得
@@ -171,7 +178,7 @@ namespace Game
 		/// </summary>
 		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
 		/// <returns>bool </returns>
-		bool IsAudioPlaying(const uint32_t& audioId);
+		bool IsAudioPlaying(const int32_t& audioId);
 	};
 
 	namespace Light

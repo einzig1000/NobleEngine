@@ -13,6 +13,8 @@ public:
 	// モデル読み込み
 	int32_t LoadModel(const std::string& filePath);
 
+	int32_t CreateModel(const std::vector<VertexData>& vertices);
+
 	// データ取得
 	ModelData* GetModelData(int32_t modelID);
 

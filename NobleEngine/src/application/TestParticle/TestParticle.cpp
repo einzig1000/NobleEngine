@@ -1,5 +1,6 @@
 #include "TestParticle.h"
 #include <Game.h>
+#include <numbers>
 
 TestParticle::TestParticle()
 {
@@ -23,24 +24,6 @@ TestParticle::TestParticle()
 		planeTransforms[i].rotate = { Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1) };
 	}
 
-	renderRings_.resize(10);
-	ringColors.resize(10);
-	ringTransforms.resize(10);
-	for (int i = 0; i < 10; ++i)
-	{
-		renderRings_[i] = std::make_unique<RenderObject>();
-		renderRings_[i]->modelID_ = Game::Resource::LoadModel("resources/Prototypes/model/ring.obj");
-		renderRings_[i]->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
-		renderRings_[i]->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
-		renderRings_[i]->psoConfig_.blendID = BlendStateID::Add;
-		renderRings_[i]->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
-		renderRings_[i]->SetupFromShaders();
-		ringColors[i] = Vector4{ 1.0f,1.0f,1.0f,1.0f };
-		ringTransforms[i].scale = { 6.0f,6.0f,6.0f };
-		ringTransforms[i].translate = { 0.0f, 0.0f, 0.0f };
-		ringTransforms[i].rotate = { Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1) };
-	}
-
 	renderCylinder_ = std::make_unique<RenderObject>();
 	renderCylinder_->modelID_ = Game::Resource::LoadModel("resources/Prototypes/model/cylinder.obj");
 	renderCylinder_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
@@ -52,6 +35,63 @@ TestParticle::TestParticle()
 	cylinderTransform.scale = { 1.0f,1.0f,1.0f };
 	cylinderTransform.translate = { 0.0f, 0.0f, 0.0f };
 	cylinderTransform.rotate = { 0.0f, 0.0f, 3.141592f };
+
+
+	const uint32_t kRingDivide = 32;
+	const float kOuterRadius = 1.0f;
+	const float kInnerRadius = 0.2f;
+	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / float(kRingDivide);
+
+	std::vector<VertexData> vertexData;
+
+	for (uint32_t index = 0; index < kRingDivide; ++index)
+	{
+		float sin = std::sin(index * radianPerDivide);
+		float cos = std::cos(index * radianPerDivide);
+		float sinNext = std::sin((index + 1) * radianPerDivide);
+		float cosNext = std::cos((index + 1) * radianPerDivide);
+		float u = float(index) / float(kRingDivide);
+		float uNext = float(index + 1) / float(kRingDivide);
+
+		// 法線はXY平面のリングなので +Z 固定
+		Vector3 normal = { 0.0f, 0.0f, 1.0f };
+
+		// 4頂点
+		VertexData v1{ { -sin * kOuterRadius,     cos * kOuterRadius,     0.0f, 1.0f }, { u,     0.0f }, normal };
+		VertexData v2{ { -sinNext * kOuterRadius, cosNext * kOuterRadius, 0.0f, 1.0f }, { uNext, 0.0f }, normal };
+		VertexData v3{ { -sin * kInnerRadius,     cos * kInnerRadius,     0.0f, 1.0f }, { u,     1.0f }, normal };
+		VertexData v4{ { -sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f }, { uNext, 1.0f }, normal };
+
+		// 三角形①: v1, v2, v3
+		vertexData.push_back(v1);
+		vertexData.push_back(v2);
+		vertexData.push_back(v3);
+
+		// 三角形②: v3, v2, v4
+		vertexData.push_back(v3);
+		vertexData.push_back(v2);
+		vertexData.push_back(v4);
+	}
+
+	m_ring_ = Game::Resource::CreateModel(vertexData);
+
+	renderRings_.resize(10);
+	ringColors.resize(10);
+	ringTransforms.resize(10);
+	for (int i = 0; i < 10; ++i)
+	{
+		renderRings_[i] = std::make_unique<RenderObject>();
+		renderRings_[i]->modelID_ = m_ring_;
+		renderRings_[i]->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
+		renderRings_[i]->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+		renderRings_[i]->psoConfig_.blendID = BlendStateID::Add;
+		renderRings_[i]->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
+		renderRings_[i]->SetupFromShaders();
+		ringColors[i] = Vector4{ 1.0f,1.0f,1.0f,1.0f };
+		ringTransforms[i].scale = { 6.0f,6.0f,6.0f };
+		ringTransforms[i].translate = { 0.0f, 0.0f, 0.0f };
+		ringTransforms[i].rotate = { Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1) };
+	}
 }
 
 TestParticle::~TestParticle()
@@ -109,13 +149,13 @@ void TestParticle::Draw()
 {
 	uint32_t rtID = Game::Resource::GetRenderTextureID("Main");
 
-	//for (int i = 0; i < 10; ++i)
-	//{
-	//	renderPlanes_[i]->Draw(rtID);
-	//}
-	//for (int i = 0; i < 10; ++i)
-	//{
-	//	renderRings_[i]->Draw(rtID);
-	//}
-	renderCylinder_->Draw(rtID);
+	for (int i = 0; i < 10; ++i)
+	{
+		renderPlanes_[i]->Draw(rtID);
+	}
+	for (int i = 0; i < 10; ++i)
+	{
+		renderRings_[i]->Draw(rtID);
+	}
+	//renderCylinder_->Draw(rtID);
 }

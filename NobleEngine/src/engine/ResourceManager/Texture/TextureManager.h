@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <definition/definition.h>
 
-class DescriptorHeapManager;
+class DirectXManager;
 
 /// <summary>
 /// テクスチャ管理クラス
@@ -15,9 +15,7 @@ class TextureManager
 {
 public:
     TextureManager(
-        ID3D12GraphicsCommandList* commandList,
-        DescriptorHeapManager* descriptorHeap,
-        ID3D12Device* device);
+        DirectXManager* dxManager);
     ~TextureManager();
 
     // テクスチャ読み込み
@@ -30,9 +28,7 @@ public:
     size_t GetTextureCount() const { return textures_.size(); }
 
 private:
-    ID3D12GraphicsCommandList* commandList_;
-    DescriptorHeapManager* descriptorHeap_;
-    ID3D12Device* device_;
+    DirectXManager* dxManager_ = nullptr;
 
     // 画像データを詰める
 	std::unordered_map<std::string, int32_t> pathToIDMap_;
