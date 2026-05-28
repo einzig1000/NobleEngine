@@ -13,15 +13,17 @@ public:
 	void Draw();
 
 private:
+	int32_t t_uvChecker;
+	int32_t t_gradationLine;
+
 	std::vector<std::unique_ptr<RenderObject>> renderPlanes_;
 	std::vector<Vector4> planeColors;
 	std::vector<EulerTransforms> planeTransforms;
-	int32_t t_uvChecker;
+
 	std::vector<std::unique_ptr<RenderObject>> renderRings_;
 	std::vector<Vector4> ringColors;
 	std::vector<EulerTransforms> ringTransforms;
-	int32_t m_ring_;
-	int32_t t_gradationLine;
+
 	std::unique_ptr<RenderObject> renderCylinder_;
 	Vector4 cylinderColor;
 	EulerTransforms cylinderTransform;

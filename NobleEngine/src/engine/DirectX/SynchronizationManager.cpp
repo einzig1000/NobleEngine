@@ -11,7 +11,7 @@ SynchronizationManager::SynchronizationManager(ID3D12Device* device)
     );
     assert(SUCCEEDED(hr));
 
-    for (UINT i = 0; i < kFrameCount; ++i) fenceValues[i] = 0;
+    for (UINT i = 0; i < Constexprs::kFrameCount; ++i) fenceValues[i] = 0;
 
     fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(fenceEvent != nullptr);

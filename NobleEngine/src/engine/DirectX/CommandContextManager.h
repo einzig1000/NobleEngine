@@ -18,6 +18,6 @@ public:
 
 private:
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
-    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList[kFrameCount];
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocators[kFrameCount];
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList[Constexprs::kFrameCount];
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocators[Constexprs::kFrameCount];
 };

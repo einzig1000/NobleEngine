@@ -10,7 +10,7 @@ CommandContextManager::CommandContextManager(ID3D12Device* device)
     assert(SUCCEEDED(hr));
     
     // フレーム数分の CommandAllocator を作成
-    for (UINT i = 0; i < kFrameCount; ++i)
+    for (UINT i = 0; i < Constexprs::kFrameCount; ++i)
     {
         hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[i]));
         assert(SUCCEEDED(hr));

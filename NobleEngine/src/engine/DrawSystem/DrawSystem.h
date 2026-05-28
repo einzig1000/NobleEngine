@@ -15,7 +15,7 @@ class ResourceManager;
 class DrawSystem
 {
 private:
-	FrameCbAllocator cbAllocators_[kFrameCount]{};
+	FrameCbAllocator cbAllocators_[Constexprs::kFrameCount]{};
 
 public:
 	DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager);

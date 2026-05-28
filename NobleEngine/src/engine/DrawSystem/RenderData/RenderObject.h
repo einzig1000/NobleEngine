@@ -20,9 +20,9 @@ public:
 
 	struct DynamicSRVData
 	{
-		Microsoft::WRL::ComPtr<ID3D12Resource> buffers[kFrameCount];
-		void* mappedData[kFrameCount] = { nullptr };
-		SRV_UAVManager::Allocation srvAllocations[kFrameCount];
+		Microsoft::WRL::ComPtr<ID3D12Resource> buffers[Constexprs::kFrameCount];
+		void* mappedData[Constexprs::kFrameCount] = { nullptr };
+		SRV_UAVManager::Allocation srvAllocations[Constexprs::kFrameCount];
 	};
 
 	// いずれ統合予定

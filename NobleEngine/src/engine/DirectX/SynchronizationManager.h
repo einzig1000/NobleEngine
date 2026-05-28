@@ -17,7 +17,7 @@ public:
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;
-	UINT64 fenceValues[kFrameCount];    // フレームごとのフェンス値
+	UINT64 fenceValues[Constexprs::kFrameCount];    // フレームごとのフェンス値
 	UINT64 currentFenceValue = 0;       // 全体で増幅されるフェンス値
     HANDLE fenceEvent;
 };

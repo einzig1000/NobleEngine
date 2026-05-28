@@ -9,7 +9,7 @@
 DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager)
 	:dxManager_(dxManager), resourceManager_(resourceManager)
 {
-	for (uint32_t i = 0; i < kFrameCount; ++i)
+	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
 	{
 		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
 	}
@@ -36,7 +36,7 @@ DrawSystem::~DrawSystem()
 void DrawSystem::Reset()
 {
 	// CBアロケータをリセット
-	//for (uint32_t i = 0; i < kFrameCount; ++i)
+	//for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
 	//{
 	//	cbAllocators_[i].Reset();
 	//}
