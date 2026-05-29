@@ -188,7 +188,7 @@ void TestPhase::Update()
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
 	screenDrawObjectMain_->SetCBufferData(1, ShaderType::PixelShader, &rt_Vignette_);
-	screenDrawObjectMain_->SetCBufferData(0, ShaderType::VertexShader, &identityMatrix);
+	screenDrawObjectMain_->SetCBufferData(0, ShaderType::VertexShader, &mainScreenWorldViewProjection);
 	screenDrawObjectMain_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
 
 	Matrix4x4 miniMapWorldMatrix = Matrix4x4::MakeAffineMatrix(miniMapScreenTransform_.scale, miniMapScreenTransform_.rotate, miniMapScreenTransform_.translate);
@@ -198,7 +198,7 @@ void TestPhase::Update()
 	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
 	screenDrawObjectMiniMap_->SetCBufferData(1, ShaderType::PixelShader, &rt_GrayScale_);
-	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::VertexShader, &identityMatrix);
+	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::VertexShader, &miniMapWorldViewProjection);
 	screenDrawObjectMiniMap_->SetCBufferData(1, ShaderType::VertexShader, &miniMapWorldMatrix);
 
 
@@ -221,8 +221,8 @@ void TestPhase::Draw()
 	// mainに書き込む
 	//cbvOnly_->Draw(rt_main_);
 	skybox_->Draw(rt_main_);
-	testParticle_->Draw();
-	//testAnimation_->Draw();
+	//testParticle_->Draw();
+	testAnimation_->Draw();
 
 	// miniMapに書き込む
 	cbvAndSrv_->Draw(rt_miniMap_);
@@ -239,7 +239,7 @@ void TestPhase::Draw()
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->ScreenDraw();
 	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
-	//screenDrawObjectMiniMap_->ScreenDraw();
+	screenDrawObjectMiniMap_->ScreenDraw();
 }
 
 

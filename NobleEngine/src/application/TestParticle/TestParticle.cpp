@@ -59,12 +59,12 @@ TestParticle::TestParticle()
 			VertexData v3{ { -sin * kBottomRadius, 0.0f,    cos * kBottomRadius, 1.0f }, { u,     1.0f }, normal1 };
 			VertexData v4{ { -sinNext * kBottomRadius, 0.0f,    cosNext * kBottomRadius, 1.0f }, { uNext, 1.0f }, normal2 };
 
-			// 三角形① (上 → 上 → 下)
+			// 三角形① (左上 → 右上 → 左下)
 			vertexData_Cylinder.push_back(v1);
 			vertexData_Cylinder.push_back(v2);
 			vertexData_Cylinder.push_back(v3);
 
-			// 三角形② (下 → 上 → 下)
+			// 三角形② (左下 → 右上 → 右下)
 			vertexData_Cylinder.push_back(v3);
 			vertexData_Cylinder.push_back(v2);
 			vertexData_Cylinder.push_back(v4);
@@ -100,7 +100,6 @@ TestParticle::TestParticle()
 			float u = float(index) / float(kRingDivide);
 			float uNext = float(index + 1) / float(kRingDivide);
 
-			// 法線はXY平面のリングなので +Z 固定
 			Vector3 normal = { 0.0f, 0.0f, 1.0f };
 
 			// 4頂点
@@ -109,12 +108,12 @@ TestParticle::TestParticle()
 			VertexData v3{ { -sin * kInnerRadius,     cos * kInnerRadius,     0.0f, 1.0f }, { u,     1.0f }, normal };
 			VertexData v4{ { -sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f }, { uNext, 1.0f }, normal };
 
-			// 三角形①: v1, v2, v3
+			// 三角形① (左上 → 右上 → 左下)
 			vertexData_Ring.push_back(v1);
 			vertexData_Ring.push_back(v2);
 			vertexData_Ring.push_back(v3);
 
-			// 三角形②: v3, v2, v4
+			// 三角形② (左下 → 右上 → 右下)
 			vertexData_Ring.push_back(v3);
 			vertexData_Ring.push_back(v2);
 			vertexData_Ring.push_back(v4);

@@ -24,9 +24,13 @@ Animation* AnimationManager::GetAnimationData(int32_t animationID)
 	std::advance(it, animationID);
 	if (it != animations.end())
 	{
+		return &(it->second);
+	}
+	else
+	{
+		Log("アニメーションID %d は存在しません", animationID);
 		return nullptr;
 	}
-	return &it->second;
 }
 
 Animation AnimationManager::LoadAnimationFile(const std::string& filePath)
