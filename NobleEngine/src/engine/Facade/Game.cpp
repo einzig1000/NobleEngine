@@ -42,6 +42,10 @@ namespace Game
 		{
 			return Engine::Instance().GetResourceManager()->GetModelManager()->CreateModel(vertices);
 		}
+		Skeleton CreateSkeleton(const Node& node)
+		{
+			return Engine::Instance().GetResourceManager()->GetModelManager()->CreateSkeleton(node);
+		}
 		int32_t GetRenderTextureID(const std::string textureName)
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->srvAlloc.index;

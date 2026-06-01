@@ -3,6 +3,7 @@
 #include <string>
 #include <cstdint>
 #include <map>
+#include <optional>
 
 #include <initguid.h>
 #include <dxgidebug.h>
@@ -974,11 +975,17 @@ struct EasingSetFloat
 
 
 // 変換情報
-struct EulerTransforms
+struct EulerTransform
 {
     Vector3 scale = { 1,1,1 };
     Vector3 rotate = { 0,0,0 };
     Vector3 translate = { 0,0,0 };
+};
+struct QuaternionTransform
+{
+	Vector3 scale = { 1,1,1 };
+	Quaternion rotate;
+	Vector3 translate = { 0,0,0 };
 };
 
 struct VectorDynamics
@@ -1022,6 +1029,33 @@ struct Animation
     std::map<std::string, NodeAnimation> nodeAnimations;
 };
 
+
+struct Node
+{
+	QuaternionTransform transform;
+	Matrix4x4 localMatrix;
+	std::string name;
+	std::vector<Node> children;
+};
+
+struct Joint
+{
+	QuaternionTransform transform;      // ローカル座標系での変換情報
+	Matrix4x4 localMatrix;              // ローカル座標系での変換行列
+	Matrix4x4 skeletonSpaceMatrix;      // スケルトン空間での変換行列(スキニングのときに使う)
+	std::string name;                   // 名前
+	std::vector<int32_t> childrenIndex; // 子Jointのインデックス
+	int32_t index;                      // 自分のインデックス
+	std::optional<int32_t> parentIndex; // 親Jointのインデックス(親がいない場合はstd::nullopt)
+};
+
+struct Skeleton
+{
+    int32_t root;
+	std::map<std::string, int32_t> jointIndexByName;
+	std::vector<Joint> joints;
+};
+
 #pragma endregion
 
 #pragma region モデルデータ構造体
@@ -1046,6 +1080,7 @@ struct ModelData
 	// データ本体
     std::vector<VertexData> vertices;
     MaterialData material;
+	Node rootNode;
 
     // 頂点バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;

@@ -56,7 +56,7 @@
 //    // 今フレームの移動量
 //    Vector3 lastMove;
 //    // UV座標
-//    EulerTransforms uvTransform;
+//    EulerTransform uvTransform;
 //    // 色
 //    Vector4 color = { 0xFF, 0xFF, 0xFF, 0xFF };
 //    // 描画オプション
@@ -66,7 +66,7 @@
 //    // 重さ
 //    float mass = 1.0f;
 //    // ファイルパス
-//    std::string filePath = "resources/Prototypes/model_json/aaa";
+//    std::string filePath = "resources/prototypes/model_json/aaa";
 //    // 画面内に存在するか
 //    bool inPicture = false;
 //    // マウスとの衝突判定
@@ -154,9 +154,9 @@
 //    ~RenderData_Sprite();
 //
 //    // 位置、回転、スケール
-//    EulerTransforms transforms;
+//    EulerTransform transforms;
 //    // UV座標
-//    EulerTransforms uvTransform;
+//    EulerTransform uvTransform;
 //    // アンカー
 //    Anchor anchor = Anchor::Center;
 //    // 親のワールドマトリックス
@@ -196,9 +196,9 @@
 //    ~RenderData_Triangle();
 //
 //    // 位置、回転、スケール
-//    EulerTransforms transforms;
+//    EulerTransform transforms;
 //    // UV座標
-//    EulerTransforms uvTransform;
+//    EulerTransform uvTransform;
 //    // 上
 //    Vector3 pos1 = { 0.0f,  0.5f, 0.0f };
 //    // 右下
@@ -231,9 +231,9 @@
 //    ~RenderData_Rect();
 //
 //    // 位置、回転、スケール
-//    EulerTransforms transforms;
+//    EulerTransform transforms;
 //    // UV座標
-//    EulerTransforms uvTransform;
+//    EulerTransform uvTransform;
 //
 //    // 右上
 //    Vector3 pos1;
@@ -303,7 +303,7 @@
 //    std::optional<std::string> name;
 //
 //    // ファイルパス
-//    std::string filePath = "resources/Prototypes/particle/aaa";
+//    std::string filePath = "resources/prototypes/particle/aaa";
 //
 //    bool LoadJson();
 //

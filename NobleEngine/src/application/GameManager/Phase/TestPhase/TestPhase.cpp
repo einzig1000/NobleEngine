@@ -8,52 +8,53 @@ TestPhase::TestPhase()
 	rt_Vignette_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Vignette");
 	rt_GrayScale_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "GrayScale");
 
-	t_uvChecker = Game::Resource::LoadTexture("resources/Prototypes/texture/uvChecker.png");
-	t_monsterBall_ = Game::Resource::LoadTexture("resources/Prototypes/texture/monsterBall.png");
-	t_white1x1_ = Game::Resource::LoadTexture("resources/Prototypes/texture/white1x1.png");
-	t_dds_ = Game::Resource::LoadTexture("resources/Prototypes/texture/rostock_laage_airport_4k.dds");
+	t_uvChecker = Game::Resource::LoadTexture("resources/prototypes/texture/uvChecker.png");
+	t_monsterBall_ = Game::Resource::LoadTexture("resources/prototypes/texture/monsterBall.png");
+	t_white1x1_ = Game::Resource::LoadTexture("resources/prototypes/texture/white1x1.png");
+	t_dds_ = Game::Resource::LoadTexture("resources/prototypes/texture/rostock_laage_airport_4k.dds");
 
-	int32_t model1 = Game::Resource::LoadModel("resources/Prototypes/model/cube.obj");
-	int32_t model2 = Game::Resource::LoadModel("resources/Prototypes/model/sphere.obj");
-	int32_t model3 = Game::Resource::LoadModel("resources/Prototypes/model/plane.obj");
+	int32_t model1 = Game::Resource::LoadModel("resources/prototypes/model/cube/cube.obj");
+	int32_t model2 = Game::Resource::LoadModel("resources/prototypes/model/sphere/sphere.obj");
+	int32_t model3 = Game::Resource::LoadModel("resources/prototypes/model/plane/plane.obj");
+	int32_t model4 = Game::Resource::LoadModel("resources/prototypes/model/bunny/bunny.obj");
 
-	audio1 = Game::Resource::LoadAudio("resources/Prototypes/audio/BGM/InGame.mp3");
-	audio2 = Game::Resource::LoadAudio("resources/Prototypes/audio/SE/バトル用/氷魔法1.mp3");
+	audio1 = Game::Resource::LoadAudio("resources/prototypes/audio/BGM/InGame.mp3");
+	audio2 = Game::Resource::LoadAudio("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
 
 	cbvOnly_ = std::make_unique<RenderObject>();
-	cbvOnly_->modelID_ = model1;
-	cbvOnly_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
-	cbvOnly_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+	cbvOnly_->modelID_ = model3;
+	cbvOnly_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	cbvOnly_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	cbvOnly_->SetupFromShaders();
 
 	cbvAndSrv_ = std::make_unique<RenderObject>();
 	cbvAndSrv_->modelID_ = model1;
-	cbvAndSrv_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModels.PS.hlsl";
-	cbvAndSrv_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModels.VS.hlsl";
+	cbvAndSrv_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModels.PS.hlsl";
+	cbvAndSrv_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModels.VS.hlsl";
 	cbvAndSrv_->instanceNum_ = 10;
 	cbvAndSrv_->SetupFromShaders();
 
 	line_ = std::make_unique<RenderObject>();
-	line_->psoConfig_.ps = "resources/Shaders/Line/Line.PS.hlsl";
-	line_->psoConfig_.vs = "resources/Shaders/Line/Line.VS.hlsl";
+	line_->psoConfig_.ps = "resources/shaders/Line/Line.PS.hlsl";
+	line_->psoConfig_.vs = "resources/shaders/Line/Line.VS.hlsl";
 	line_->SetupFromShaders();
 
 	skybox_ = std::make_unique<RenderObject>();
 	skybox_->modelID_ = model1;
-	skybox_->psoConfig_.ps = "resources/Shaders/SkyBox/SkyBox.PS.hlsl";
-	skybox_->psoConfig_.vs = "resources/Shaders/SkyBox/SkyBox.VS.hlsl";
+	skybox_->psoConfig_.ps = "resources/shaders/SkyBox/SkyBox.PS.hlsl";
+	skybox_->psoConfig_.vs = "resources/shaders/SkyBox/SkyBox.VS.hlsl";
 	skybox_->SetupFromShaders();
 
 	PunctualLight_ = std::make_unique<RenderObject>();
 	PunctualLight_->modelID_ = model2;
-	PunctualLight_->psoConfig_.ps = "resources/Shaders/PunctualLight/PunctualLight.PS.hlsl";
-	PunctualLight_->psoConfig_.vs = "resources/Shaders/PunctualLight/PunctualLight.VS.hlsl";
+	PunctualLight_->psoConfig_.ps = "resources/shaders/PunctualLight/PunctualLight.PS.hlsl";
+	PunctualLight_->psoConfig_.vs = "resources/shaders/PunctualLight/PunctualLight.VS.hlsl";
 	PunctualLight_->SetupFromShaders();
 
 	environmentMap_ = std::make_unique<RenderObject>();
 	environmentMap_->modelID_ = model2;
-	environmentMap_->psoConfig_.ps = "resources/Shaders/EnvironmentMap/EnvironmentMap.PS.hlsl";
-	environmentMap_->psoConfig_.vs = "resources/Shaders/EnvironmentMap/EnvironmentMap.VS.hlsl";
+	environmentMap_->psoConfig_.ps = "resources/shaders/EnvironmentMap/EnvironmentMap.PS.hlsl";
+	environmentMap_->psoConfig_.vs = "resources/shaders/EnvironmentMap/EnvironmentMap.VS.hlsl";
 	environmentMap_->SetupFromShaders();
 
 	postEffect1_ = std::make_unique<RenderObject>();
@@ -72,14 +73,14 @@ TestPhase::TestPhase()
 
 	screenDrawObjectMain_ = std::make_unique<RenderObject>();
 	screenDrawObjectMain_->modelID_ = model3;
-	screenDrawObjectMain_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
-	screenDrawObjectMain_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+	screenDrawObjectMain_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	screenDrawObjectMain_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	screenDrawObjectMain_->SetupFromShaders();
 
 	screenDrawObjectMiniMap_ = std::make_unique<RenderObject>();
 	screenDrawObjectMiniMap_->modelID_ = model3;
-	screenDrawObjectMiniMap_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
-	screenDrawObjectMiniMap_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+	screenDrawObjectMiniMap_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	screenDrawObjectMiniMap_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	screenDrawObjectMiniMap_->SetupFromShaders();
 
 
@@ -181,9 +182,9 @@ void TestPhase::Update()
 	Matrix4x4 identityMatrix = Matrix4x4::MakeIdentity4x4();
 
 	Matrix4x4 mainScreenWorldMatrix = Matrix4x4::MakeAffineMatrix(mainScreenTransform_.scale, mainScreenTransform_.rotate, mainScreenTransform_.translate);
-	Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * viewProjection;
+	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * viewProjection;
 	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProje;
-	//Matrix4x4 mainScreenWorldViewProjection = identityMatrix;
+	Matrix4x4 mainScreenWorldViewProjection = identityMatrix;
 
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
@@ -208,7 +209,7 @@ void TestPhase::Update()
 
 	if (Game::IO::Key::IsHeld(DIK_F12))
 	{
-		Game::Window::ToggleFullscreen();
+		//Game::Window::ToggleFullscreen();
 	}
 	if (Game::IO::Key::IsHeld(DIK_ESCAPE))
 	{
@@ -220,7 +221,7 @@ void TestPhase::Draw()
 {
 	// mainに書き込む
 	//cbvOnly_->Draw(rt_main_);
-	skybox_->Draw(rt_main_);
+	//skybox_->Draw(rt_main_);
 	//testParticle_->Draw();
 	testAnimation_->Draw();
 

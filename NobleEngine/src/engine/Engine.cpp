@@ -1,7 +1,5 @@
 #include "Engine.h"
 #include "Utilities/functions.h"
-#include <cstdint>
-
 #include <IO/IOManager.h>
 #include <Window/WindowManager.h>
 #include <DirectX/DirectXManager.h>
@@ -63,9 +61,6 @@ bool Engine::ProcessMessage()
 }
 void Engine::BeginFrame()
 {
-	// GPU同期
-	//dxManager_->GetSynchronizationManager()->WaitForGPU();
-
 	// imguiを更新
 	imguiManager_->BeginFrame();
 
@@ -125,7 +120,6 @@ void Engine::UpdateDebugInfo()
 	ImGui::Text("F12 : Toggle Fullscreen");
 	ImGui::Text("DeltaTime: %.3f ms", fixFPS_->GetDeltaTime() * 1000.0f);
 	ImGui::Text("FPS: %.1f ", fixFPS_->GetAverageFPS());
-	ImGui::Text("ImGui FPS: %.1f ", ImGui::GetIO().Framerate);
 	ImGui::End();
 }
 

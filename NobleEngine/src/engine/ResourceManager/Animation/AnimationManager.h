@@ -16,6 +16,10 @@ public:
 	// アニメーション数を取得
 	size_t GetAnimationCount() const { return animations.size(); }
 	
+	void TestUpdateSkeleton(Skeleton& skeleton);
+
+	void TestApplyAnimation(Skeleton& skeleton, const Animation& animation, float time);
+
 	// アニメーションリストを取得
 	//std::vector<Animation>& GetAnimationList() { return animations; }
 

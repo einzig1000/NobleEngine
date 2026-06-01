@@ -126,7 +126,7 @@ void SwapChainManager::Resize(ID3D12Device* device, ID3D12CommandQueue* commandQ
 {
     if (WindowManager::winWidth_ == 0 || WindowManager::winHeight_ == 0) return;
 
-    // 全GPU作業の完了待ち（厳密）
+    // 全GPU作業の完了待ち
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;
     HRESULT hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
     assert(SUCCEEDED(hr));

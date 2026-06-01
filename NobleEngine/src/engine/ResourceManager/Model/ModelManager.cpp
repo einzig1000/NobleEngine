@@ -3,9 +3,6 @@
 #include <DirectX/Resource/Dx12ResourceFactory.h>
 #include <filesystem> 
 #include <fstream>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 
 ModelManager::ModelManager(ID3D12Device* device)
@@ -39,7 +36,7 @@ int32_t ModelManager::LoadModel(const std::string& filePath)
     // ボックスを作成
     ModelData obj;
     // モデルデータ
-    obj.vertices = LoadModelFile(filePath);
+    LoadModelFile(filePath, obj);
     // AABB .obj → .csv へ拡張子を変換して渡す
 	std::string csvFilename = directory + "/" + stem + ".csv";
     obj.aabb = LoadAABB(csvFilename, obj.vertices);
@@ -248,7 +245,7 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& filePath)
 }
 
 // モデルファイルを読み込む関数
-std::vector<VertexData> ModelManager::LoadModelFile(const std::string& filePath)
+void ModelManager::LoadModelFile(const std::string& filePath, ModelData& modelData)
 {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_ConvertToLeftHanded | aiProcess_Triangulate);
@@ -277,5 +274,57 @@ std::vector<VertexData> ModelManager::LoadModelFile(const std::string& filePath)
         }
     }
 
-    return vertices;
+    modelData.vertices = vertices;
+	modelData.rootNode = ReadNode(scene->mRootNode);
+}
+
+Node ModelManager::ReadNode(const aiNode* node)
+{
+    Node result;
+    aiVector3D scale;
+	aiQuaternion rotate;
+	aiVector3D translate;
+	node->mTransformation.Decompose(scale, rotate, translate);
+	result.transform.scale = { scale.x, scale.y, scale.z };
+	result.transform.rotate = { rotate.x, -rotate.y, -rotate.z, rotate.w };
+	result.transform.translate = { -translate.x, translate.y, translate.z };
+    result.localMatrix = Matrix4x4::MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);
+    result.name = node->mName.C_Str();
+    result.children.resize(node->mNumChildren);
+    for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
+    {
+        result.children[childIndex] = ReadNode(node->mChildren[childIndex]);
+    }
+    return result;
+}
+
+Skeleton ModelManager::CreateSkeleton(const Node& node)
+{
+	Skeleton skeleton;
+    skeleton.root = CreateJoint(node, std::nullopt, skeleton.joints);
+
+	for (size_t i = 0; i < skeleton.joints.size(); ++i)
+	{
+		skeleton.jointIndexByName[skeleton.joints[i].name] = int32_t(i);
+	}
+
+	return skeleton;
+}
+
+int32_t ModelManager::CreateJoint(const Node& node, const std::optional<int32_t>& parentIndex, std::vector<Joint>& joints)
+{
+    Joint joint;
+	joint.name = node.name;
+	joint.localMatrix = node.localMatrix;
+    joint.skeletonSpaceMatrix = Matrix4x4::MakeIdentity4x4();
+    joint.transform = node.transform;
+    joint.index = int32_t(joints.size());
+    joint.parentIndex = parentIndex;
+    joints.push_back(joint);
+	for (const auto& child : node.children)
+	{
+		int32_t childIndex = CreateJoint(child, joint.index, joints);
+		joints[joint.index].childrenIndex.push_back(childIndex);
+	}
+    return joint.index;
 }

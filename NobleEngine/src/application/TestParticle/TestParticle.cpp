@@ -4,8 +4,8 @@
 
 TestParticle::TestParticle()
 {
-	t_uvChecker = Game::Resource::LoadTexture("resources/Prototypes/texture/particle/circle2.png");
-	t_gradationLine = Game::Resource::LoadTexture("resources/Prototypes/texture/particle/gradationLine.png");
+	t_uvChecker = Game::Resource::LoadTexture("resources/prototypes/texture/particle/circle2.png");
+	t_gradationLine = Game::Resource::LoadTexture("resources/prototypes/texture/particle/gradationLine.png");
 
 	// 円
 	{
@@ -15,9 +15,9 @@ TestParticle::TestParticle()
 		for (int i = 0; i < 10; ++i)
 		{
 			renderPlanes_[i] = std::make_unique<RenderObject>();
-			renderPlanes_[i]->modelID_ = Game::Resource::LoadModel("resources/Prototypes/model/plane.obj");
-			renderPlanes_[i]->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
-			renderPlanes_[i]->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+			renderPlanes_[i]->modelID_ = Game::Resource::LoadModel("resources/prototypes/model/plane/plane.obj");
+			renderPlanes_[i]->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+			renderPlanes_[i]->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 			renderPlanes_[i]->psoConfig_.blendID = BlendStateID::Add;
 			renderPlanes_[i]->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
 			renderPlanes_[i]->SetupFromShaders();
@@ -72,8 +72,8 @@ TestParticle::TestParticle()
 
 		renderCylinder_ = std::make_unique<RenderObject>();
 		renderCylinder_->modelID_ = Game::Resource::CreateModel(vertexData_Cylinder);
-		renderCylinder_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
-		renderCylinder_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+		renderCylinder_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+		renderCylinder_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 		renderCylinder_->psoConfig_.blendID = BlendStateID::Add;
 		renderCylinder_->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
 		renderCylinder_->SetupFromShaders();
@@ -126,8 +126,8 @@ TestParticle::TestParticle()
 		{
 			renderRings_[i] = std::make_unique<RenderObject>();
 			renderRings_[i]->modelID_ = Game::Resource::CreateModel(vertexData_Ring);
-			renderRings_[i]->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
-			renderRings_[i]->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+			renderRings_[i]->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+			renderRings_[i]->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 			renderRings_[i]->psoConfig_.blendID = BlendStateID::Add;
 			renderRings_[i]->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
 			renderRings_[i]->SetupFromShaders();

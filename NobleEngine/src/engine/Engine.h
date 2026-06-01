@@ -56,7 +56,6 @@ private:
 
 	void UpdateDebugInfo();
 
-
 	// ウィンドウ関連
 	std::unique_ptr<WindowManager> windowManager_;
 	// DirectX関連

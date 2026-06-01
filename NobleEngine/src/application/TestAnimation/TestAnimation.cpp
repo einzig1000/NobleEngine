@@ -52,14 +52,16 @@ namespace
 TestAnimation::TestAnimation()
 {
 	render_ = std::make_unique<RenderObject>();
-	render_->modelID_ = Game::Resource::LoadModel("resources/Prototypes/model/AnimatedCube.gltf");
-	render_->psoConfig_.ps = "resources/Shaders/SimpleModel/SimpleModel.PS.hlsl";
-	render_->psoConfig_.vs = "resources/Shaders/SimpleModel/SimpleModel.VS.hlsl";
+	render_->modelID_ = Game::Resource::LoadModel("resources/prototypes/model/human/sneakWalk.gltf");
+	render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_->SetupFromShaders();
 
-	animation = animationManager_.LoadAnimation("resources/Prototypes/model/AnimatedCube.gltf");
-	tex = Game::Resource::LoadTexture("resources/Prototypes/texture/AnimatedCube_BaseColor.png");
-	nodeAnimation = &animation.nodeAnimations["AnimatedCube"];
+	animation = animationManager_.LoadAnimation("resources/prototypes/model/human/sneakWalk.gltf");
+	tex = Game::Resource::LoadTexture("resources/prototypes/texture/AnimatedCube_BaseColor.png");
+	//nodeAnimation = &animation.nodeAnimations["AnimatedCube"];
+	ModelData* modelData = Game::Resource::GetModelData(render_->modelID_);
+	skelton = Game::Resource::CreateSkeleton(modelData->rootNode);
 }
 
 TestAnimation::~TestAnimation()
@@ -77,10 +79,14 @@ void TestAnimation::Update(float deltaTime)
 
 	Vector4 color = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 
-	Vector3 translate = CalculateValue(animationTime_, nodeAnimation->translate);
-	Quaternion rotate = CalculateValue(animationTime_, nodeAnimation->rotate);
-	Vector3 scale = CalculateValue(animationTime_, nodeAnimation->scale);
-	Matrix4x4 animationMatrix = Matrix4x4::MakeAffineMatrix(scale, rotate, translate);
+	animationManager_.TestApplyAnimation(skelton, animation, animationTime_);
+	animationManager_.TestUpdateSkeleton(skelton);
+
+	//Vector3 translate = CalculateValue(animationTime_, nodeAnimation->translate);
+	//Quaternion rotate = CalculateValue(animationTime_, nodeAnimation->rotate);
+	//Vector3 scale = CalculateValue(animationTime_, nodeAnimation->scale);
+	//Matrix4x4 animationMatrix = Matrix4x4::MakeAffineMatrix(scale, rotate, translate);
+	Matrix4x4 animationMatrix = Matrix4x4::MakeIdentity4x4();
 	Matrix4x4 worldViewProjection = animationMatrix * viewProjection;
 
 	render_->SetCBufferData(0, ShaderType::PixelShader, &color);
@@ -94,4 +100,29 @@ void TestAnimation::Draw()
 	uint32_t rtID = Game::Resource::GetRenderTextureID("Main");
 
 	render_->Draw(rtID);
+
+	ImGui::Begin("Animation Info");
+	ImGui::Text("Animation Time: %.2f / %.2f", animationTime_, animation.duration);
+	ImGui::Text("Joint Count: %d", static_cast<int>(skelton.joints.size()));
+	ImGui::Text("Root Joint: %s", skelton.joints[skelton.root].name.c_str());
+
+	ImGui::SeparatorText("Skeleton Info");
+	for (const auto& joint : skelton.joints)
+	{
+		ImGui::Text("Joint[%d] %s", joint.index, joint.name.c_str());
+		ImGui::Text("Parent: %d", joint.parentIndex.value_or(-1));
+		ImGui::Text("Children: ");
+		for (auto c : joint.childrenIndex) ImGui::SameLine(), ImGui::Text("%d", c);
+		ImGui::Text("LocalMatrix:");
+		for (int r = 0; r < 4; r++)
+			ImGui::Text("%f %f %f %f",
+				joint.localMatrix.m[r][0], joint.localMatrix.m[r][1], joint.localMatrix.m[r][2], joint.localMatrix.m[r][3]);
+		ImGui::Text("SkeletonSpace:");
+		for (int r = 0; r < 4; r++)
+			ImGui::Text("%f %f %f %f",
+				joint.skeletonSpaceMatrix.m[r][0], joint.skeletonSpaceMatrix.m[r][1], joint.skeletonSpaceMatrix.m[r][2], joint.skeletonSpaceMatrix.m[r][3]);
+	}
+
+
+	ImGui::End();
 }

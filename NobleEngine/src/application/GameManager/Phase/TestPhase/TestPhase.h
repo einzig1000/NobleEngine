@@ -21,10 +21,10 @@ public:
 
 private:
 	std::unique_ptr<RenderObject> cbvOnly_;
-	EulerTransforms transform1_;
+	EulerTransform transform1_;
 	Vector4 color1_;
 	std::unique_ptr<RenderObject> cbvAndSrv_;
-	EulerTransforms transform2_[10];
+	EulerTransform transform2_[10];
 	Vector4 color2_[10];
 	int32_t tex2_[10];
 	std::unique_ptr<RenderObject> line_;
@@ -38,9 +38,9 @@ private:
 	std::unique_ptr<RenderObject> postEffect2_;
 
 	std::unique_ptr<RenderObject> screenDrawObjectMain_;
-	EulerTransforms mainScreenTransform_;
+	EulerTransform mainScreenTransform_;
 	std::unique_ptr<RenderObject> screenDrawObjectMiniMap_;
-	EulerTransforms miniMapScreenTransform_;
+	EulerTransform miniMapScreenTransform_;
 
 
 	std::unique_ptr<TestAnimation> testAnimation_;

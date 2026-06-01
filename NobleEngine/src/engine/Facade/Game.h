@@ -1,5 +1,6 @@
 #pragma once
 #include <definition/definition.h>
+#include <ImGuiManager/ImGuiManager.h>
 
 class IWorldCollider;
 class IPhysicsBody;
@@ -14,7 +15,7 @@ namespace Game
 		/// <summary>
 		/// モデル読み込み
 		/// </summary>
-		/// <param name="directoryPath">例:"Resources/Prototypes/model/"</param>
+		/// <param name="directoryPath">例:"Resources/prototypes/model/"</param>
 		/// <param name="filename">"cube.obj"</param>
 		/// <returns>モデルID</returns>
 		int32_t LoadModel(const std::string& filePath);
@@ -22,14 +23,14 @@ namespace Game
 		/// <summary>
 		/// テクスチャ読み込み
 		/// </summary>
-		/// <param name="filePath">例:"Resources/Prototypes/texture/uvChecker.png"</param>
+		/// <param name="filePath">例:"Resources/prototypes/texture/uvChecker.png"</param>
 		/// <returns>テクスチャID</returns>
 		int32_t LoadTexture(const std::string& filePath);
 
 		/// <summary>
 		/// オーディオ読み込み
 		/// </summary>
-		/// <param name="filePath">例:"Resources/Prototypes/audio/BGM/InGame.mp3"</param>
+		/// <param name="filePath">例:"Resources/prototypes/audio/BGM/InGame.mp3"</param>
 		/// <returns>オーディオID</returns>
 		int32_t LoadAudio(const std::string& filePath);
 
@@ -50,6 +51,8 @@ namespace Game
 		/// <param name="vertices"></param>
 		/// <returns></returns>
 		int32_t CreateModel(const std::vector<VertexData>& vertices);
+
+		Skeleton CreateSkeleton(const Node& node);
 
 		/// <summary>
 		/// テクスチャデータ取得
