@@ -132,7 +132,6 @@ TextureData* TextureManager::GetTextureData(int32_t textureID)
     return &textures_[textureID];
 }
 
-
 // 3,TextureResourceにデータを転送する
 [[nodiscard]]
 Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device* device, ID3D12GraphicsCommandList* commandList)

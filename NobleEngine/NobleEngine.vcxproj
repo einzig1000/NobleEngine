@@ -11,6 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\ResourceManager\Model\ModelBank\ModelBank.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Model\ModelCreater\ModelCreater.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Model\ModelLoader\ModelLoader.cpp" />
+    <ClCompile Include="src\application\TestLine\LineDrawer.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Animation\AnimationManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\application\GameManager\GameManager.cpp" />
@@ -68,6 +72,10 @@
     <ClCompile Include="src\application\TestParticle\TestParticle.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\ResourceManager\Model\ModelBank\ModelBank.h" />
+    <ClInclude Include="src\engine\ResourceManager\Model\ModelCreater\ModelCreater.h" />
+    <ClInclude Include="src\engine\ResourceManager\Model\ModelLoader\ModelLoader.h" />
+    <ClInclude Include="src\application\TestLine\LineDrawer.h" />
     <ClInclude Include="src\engine\definition\constexprs.h" />
     <ClInclude Include="src\engine\ResourceManager\Animation\AnimationManager.h" />
     <ClInclude Include="src\application\GameManager\GameManager.h" />

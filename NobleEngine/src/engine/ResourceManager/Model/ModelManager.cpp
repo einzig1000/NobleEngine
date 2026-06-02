@@ -1,4 +1,4 @@
-#include "ResourceManager/Model/ModelManager.h"
+#include "ModelManager.h"
 #include <Utilities/Logger/Logger.h>
 #include <DirectX/Resource/Dx12ResourceFactory.h>
 #include <filesystem> 
@@ -17,10 +17,10 @@ int32_t ModelManager::LoadModel(const std::string& filePath)
 {
     auto path = std::filesystem::path(filePath);
 
-	// ディレクトリ名
-	std::string directory = path.parent_path().string();
-	// 拡張子を除いたファイル名
-	std::string stem = path.stem().string();
+    // ディレクトリ名
+    std::string directory = path.parent_path().string();
+    // 拡張子を除いたファイル名
+    std::string stem = path.stem().string();
 
     auto exists = std::find_if(
         objects.begin(), objects.end(),
@@ -38,7 +38,7 @@ int32_t ModelManager::LoadModel(const std::string& filePath)
     // モデルデータ
     LoadModelFile(filePath, obj);
     // AABB .obj → .csv へ拡張子を変換して渡す
-	std::string csvFilename = directory + "/" + stem + ".csv";
+    std::string csvFilename = directory + "/" + stem + ".csv";
     obj.aabb = LoadAABB(csvFilename, obj.vertices);
     // 識別ナンバー
     obj.number = static_cast<uint32_t>(objects.size());
@@ -50,43 +50,55 @@ int32_t ModelManager::LoadModel(const std::string& filePath)
     ModelData& ref = objects.back();
 
     // 頂点バッファ作成
-    ref.vertexBufferSize = sizeof(VertexData) * UINT(ref.vertices.size());
-    ref.vertexBuffer = Dx12ResourceFactory::CreateBufferResource(device_, ref.vertexBufferSize);
+	size_t vertexBufferSize = sizeof(VertexData) * ref.vertices.size();
+    ref.vertexBuffer = Dx12ResourceFactory::CreateBufferResource(device_, vertexBufferSize);
     VertexData* vData = nullptr;
     ref.vertexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vData));
-    std::memcpy(vData, ref.vertices.data(), ref.vertexBufferSize);
+    std::memcpy(vData, ref.vertices.data(), vertexBufferSize);
     ref.vertexBuffer->Unmap(0, nullptr);
-
     ref.vertexBufferView.BufferLocation = ref.vertexBuffer->GetGPUVirtualAddress();
-    ref.vertexBufferView.SizeInBytes = static_cast<UINT>(ref.vertexBufferSize);
+    ref.vertexBufferView.SizeInBytes = static_cast<UINT>(vertexBufferSize);
     ref.vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+    // インデックスバッファ作成
+    size_t indexBufferSize = sizeof(uint32_t) * UINT(ref.indices.size());
+    ref.indexBuffer = Dx12ResourceFactory::CreateBufferResource(device_, indexBufferSize);
+    uint32_t* iData = nullptr;
+    ref.indexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&iData));
+    std::memcpy(iData, ref.indices.data(), indexBufferSize);
+    ref.indexBuffer->Unmap(0, nullptr);
+    ref.indexBufferView.BufferLocation = ref.indexBuffer->GetGPUVirtualAddress();
+    ref.indexBufferView.SizeInBytes = static_cast<UINT>(indexBufferSize);
+	ref.indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
     Log("成功 ID:%d", ref.number);
 
     return ref.number;
 }
 
-int32_t ModelManager::CreateModel(const std::vector<VertexData>& vertices)
+int32_t ModelManager::CreateModel(const std::vector<VertexData>& vertices, const std::string& name)
 {
+    Log("モデル作成開始:%s", name.c_str());
+
     ModelData obj;
     obj.vertices = vertices;
     obj.aabb = LoadAABBFromCSV("default_aabb.csv"); // 仮のCSVファイル名
     obj.number = static_cast<uint32_t>(objects.size());
-    obj.filePath = "default_model.obj"; // 仮のファイルパス
+    obj.filePath = name;
 
     objects.push_back(obj);
     ModelData& ref = objects.back();
 
     // 頂点バッファ作成
-    ref.vertexBufferSize = sizeof(VertexData) * UINT(ref.vertices.size());
-    ref.vertexBuffer = Dx12ResourceFactory::CreateBufferResource(device_, ref.vertexBufferSize);
+    size_t vertexBufferSize = sizeof(VertexData) * ref.vertices.size();
+    ref.vertexBuffer = Dx12ResourceFactory::CreateBufferResource(device_, vertexBufferSize);
     VertexData* vData = nullptr;
     ref.vertexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vData));
-    std::memcpy(vData, ref.vertices.data(), ref.vertexBufferSize);
+    std::memcpy(vData, ref.vertices.data(), vertexBufferSize);
     ref.vertexBuffer->Unmap(0, nullptr);
 
     ref.vertexBufferView.BufferLocation = ref.vertexBuffer->GetGPUVirtualAddress();
-    ref.vertexBufferView.SizeInBytes = static_cast<UINT>(ref.vertexBufferSize);
+    ref.vertexBufferView.SizeInBytes = static_cast<UINT>(vertexBufferSize);
     ref.vertexBufferView.StrideInBytes = sizeof(VertexData);
 
     Log("成功 ID:%d", ref.number);
@@ -248,34 +260,66 @@ MaterialData ModelManager::LoadMaterialTemplateFile(const std::string& filePath)
 void ModelManager::LoadModelFile(const std::string& filePath, ModelData& modelData)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_ConvertToLeftHanded | aiProcess_Triangulate);
+    const aiScene* scene = importer.ReadFile(filePath.c_str(),
+        aiProcess_Triangulate             // 面を三角形に分割する
+        | aiProcess_ConvertToLeftHanded     // 左手座標系に変換する(逆に言うとこのエンジンで使用するモデルは右手座標系で作成する必要がある)
+        | aiProcess_GenSmoothNormals        // 法線データが存在しないときに自動生成する
+        | aiProcess_JoinIdenticalVertices     // 重複頂点を結合する
+    );
     assert(scene->HasMeshes());
-
+ 
     std::vector<VertexData> vertices;
+    std::vector<uint32_t> indices;
 
+    // メッシュ取得
     aiMesh* mesh = scene->mMeshes[0];
+    
+    // 各情報が存在するか
+	const bool hasNormals = mesh->HasNormals();
+    Log("法線データが存在しません。自動生成された数値が使用されます");
+	const bool hasTexCoords = mesh->HasTextureCoords(0);
+    Log("テクスチャ座標データが存在しません。(0.0f,0.0f)で初期化されます");
 
-    for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex)
+	vertices.resize(mesh->mNumVertices);
+    for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex)
     {
-        aiFace& face = mesh->mFaces[faceIndex];
-        assert(face.mNumIndices == 3); // 三角形であることを確認
+        aiVector3D& position = mesh->mVertices[vertexIndex];
+        vertices[vertexIndex].position = { position.x, position.y, position.z, 1.0f };
 
-        for (uint32_t vertexIndex = 0; vertexIndex < face.mNumIndices; ++vertexIndex)
+        if (hasNormals)
         {
-            uint32_t index = face.mIndices[vertexIndex];
-            aiVector3D& position = mesh->mVertices[index];
-            aiVector3D& normal = mesh->mNormals[index];
-            aiVector3D& texcoord = mesh->mTextureCoords[0][index]; // テクスチャ座標がある場合
-            VertexData vertex;
-            vertex.position = { position.x, position.y, position.z, 1.0f };
-            vertex.normal = { normal.x, normal.y, normal.z };
-            vertex.texcoord = { texcoord.x, texcoord.y };
-            vertices.push_back(vertex);
+            aiVector3D& normal = mesh->mNormals[vertexIndex];
+            vertices[vertexIndex].normal = { normal.x, normal.y, normal.z };
+        }
+        else
+        {
+			vertices[vertexIndex].normal = { 0.0f, 1.0f, 0.0f };
+        }
+        if (hasTexCoords)
+        {
+            aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+            vertices[vertexIndex].texcoord = { texcoord.x, texcoord.y };
+        }
+        else
+        {
+            vertices[vertexIndex].texcoord = { 0.0f, 0.0f };
         }
     }
 
+	indices.resize(mesh->mNumFaces * 3);
+    for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex)
+    {
+        const aiFace& face = mesh->mFaces[faceIndex];
+        assert(face.mNumIndices == 3); // 三角形でなければエラー
+
+		indices[faceIndex * 3 + 0] = face.mIndices[0];
+		indices[faceIndex * 3 + 1] = face.mIndices[1];
+		indices[faceIndex * 3 + 2] = face.mIndices[2];
+    }
+
     modelData.vertices = vertices;
-	modelData.rootNode = ReadNode(scene->mRootNode);
+    modelData.indices = indices;
+    modelData.rootNode = ReadNode(scene->mRootNode);
 }
 
 Node ModelManager::ReadNode(const aiNode* node)

@@ -2,6 +2,7 @@
 struct PSInput
 {
     float4 position : SV_POSITION;
+    float4 color : COLOR0;
 };
 
 struct PSOutput
@@ -9,16 +10,11 @@ struct PSOutput
     float4 color : SV_TARGET;
 };
 
-cbuffer ColorBuffer : register(b0)
-{
-    float4 color;
-}
-
 PSOutput main(PSInput input)
 {
     PSOutput output;
     
-    output.color = color;
+    output.color = input.color;
     
     return output;
 }

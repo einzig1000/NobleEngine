@@ -22,7 +22,7 @@ TestPhase::TestPhase()
 	audio2 = Game::Resource::LoadAudio("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
 
 	cbvOnly_ = std::make_unique<RenderObject>();
-	cbvOnly_->modelID_ = model3;
+	cbvOnly_->modelID_ = model1;
 	cbvOnly_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	cbvOnly_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	cbvOnly_->SetupFromShaders();
@@ -60,7 +60,7 @@ TestPhase::TestPhase()
 	postEffect1_ = std::make_unique<RenderObject>();
 	postEffect1_->modelID_ = model3;
 	postEffect1_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect1_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	postEffect1_->psoConfig_.ps = "resources/shaders/FullScreen/GaussianFilter.PS.hlsl";
 	postEffect1_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	postEffect1_->SetupFromShaders();
 
@@ -220,9 +220,9 @@ void TestPhase::Update()
 void TestPhase::Draw()
 {
 	// mainに書き込む
-	//cbvOnly_->Draw(rt_main_);
-	//skybox_->Draw(rt_main_);
-	//testParticle_->Draw();
+	cbvOnly_->Draw(rt_main_);
+	skybox_->Draw(rt_main_);
+	testParticle_->Draw();
 	testAnimation_->Draw();
 
 	// miniMapに書き込む
@@ -829,3 +829,15 @@ void TestPhase::DrawImGui()
 
 }
 
+void TestPhase::DrawDebugInfo()
+{
+	ImGui::Begin("------debug info------");
+	ImGui::Text("ESC : Quit Application");
+	ImGui::Text("F1  : Hide Debug Info");
+	ImGui::Text("F3  : Toggle Camera Release or Debug");
+	ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
+	ImGui::Text("F12 : Toggle Fullscreen");
+	ImGui::Text("DeltaTime: %.3f ms", Game::Time::GetDeltaTime() * 1000.0f);
+	ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
+	ImGui::End();
+}

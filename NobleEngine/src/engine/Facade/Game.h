@@ -49,8 +49,9 @@ namespace Game
 		/// モデル作成
 		/// </summary>
 		/// <param name="vertices"></param>
+		/// <param name="name">モデル名</param>
 		/// <returns></returns>
-		int32_t CreateModel(const std::vector<VertexData>& vertices);
+		int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name);
 
 		Skeleton CreateSkeleton(const Node& node);
 

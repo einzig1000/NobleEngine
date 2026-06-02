@@ -119,8 +119,28 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	// 5)頂点バッファをバインド
 	cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
 
-	// 6)描画
-	cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
+
+
+	const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
+	if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
+	{
+		cmdList->IASetIndexBuffer(&obj->indexBufferView);
+		cmdList->DrawIndexedInstanced(indexCount, renderObject->instanceNum_, 0, 0, 0);
+	}
+	else
+	{
+		const uint32_t vertexCount = static_cast<uint32_t>(obj->vertices.size());
+		cmdList->DrawInstanced(vertexCount, renderObject->instanceNum_, 0, 0);
+	}
+
+	//// インデックスバッファがあればバインド
+	//if (obj->indexBufferView.BufferLocation != 0)
+	//{
+	//	cmdList->IASetIndexBuffer(&obj->indexBufferView);
+	//}
+
+	//// 6)描画
+	//cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
 }
 
 void DrawSystem::SceneDraw()

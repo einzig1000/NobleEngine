@@ -17,7 +17,7 @@ public:
 	void DrawImGui() override;
 	void ChangePhase(PHASE phase) override { nextPhase_ = phase; }
 
-
+	void DrawDebugInfo();
 
 private:
 	std::unique_ptr<RenderObject> cbvOnly_;

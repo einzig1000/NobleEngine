@@ -71,7 +71,7 @@ TestParticle::TestParticle()
 		}
 
 		renderCylinder_ = std::make_unique<RenderObject>();
-		renderCylinder_->modelID_ = Game::Resource::CreateModel(vertexData_Cylinder);
+		renderCylinder_->modelID_ = Game::Resource::CreateModel(vertexData_Cylinder, "Cylinder");
 		renderCylinder_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 		renderCylinder_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 		renderCylinder_->psoConfig_.blendID = BlendStateID::Add;
@@ -122,10 +122,11 @@ TestParticle::TestParticle()
 		renderRings_.resize(10);
 		ringColors.resize(10);
 		ringTransforms.resize(10);
+		int32_t ringModelID = Game::Resource::CreateModel(vertexData_Ring, "Ring");
 		for (int i = 0; i < 10; ++i)
 		{
 			renderRings_[i] = std::make_unique<RenderObject>();
-			renderRings_[i]->modelID_ = Game::Resource::CreateModel(vertexData_Ring);
+			renderRings_[i]->modelID_ = ringModelID;
 			renderRings_[i]->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 			renderRings_[i]->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 			renderRings_[i]->psoConfig_.blendID = BlendStateID::Add;

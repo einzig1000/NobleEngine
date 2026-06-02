@@ -13,7 +13,6 @@
 
 using namespace DirectX;
 
-
 Engine& Engine::Instance()
 {
 	static Engine instance; 
@@ -64,9 +63,6 @@ void Engine::BeginFrame()
 	// imguiを更新
 	imguiManager_->BeginFrame();
 
-	// デバッグ情報更新
-	UpdateDebugInfo();
-
 	// 描画関数初期化
 	drawSystem_->Reset();
 
@@ -99,30 +95,6 @@ void Engine::EndFrame()
 	// FPS制限
 	fixFPS_->UpdateFixFPS();
 }
-void Engine::UpdateDebugInfo()
-{
-	if (Game::IO::Key::IsJustPressed(DIK_F1))
-	{
-		imguiManager_->ToggleDraw();
-	}
-	if (Game::IO::Key::IsJustPressed(DIK_F3))
-	{
-		cameraManager_->ToggleCamera();
-	}
-
-	cameraManager_->Draw();
-
-	ImGui::Begin("------debug info------");
-	ImGui::Text("ESC : Quit Application");
-	ImGui::Text("F1  : Hide Debug Info");
-	ImGui::Text("F3  : Toggle Camera Release or Debug");
-	ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
-	ImGui::Text("F12 : Toggle Fullscreen");
-	ImGui::Text("DeltaTime: %.3f ms", fixFPS_->GetDeltaTime() * 1000.0f);
-	ImGui::Text("FPS: %.1f ", fixFPS_->GetAverageFPS());
-	ImGui::End();
-}
-
 void Engine::Quit()
 {
 	windowManager_->Quit();

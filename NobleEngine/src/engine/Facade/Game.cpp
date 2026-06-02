@@ -38,9 +38,9 @@ namespace Game
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
 		}
-		int32_t CreateModel(const std::vector<VertexData>& vertices)
+		int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name)
 		{
-			return Engine::Instance().GetResourceManager()->GetModelManager()->CreateModel(vertices);
+			return Engine::Instance().GetResourceManager()->GetModelManager()->CreateModel(vertices, name);
 		}
 		Skeleton CreateSkeleton(const Node& node)
 		{

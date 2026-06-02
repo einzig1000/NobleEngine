@@ -16,7 +16,7 @@ public:
 	// モデル読み込み
 	int32_t LoadModel(const std::string& filePath);
 
-	int32_t CreateModel(const std::vector<VertexData>& vertices);
+	int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name);
 
 	Skeleton CreateSkeleton(const Node& node);
 

@@ -1079,13 +1079,17 @@ struct ModelData
 {
 	// データ本体
     std::vector<VertexData> vertices;
+	std::vector<uint32_t> indices;
     MaterialData material;
 	Node rootNode;
 
     // 頂点バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-    UINT vertexBufferSize = 0;
+
+	// インデックスバッファ
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
     // AABB
     std::vector<AABB> aabb;

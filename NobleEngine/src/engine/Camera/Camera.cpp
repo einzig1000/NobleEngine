@@ -55,7 +55,7 @@ void Camera::Update_Orbit()
     if (isMiddleButtonDown && !isShiftDown)
     {
         Quaternion qx = Quaternion::MakeRotateAxisAngleQuaternion(Vector3(0, 1, 0), (mouseDelta.x * -0.01f));
-        Quaternion qy = Quaternion::MakeRotateAxisAngleQuaternion(Vector3(1, 0, 0), (mouseDelta.y * -0.01f));
+        Quaternion qy = Quaternion::MakeRotateAxisAngleQuaternion(Vector3(1, 0, 0), (mouseDelta.y * 0.01f));
         rotate_ = qx * qy * rotate_;
     }
 
@@ -80,7 +80,7 @@ void Camera::Update_Orbit()
 
 #pragma region カメラ距離移動
 
-    if (isControlDown && mouseWheel != 0)
+    if (mouseWheel != 0)
     {
 		const float moveSpeed = distance_ * 0.05f;
 
@@ -103,7 +103,6 @@ void Camera::Update_Orbit()
 
     // ビュー行列とプロジェクション行列を掛け合わせた行列を作成
     viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
-
 
 	Vector3 dir = center_ - eye;
 	Vector3 angle = Game::Math::YawPitchFromDirection(dir);
