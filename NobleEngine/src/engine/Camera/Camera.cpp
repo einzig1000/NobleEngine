@@ -1,14 +1,20 @@
 #include "Camera.h"
-#include "Facade/Game.h"
-#include "Window/WindowManager.h"
+#include <Facade/Game.h>
+#include <Window/WindowManager.h>
 #include <algorithm>
+#include <numbers>
 #include <ImGuiManager/ImGuiManager.h>
+#include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
 
 Camera::Camera()
 {
     enableControl_ = true;
 
     fovY_ = 0.65f;
+
+    spherical_.radius = 20.0f;
+    spherical_.theta = 0;
+    spherical_.phi = 0;
 
     Resize();
 }
@@ -32,85 +38,55 @@ void Camera::Update()
     }
 }
 
-// 移動(回転)するものをカメラ座標にして、center_を固定
 void Camera::Update_Orbit()
 {
-#pragma region 入力取得
-
-    // マウス移動量取得
+    // マウス移動量
     Vector2 mouseDelta = Game::IO::Mouse::GetPositionDelta();
-    // マウスホイール取得
+    // マウスホイール
     int32_t mouseWheel = Game::IO::Mouse::GetWheel();
-    // マウス中ボタンが押されているか
-    bool isMiddleButtonDown = Game::IO::Mouse::IsHeld(2);
-    // シフトキーが押されているか
-    bool isShiftDown = Game::IO::Key::IsHeld(DIK_LSHIFT);
-	// コントロールキーが押されているか
-	bool isControlDown = Game::IO::Key::IsHeld(DIK_LCONTROL);
+    // マウス中クリック
+	bool isMiddleHeld = Game::IO::Mouse::IsHeld(2);
+	// Shiftキー
+	bool isShiftHeld = Game::IO::Key::IsHeld(DIK_LSHIFT);
 
-#pragma endregion
-
-#pragma region カメラ回転
-
-    if (isMiddleButtonDown && !isShiftDown)
+    // パン（Shift + 右ドラッグ）
+    if (isMiddleHeld && isShiftHeld)
     {
-        Quaternion qx = Quaternion::MakeRotateAxisAngleQuaternion(Vector3(0, 1, 0), (mouseDelta.x * -0.01f));
-        Quaternion qy = Quaternion::MakeRotateAxisAngleQuaternion(Vector3(1, 0, 0), (mouseDelta.y * 0.01f));
-        rotate_ = qx * qy * rotate_;
+        Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(transform_.rotate.x) * Matrix4x4::MakeRotateYMatrix(transform_.rotate.y);
+        Vector3 right = { rot.m[0][0], rot.m[1][0], rot.m[2][0] };
+        Vector3 up = { rot.m[0][1], rot.m[1][1], rot.m[2][1] };
+
+        float speed = spherical_.radius * 0.02f;
+        center_ += (right * mouseDelta.x + up * mouseDelta.y) * 0.1f * speed;
+    }
+    
+	if (isMiddleHeld && !isShiftHeld)
+    {
+        spherical_.radius -= mouseWheel * 0.1f;
+        spherical_.phi -= mouseDelta.y * -0.01f;
+        spherical_.theta -= mouseDelta.x * 0.01f;
     }
 
-#pragma endregion
+    // ピッチのクランプ
+    spherical_.phi = std::clamp(
+        spherical_.phi,
+        -std::numbers::pi_v<float> / 2 + 0.001f,
+        +std::numbers::pi_v<float> / 2 - 0.001f
+    );
 
-#pragma region カメラ中心移動
+    // カメラ位置
+    Vector3 localPos = CoordinateConverter::ToCartesian(spherical_);
+    Vector3 eye = center_ + localPos;
 
-    if (isMiddleButtonDown && isShiftDown)
-    {
-        // スクリーン座標 → カメラ平面移動
-        const float moveSpeed = distance_ * 0.002f;
+    // 視線ベクトル
+	Vector3 forward = (center_ - eye).Normalized();
 
-        // カメラの右方向・上方向ベクトルを取得
-        Vector3 right = Vector3(1, 0, 0).RotateByQuaternion(rotate_);
-        Vector3 up = Vector3(0, 1, 0).RotateByQuaternion(rotate_);
+	viewMatrix_ = Matrix4x4::LookAtMatrix(eye, center_, { 0.0f, 1.0f, 0.0f });
 
-        center_ += right * (mouseDelta.x * moveSpeed);
-        center_ += up * (mouseDelta.y * moveSpeed);
-    }
-
-#pragma endregion
-
-#pragma region カメラ距離移動
-
-    if (mouseWheel != 0)
-    {
-		const float moveSpeed = distance_ * 0.05f;
-
-		distance_ -= mouseWheel * moveSpeed * 0.01f;
-    }
-
-#pragma endregion
-
-#pragma region カメラ行列計算
-
-    // eye 計算
-    Vector3 offset = Vector3(0, 0, distance_).RotateByQuaternion(rotate_);
-    eye = center_ + offset;
-
-    // view 行列
-    Vector3 up = Vector3(0.0f, 1.0f, 0.0f).RotateByQuaternion(rotate_);
-    viewMatrix_ = Matrix4x4::LookAtMatrix(eye, center_, up);
-
-    //GetShakeOffset();
-
-    // ビュー行列とプロジェクション行列を掛け合わせた行列を作成
+    // VP
     viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
 
-	Vector3 dir = center_ - eye;
-	Vector3 angle = Game::Math::YawPitchFromDirection(dir);
-
     CreateFrustumPlanes();
-
-#pragma endregion
-
 }
 
 // 移動(回転)するものをcenter_にして、カメラ座標を固定
@@ -140,25 +116,18 @@ void Camera::DrawImGui()
 
     ImGui::Text(name_.c_str());
 
-	//std::string centerTag = tag + ".Center";
-	//ImGui::DragFloat3(centerTag.c_str(), &center_.x, 0.01f);
-	//ImGui::SameLine();
-	//ImGui::Text("Center");
+	// yaw, pitch, rol
+	std::string yawTag = ".radius" + tag;
+	ImGui::DragFloat(yawTag.c_str(), &spherical_.radius, 0.1f);
 
-    // 緯度・経度
-    
+	std::string pitchTag = ".phi" + tag;
+	ImGui::DragFloat(pitchTag.c_str(), &spherical_.phi, 0.01f);
+
+	std::string rollTag = ".theta" + tag;
+	ImGui::DragFloat(rollTag.c_str(), &spherical_.theta, 0.01f);
+
 	std::string centerTag = ".Center" + tag;
 	ImGui::DragFloat3(centerTag.c_str(), &center_.x, 0.1f);
-
-	std::string distanceTag = ".Distance" + tag;
-    ImGui::DragFloat(distanceTag.c_str(), &distance_, 0.1f);
-
-    //Vector3 euler = rotate_.ToEuler();
-    //if (ImGui::DragFloat3("Rotation (Euler)", &euler.x, 0.1f))
-    //{
-    //    rotate_ = Quaternion::MakeFromEuler(euler);
-    //    rotate_ = rotate_.Normalize();
-    //}
 
 	ImGui::Separator();
 

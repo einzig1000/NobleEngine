@@ -74,6 +74,8 @@ void Engine::BeginFrame()
 
 	// カメラを更新	
 	cameraManager_->Update();
+
+	cameraManager_->Draw();
 }
 void Engine::EndFrame()
 {

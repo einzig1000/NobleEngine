@@ -14,48 +14,48 @@ public:
 
     void Update();
     void Draw();
-	void DrawImGui();
+    void DrawImGui();
     void Resize();
 
-	// 動かす先の設定
+    // 動かす先の設定
     void SetCenterTarget(Vector3 target, int spendFrame, EaseType easetype);
     void SetRotateTarget(Vector3 target, int spendFrame, EaseType easetype);
     void SetDistanceTarget(float target, int spendFrame, EaseType easetype);
 
-	// シェイク
+    // シェイク
     void StartShake(float intensity, float duration, float frequency = 25.0f);
     bool IsShaking() const;
     void StopShake();
 
     // 視錐台内にAABBがあるか
     bool InFrustum(const AABB& aabb);
-    
-	// 操作可能か設定
-	void SetEnableControl(bool enable) { enableControl_ = enable; }
 
-	void SetCameraMode(CameraMode_ORBIT_FPS mode) { cameraMode_ = mode; }
+    // 操作可能か設定
+    void SetEnableControl(bool enable) { enableControl_ = enable; }
 
-	// カメラ名
-	std::string name_;
+    void SetCameraMode(CameraMode_ORBIT_FPS mode) { cameraMode_ = mode; }
+
+    // カメラ名
+    std::string name_;
 
 
 public:
-	// 情報取得
-	Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix; }
+    // 情報取得
+    Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix; }
     Matrix4x4 GetViewMatrix() const { return viewMatrix_; }
-	Matrix4x4 GetViewportMatrix() const { return viewportMatrix; }
-	Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }
-	Matrix4x4 GetOrthoProjectionMatrix() const { return orthoProjectionMatrix_; }
-	Vector3 GetCenter() const { return center_; }
-    Vector3 GetTranslate() const { return eye; }
-    Vector3 GetRotate() const { return Vector3{}; }
-	float GetDistance() const { return distance_; }
+    Matrix4x4 GetViewportMatrix() const { return viewportMatrix; }
+    Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }
+    Matrix4x4 GetOrthoProjectionMatrix() const { return orthoProjectionMatrix_; }
+    Vector3 GetCenter() const { return center_; }
+    Vector3 GetTranslate() const { return transform_.translate; }
+    Vector3 GetRotate() const { return transform_.rotate; }
+    float GetDistance() const { return spherical_.radius; }
 
 private:
     Vector3 GetShakeOffset() const;
 
-	void Update_Orbit();
-	void Update_FPS();
+    void Update_Orbit();
+    void Update_FPS();
 
 private:
 
@@ -64,18 +64,15 @@ private:
     // 操作可能か
     bool enableControl_;
 
+	// カメラ位置
+    Coordinate_spherical spherical_ = {20.0f, 1.57f, -1.57f};
 	// 注視点
 	Vector3 center_ = { 0.0f, 0.0f, 0.0f };
-    // 注視点までの距離
-	float distance_ = 30.0f;
-    // カメラの向き
-	Quaternion rotate_ = { 0.0f, 0.0f, 0.0f, 1.0f };
-	// カメラの位置
-	Vector3 eye = { 0.0f, 0.0f, -30.0f };
+    // カメラの最終的な変換
+	EulerTransform transform_;
 
     /// カメラ回転
     void MovingCenter();
-
 
     /// 回転中心
     void MovingRotate();

@@ -60,7 +60,7 @@ TestPhase::TestPhase()
 	postEffect1_ = std::make_unique<RenderObject>();
 	postEffect1_->modelID_ = model3;
 	postEffect1_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect1_->psoConfig_.ps = "resources/shaders/FullScreen/GaussianFilter.PS.hlsl";
+	postEffect1_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
 	postEffect1_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	postEffect1_->SetupFromShaders();
 

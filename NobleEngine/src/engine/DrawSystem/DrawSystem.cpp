@@ -114,12 +114,8 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	// モデルの検索
 	const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID_);
 	if (!obj) return;
-	// 頂点数の取得
-	const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
 	// 5)頂点バッファをバインド
 	cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-
-
 
 	const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
 	if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)

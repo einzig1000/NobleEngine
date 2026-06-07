@@ -433,15 +433,19 @@ Matrix4x4 Matrix4x4::LookAtMatrix(const Vector3& eye, const Vector3& target, con
     Vector3 y = z.Cross(x);                  // up
 
     Matrix4x4 m;
-
-    // 回転部分（行ベクトル）
-    m.m[0][0] = x.x; m.m[0][1] = x.y; m.m[0][2] = x.z;
-    m.m[1][0] = y.x; m.m[1][1] = y.y; m.m[1][2] = y.z;
-    m.m[2][0] = z.x; m.m[2][1] = z.y; m.m[2][2] = z.z;
+    
+    m.m[0][0] = x.x; m.m[1][0] = x.y; m.m[2][0] = x.z;
+    m.m[0][1] = y.x; m.m[1][1] = y.y; m.m[2][1] = y.z;
+    m.m[0][2] = z.x; m.m[1][2] = z.y; m.m[2][2] = z.z;
 
     m.m[3][0] = -x.Dot(eye);
     m.m[3][1] = -y.Dot(eye);
     m.m[3][2] = -z.Dot(eye);
+
+    m.m[0][3] = 0.0f;
+    m.m[1][3] = 0.0f;
+    m.m[2][3] = 0.0f;
+    m.m[3][3] = 1.0f;
 
     return m;
 }
@@ -554,14 +558,14 @@ Vector3 Quaternion::ToEuler() const
     return euler;
 }
 
-Quaternion Quaternion::MakeFromEuler(const Vector3& euler)
+Quaternion Quaternion::MakeFromEuler(const float& yaw, const float& pitch, const float& roll)
 {
-    float cy = std::cos(euler.y * 0.5f);
-    float sy = std::sin(euler.y * 0.5f);
-    float cp = std::cos(euler.x * 0.5f);
-    float sp = std::sin(euler.x * 0.5f);
-    float cr = std::cos(euler.z * 0.5f);
-    float sr = std::sin(euler.z * 0.5f);
+	float cy = std::cos(yaw * 0.5f);
+	float sy = std::sin(yaw * 0.5f);
+	float cp = std::cos(pitch * 0.5f);
+	float sp = std::sin(pitch * 0.5f);
+	float cr = std::cos(roll * 0.5f);
+	float sr = std::sin(roll * 0.5f);
 
     Quaternion q;
     q.w = cr * cp * cy + sr * sp * sy;

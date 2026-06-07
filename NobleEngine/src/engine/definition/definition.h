@@ -780,7 +780,7 @@ struct Quaternion
 	// Quaternionからオイラー角を作成
 	Vector3 ToEuler() const;
 	// オイラー角からQuaternionを作成
-	static Quaternion MakeFromEuler(const Vector3& euler);
+	static Quaternion MakeFromEuler(const float& yaw, const float& pitch, const float& roll);
 	// 2つのQuaternionの球面線形補間を返す
     static Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t);
 };
