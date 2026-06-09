@@ -8,15 +8,15 @@ TestPhase::TestPhase()
 	rt_Vignette_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Vignette");
 	rt_GrayScale_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "GrayScale");
 
-	t_uvChecker = Game::Resource::LoadTexture("resources/prototypes/texture/uvChecker.png");
-	t_monsterBall_ = Game::Resource::LoadTexture("resources/prototypes/texture/monsterBall.png");
-	t_white1x1_ = Game::Resource::LoadTexture("resources/prototypes/texture/white1x1.png");
-	t_dds_ = Game::Resource::LoadTexture("resources/prototypes/texture/rostock_laage_airport_4k.dds");
+	t_uvChecker = Game::Resource::Texture::Load("resources/prototypes/texture/uvChecker.png");
+	t_monsterBall_ = Game::Resource::Texture::Load("resources/prototypes/texture/monsterBall.png");
+	t_white1x1_ = Game::Resource::Texture::Load("resources/prototypes/texture/white1x1.png");
+	t_dds_ = Game::Resource::Texture::Load("resources/prototypes/texture/rostock_laage_airport_4k.dds");
 
-	int32_t model1 = Game::Resource::LoadModel("resources/prototypes/model/cube/cube.obj");
-	int32_t model2 = Game::Resource::LoadModel("resources/prototypes/model/sphere/sphere.obj");
-	int32_t model3 = Game::Resource::LoadModel("resources/prototypes/model/plane/plane.obj");
-	int32_t model4 = Game::Resource::LoadModel("resources/prototypes/model/bunny/bunny.obj");
+	int32_t model1 = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
+	int32_t model2 = Game::Resource::Model::Load("resources/prototypes/model/sphere/sphere.obj");
+	int32_t model3 = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
+	int32_t model4 = Game::Resource::Model::Load("resources/prototypes/model/bunny/bunny.obj");
 
 	audio1 = Game::Resource::LoadAudio("resources/prototypes/audio/BGM/InGame.mp3");
 	audio2 = Game::Resource::LoadAudio("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
@@ -96,12 +96,12 @@ TestPhase::TestPhase()
 
 	lightData_.LightCount = 1;
 
-	mainScreenTransform_.scale = { 12.8f,7.2f,0.0f };
+	mainScreenTransform_.scale = { 12.800f,7.200f,0.0f };
 	mainScreenTransform_.translate = { 0.0f, 0.0f, 0.0f };
 	mainScreenTransform_.rotate = { 0.0f, 0.0f, 0.0f };
 
-	miniMapScreenTransform_.scale = { 12.8f / 4.0f,7.2f / 4.0f,0.0f };
-	miniMapScreenTransform_.translate = { -8.0f, -4.0f, 0.0f };
+	miniMapScreenTransform_.scale = { 128.0f,72.0f,0.0f };
+	miniMapScreenTransform_.translate = { 1280.0f - (128.0f + 50.0f), 720.0f - (72.0f + 50.0f), 0.1f };
 	miniMapScreenTransform_.rotate = { 0.0f, 0.0f, 0.0f };
 	
 	testAnimation_ = std::make_unique<TestAnimation>();
@@ -124,7 +124,7 @@ void TestPhase::Update()
 	Matrix4x4 viewMatrix = Game::Camera::Getter::GetCurrentViewMatrix();
 	Matrix4x4 projectionMatrix = Game::Camera::Getter::GetCurrentProjectionMatrix();
 	Matrix4x4 viewProjection = Game::Camera::Getter::GetCurrentViewProjectionMatrix();
-	Matrix4x4 orthoProje = Game::Camera::Getter::GetCurrentOrthoProjectionMatrix();
+	Matrix4x4 orthoProj = Game::Camera::Getter::GetCurrentOrthoProjectionMatrix();
 	Vector3 cameraPos = Game::Camera::Getter::GetCurrentTranslate();
 
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform1_.scale, transform1_.rotate, transform1_.translate);
@@ -182,9 +182,9 @@ void TestPhase::Update()
 	Matrix4x4 identityMatrix = Matrix4x4::MakeIdentity4x4();
 
 	Matrix4x4 mainScreenWorldMatrix = Matrix4x4::MakeAffineMatrix(mainScreenTransform_.scale, mainScreenTransform_.rotate, mainScreenTransform_.translate);
-	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * viewProjection;
-	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProje;
-	Matrix4x4 mainScreenWorldViewProjection = identityMatrix;
+	Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * viewProjection;
+	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProj;
+	//Matrix4x4 mainScreenWorldViewProjection = identityMatrix;
 
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
@@ -193,15 +193,15 @@ void TestPhase::Update()
 	screenDrawObjectMain_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
 
 	Matrix4x4 miniMapWorldMatrix = Matrix4x4::MakeAffineMatrix(miniMapScreenTransform_.scale, miniMapScreenTransform_.rotate, miniMapScreenTransform_.translate);
-	Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * viewProjection;
-	//Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * orthoProje;
+	//Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * viewProjection;
+	Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * orthoProj;
+	//Matrix4x4 miniMapWorldViewProjection = identityMatrix;
 
 	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
 	screenDrawObjectMiniMap_->SetCBufferData(1, ShaderType::PixelShader, &rt_GrayScale_);
 	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::VertexShader, &miniMapWorldViewProjection);
 	screenDrawObjectMiniMap_->SetCBufferData(1, ShaderType::VertexShader, &miniMapWorldMatrix);
-
 
 	testAnimation_->Update(Game::Time::GetDeltaTime());
 	testParticle_->Update();
@@ -300,9 +300,9 @@ void TestPhase::DrawImGui()
 
 			if (ImGui::TreeNode("Screen"))
 			{
-				ImGui::DragFloat3("scale", &mainScreenTransform_.scale.x, 0.1f, 0.1f, 100.0f);
+				ImGui::DragFloat3("scale", &mainScreenTransform_.scale.x, 0.1f);
 				ImGui::DragFloat3("rotate", &mainScreenTransform_.rotate.x, 0.1f);
-				ImGui::DragFloat3("translate", &mainScreenTransform_.translate.x, 0.1f, -100.0f, 100.0f);
+				ImGui::DragFloat3("translate", &mainScreenTransform_.translate.x, 0.1f);
 
 				ImGui::Separator();
 

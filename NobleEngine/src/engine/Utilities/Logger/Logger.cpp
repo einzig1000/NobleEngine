@@ -10,6 +10,14 @@
 #define VSNPRINTF_FUNC vsnprintf
 #endif
 
+#ifdef _DEBUG
+    // Debugビルドの時は普通の Log 関数を呼ぶ
+#define MY_LOG(format, ...) Log(format, __VA_ARGS__)
+#else
+    // Releaseビルドの時は何もしない
+#define MY_LOG(format, ...) do {} while(0)
+#endif
+
 // ログを出す関数
 void Log(const std::string& message)
 {
@@ -176,6 +184,7 @@ void Log(const char* format, ...)
         OutputDebugStringA("\n");
     }
 }
+
 // ログをファイルに書き出す
 void Log(std::ofstream& os, const std::string& message)
 {

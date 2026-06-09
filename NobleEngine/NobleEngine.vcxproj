@@ -70,6 +70,8 @@
     <ClCompile Include="src\engine\Window\WindowManager.cpp" />
     <ClCompile Include="src\application\TestAnimation\TestAnimation.cpp" />
     <ClCompile Include="src\application\TestParticle\TestParticle.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Texture\TextureBank\TextureBank.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\ResourceManager\Model\ModelBank\ModelBank.h" />
@@ -134,6 +136,8 @@
     <ClInclude Include="src\engine\Window\WindowManager.h" />
     <ClInclude Include="src\application\TestAnimation\TestAnimation.h" />
     <ClInclude Include="src\application\TestParticle\TestParticle.h" />
+    <ClInclude Include="src\engine\ResourceManager\Texture\TextureBank\TextureBank.h" />
+    <ClInclude Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

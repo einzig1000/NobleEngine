@@ -22,56 +22,57 @@ namespace Game
 {
 	namespace Resource
 	{
-		int32_t LoadModel(const std::string& filePath)
+		namespace Model
 		{
-			return Engine::Instance().GetResourceManager()->GetModelManager()->LoadModel(filePath);
+			int32_t Load(const std::string& filePath)
+			{
+				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelLoader()->LoadModel(filePath);
+			}
+
+			int32_t Create(const std::vector<VertexData>& vertices, const std::string& name)
+			{
+				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelCreater()->CreateModel(vertices, name);
+			}
+
+			ModelData* GetData(int32_t modelID)
+			{
+				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelBank()->GetModelData(modelID);
+			}
 		}
+
+		namespace Texture
+		{
+			int32_t Load(const std::string& filePath)
+			{
+				return Engine::Instance().GetResourceManager()->GetTextureManager()->GetTextureLoader()->LoadTexture(filePath);
+			}
+
+			TextureData* GetData(int32_t textureID)
+			{
+				return Engine::Instance().GetResourceManager()->GetTextureManager()->GetTextureBank()->GetTextureData(textureID);
+			}
+		}
+
 		int32_t LoadAudio(const std::string& filePath)
 		{
 			return Engine::Instance().GetResourceManager()->GetAudioManager()->LoadAudio(filePath);
-		}
-		int32_t LoadTexture(const std::string& filePath)
-		{
-			return Engine::Instance().GetResourceManager()->GetTextureManager()->LoadTexture(filePath);
 		}
 		int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName)
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
 		}
-		int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name)
-		{
-			return Engine::Instance().GetResourceManager()->GetModelManager()->CreateModel(vertices, name);
-		}
-		Skeleton CreateSkeleton(const Node& node)
-		{
-			return Engine::Instance().GetResourceManager()->GetModelManager()->CreateSkeleton(node);
-		}
+
 		int32_t GetRenderTextureID(const std::string textureName)
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->srvAlloc.index;
 		}
 
-		TextureData* GetTextureData(int32_t textureNumber)
-		{	
-			return Engine::Instance().GetResourceManager()->GetTextureManager()->GetTextureData(textureNumber);
-		}
-		ModelData* GetModelData(int32_t modelID)
-		{
-			return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelData(modelID);
-		}
 		AudioData* GetAudioData(int32_t audioID)
 		{
 			return Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioData(audioID);
 		}
 
-		size_t GetTextureCount()
-		{
-			return Engine::Instance().GetResourceManager()->GetTextureManager()->GetTextureCount();
-		}
-		size_t GetModelCount()
-		{
-			return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelCount();
-		}
+
 		size_t GetAudioCount()
 		{
 			return Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioCount();

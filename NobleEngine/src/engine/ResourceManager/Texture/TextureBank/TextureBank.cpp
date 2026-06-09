@@ -1,0 +1,30 @@
+#include "TextureBank.h"
+#include <Utilities/Logger/Logger.h>
+
+void TextureBank::AddTextureData(const std::string& filePath, const int32_t srvIndex, std::unique_ptr<TextureData> textureData)
+{
+	pathToIDMap_[filePath] = srvIndex;
+	textures_[srvIndex] = std::move(textureData);
+}
+
+int32_t TextureBank::IsTextureDataExist(const std::string& filePath) const
+{
+	// すでに読み込まれていたらそのテクスチャIDを返す
+	auto it = pathToIDMap_.find(filePath);
+	if (it != pathToIDMap_.end())
+	{
+		return it->second;
+	}
+	return -1;
+}
+
+TextureData* TextureBank::GetTextureData(int32_t textureID)
+{
+	auto it = textures_.find(textureID);
+	if (it != textures_.end())
+	{
+		return it->second.get();
+	}
+	Log("存在しないテクスチャIDが要求されました: %d", textureID);
+	return nullptr;
+}

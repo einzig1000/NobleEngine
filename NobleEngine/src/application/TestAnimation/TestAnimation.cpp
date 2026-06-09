@@ -52,16 +52,16 @@ namespace
 TestAnimation::TestAnimation()
 {
 	render_ = std::make_unique<RenderObject>();
-	render_->modelID_ = Game::Resource::LoadModel("resources/prototypes/model/human/sneakWalk.gltf");
+	render_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/human/sneakWalk.gltf");
 	render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_->SetupFromShaders();
 
 	animation = animationManager_.LoadAnimation("resources/prototypes/model/human/sneakWalk.gltf");
-	tex = Game::Resource::LoadTexture("resources/prototypes/texture/AnimatedCube_BaseColor.png");
+	tex = Game::Resource::Texture::Load("resources/prototypes/texture/AnimatedCube_BaseColor.png");
 	//nodeAnimation = &animation.nodeAnimations["AnimatedCube"];
-	ModelData* modelData = Game::Resource::GetModelData(render_->modelID_);
-	skelton = Game::Resource::CreateSkeleton(modelData->rootNode);
+	ModelData* modelData = Game::Resource::Model::GetData(render_->modelID_);
+	skeleton = modelData->skeleton;
 }
 
 TestAnimation::~TestAnimation()
@@ -79,8 +79,8 @@ void TestAnimation::Update(float deltaTime)
 
 	Vector4 color = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 
-	animationManager_.TestApplyAnimation(skelton, animation, animationTime_);
-	animationManager_.TestUpdateSkeleton(skelton);
+	animationManager_.TestApplyAnimation(skeleton, animation, animationTime_);
+	animationManager_.TestUpdateSkeleton(skeleton);
 
 	//Vector3 translate = CalculateValue(animationTime_, nodeAnimation->translate);
 	//Quaternion rotate = CalculateValue(animationTime_, nodeAnimation->rotate);
@@ -103,11 +103,11 @@ void TestAnimation::Draw()
 
 	ImGui::Begin("Animation Info");
 	ImGui::Text("Animation Time: %.2f / %.2f", animationTime_, animation.duration);
-	ImGui::Text("Joint Count: %d", static_cast<int>(skelton.joints.size()));
-	ImGui::Text("Root Joint: %s", skelton.joints[skelton.root].name.c_str());
+	ImGui::Text("Joint Count: %d", static_cast<int>(skeleton.joints.size()));
+	ImGui::Text("Root Joint: %s", skeleton.joints[skeleton.root].name.c_str());
 
 	ImGui::SeparatorText("Skeleton Info");
-	for (const auto& joint : skelton.joints)
+	for (const auto& joint : skeleton.joints)
 	{
 		ImGui::Text("Joint[%d] %s", joint.index, joint.name.c_str());
 		ImGui::Text("Parent: %d", joint.parentIndex.value_or(-1));

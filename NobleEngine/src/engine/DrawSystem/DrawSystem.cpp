@@ -36,10 +36,6 @@ DrawSystem::~DrawSystem()
 void DrawSystem::Reset()
 {
 	// CBアロケータをリセット
-	//for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
-	//{
-	//	cbAllocators_[i].Reset();
-	//}
 	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
 	cbAllocators_[backBufferIndex].Reset();
 
@@ -112,7 +108,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 		}
 	}
 	// モデルの検索
-	const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID_);
+	const ModelData* obj = resourceManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
 	if (!obj) return;
 	// 5)頂点バッファをバインド
 	cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);

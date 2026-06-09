@@ -4,8 +4,8 @@
 
 TestParticle::TestParticle()
 {
-	t_uvChecker = Game::Resource::LoadTexture("resources/prototypes/texture/particle/circle2.png");
-	t_gradationLine = Game::Resource::LoadTexture("resources/prototypes/texture/particle/gradationLine.png");
+	t_uvChecker = Game::Resource::Texture::Load("resources/prototypes/texture/particle/circle2.png");
+	t_gradationLine = Game::Resource::Texture::Load("resources/prototypes/texture/particle/gradationLine.png");
 
 	// 円
 	{
@@ -15,7 +15,7 @@ TestParticle::TestParticle()
 		for (int i = 0; i < 10; ++i)
 		{
 			renderPlanes_[i] = std::make_unique<RenderObject>();
-			renderPlanes_[i]->modelID_ = Game::Resource::LoadModel("resources/prototypes/model/plane/plane.obj");
+			renderPlanes_[i]->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
 			renderPlanes_[i]->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 			renderPlanes_[i]->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 			renderPlanes_[i]->psoConfig_.blendID = BlendStateID::Add;
@@ -71,7 +71,7 @@ TestParticle::TestParticle()
 		}
 
 		renderCylinder_ = std::make_unique<RenderObject>();
-		renderCylinder_->modelID_ = Game::Resource::CreateModel(vertexData_Cylinder, "Cylinder");
+		renderCylinder_->modelID_ = Game::Resource::Model::Create(vertexData_Cylinder, "Cylinder");
 		renderCylinder_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 		renderCylinder_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 		renderCylinder_->psoConfig_.blendID = BlendStateID::Add;
@@ -122,7 +122,7 @@ TestParticle::TestParticle()
 		renderRings_.resize(10);
 		ringColors.resize(10);
 		ringTransforms.resize(10);
-		int32_t ringModelID = Game::Resource::CreateModel(vertexData_Ring, "Ring");
+		int32_t ringModelID = Game::Resource::Model::Create(vertexData_Ring, "Ring");
 		for (int i = 0; i < 10; ++i)
 		{
 			renderRings_[i] = std::make_unique<RenderObject>();

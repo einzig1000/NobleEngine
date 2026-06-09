@@ -20,7 +20,7 @@ private:
 
 	AnimationManager animationManager_;
 	Animation animation;
-	Skeleton skelton;
+	Skeleton skeleton;
 	NodeAnimation* nodeAnimation = nullptr;
 	uint32_t tex;
 

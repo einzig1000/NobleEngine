@@ -12,20 +12,48 @@ namespace Game
 {
 	namespace Resource
 	{
-		/// <summary>
-		/// モデル読み込み
-		/// </summary>
-		/// <param name="directoryPath">例:"Resources/prototypes/model/"</param>
-		/// <param name="filename">"cube.obj"</param>
-		/// <returns>モデルID</returns>
-		int32_t LoadModel(const std::string& filePath);
+		namespace Model
+		{
+			/// <summary>
+			/// モデル読み込み
+			/// </summary>
+			/// <param name="filePath">例:"Resources/prototypes/model/cube.obj"</param>
+			/// <returns>モデルID</returns>
+			int32_t Load(const std::string& filePath);
 
-		/// <summary>
-		/// テクスチャ読み込み
-		/// </summary>
-		/// <param name="filePath">例:"Resources/prototypes/texture/uvChecker.png"</param>
-		/// <returns>テクスチャID</returns>
-		int32_t LoadTexture(const std::string& filePath);
+			/// <summary>
+			/// モデル作成
+			/// </summary>
+			/// <param name="vertices"></param>
+			/// <param name="name">モデル名</param>
+			/// <returns></returns>
+			int32_t Create(const std::vector<VertexData>& vertices, const std::string& name);
+
+			/// <summary>
+			/// モデルデータ取得
+			/// </summary>
+			/// <param name="modelID">モデルID</param>
+			/// <returns>モデルデータ</returns>
+			ModelData* GetData(int32_t modelID);
+		}
+
+		namespace Texture
+		{
+			/// <summary>
+			/// テクスチャ読み込み
+			/// </summary>
+			/// <param name="filePath">例:"Resources/prototypes/texture/uvChecker.png"</param>
+			/// <returns>テクスチャID</returns>
+			int32_t Load(const std::string& filePath);
+
+			/// <summary>
+			/// テクスチャデータ取得
+			/// </summary>
+			/// <param name="textureID">テクスチャID</param>
+			/// <returns>メタデータを含むテクスチャデータ</returns>
+			TextureData* GetData(int32_t textureID);
+		}
+
 
 		/// <summary>
 		/// オーディオ読み込み
@@ -45,29 +73,7 @@ namespace Game
 		/// <returns>テクスチャID</returns>
 		int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName);
 
-		/// <summary>
-		/// モデル作成
-		/// </summary>
-		/// <param name="vertices"></param>
-		/// <param name="name">モデル名</param>
-		/// <returns></returns>
-		int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name);
 
-		Skeleton CreateSkeleton(const Node& node);
-
-		/// <summary>
-		/// テクスチャデータ取得
-		/// </summary>
-		/// <param name="textureID">テクスチャID</param>
-		/// <returns>メタデータを含むテクスチャデータ</returns>
-		TextureData* GetTextureData(int32_t textureID);
-
-		/// <summary>
-		/// モデルデータ取得
-		/// </summary>
-		/// <param name="modelID">モデルID</param>
-		/// <returns>モデルデータ</returns>
-		ModelData* GetModelData(int32_t modelID);
 
 		/// <summary>
 		/// オーディオデータ取得
@@ -81,12 +87,6 @@ namespace Game
 		/// </summary>
 		/// <returns>読み込んだテクスチャ数</returns>
 		size_t GetTextureCount();
-
-		/// <summary>
-		/// 読み込んだモデル数取得
-		/// </summary>
-		/// <returns>読み込んだモデル数</returns>
-		size_t GetModelCount();
 
 		/// <summary>
 		/// 読み込んだオーディオ数取得

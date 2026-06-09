@@ -1,8 +1,9 @@
 #pragma once
 #include <definition/definition.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <ResourceManager/Model/ModelLoader/ModelLoader.h>
+#include <ResourceManager/Model/ModelCreater/ModelCreater.h>
+#include <ResourceManager/Model/ModelBank/ModelBank.h>
+#include <memory>
 
 /// <summary>
 /// モデル管理クラス
@@ -13,49 +14,14 @@ public:
 	ModelManager(ID3D12Device* device);
 	~ModelManager();
 
-	// モデル読み込み
-	int32_t LoadModel(const std::string& filePath);
-
-	int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name);
-
-	Skeleton CreateSkeleton(const Node& node);
-
-	// データ取得
-	ModelData* GetModelData(int32_t modelID);
-
-	// モデル数を取得
-	size_t GetModelCount() const { return objects.size(); }
-
-	// モデルリストを取得
-	std::vector<ModelData>& GetModelList() { return objects; }
+	ModelLoader* GetModelLoader() const { return loader_.get(); }
+	ModelCreater* GetModelCreater() const { return creater_.get(); }
+	ModelBank* GetModelBank() const { return bank_.get(); }
 
 private:
-	ID3D12Device* device_;
+	std::unique_ptr<ModelLoader> loader_;
+	std::unique_ptr<ModelCreater> creater_;
+	std::unique_ptr<ModelBank> bank_;
 
-	// モデルデータを詰める
-	std::vector<ModelData> objects;
-
-	// mtlファイル読み込み
-	MaterialData LoadMaterialTemplateFile(const std::string& filePath);
-
-	// モデルファイル読み込み
-	void LoadModelFile(const std::string& filePath, ModelData& modelData);
-
-	// Node読み込み
-	Node ReadNode(const aiNode* node);
-
-	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parentIndex, std::vector<Joint>& joints);
-
-	// １，AABB読み込み
-	std::vector<AABB> LoadAABB(const std::string& filePath, const std::vector<VertexData>& vertices);
-
-	// ２、AABB.csvがあれば読み込み
-	std::vector<AABB> LoadAABBFromCSV(const std::string& filePath);
-	
-	// ２，AABB.csvがなければモデルデータから作成
-	AABB CreateLocalAABB(const std::vector<VertexData>& vertices);
-
-	// ３、AABBをCSVに保存
-	void SaveAABBToCSV(const std::string& filePath, const std::vector<AABB>& aabbs);
 };
 

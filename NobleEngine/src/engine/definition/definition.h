@@ -1082,6 +1082,7 @@ struct ModelData
 	std::vector<uint32_t> indices;
     MaterialData material;
 	Node rootNode;
+	Skeleton skeleton;
 
     // 頂点バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
@@ -1093,12 +1094,6 @@ struct ModelData
 
     // AABB
     std::vector<AABB> aabb;
-
-    // 識別ナンバー
-    int32_t number = 0;
-
-    // ファイルパス
-    std::string filePath;
 };
 
 #pragma endregion
@@ -1114,14 +1109,6 @@ struct TextureData
 
 	// テクスチャリソース
     Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
-	// SRVのGPUハンドル
-    D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU{};
-    
-	// 識別ナンバー   
-	int32_t number = -1;
-
-	// ファイルパス
-    std::string filePath;
 };
 
 #pragma endregion

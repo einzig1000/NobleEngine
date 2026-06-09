@@ -13,7 +13,7 @@ Camera::Camera()
     fovY_ = 0.65f;
 
     spherical_.radius = 20.0f;
-    spherical_.theta = 0;
+	spherical_.theta = std::numbers::pi_v<float> / 2.0f;
     spherical_.phi = 0;
 
     Resize();
@@ -62,10 +62,13 @@ void Camera::Update_Orbit()
     
 	if (isMiddleHeld && !isShiftHeld)
     {
-        spherical_.radius -= mouseWheel * 0.1f;
         spherical_.phi -= mouseDelta.y * -0.01f;
         spherical_.theta -= mouseDelta.x * 0.01f;
     }
+    spherical_.radius -= mouseWheel * 0.1f;
+
+	// 距離をクランプ
+	if (spherical_.radius < 1.0f) spherical_.radius = 1.0f;
 
     // ピッチのクランプ
     spherical_.phi = std::clamp(

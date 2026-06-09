@@ -1,7 +1,7 @@
 #pragma once
-#include "ResourceManager/Audio/AudioManager.h"
-#include "ResourceManager/Texture/TextureManager.h"
-#include "ResourceManager/Model/ModelManager.h"
+#include <ResourceManager/Audio/AudioManager.h>
+#include <ResourceManager/Texture/TextureManager.h>
+#include <ResourceManager/Model/ModelManager.h>
 #include <memory> 
 
 class DirectXManager;
