@@ -20,8 +20,7 @@ int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const
     // AABB作成
     // ref->aabb = CreateLocalAABB(vertices);
 
-	// ファイルパス
-	// 表記揺れを防ぐため小文字に変換して保存
+	// 表記揺れを防ぐため小文字に変換してファイルパスとして扱う
     std::string filePath = name;
     std::transform(filePath.begin(), filePath.end(), filePath.begin(), ::tolower);
 

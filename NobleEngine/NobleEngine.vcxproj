@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Audio\AudioLoader\AudioLoader.cpp" />
+    <ClCompile Include="src\engine\ResourceManager\Audio\AudioBank\AudioBank.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Model\ModelBank\ModelBank.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Model\ModelCreater\ModelCreater.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Model\ModelLoader\ModelLoader.cpp" />
@@ -74,6 +77,9 @@
     <ClCompile Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.h" />
+    <ClInclude Include="src\engine\ResourceManager\Audio\AudioLoader\AudioLoader.h" />
+    <ClInclude Include="src\engine\ResourceManager\Audio\AudioBank\AudioBank.h" />
     <ClInclude Include="src\engine\ResourceManager\Model\ModelBank\ModelBank.h" />
     <ClInclude Include="src\engine\ResourceManager\Model\ModelCreater\ModelCreater.h" />
     <ClInclude Include="src\engine\ResourceManager\Model\ModelLoader\ModelLoader.h" />

@@ -18,8 +18,8 @@ TestPhase::TestPhase()
 	int32_t model3 = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
 	int32_t model4 = Game::Resource::Model::Load("resources/prototypes/model/bunny/bunny.obj");
 
-	audio1 = Game::Resource::LoadAudio("resources/prototypes/audio/BGM/InGame.mp3");
-	audio2 = Game::Resource::LoadAudio("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
+	audio1 = Game::Resource::Audio::Load("resources/prototypes/audio/BGM/InGame.mp3");
+	audio2 = Game::Resource::Audio::Load("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
 
 	cbvOnly_ = std::make_unique<RenderObject>();
 	cbvOnly_->modelID_ = model1;

@@ -54,13 +54,24 @@ namespace Game
 			TextureData* GetData(int32_t textureID);
 		}
 
+		namespace Audio
+		{
+			/// <summary>
+			/// オーディオ読み込み
+			/// </summary>
+			/// <param name="filePath">例:"Resources/prototypes/audio/BGM/InGame.mp3"</param>
+			/// <returns>オーディオID</returns>
+			int32_t Load(const std::string& filePath);
 
-		/// <summary>
-		/// オーディオ読み込み
-		/// </summary>
-		/// <param name="filePath">例:"Resources/prototypes/audio/BGM/InGame.mp3"</param>
-		/// <returns>オーディオID</returns>
-		int32_t LoadAudio(const std::string& filePath);
+			/// <summary>
+			/// オーディオデータ取得
+			/// </summary>
+			/// <param name="audioID">オーディオID</param>
+			/// <returns>オーディオデータ</returns>
+			AudioData* GetData(int32_t audioID);
+		}
+
+
 
 		int32_t GetRenderTextureID(const std::string textureName);
 
@@ -72,27 +83,6 @@ namespace Game
 		/// <param name="height">縦幅</param>
 		/// <returns>テクスチャID</returns>
 		int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName);
-
-
-
-		/// <summary>
-		/// オーディオデータ取得
-		/// </summary>
-		/// <param name="audioID">オーディオID</param>
-		/// <returns>オーディオデータ</returns>
-		AudioData* GetAudioData(int32_t audioID);
-
-		/// <summary>
-		/// 読み込んだテクスチャ数取得
-		/// </summary>
-		/// <returns>読み込んだテクスチャ数</returns>
-		size_t GetTextureCount();
-
-		/// <summary>
-		/// 読み込んだオーディオ数取得
-		/// </summary>
-		/// <returns>読み込んだオーディオ数</returns>
-		size_t GetAudioCount();
 	};
 
 	namespace DebugDraw

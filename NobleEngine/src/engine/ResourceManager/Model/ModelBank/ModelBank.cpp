@@ -6,7 +6,7 @@ void ModelBank::AddModelData(const std::string& filePath, const int32_t ID, std:
     objects_.push_back(std::move(modelData));
 }
 
-int32_t ModelBank::IsModelDataExist(std::string filePath) const
+int32_t ModelBank::IsModelDataExist(const std::string filePath) const
 {
 	auto it = pathToIDMap_.find(filePath);
 	if (it != pathToIDMap_.end())
@@ -16,7 +16,11 @@ int32_t ModelBank::IsModelDataExist(std::string filePath) const
     return -1;
 }
 
-ModelData* ModelBank::GetModelData(int modelID)
+ModelData* ModelBank::GetModelData(int32_t modelID)
 {
-	return objects_[modelID].get();
+	if (modelID >= 0 && modelID < static_cast<int32_t>(objects_.size()))
+	{
+		return objects_[modelID].get();
+	}
+	return nullptr;
 }

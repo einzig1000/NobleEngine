@@ -12,6 +12,7 @@ public:
 
 	// テクスチャ読み込み
 	int32_t LoadTexture(const std::string& filePath);
+
 private:
 	DirectXManager* dxManager_;
 	TextureBank* bank_;
