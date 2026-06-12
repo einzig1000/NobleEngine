@@ -65,7 +65,7 @@ void Camera::Update_Orbit()
         spherical_.phi -= mouseDelta.y * -0.01f;
         spherical_.theta -= mouseDelta.x * 0.01f;
     }
-    spherical_.radius -= mouseWheel * 0.1f;
+	spherical_.radius -= mouseWheel * spherical_.radius * 0.001f;
 
 	// 距離をクランプ
 	if (spherical_.radius < 1.0f) spherical_.radius = 1.0f;
@@ -85,8 +85,6 @@ void Camera::Update_Orbit()
 	Vector3 forward = (center_ - eye).Normalized();
 
 	viewMatrix_ = Matrix4x4::LookAtMatrix(eye, center_, { 0.0f, 1.0f, 0.0f });
-
-    // VP
     viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
 
     CreateFrustumPlanes();

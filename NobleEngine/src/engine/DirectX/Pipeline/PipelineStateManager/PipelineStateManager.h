@@ -1,31 +1,49 @@
 #pragma once
 #include <d3d12.h>
+#include <externals/DirectXTex/d3dx12.h>
 #include <wrl.h>
 #include <dxcapi.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "DirectX/PipeLine/RenderPipelineTypes.h"
+#include <DirectX/Pipeline/RenderPipelineTypes.h>
 
+struct CD3DX12PipelineStateStream
+{
+    CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+    CD3DX12_PIPELINE_STATE_STREAM_VS VS;                                   // VS用
+    CD3DX12_PIPELINE_STATE_STREAM_MS pMS;                                  // MS用
+    CD3DX12_PIPELINE_STATE_STREAM_PS pPS;                                  // 共通
+    CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;                // VS用
+    CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;// VS用
+    CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC pBlend;                       // 共通
+    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL pDepthStencil;             // 共通
+    CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS pRTVFormats;       // 共通
+    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT pDSVFormat;         // 共通
+    CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER pRasterizer;                  // 共通
+};
 
 class PipelineStateManager
 {
 public:
-    PipelineStateManager(ID3D12Device* device);
+    PipelineStateManager(ID3D12Device2* device);
     ~PipelineStateManager();
 
-    // ルートシグネチャキャッシュにあればそれを返す。なければ生成してキャッシュに保存してから返す
+	// ルートシグネチャの取得（なければ生成）
     Microsoft::WRL::ComPtr<ID3D12RootSignature> GetOrCreateRootSignature(const std::vector<RootParam>& params);
-	// PSOキャッシュにあればそれを返す。なければ生成してキャッシュに保存してから返す
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetOrCreateGraphicsPipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params);
-	// シェーダーキャッシュにあればそれを返す。なければコンパイルしてキャッシュに保存してから返す
+	// PSO取得(なければ生成)
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetOrCreatePipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params);
+	// シェーダーBlobの取得（なければコンパイル）
     Microsoft::WRL::ComPtr<IDxcBlob> GetOrCompileShader(const wchar_t* path, const wchar_t* target);
 
 private:
 	// ルートシグネチャ生成
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> CreateRootSignature(const std::vector<RootParam>& params);
-	// パイプラインステート生成
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreatePipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
+	// VS用のPSO生成
+    //Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateVertexShaderPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
+    // MS用のPSO生成
+    //Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateMeshShaderPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
 	// シェーダーコンパイル
     Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
 
@@ -43,7 +61,7 @@ private:
     Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 
     // 外部ポインタ
-    ID3D12Device* device_ = nullptr;
+    ID3D12Device2* device_ = nullptr;
 
 
 	D3D12_SHADER_VISIBILITY GetShaderVisibilityFromShaderType(ShaderType shaderType);

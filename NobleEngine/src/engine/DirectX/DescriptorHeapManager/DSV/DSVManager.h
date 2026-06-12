@@ -12,7 +12,7 @@ public:
 		D3D12_CPU_DESCRIPTOR_HANDLE handle;
 	};
 
-	DSVManager(ID3D12Device* device);
+	DSVManager(ID3D12Device2* device);
 	~DSVManager();
 
 	ID3D12DescriptorHeap* GetDSVDescriptorHeap() const { return descriptorHeap_.Get(); }
@@ -29,7 +29,7 @@ public:
 
 private:
 	// デバイス
-	ID3D12Device* device_ = nullptr;
+	ID3D12Device2* device_ = nullptr;
 
 	// SRV用のディスクリプタヒープ
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap_;

@@ -12,7 +12,7 @@ public:
 		D3D12_CPU_DESCRIPTOR_HANDLE handle;
 	};
 
-	RTVManager(ID3D12Device* device);
+	RTVManager(ID3D12Device2* device);
 	~RTVManager();
 
 	ID3D12DescriptorHeap* GetRTVDescriptorHeap() const { return descriptorHeap_.Get(); }
@@ -29,7 +29,7 @@ public:
 
 private:
 	// デバイス
-	ID3D12Device* device_ = nullptr;
+	ID3D12Device2* device_ = nullptr;
 
 	// RTV用のディスクリプタヒープ
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap_;

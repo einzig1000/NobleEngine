@@ -16,7 +16,7 @@ public:
 	FrameCbAllocator() = default;
 	~FrameCbAllocator() = default;
 
-	void Initialize(ID3D12Device* device, size_t capacityBytes, const wchar_t* debugName = L"FrameCbAllocator");
+	void Initialize(ID3D12Device2* device, size_t capacityBytes, const wchar_t* debugName = L"FrameCbAllocator");
 	void Reset();
 
 	Allocation Allocate(size_t sizeBytes);

@@ -1,7 +1,7 @@
 #include "DirectX/SynchronizationManager.h"
 #include "Utilities/Logger/Logger.h"
 
-SynchronizationManager::SynchronizationManager(ID3D12Device* device)
+SynchronizationManager::SynchronizationManager(ID3D12Device2* device)
     : currentFenceValue(0)
 {
     HRESULT hr = device->CreateFence(

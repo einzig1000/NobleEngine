@@ -30,5 +30,5 @@ private:
     /// <param name="commandList">コマンドリスト</param>
     /// <returns>アップロードに使用した中間リソース</returns>
     [[nodiscard]]
-    Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device* device, ID3D12GraphicsCommandList* commandList);
+    Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device2* device, ID3D12GraphicsCommandList* commandList);
 };

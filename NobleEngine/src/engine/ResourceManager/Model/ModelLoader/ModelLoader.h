@@ -9,14 +9,14 @@ class ModelBank;
 class ModelLoader
 {
 public:
-	ModelLoader(ID3D12Device* device, ModelBank* bank);
+	ModelLoader(ID3D12Device2* device, ModelBank* bank);
 	~ModelLoader();
 
 	// モデル読み込み
 	int32_t LoadModel(const std::string& filePath);
 
 private:
-	ID3D12Device* device_;
+	ID3D12Device2* device_;
 	ModelBank* bank_;
 
 	// mtlファイル読み込み

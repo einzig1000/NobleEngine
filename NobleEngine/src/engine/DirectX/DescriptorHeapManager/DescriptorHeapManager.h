@@ -8,7 +8,7 @@
 class DescriptorHeapManager
 {
 public:
-    DescriptorHeapManager(ID3D12Device* device);
+    DescriptorHeapManager(ID3D12Device2* device);
     ~DescriptorHeapManager();
 
 	SRV_UAVManager* GetSRV_UAVManager() const { return srv_uavManager_.get(); }

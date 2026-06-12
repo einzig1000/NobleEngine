@@ -20,7 +20,7 @@ public:
     DirectXManager(HWND hwnd);
     ~DirectXManager();
 
-    ID3D12Device* GetDevice() const { return deviceManager->GetDevice(); }
+    ID3D12Device2* GetDevice() const { return deviceManager->GetDevice(); }
     CommandContextManager* GetCommandContextManager() const { return commandContextManager.get(); }
     DescriptorHeapManager* GetDescriptorHeapManager() const { return descriptorHeapManager.get(); }
     SwapChainManager* GetSwapChain() const { return swapChainManager.get(); };

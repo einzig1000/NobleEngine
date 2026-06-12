@@ -85,7 +85,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	// 1) RootSignatureセット
 	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
 	// 2) PSOセット
-	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
+	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreatePipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
 	// 3) トポロジーセット
 	cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
 	// 4) CBV・SRVセット

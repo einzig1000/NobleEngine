@@ -3,7 +3,7 @@
 #include <DirectX/Resource/Dx12ResourceFactory.h>
 #include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
 
-RenderTextureManager::RenderTextureManager(ID3D12Device* device, DescriptorHeapManager* descriptorHeapManager)
+RenderTextureManager::RenderTextureManager(ID3D12Device2* device, DescriptorHeapManager* descriptorHeapManager)
     : device_(device), descriptorHeapManager_(descriptorHeapManager)
 {
 }

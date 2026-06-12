@@ -5,7 +5,7 @@
 #include "RTV/RTVManager.h"
 
 
-DescriptorHeapManager::DescriptorHeapManager(ID3D12Device* device)
+DescriptorHeapManager::DescriptorHeapManager(ID3D12Device2* device)
 {
 	srv_uavManager_ = std::make_unique<SRV_UAVManager>(device);
 	rtvManager_ = std::make_unique<RTVManager>(device);

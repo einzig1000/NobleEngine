@@ -4,7 +4,7 @@
 namespace Dx12ResourceFactory
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(
-        ID3D12Device* device, size_t sizeInBytes)
+        ID3D12Device2* device, size_t sizeInBytes)
     {
         // リソース記述子を作成
         D3D12_RESOURCE_DESC resourceDesc{};
@@ -46,7 +46,7 @@ namespace Dx12ResourceFactory
         return resource; // 作成したリソースを返す
     };
 
-    Microsoft::WRL::ComPtr<ID3D12Resource> CreateConstantBufferResource(ID3D12Device* device, size_t sizeInBytes)
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateConstantBufferResource(ID3D12Device2* device, size_t sizeInBytes)
     {
         size_t ConstantSize;
         ConstantSize = (sizeInBytes + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1);
@@ -54,7 +54,7 @@ namespace Dx12ResourceFactory
         return CreateBufferResource(device, ConstantSize);
     }
 
-    Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device2* device, const DirectX::TexMetadata& metadata)
     {
         // リソース記述子を作成
         D3D12_RESOURCE_DESC resourceDesc{};
@@ -96,7 +96,7 @@ namespace Dx12ResourceFactory
         return resource; // 作成したリソースを返す
     }
 
-    Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilResource(ID3D12Device* device, UINT width, UINT height)
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilResource(ID3D12Device2* device, UINT width, UINT height)
     {
         // リソース記述子を作成
         D3D12_RESOURCE_DESC depthStencilDesc = {};
@@ -143,7 +143,7 @@ namespace Dx12ResourceFactory
 		return resource;
     }
 
-    Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetResource(ID3D12Device* device, UINT width, UINT height, DXGI_FORMAT format)
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetResource(ID3D12Device2* device, UINT width, UINT height, DXGI_FORMAT format)
     {
         // リソース記述子を作成
         D3D12_RESOURCE_DESC resourceDesc{};
