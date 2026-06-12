@@ -5,7 +5,7 @@
 #include <fstream>
 
 
-ModelManager::ModelManager(ID3D12Device* device)
+ModelManager::ModelManager(ID3D12Device2* device)
 {
 	// モデルバンク作成
 	bank_ = std::make_unique<ModelBank>();

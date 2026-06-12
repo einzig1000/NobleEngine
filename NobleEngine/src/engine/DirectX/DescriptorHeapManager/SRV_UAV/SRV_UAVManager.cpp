@@ -2,7 +2,7 @@
 #include "Utilities/functions.h"
 #include "Utilities/Logger/Logger.h"
 
-SRV_UAVManager::SRV_UAVManager(ID3D12Device* device)
+SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     :device_(device)
 {
     // SRVスロット一つ分のサイズ取得

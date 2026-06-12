@@ -10,10 +10,16 @@ public:
     DeviceManager();
     ~DeviceManager();
 
-    ID3D12Device* GetDevice() const { return device.Get(); }
+    ID3D12Device2* GetDevice() const { return device_.Get(); }
+
+	bool IsMeshShaderSupported() const { return isMeshShaderSupported_; }
 
 private:
-    Microsoft::WRL::ComPtr<ID3D12Device> device;
+	// デバイス
+    Microsoft::WRL::ComPtr<ID3D12Device2> device_;
+
+	// メッシュシェーダー対応のデバイスかどうか
+	bool isMeshShaderSupported_ = false;
 
     void EnableDebugLayer();
     void InitializeDeviceInternal();

@@ -4,7 +4,7 @@
 #include <ResourceManager/Model/ModelBank/ModelBank.h>
 #include <filesystem>
 
-ModelCreater::ModelCreater(ID3D12Device* device, ModelBank* bank)
+ModelCreater::ModelCreater(ID3D12Device2* device, ModelBank* bank)
 	: device_(device), bank_(bank)
 {}
 

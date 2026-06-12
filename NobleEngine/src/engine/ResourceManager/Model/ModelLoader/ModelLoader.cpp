@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <fstream>
 
-ModelLoader::ModelLoader(ID3D12Device* device, ModelBank* bank)
+ModelLoader::ModelLoader(ID3D12Device2* device, ModelBank* bank)
     : device_(device), bank_(bank)
 {}
 

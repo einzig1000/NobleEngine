@@ -2,7 +2,7 @@
 #include "Utilities/Logger/Logger.h"
 
 
-RTVManager::RTVManager(ID3D12Device* device)
+RTVManager::RTVManager(ID3D12Device2* device)
 	: device_(device)
 {
 	// DSVスロット一つ分のサイズを取得

@@ -6,7 +6,7 @@
 #include <Windows.h> 
 #include <cassert>
 
-SwapChainManager::SwapChainManager(ID3D12Device* device, ID3D12CommandQueue* commandQueue, HWND hwnd, DescriptorHeapManager* descriptorHeapManager)
+SwapChainManager::SwapChainManager(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd, DescriptorHeapManager* descriptorHeapManager)
 	: device_(device), descriptorHeapManager_(descriptorHeapManager)
 {
 	InitializeSwapChainInternal(device, commandQueue, hwnd);
@@ -41,7 +41,7 @@ RenderTarget* SwapChainManager::GetCurrentRenderTarget() const
 	return rt;
 }
 
-void SwapChainManager::InitializeSwapChainInternal(ID3D12Device* device, ID3D12CommandQueue* commandQueue, HWND hwnd)
+void SwapChainManager::InitializeSwapChainInternal(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd)
 {
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
     HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
@@ -72,7 +72,7 @@ void SwapChainManager::InitializeSwapChainInternal(ID3D12Device* device, ID3D12C
     assert(SUCCEEDED(hr));
 }
 
-void SwapChainManager::InitializeRenderTargetView(ID3D12Device* device)
+void SwapChainManager::InitializeRenderTargetView(ID3D12Device2* device)
 {
 	rtvDesc_ = {};
     rtvDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -87,7 +87,7 @@ void SwapChainManager::InitializeRenderTargetView(ID3D12Device* device)
     }
 }
 
-void SwapChainManager::InitializeDepthStencilView(ID3D12Device* device)
+void SwapChainManager::InitializeDepthStencilView(ID3D12Device2* device)
 {
     depthStencilResource_ = Dx12ResourceFactory::CreateDepthStencilResource(device, UINT(WindowManager::winWidth_), UINT(WindowManager::winHeight_));
 
@@ -122,7 +122,7 @@ void SwapChainManager::UpdateBackBufferIndex()
     backBufferIndex_ = swapChain_->GetCurrentBackBufferIndex();
 }
 
-void SwapChainManager::Resize(ID3D12Device* device, ID3D12CommandQueue* commandQueue)
+void SwapChainManager::Resize(ID3D12Device2* device, ID3D12CommandQueue* commandQueue)
 {
     if (WindowManager::winWidth_ == 0 || WindowManager::winHeight_ == 0) return;
 

@@ -7,7 +7,7 @@
 class CommandContextManager
 {
 public:
-    CommandContextManager(ID3D12Device* device);
+    CommandContextManager(ID3D12Device2* device);
     ~CommandContextManager();
 
     ID3D12CommandQueue* GetCommandQueue() const { return commandQueue.Get(); }

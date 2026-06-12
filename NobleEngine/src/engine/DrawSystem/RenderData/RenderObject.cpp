@@ -14,8 +14,8 @@ void RenderObject::SetupFromShaders()
 {
 	std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
 	std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
-	auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_0");
-	auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_0");
+	auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_5");
+	auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_5");
 
 	rootParams_.clear();
 	rootParamHashToIndexMap_.clear();

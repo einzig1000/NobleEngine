@@ -32,7 +32,7 @@ public:
 	};
     
 
-    SRV_UAVManager(ID3D12Device* device);
+    SRV_UAVManager(ID3D12Device2* device);
     ~SRV_UAVManager();
 
     ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return descriptorHeap_.Get(); }
@@ -56,7 +56,7 @@ private:
     Allocation CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc, ResourceType type);
 
     // デバイス
-    ID3D12Device* device_ = nullptr;
+    ID3D12Device2* device_ = nullptr;
 
     // SRV用のディスクリプタヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap_;

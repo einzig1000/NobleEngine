@@ -103,7 +103,7 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
 
 // 3,TextureResourceにデータを転送する
 [[nodiscard]]
-Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
+Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device2* device, ID3D12GraphicsCommandList* commandList)
 {
     std::vector<D3D12_SUBRESOURCE_DATA> subresources;
     DirectX::PrepareUpload(device, mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresources);

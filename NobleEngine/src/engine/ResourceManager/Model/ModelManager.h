@@ -11,7 +11,7 @@
 class ModelManager
 {
 public:
-	ModelManager(ID3D12Device* device);
+	ModelManager(ID3D12Device2* device);
 	~ModelManager();
 
 	ModelLoader* GetModelLoader() const { return loader_.get(); }

@@ -8,6 +8,8 @@ enum class ShaderType
     VertexShader,
     PixelShader,
     ComputeShader,
+	MeshShader,
+	AmplificationShader,
 };
 
 enum class ParamType
@@ -110,6 +112,10 @@ struct PSOConfig
     std::string vs = "unknown";
     /// ピクセルシェーダーファイル名
     std::string ps = "unknown";
+	/// メッシュシェーダーファイル名
+	std::string ms = "unknown";
+	/// アンプリフィケーションシェーダーファイル名
+	std::string as = "unknown";
     /// ブレンドステートID
     BlendStateID blendID = BlendStateID::Normal;
     /// 深度ステンシルID
@@ -120,16 +126,5 @@ struct PSOConfig
     D3D12_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	/// DSVフォーマットID
 	DSVFormatID dsvFormatID = DSVFormatID::D24;
-
-    bool operator==(const PSOConfig& other) const
-    {
-        return vs == other.vs &&
-            ps == other.ps &&
-            blendID == other.blendID &&
-            depthStencilID == other.depthStencilID &&
-            rasterizerID == other.rasterizerID &&
-            topology == other.topology &&
-            dsvFormatID == other.dsvFormatID;
-    }
 };
 

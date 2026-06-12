@@ -55,17 +55,17 @@ void DeviceManager::InitializeDeviceInternal()
     };
     for (size_t i = 0; i < _countof(featureLevels); ++i)
     {
-        hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(&device));
+        hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(&device_));
         if (SUCCEEDED(hr))
         {
             break;
         }
     }
-    assert(device != nullptr);
+    assert(device_ != nullptr);
 
 #ifdef _DEBUG
     Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue = nullptr;
-    if (device && SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue))))
+    if (device_ && SUCCEEDED(device_->QueryInterface(IID_PPV_ARGS(&infoQueue))))
     {
         infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);
         infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
@@ -81,4 +81,11 @@ void DeviceManager::InitializeDeviceInternal()
         infoQueue->PushStorageFilter(&filter);
     }
 #endif
+
+	// メッシュシェーダー対応のデバイスかどうかをチェック
+    D3D12_FEATURE_DATA_D3D12_OPTIONS7 options7 = {};
+    if (SUCCEEDED(device_->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &options7, sizeof(options7))))
+    {
+        isMeshShaderSupported_ = (options7.MeshShaderTier != D3D12_MESH_SHADER_TIER_NOT_SUPPORTED);
+    }
 }

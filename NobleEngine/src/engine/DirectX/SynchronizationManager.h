@@ -8,7 +8,7 @@
 class SynchronizationManager
 {
 public:
-    SynchronizationManager(ID3D12Device* device);
+    SynchronizationManager(ID3D12Device2* device);
     ~SynchronizationManager();
 
     void Signal(ID3D12CommandQueue* commandQueue, UINT frameIndex);

@@ -9,7 +9,7 @@ class DescriptorHeapManager;
 class SwapChainManager
 {
 public:
-	SwapChainManager(ID3D12Device* device, ID3D12CommandQueue* commandQueue, HWND hwnd, DescriptorHeapManager* descriptorHeapManager);
+	SwapChainManager(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd, DescriptorHeapManager* descriptorHeapManager);
 	~SwapChainManager();
 
 	UINT GetCurrentBackBufferIndex() const { return backBufferIndex_; }
@@ -21,7 +21,7 @@ public:
 	void Present();
 	void UpdateBackBufferIndex();
 
-	void Resize(ID3D12Device* device, ID3D12CommandQueue* commandQueue);
+	void Resize(ID3D12Device2* device, ID3D12CommandQueue* commandQueue);
 
 private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain_;
@@ -38,12 +38,12 @@ private:
 	UINT backBufferIndex_;
 
 
-	void InitializeSwapChainInternal(ID3D12Device* device, ID3D12CommandQueue* commandQueue, HWND hwnd);
-	void InitializeRenderTargetView(ID3D12Device* device);
-	void InitializeDepthStencilView(ID3D12Device* device);
+	void InitializeSwapChainInternal(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd);
+	void InitializeRenderTargetView(ID3D12Device2* device);
+	void InitializeDepthStencilView(ID3D12Device2* device);
 
 
 	// 外部ポインタ
-	ID3D12Device* device_;
+	ID3D12Device2* device_;
 	DescriptorHeapManager* descriptorHeapManager_ = nullptr;
 };

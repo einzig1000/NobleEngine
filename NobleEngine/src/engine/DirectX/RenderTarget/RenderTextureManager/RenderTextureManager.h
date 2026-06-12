@@ -12,7 +12,7 @@ class DescriptorHeapManager;
 class RenderTextureManager
 {
 public:
-	RenderTextureManager(ID3D12Device* device, DescriptorHeapManager* descriptorHeapManager);
+	RenderTextureManager(ID3D12Device2* device, DescriptorHeapManager* descriptorHeapManager);
 	~RenderTextureManager();
 
     // テクスチャ作成
@@ -27,7 +27,7 @@ public:
     void ResizeAllWindowDependent(UINT newWidth, UINT newHeight);
 
 private:
-    ID3D12Device* device_;
+    ID3D12Device2* device_;
     DescriptorHeapManager* descriptorHeapManager_;
 	std::unordered_map<std::string, int32_t> nameToIDMap_;
     std::vector<std::unique_ptr<RenderTarget>> textures_;

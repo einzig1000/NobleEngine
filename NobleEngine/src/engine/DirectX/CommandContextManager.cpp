@@ -1,7 +1,7 @@
 #include "DirectX/CommandContextManager.h"
 #include "Utilities/Logger/Logger.h"
 
-CommandContextManager::CommandContextManager(ID3D12Device* device)
+CommandContextManager::CommandContextManager(ID3D12Device2* device)
 {
     D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
     commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;

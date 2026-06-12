@@ -2,7 +2,7 @@
 #include "DirectX/Resource/Dx12ResourceFactory.h"
 #include <cassert>
 
-void FrameCbAllocator::Initialize(ID3D12Device* device, size_t capacityBytes, const wchar_t* debugName)
+void FrameCbAllocator::Initialize(ID3D12Device2* device, size_t capacityBytes, const wchar_t* debugName)
 {
 	// デバイスが有効かチェック
 	assert(device);
