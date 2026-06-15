@@ -1,59 +1,64 @@
 // Block.VS.hlsl
 
-#include "Block.hlsli"
+struct VSInput
+{
+    float4 position : POSITION0;
+    float2 texcoord : TEXCOORD0;
+    float2 texcoord2 : TEXCOORD1;
+    float3 normal : NORMAL0;
+};
+
+struct VSOutput
+{
+    float4 position : SV_Position;
+    nointerpolation uint instancedID : TEXCOORD0;
+    nointerpolation uint baseTextureID : TEXCOORD1;
+    nointerpolation uint breakTextureID : TEXCOORD2;
+    float2 texcoord : TEXCOORD3;
+    float2 texcoord2 : TEXCOORD4;
+    float3 normal : TEXCOORD5;
+    float4 color : COLOR0;
+};
+
+struct InstanceData
+{
+    // ワールド行列
+    float4x4 World;
+    // 色
+    float4 Color;
+    // ベーステクスチャID
+    uint BaseTextureID;
+    // 破壊テクスチャID
+    uint BreakTextureID;
+};
 
 // 各インスタンスのワールド座標
-StructuredBuffer<WorldMatrix> gWorldMatrix : register(t0);
-// インスタンスごとの破壊アトラスのタイル番号
-StructuredBuffer<uint> gBreakTile : register(t1);
-// インスタンスごとのベースアトラスのタイル番号
-StructuredBuffer<uint> gBaseTile : register(t2);
-// 共通のビュー射影行列
-ConstantBuffer<ViewProjectionMatrix> gViewProjection : register(b0);
-// アトラス情報
-ConstantBuffer<AtlasInfo> gBreakAtlasInfo : register(b1);
-ConstantBuffer<AtlasInfo> gBaseAtlasInfo : register(b2);
+StructuredBuffer<InstanceData> instanceData : register(t0);
 
-// AtlasInfoから欲しいタイルのUVを計算する
-static float2 ComputeAtlasUV(float2 uvInInner01, uint tileIndex, AtlasInfo info)
+// ビュー射影行列
+cbuffer ViewProjection : register(b0)
 {
-    uint tilesPerRow = max(1u, info.atlasCols);
-
-    uint tileX = tileIndex % tilesPerRow;
-    uint tileY = tileIndex / tilesPerRow;
-
-    // 1タイル(=1面)のUV上でのサイズ（24x24想定）
-    float2 strideUV = float2((float)info.faceStrideX, (float)info.faceStrideY) * info.invAtlasSize;
-
-    // タイル左上のUV
-    float2 tileOriginUV = float2((float)tileX, (float)tileY) * strideUV;
-
-    // タイル内の「実描画領域(16x16)」の開始位置（padding=4 なら (4,4) から）
-    float2 innerOffsetUV = float2((float)info.padX, (float)info.padY) * info.invAtlasSize;
-
-    // タイル内の「実描画領域(16x16)」の大きさ
-    float2 innerSizeUV = float2((float)info.innerSizeX, (float)info.innerSizeY) * info.invAtlasSize;
-
-    // 入力(0..1)を inner 領域へマップして、atlas全体のUVに変換
-    return tileOriginUV + innerOffsetUV + uvInInner01 * innerSizeUV;
+    float4x4 viewProjection;
 }
 
-VertexShaderOutput main(VertexShaderInput input, uint instancedID : SV_InstanceID)
+VSOutput main(VSInput input, uint instancedID : SV_InstanceID)
 {
-    VertexShaderOutput output;
+    VSOutput output;
 
 	// 座標変換
-    float4 worldPos = mul(input.position, gWorldMatrix[instancedID].World);
-    output.position = mul(worldPos, gViewProjection.ViewProjection);
+    float4 worldPos = mul(input.position, instanceData[instancedID].World);
+    output.position = mul(worldPos, viewProjection);
     // 欲しいタイル番号取得
-	uint baseTile = gBaseTile[instancedID];
-    uint breakTile = gBreakTile[instancedID];
+    output.baseTextureID = instanceData[instancedID].BaseTextureID;
+    output.breakTextureID = instanceData[instancedID].BreakTextureID;
 	// UV計算
-    output.texcoord = ComputeAtlasUV(input.texcoord, baseTile, gBaseAtlasInfo);
-    output.texcoord2 = ComputeAtlasUV(input.texcoord2, breakTile, gBreakAtlasInfo);
+    output.texcoord = input.texcoord;
+    output.texcoord2 = input.texcoord2;
 	// 法線変換
-    output.normal = normalize(mul(input.normal, (float3x3)gWorldMatrix[instancedID].World));
-	// インスタンスIDを出力
+    output.normal = normalize(mul(input.normal, (float3x3) instanceData[instancedID].World));
+    // 色
+    output.color = instanceData[instancedID].Color;
+	// インスタンスID
 	output.instancedID = instancedID;
 
     return output;

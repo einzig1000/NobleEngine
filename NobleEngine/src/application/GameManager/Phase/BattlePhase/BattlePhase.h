@@ -1,9 +1,9 @@
 #pragma once
-#include "GameManager/Phase/PhaseParent/PhaseParent.h"
+#include "GameManager/Phase/IPhase/IPhase.h"
 
 
 class BattlePhase
-	: public PhaseParent
+	: public IPhase
 {
 public:
 	BattlePhase();

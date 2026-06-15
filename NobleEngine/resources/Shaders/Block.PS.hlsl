@@ -1,26 +1,36 @@
-#include "Block.hlsli"
+struct PSInput
+{
+    float4 position : SV_Position;
+    nointerpolation uint instancedID : TEXCOORD0;
+    nointerpolation uint baseTextureID : TEXCOORD1;
+    nointerpolation uint breakTextureID : TEXCOORD2;
+    float2 texcoord : TEXCOORD3;
+    float2 texcoord2 : TEXCOORD4;
+    float3 normal : TEXCOORD5;
+    float4 color : COLOR0;
+};
+
+struct PSOutput
+{
+    float4 color : SV_Target;
+};
 
 // サンプラー
 SamplerState gSampler : register(s0);
-// ベーステクスチャ(アトラス)
-Texture2D<float4> gTexture0 : register(t3);
-// 破壊テクスチャ(アトラス)
-Texture2D<float4> gBreakTexture : register(t4);
-// インスタンスごとの色
-StructuredBuffer<float4> gColor0 : register(t5);
+// テクスチャ
+Texture2D<float4> textures[] : register(t0);
 
-
-PixelShaderOutput main(VertexShaderOutput input)
+PSOutput main(PSInput input)
 {
-    PixelShaderOutput output;
+    PSOutput output;
 
-    float4 baseColor = gTexture0.Sample(gSampler, input.texcoord);
-    float4 breakColor = gBreakTexture.Sample(gSampler, input.texcoord2);
+    float4 baseColor = textures[input.baseTextureID].Sample(gSampler, input.texcoord);
+    float4 breakColor = textures[input.breakTextureID].Sample(gSampler, input.texcoord2);
 
     float useBreak = step(1e-5, breakColor.a);
     float4 blended = lerp(baseColor, breakColor, useBreak);
 
-    output.color = gColor0[input.instancedID] * blended;
+    output.color = input.color * blended;
 
     if (output.color.a <= 0.001) discard;
     return output;

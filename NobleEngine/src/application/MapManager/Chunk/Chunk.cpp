@@ -1,8 +1,10 @@
-#include "MapManager/Chunk/Chunk.h"
-#include "MapManager/Chunk/Block/Block.h"
-#include "Utilities/JsonManager.h"
-#include "MapManager/Chunk/Block/BlockConfig.h"
-#include "MapManager/Chunk/Block/BlockDurability.h"
+#include <MapManager/Chunk/Chunk.h>
+#include <MapManager/Chunk/Block/Block.h>
+#include <MapManager/Chunk/Block/BlockConfig.h>
+#include <MapManager/Chunk/Block/BlockDurability.h>
+#include <Utilities/Json/JsonManager.h>
+#include <Utilities/Logger/Logger.h>
+#include <ResourceLoader/ResourceID.h>
 
 namespace
 {
@@ -17,11 +19,12 @@ namespace
 		return x;
 	}
 
-	static uint32_t MakeChunkSeed(uint32_t seed, const Vector2int& chunkPos)
+	static uint32_t MakeChunkSeed(uint32_t seed, const Vector3int& chunkPos)
 	{
 		uint32_t h = seed;
-		h ^= Hash32(static_cast<uint32_t>(chunkPos.x));
-		h ^= Hash32(static_cast<uint32_t>(chunkPos.y) + 0x9e3779b9u);
+		h ^= Hash32(static_cast<uint32_t>(chunkPos.x) * 73856093u);
+		h ^= Hash32(static_cast<uint32_t>(chunkPos.y) * 19349663u);
+		h ^= Hash32(static_cast<uint32_t>(chunkPos.z) * 83492791u);
 		return Hash32(h);
 	}
 
@@ -43,12 +46,15 @@ Chunk::Chunk()
 	blockConfig_ = std::make_unique<BlockConfig>();
 
 	// ブロックデータの初期化
-	for (int32_t i = 0; i < int32_t(BlockID::MAX); ++i)
-	{
-		blockData_ = std::make_unique<RenderData_Block>();
-		blockData_->texture = ;// 全ブロックのアトラス画像
-		blockData_->breakTexture = ;// 破壊アトラス画像
-	}
+	renderData_ = std::make_unique<RenderObject>();
+	renderData_->psoConfig_.vs = "resources/shaders/Block.VS.hlsl";
+	renderData_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
+	renderData_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
+	renderData_->SetupFromShaders();
+
+	size_t blockCount = CHUNK_X * CHUNK_Z * CHUNK_Y;
+	instanceDataList_.reserve(blockCount);
+	instanceBlockMap_.reserve(blockCount);
 }
 
 Chunk::~Chunk()
@@ -56,18 +62,15 @@ Chunk::~Chunk()
 }
 
 // チャンクデータ生成
-void Chunk::CreateChunkData(const NoiseParameter& param, const Vector2int & chunkIndex)
+void Chunk::CreateChunkData(const NoiseParameter& param, const Vector3int & chunkIndex)
 {
 	// 永久不変のチャンク座標
-	this->chunkIndex_ = chunkIndex;
-
-	// インスタンスを作成(まじ重い)
-	CreateInstance();
+	chunkIndex_ = chunkIndex;
 
 	// 既にセーブデータが存在している場合		(Jsonに沿ってチャンクデータを生成)
 	if (loadResult)CreateChunkDataFromJson();
 	// 新規生成の場合							(ノイズに沿ってチャンクデータを生成)
-	else CreateChunkDataNewly(param, chunkIndex);
+	else CreateChunkDataNewly(param);
 
 	// 配置後のブロックの露出状態を更新
 	SetExposedAllBlocks();
@@ -81,13 +84,20 @@ void Chunk::CreateChunkDataFromJson()
 	{
 		for (const auto& pos : positions)
 		{
+			if (blocks_[pos.x][pos.y][pos.z].GetBlockID() != BlockID::Air)
+			{
+				Log("セーブデータの破損：ブロックの重複配置");
+				DebugBreak();
+				continue;
+			}
+
 			SetBlock(pos, blockID);
 		}
 	}
 }
 
 // 新規生成されたチャンクデータを作成
-void Chunk::CreateChunkDataNewly(const NoiseParameter& param, const Vector2int& chunkIndex)
+void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 {
 	// 事前に定数を計算
 	const float invScale = 1.0f / param.scale;
@@ -99,8 +109,8 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param, const Vector2int& 
 		for (int z = 0; z < CHUNK_Z; ++z)
 		{
 			// ワールド座標でのブロックインデックス
-			const int worldX = chunkIndex.x * CHUNK_X + x;
-			const int worldZ = chunkIndex.y * CHUNK_Z + z;
+			const int worldX = chunkIndex_.x * CHUNK_X + x;
+			const int worldZ = chunkIndex_.y * CHUNK_Z + z;
 
 			// ワールド座標をノイズサンプル空間へスケールダウン
 			const float sampleX = static_cast<float>(worldX) * invScale;
@@ -115,7 +125,7 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param, const Vector2int& 
 			if (height > maxY) height = maxY;
 
 			// 素材の割り当て
-			std::mt19937 rng(MakeChunkSeed(param.seed, chunkIndex));
+			std::mt19937 rng(MakeChunkSeed(param.seed, chunkIndex_));
 			int dirtThickness = RandRange(rng, 2, 5);
 			if (height - dirtThickness < 0) dirtThickness = height;
 
@@ -180,7 +190,7 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 				for (int i = 0; i < veinSize; ++i)
 				{
 					// Stone のみ置換（Bedrock/Dirt/Lawnは壊さない）
-					if (blocks_[x][y][z]->GetBlockID() == BlockID::Stone)
+					if (blocks_[x][y][z].GetBlockID() == BlockID::Stone)
 					{
 						SetBlock(Vector3int(x, y, z), oreId);
 					}
@@ -222,7 +232,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 		{
 			for (int y = CHUNK_Y - 1; y >= 0; --y)
 			{
-				if (blocks_[x][y][z]->GetBlockID() == BlockID::Lawn) return y;
+				if (blocks_[x][y][z].GetBlockID() == BlockID::Lawn) return y;
 			}
 			return -1;
 		};
@@ -233,7 +243,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 			if (y0 < 0 || y0 + height >= CHUNK_Y) return false;
 			for (int y = y0; y < y0 + height; ++y)
 			{
-				if (blocks_[x][y][z]->GetBlockID() != BlockID::Air) return false;
+				if (blocks_[x][y][z].GetBlockID() != BlockID::Air) return false;
 			}
 			return true;
 		};
@@ -298,7 +308,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 						if (dx0 * dx0 + dy0 * dy0 + dz0 * dz0 > leafRadius * leafRadius + 1) continue;
 
 						// 空気だけ葉にする（地形と幹を潰さない）
-						if (blocks_[lx][ly][lz]->GetBlockID() == BlockID::Air)
+						if (blocks_[lx][ly][lz].GetBlockID() == BlockID::Air)
 						{
 							SetBlock(Vector3int(lx, ly, lz), BlockID::Leaf);
 						}
@@ -311,9 +321,9 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 
 
 // 隣接チャンクを設定
-void Chunk::SetNeighborChunk(DirectionXZ direction, Chunk* neighbor)
+void Chunk::SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor)
 {
-	if (direction == DirectionXZ::None) return;
+	if (direction == DirectionXYZ::None) return;
 	neighbors_[direction] = neighbor;
 	if (neighbors_[direction])
 	{
@@ -322,7 +332,7 @@ void Chunk::SetNeighborChunk(DirectionXZ direction, Chunk* neighbor)
 }
 
 // 隣接チャンクが存在するか(生成済か)
-bool Chunk::IsNeighborExist(DirectionXZ direction)
+bool Chunk::IsNeighborExist(DirectionXYZ direction)
 {
 	return neighbors_[direction] != nullptr;
 }
@@ -330,56 +340,36 @@ bool Chunk::IsNeighborExist(DirectionXZ direction)
 // localIndexのブロックの露出状態を更新
 void Chunk::RefreshExposeAt(const Vector3int& localIndex)
 {
-	// チャンク外
-	if (localIndex.x < 0 || localIndex.x >= CHUNK_X ||
-		localIndex.y < 0 || localIndex.y >= CHUNK_Y ||
-		localIndex.z < 0 || localIndex.z >= CHUNK_Z)
-	{
-		return;
-	}
-
-	Block* targetBlock = blocks_[localIndex.x][localIndex.y][localIndex.z].get();
+	Block* targetBlock = GetBlock(localIndex);
 	if (!targetBlock) return;
 
-	// Airは「露出なし」で確定
-	if (targetBlock->GetBlockID() == BlockID::Air)
-	{
-		targetBlock->isExposed_ = false;
-		targetBlock->dataSlot_ = -1;
-		return;
-	}
+	const bool preExposed = targetBlock->isExposed_;
+	targetBlock->isExposed_ = ComputeExposed(localIndex);
 
-	const bool newExposed = ComputeExposed(localIndex);
-	const bool oldExposed = targetBlock->isExposed_;
 	// 変化なしなら何もしない
-	if (newExposed == oldExposed) return;
-
-	targetBlock->isExposed_ = newExposed;
+	if (targetBlock->isExposed_ == preExposed) return;
 
 	// (前フレーム露出なし && 今フレーム露出あり)なら描画リストに追加
-	if (newExposed)
+	if (targetBlock->isExposed_)
 	{
-		targetBlock->dataSlot_ = blockData_->AddNewBlock(targetBlock->position_, localIndex, blockIDからタイル番号に変換);
+		InstanceData data;
+		data.World = Matrix4x4::MakeTranslateMatrix(targetBlock->position_);
+		data.BaseTextureID = ResourceID::Get3DTextureID(targetBlock->GetBlockID());
+		data.BreakTextureID = 0;
+		data.Color = Vector4(1, 1, 1, 1);
+		int32_t slot = AllocateInstanceSlot(targetBlock, data);
 	}
 	// (前フレーム露出あり && 今フレーム露出なし)なら描画リストから削除(前フレーム露出ありの時点でdataSlot_には有効なスロット番号が入っているはず)
 	else
 	{
-		blockData_->RemoveBlock(targetBlock->dataSlot_);
-		targetBlock->dataSlot_ = -1;
+		FreeInstanceSlot(targetBlock);
 	}
+
 }
 // localIndexのブロックの露出状態を判定
 bool Chunk::ComputeExposed(const Vector3int& localIndex)
 {
-	// 範囲外（この関数は「自チャンク座標」前提）{隣接チャンクのリフレッシュはSetExposedAroundBlocks参照}
-	if (localIndex.x < 0 || localIndex.x >= CHUNK_X ||
-		localIndex.y < 0 || localIndex.y >= CHUNK_Y ||
-		localIndex.z < 0 || localIndex.z >= CHUNK_Z)
-	{
-		return false;
-	}
-
-	Block* self = blocks_[localIndex.x][localIndex.y][localIndex.z].get();
+	Block* self = GetBlock(localIndex);
 	if (!self) return false;
 	if (self->GetBlockID() == BlockID::Air) return false;
 
@@ -431,7 +421,7 @@ void Chunk::SetExposedAroundBlocks(const Vector3int& localIndex)
 	static const int dz[7] = { 0, 0, 0, 0, 0, -1, 1 };
 	static const int dy[7] = { 0, 0, 0, -1, 1, 0, 0 };
 
-	// 6方向ブロックを更新
+	// 6方向ブロック+自身を更新
 	for (int i = 0; i < 7; ++i)
 	{
 		Vector3int index(localIndex.x + dx[i], localIndex.y + dy[i], localIndex.z + dz[i]);
@@ -440,42 +430,54 @@ void Chunk::SetExposedAroundBlocks(const Vector3int& localIndex)
 
 		if (index.x < 0)
 		{
-			targetChunk = neighbors_[DirectionXZ::Left];
+			targetChunk = neighbors_[DirectionXYZ::Left];
 			if (!targetChunk) continue;
 			index.x += CHUNK_X; // -1 -> CHUNK_X-1
 		}
 		else if (index.x >= CHUNK_X)
 		{
-			targetChunk = neighbors_[DirectionXZ::Right];
+			targetChunk = neighbors_[DirectionXYZ::Right];
 			if (!targetChunk) continue;
 			index.x -= CHUNK_X; // CHUNK_X -> 0
 		}
 		else if (index.z < 0)
 		{
-			targetChunk = neighbors_[DirectionXZ::Back];
+			targetChunk = neighbors_[DirectionXYZ::Back];
 			if (!targetChunk) continue;
 			index.z += CHUNK_Z; // -1 -> CHUNK_Z-1
 		}
 		else if (index.z >= CHUNK_Z)
 		{
-			targetChunk = neighbors_[DirectionXZ::Front];
+			targetChunk = neighbors_[DirectionXYZ::Front];
 			if (!targetChunk) continue;
 			index.z -= CHUNK_Z; // CHUNK_Z -> 0
+		}
+		else if (index.y < 0)
+		{
+			targetChunk = neighbors_[DirectionXYZ::Down];
+			if (!targetChunk) continue;
+			index.y += CHUNK_Y; // -1 -> CHUNK_Y-1
+		}
+		else if (index.y >= CHUNK_Y)
+		{
+			targetChunk = neighbors_[DirectionXYZ::Up];
+			if (!targetChunk) continue;
+			index.y -= CHUNK_Y; // CHUNK_Y -> 0
 		}
 		else targetChunk = this;
 
 		targetChunk->RefreshExposeAt(index);
 	}
 }
-// チャンク境界を跨いだ近傍ブロックの露出状態を更新
-void Chunk::SetExposedNeighborBlocks(const DirectionXZ direction)
+// チャンク境界ブロックの露出状態を更新
+void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 {
 	Chunk* neighborChunk = neighbors_[direction];
 	if (!neighborChunk) return;
 
 	switch (direction)
 	{
-	case DirectionXZ::Left: // -X
+	case DirectionXYZ::Left: // -X
 		for (int y = 0; y < CHUNK_Y; ++y)
 		{
 			for (int z = 0; z < CHUNK_Z; ++z)
@@ -487,7 +489,7 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXZ direction)
 			}
 		}
 		break;
-	case DirectionXZ::Right: // +X
+	case DirectionXYZ::Right: // +X
 		for (int y = 0; y < CHUNK_Y; ++y)
 		{
 			for (int z = 0; z < CHUNK_Z; ++z)
@@ -499,7 +501,7 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXZ direction)
 			}
 		}
 		break;
-	case DirectionXZ::Back: // -Z
+	case DirectionXYZ::Back: // -Z
 		for (int y = 0; y < CHUNK_Y; ++y)
 		{
 			for (int x = 0; x < CHUNK_X; ++x)
@@ -511,7 +513,7 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXZ direction)
 			}
 		}
 		break;
-	case DirectionXZ::Front: // +Z
+	case DirectionXYZ::Front: // +Z
 		for (int y = 0; y < CHUNK_Y; ++y)
 		{
 			for (int x = 0; x < CHUNK_X; ++x)
@@ -523,94 +525,126 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXZ direction)
 			}
 		}
 		break;
+	case DirectionXYZ::Down: // -Y
+		for (int z = 0; z < CHUNK_Z; ++z)
+		{
+			for (int x = 0; x < CHUNK_X; ++x)
+			{
+				neighborChunk->RefreshExposeAt(Vector3int(x, CHUNK_Y - 1, z));
+				neighborChunk->RefreshExposeAt(Vector3int(x, CHUNK_Y - 2, z));
+				this->RefreshExposeAt(Vector3int(x, 0, z));
+				this->RefreshExposeAt(Vector3int(x, 1, z));
+			}
+		}
+		break;
+	case DirectionXYZ::Up: // +Y
+		for (int z = 0; z < CHUNK_Z; ++z)
+		{
+			for (int x = 0; x < CHUNK_X; ++x)
+			{
+				neighborChunk->RefreshExposeAt(Vector3int(x, 0, z));
+				neighborChunk->RefreshExposeAt(Vector3int(x, 1, z));
+				this->RefreshExposeAt(Vector3int(x, CHUNK_Y - 1, z));
+				this->RefreshExposeAt(Vector3int(x, CHUNK_Y - 2, z));
+			}
+		}
+		break;
 	default:
 		break;
 	}
 }
 
-void Chunk::Update() const
+void Chunk::Update()
 {
 	for (int x = 0; x < CHUNK_X; x++)
 	{
-		for (int z = 0; z < CHUNK_Z; z++)
+		for (int y = 0; y < CHUNK_Y; y++)
 		{
-			for (int y = 0; y < CHUNK_Y; y++)
+			for (int z = 0; z < CHUNK_Z; z++)
 			{
-				if (blocks_[x][y][z] != nullptr)
+				if (blocks_[x][y][z].GetBlockID() != BlockID::Air)
 				{
-					blocks_[x][y][z]->Update();
+					blocks_[x][y][z].Update();
 
-					if (blocks_[x][y][z]->isExposed_ && blocks_[x][y][z]->GetBlockID() != BlockID::Air)
+					if (blocks_[x][y][z].isExposed_)
 					{
 						// 色と破壊段階を描画データに反映(ほんとは変化があった時のみ呼ぶようにしたい)
-						blockData_->SetColor(blocks_[x][y][z]->dataSlot_, blocks_[x][y][z]->color_);
-						blockData_->SetBreakTile(blocks_[x][y][z]->dataSlot_, blocks_[x][y][z]->durability_->GetBreakStage());
 					}
 				}
 			}
 		}
 	}
+
+	Matrix4x4 viewPro = Game::Camera::Getter::GetCurrentViewProjectionMatrix();
+	renderData_->SetCBufferData(0, ShaderType::VertexShader, &viewPro);
+	//if (instanceBufferDirty_)
+	{
+		renderData_->SetSBufferData(0, ShaderType::VertexShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
+		instanceBufferDirty_ = false;
+	}
+
+	renderData_->instanceNum_ = uint32_t(instanceDataList_.size());
 }
 
-void Chunk::Draw() const
+void Chunk::Draw(int32_t renderTargetID)
 {
-	blockData_->Draw();
+	//renderData_->Draw(renderTargetID);
+	renderData_->ScreenDraw();
 }
 
 // チャンクを跨いだブロックも取得できる
 Block* Chunk::GetBlock(const Vector3int& index)
 {
-	// 存在しないブロック
-	if (index.y < 0 || index.y >= CHUNK_Y) return nullptr;
-
 	// チャンク内
 	if (0 <= index.x && index.x < CHUNK_X &&
 		0 <= index.y && index.y < CHUNK_Y &&
 		0 <= index.z && index.z < CHUNK_Z)
 	{
-		return blocks_[index.x][index.y][index.z].get();
+		return &blocks_[index.x][index.y][index.z];
 	}
 
-	// チャンク外かつX,Z両方方向に跨いでいる場チャンクは持っていない
-	const bool xOut = (index.x < 0 || index.x >= CHUNK_X);
-	const bool zOut = (index.z < 0 || index.z >= CHUNK_Z);
-	if (xOut && zOut) return nullptr;
+	Chunk* targetChunk = nullptr;
+	Vector3int localIndex = index;
 
-	Vector3int neighborLocal = index;
-
-	// X方向に跨ぐ && Z方向には跨いでいない
-	if (index.x < 0 && !zOut)
+	if (localIndex.x < 0)
 	{
-		Chunk* nb = neighbors_[DirectionXZ::Left]; // -X
-		if (!nb) return nullptr;
-		neighborLocal.x = neighborLocal.x + CHUNK_X;
-		return nb->blocks_[neighborLocal.x][neighborLocal.y][neighborLocal.z].get();
+		targetChunk = neighbors_[DirectionXYZ::Left];
+		if (!targetChunk) return nullptr;
+		localIndex.x += CHUNK_X; // -1 -> CHUNK_X-1
 	}
-	if (index.x >= CHUNK_X && !zOut)
+	else if (localIndex.x >= CHUNK_X)
 	{
-		Chunk* nb = neighbors_[DirectionXZ::Right]; // +X
-		if (!nb) return nullptr;
-		neighborLocal.x = neighborLocal.x - CHUNK_X;
-		return nb->blocks_[neighborLocal.x][neighborLocal.y][neighborLocal.z].get();
+		targetChunk = neighbors_[DirectionXYZ::Right];
+		if (!targetChunk) return nullptr;
+		localIndex.x -= CHUNK_X; // CHUNK_X -> 0
 	}
+	else if (localIndex.z < 0)
+	{
+		targetChunk = neighbors_[DirectionXYZ::Back];
+		if (!targetChunk) return nullptr;
+		localIndex.z += CHUNK_Z; // -1 -> CHUNK_Z-1
+	}
+	else if (localIndex.z >= CHUNK_Z)
+	{
+		targetChunk = neighbors_[DirectionXYZ::Front];
+		if (!targetChunk) return nullptr;
+		localIndex.z -= CHUNK_Z; // CHUNK_Z -> 0
+	}
+	else if (localIndex.y < 0)
+	{
+		targetChunk = neighbors_[DirectionXYZ::Down];
+		if (!targetChunk) return nullptr;
+		localIndex.y += CHUNK_Y; // -1 -> CHUNK_Y-1
+	}
+	else if (localIndex.y >= CHUNK_Y)
+	{
+		targetChunk = neighbors_[DirectionXYZ::Up];
+		if (!targetChunk) return nullptr;
+		localIndex.y -= CHUNK_Y; // CHUNK_Y -> 0
+	}
+	else targetChunk = this;
 
-	// Z方向に跨ぐ && X方向には跨いでいない
-	if (index.z < 0 && !xOut)
-	{
-		Chunk* nb = neighbors_[DirectionXZ::Back]; // -Z
-		if (!nb) return nullptr;
-		neighborLocal.z = neighborLocal.z + CHUNK_Z;
-		return nb->blocks_[neighborLocal.x][neighborLocal.y][neighborLocal.z].get();
-	}
-	if (index.z >= CHUNK_Z && !xOut)
-	{
-		Chunk* nb = neighbors_[DirectionXZ::Front]; // +Z
-		if (!nb) return nullptr;
-		neighborLocal.z = neighborLocal.z - CHUNK_Z;
-		return nb->blocks_[neighborLocal.x][neighborLocal.y][neighborLocal.z].get();
-	}
-
-	return nullptr;
+	return targetChunk->GetBlock(localIndex);
 }
 
 AABB Chunk::GetAABB(const Vector3int& index)
@@ -643,43 +677,61 @@ Vector3 Chunk::LocalCenter(const Vector3int& index) const
 	return Vector3(cx, cy, cz);
 }
 
-void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id) const
+void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id)
 {
-	blocks_[localIndex.x][localIndex.y][localIndex.z]->SetBlockType(blockConfig_->GetBlockInfo(id));
-	blocks_[localIndex.x][localIndex.y][localIndex.z]->SetBlockPosition(LocalCenter(localIndex));
+	Block* targetBlock = GetBlock(localIndex);
+
+	if (!targetBlock) return;
+
+	targetBlock->SetBlockType(blockConfig_->GetBlockInfo(id));
+	targetBlock->SetBlockPosition(LocalCenter(localIndex));
 }
 
-void Chunk::DestroyBlock(const Vector3int& localIndex)
+//void Chunk::DestroyBlock(const Vector3int& localIndex)
+//{
+//	Block* block = GetBlock(localIndex);
+//	if (!block) return;
+//
+//	// ブロックをAirに置換
+//	SetBlock(localIndex, BlockID::Air);
+//
+//	// ブロック側の状態フラグ
+//	block->isExposed_ = false;
+//
+//	// 描画データから削除
+//}
+
+// 露出になったとき（割当）
+int32_t Chunk::AllocateInstanceSlot(Block* b, const InstanceData& data)
 {
-	Block* block = blocks_[localIndex.x][localIndex.y][localIndex.z].get();
-	if (!block) return;
+	int32_t slot = static_cast<int32_t>(instanceDataList_.size());
+	instanceDataList_.push_back(data);
+	instanceBlockMap_.push_back(b);
+	b->dataSlot_ = slot;
+	instanceBufferDirty_ = true;
+	return slot;
+}
 
-	// ブロックをAirに置換
-	SetBlock(localIndex, BlockID::Air);
-
-	// ブロック側の状態フラグ
-	block->isExposed_ = false;
-
-	// 描画データから削除
-	blockData_->RemoveBlock(block->dataSlot_);
-	block->dataSlot_ = -1;
+// 非露出になったとき（解放）
+void Chunk::FreeInstanceSlot(Block* b)
+{
+	int32_t slot = b->dataSlot_;
+	if (slot < 0) return;
+	int32_t last = static_cast<int32_t>(instanceDataList_.size()) - 1;
+	if (slot != last)
+	{
+		// 末尾要素を slot に移す
+		instanceDataList_[slot] = instanceDataList_[last];
+		Block* movedBlock = instanceBlockMap_[last];
+		instanceBlockMap_[slot] = movedBlock;
+		movedBlock->dataSlot_ = slot;
+	}
+	// 末尾を削る
+	instanceDataList_.pop_back();
+	instanceBlockMap_.pop_back();
+	b->dataSlot_ = -1;
+	instanceBufferDirty_ = true;
 }
 
 void Chunk::RebuildBlockPositions()
 {}
-
-// ブロックのインスタンス生成
-void Chunk::CreateInstance()
-{
-	for (int x = 0; x < CHUNK_X; x++)
-	{
-		for (int z = 0; z < CHUNK_Z; z++)
-		{
-			for (int y = 0; y < CHUNK_Y; y++)
-			{
-				blocks_[x][y][z] = std::make_unique<Block>();
-				blocks_[x][y][z]->Initialize();
-			}
-		}
-	}
-}

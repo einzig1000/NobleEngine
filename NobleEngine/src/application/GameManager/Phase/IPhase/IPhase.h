@@ -13,10 +13,10 @@ struct PhaseContext
 	uint32_t seed = 0;
 };
 
-class PhaseParent
+class IPhase
 {
 public:
-	virtual ~PhaseParent() = default;
+	virtual ~IPhase() = default;
 
 	void SetContext(PhaseContext* context) { context_ = context; }
 

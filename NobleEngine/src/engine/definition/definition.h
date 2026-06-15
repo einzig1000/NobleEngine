@@ -291,7 +291,6 @@ struct Vector2int
         return x < rhs.x;
     }
 };
-
 struct Vector2intHash
 {
     std::size_t operator()(const Vector2int& v) const noexcept
@@ -381,6 +380,16 @@ struct Vector3int
     {
         return x != rhs.x || y != rhs.y || z != rhs.z;
     }
+};
+struct Vector3intHash
+{
+	std::size_t operator()(const Vector3int& v) const noexcept
+	{
+		uint64_t x = static_cast<uint64_t>(v.x);
+		uint64_t y = static_cast<uint64_t>(v.y);
+		uint64_t z = static_cast<uint64_t>(v.z);
+		return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+	}
 };
 
 struct Quaternion;
@@ -1587,7 +1596,7 @@ class Block;
 struct lookAtBlock
 {
     Block* block = nullptr;
-	Vector2int chunkIndex = { 0,0 };
+	Vector3int chunkIndex = { 0,0,0 };
 	Vector3int localIndex = { 0,0,0 };
     AABBFace face = AABBFace::NONE;
 	float distance = 0.0f;

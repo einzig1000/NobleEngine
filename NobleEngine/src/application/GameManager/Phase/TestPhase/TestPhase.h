@@ -1,12 +1,12 @@
 #pragma once
-#include <GameManager/Phase/PhaseParent/PhaseParent.h>
+#include <GameManager/Phase/IPhase/IPhase.h>
 #include <TestAnimation/TestAnimation.h>
 #include <TestParticle/TestParticle.h>
 #include <TestMeshShader/TestMeshShader.h>
 #include <memory>
 
 class TestPhase :
-	public PhaseParent
+	public IPhase
 {
 public:
 	TestPhase();

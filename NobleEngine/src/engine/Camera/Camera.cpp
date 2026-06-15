@@ -79,12 +79,12 @@ void Camera::Update_Orbit()
 
     // カメラ位置
     Vector3 localPos = CoordinateConverter::ToCartesian(spherical_);
-    Vector3 eye = center_ + localPos;
+    eye_ = center_ + localPos;
 
     // 視線ベクトル
-	Vector3 forward = (center_ - eye).Normalized();
+	Vector3 forward = (center_ - eye_).Normalized();
 
-	viewMatrix_ = Matrix4x4::LookAtMatrix(eye, center_, { 0.0f, 1.0f, 0.0f });
+	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
     viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
 
     CreateFrustumPlanes();

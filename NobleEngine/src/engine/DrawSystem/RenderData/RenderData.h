@@ -3,7 +3,7 @@
 //#include <optional>
 //
 //class Block;
-//
+
 //class RenderData_Model
 //{
 //public:
@@ -146,7 +146,7 @@
 //
 //    std::vector<RenderData_Model*> blockList;
 //};
-//
+
 //class RenderData_Sprite
 //{
 //public:
@@ -188,7 +188,7 @@
 //    static std::vector<RenderData_Sprite*> renderSprites;
 //
 //};
-//
+
 //class RenderData_Triangle
 //{
 //public:
@@ -223,7 +223,7 @@
 //    static std::vector<RenderData_Triangle*> renderTriangles;
 //
 //};
-//
+
 //class RenderData_Rect
 //{
 //public:
@@ -261,7 +261,7 @@
 //
 //    static std::vector<RenderData_Rect*> renderRects;
 //};
-//
+
 //class RenderData_Line
 //{
 //public:
@@ -289,7 +289,7 @@
 //
 //    static std::vector<RenderData_Line*> renderLines;
 //};
-//
+
 //class RenderData_Particle
 //{
 //public:
@@ -400,9 +400,9 @@
 //
 //    static std::vector<RenderData_Particle*> renderParticles;
 //};
-//
-///// 新しいブロックを作るときはAddNewBlock()
-///// ブロックを壊すときはRemoveBlockFromList()
+
+// 新しいブロックを作るときはAddNewBlock()
+// ブロックを壊すときはRemoveBlockFromList()
 //class RenderData_Block
 //{
 //public:
@@ -413,7 +413,7 @@
 //
 //
 //    /// <summary>
-//	/// リストに新たなブロックを追加する
+//	  /// リストに新たなブロックを追加する
 //    /// </summary>
 //    /// <param name="worldPos"> 世界基準の座標 </param>
 //    /// <param name="localIndex"> チャンク内のローカルインデックス </param>

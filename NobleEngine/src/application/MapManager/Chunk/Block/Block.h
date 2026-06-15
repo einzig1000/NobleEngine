@@ -14,8 +14,8 @@ public:
 	// チャンク内の更新
 	void Update();
 
-	// RenderData_Blockのslot
-	int32_t dataSlot_ = 0;
+	// チャンク描画オブジェクトのインスタンススロット
+	int32_t dataSlot_ = -1;
 
 	// ブロックの種類設定
 	void SetBlockType(Blockinfo info);
@@ -26,7 +26,6 @@ public:
 
 	// プレイヤーに見られている時、輝度に応じて色を更新
 	void UpdateColor();
-
 
 	Vector4 color_ = { 1.0f,1.0f,1.0f,1.0f };
 	Vector3 position_;

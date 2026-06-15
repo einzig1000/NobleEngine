@@ -1,8 +1,7 @@
-//#include "DrawSystem/RenderData/RenderData.h"
-//#include "Utilities/JsonManager.h"
-//#include "Game.h"
-//#include "Engine.h"
-//#include "DirectX/DirectXManager.h"
+#include "RenderData.h"
+#include "Game.h"
+#include "Engine.h"
+#include "DirectX/DirectXManager.h"
 //
 //using namespace DirectX;
 //
@@ -15,7 +14,8 @@
 //std::vector<RenderData_Particle*> RenderData_Particle::renderParticles;
 //std::vector<RenderData_Block*> RenderData_Block::renderBlocks;
 //
-//#pragma region model
+
+#pragma region model
 //
 //RenderData_Model::RenderData_Model()
 //{
@@ -482,7 +482,7 @@
 //{
 //	collisionInfos.clear();
 //
-//#pragma region 描画範囲内判定
+#pragma region 描画範囲内判定
 //
 //	bool inFrustum = false;
 //	for (const auto& aabb : this->aabbs)
@@ -495,16 +495,16 @@
 //	}
 //	this->inPicture = inFrustum;
 //
-//#pragma endregion
+#pragma endregion
 //
-//#pragma region 前フレーム情報保存
+#pragma region 前フレーム情報保存
 //
 //	this->preScale = this->scale;
 //	this->preTranslate = this->translate;
 //	this->preRotate = this->rotate;
 //	this->preAABB = this->aabbs;
 //
-//#pragma endregion
+#pragma endregion
 //
 //}
 //
@@ -736,9 +736,9 @@
 //	return best;
 //}
 //
-//#pragma endregion
-//
-//#pragma region sprite
+#pragma endregion
+
+#pragma region sprite
 //
 //RenderData_Sprite::RenderData_Sprite()
 //{
@@ -859,9 +859,9 @@
 //	ImGui::End();
 //}
 //
-//#pragma endregion
-//
-//#pragma region triangle
+#pragma endregion
+
+#pragma region triangle
 //
 //RenderData_Triangle::RenderData_Triangle()
 //{
@@ -953,9 +953,9 @@
 //	ImGui::End();
 //}
 //
-//#pragma endregion
-//
-//#pragma region line
+#pragma endregion
+
+#pragma region line
 //
 //RenderData_Line::RenderData_Line()
 //{
@@ -1057,9 +1057,9 @@
 //	ImGui::End();
 //}
 //
-//#pragma endregion
-//
-//#pragma region particle
+#pragma endregion
+
+#pragma region particle
 //
 //RenderData_Particle::RenderData_Particle()
 //{
@@ -1907,9 +1907,9 @@
 //	ImGui::End();
 //}
 //
-//#pragma endregion
-//
-//#pragma region rect
+#pragma endregion
+
+#pragma region rect
 //
 //RenderData_Rect::RenderData_Rect()
 //{
@@ -1994,15 +1994,14 @@
 //	ImGui::End();
 //}
 //
-//#pragma endregion
-//
-//#pragma region block
+#pragma endregion
+
+#pragma region block
 //
 //RenderData_Block::RenderData_Block()
 //{
 //	renderBlocks.push_back(this);
 //	this->ID = int(renderBlocks.size());
-//
 //
 //	// ===== WorldMatrix =====
 //	this->worldMatrixResource_ = Engine::Instance().CreateBufferResource(sizeof(Matrix4x4) * this->capacity);
@@ -2221,5 +2220,5 @@
 ////
 ////	ImGui::End();
 //}
-//
-//#pragma endregion
+
+#pragma endregion

@@ -47,7 +47,7 @@ public:
     Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }
     Matrix4x4 GetOrthoProjectionMatrix() const { return orthoProjectionMatrix_; }
     Vector3 GetCenter() const { return center_; }
-    Vector3 GetTranslate() const { return transform_.translate; }
+    Vector3 GetTranslate() const { return eye_; }
     Vector3 GetRotate() const { return transform_.rotate; }
     float GetDistance() const { return spherical_.radius; }
 
@@ -66,6 +66,7 @@ private:
 
 	// カメラ位置
     Coordinate_spherical spherical_ = {20.0f, 1.57f, -1.57f};
+	Vector3 eye_ = { 0.0f, 0.0f, 0.0f };
 	// 注視点
 	Vector3 center_ = { 0.0f, 0.0f, 0.0f };
     // カメラの最終的な変換

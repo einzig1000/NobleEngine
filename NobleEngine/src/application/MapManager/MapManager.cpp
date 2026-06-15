@@ -1,17 +1,11 @@
-#include "MapManager/MapManager.h"
-#include "MapManager/Chunk/Chunk.h"
-#include "MapManager/Chunk/Block/Block.h"
-#include "MapManager/Chunk/Block/BlockDurability.h"
-#include "Item/DropItem/DropItemManager.h"
+#include "MapManager.h"
+#include <MapManager/Chunk/Chunk.h>
+#include <MapManager/Chunk/Block/Block.h>
 #include <fstream>
 #include <sstream>
-#include "Character/Player/Player.h"
-#include "Character/BaseCharacter.h"
-#include "Utilities/PerlinNoise.h"
-#include "Engine.h"
-
-
-// AABBの各種補助 いずれstruct AABBに移す
+#include <Utilities/PerlinNoise.h>
+#include <Utilities/functions.h>
+#include <filesystem>
 
 int LocalMod(int a, int n)
 {
@@ -99,7 +93,7 @@ namespace
 	// レイ vs AABB（スラブ法）：交差したら、最初に入る距離tを返す
 	static bool RayIntersectAABB_FirstT(const Ray& ray, const AABB& aabb, float& outT)
 	{
-		const float INF = std::numeric_limits<float>::infinity();
+		const float constexpr INF = std::numeric_limits<float>::infinity();
 		float tmin = 0.0f;
 		float tmax = INF;
 
@@ -218,76 +212,74 @@ namespace
 		return q;
 	}
 
-	// test AABBが覆う範囲の「固体ブロックAABB」を列挙
-	template<class Fn>
-	static void ForEachSolidBlockAABB_OverlappingRange(
-		const MapManager* self,
-		const AABB& test,
-		Fn&& fn)
-	{
-		const Vector3int minWB = self->WorldBlockIndexByPosition(test.min);
-		const Vector3int maxWB = self->WorldBlockIndexByPosition(test.max - Vector3{ 1e-6f, 1e-6f, 1e-6f });
+	//// test AABBが覆う範囲の「固体ブロックAABB」を列挙
+	//template<class Fn>
+	//static void ForEachSolidBlockAABB_OverlappingRange(
+	//	const MapManager* self,
+	//	const AABB& test,
+	//	Fn&& fn)
+	//{
+	//	const Vector3int minWB = self->WorldBlockIndexByPosition(test.min);
+	//	const Vector3int maxWB = self->WorldBlockIndexByPosition(test.max - Vector3{ 1e-6f, 1e-6f, 1e-6f });
 
-		for (int by = minWB.y; by <= maxWB.y; ++by)
-		{
-			if (by < 0 || by >= CHUNK_Y) continue;
-			const int localY = by;
+	//	for (int by = minWB.y; by <= maxWB.y; ++by)
+	//	{
+	//		if (by < 0 || by >= CHUNK_Y) continue;
+	//		const int localY = by;
 
-			for (int bz = minWB.z; bz <= maxWB.z; ++bz)
-			{
-				const int chunkZ = FloorDivInt(bz, CHUNK_Z);
-				const int localZ = LocalMod(bz, CHUNK_Z);
+	//		for (int bz = minWB.z; bz <= maxWB.z; ++bz)
+	//		{
+	//			const int chunkZ = FloorDivInt(bz, CHUNK_Z);
+	//			const int localZ = LocalMod(bz, CHUNK_Z);
 
-				for (int bx = minWB.x; bx <= maxWB.x; ++bx)
-				{
-					const int chunkX = FloorDivInt(bx, CHUNK_X);
-					const int localX = LocalMod(bx, CHUNK_X);
+	//			for (int bx = minWB.x; bx <= maxWB.x; ++bx)
+	//			{
+	//				const int chunkX = FloorDivInt(bx, CHUNK_X);
+	//				const int localX = LocalMod(bx, CHUNK_X);
 
-					const Vector2int chunkPos{ chunkX, chunkZ };
-					Chunk* c = self->TryGetChunk(chunkPos);
-					if (!c) continue;
+	//				const Vector3int chunkPos{ chunkX, localY, chunkZ };
+	//				Chunk* c = self->TryGetChunk(chunkPos);
+	//				if (!c) continue;
 
-					Block* b = c->blocks_[localX][localY][localZ].get();
-					if (!b) continue;
-					if (b->GetBlockID() == BlockID::Air) continue;
+	//				Block* b = c->GetBlock(localX, localY, localZ);
+	//				if (!b) continue;
+	//				if (b->GetBlockID() == BlockID::Air) continue;
 
-					fn(b->aabb_);
-				}
-			}
-		}
-	}
+	//				fn(b->aabb_);
+	//			}
+	//		}
+	//	}
+	//}
 
-	static bool AnySolidOverlap_Map(
-		const MapManager* self,
-		const AABB& test)
-	{
-		bool hit = false;
-		ForEachSolidBlockAABB_OverlappingRange(self, test, [&](const AABB& block)
-			{
-				if (IsOverLap(test, block))
-				{
-					hit = true;
-				}
-			});
-		return hit;
-	}
+	//static bool AnySolidOverlap_Map(
+	//	const MapManager* self,
+	//	const AABB& test)
+	//{
+	//	bool hit = false;
+	//	ForEachSolidBlockAABB_OverlappingRange(self, test, [&](const AABB& block)
+	//		{
+	//			if (IsOverLap(test, block))
+	//			{
+	//				hit = true;
+	//			}
+	//		});
+	//	return hit;
+	//}
 }
 
 
 MapManager::MapManager()
 {
-	dropItemManager_ = std::make_unique<DropItemManager>();
-	dropItemManager_->SetMapManager(this);
 }
 
-void MapManager::SetPlayer(Player* player)
-{
-	// プレイヤー参照保存
-	player_ = player;
-
-	RegisterCharacter(player_);
-	dropItemManager_->SetPlayer(player);
-}
+//void MapManager::SetPlayer(Player* player)
+//{
+//	// プレイヤー参照保存
+//	player_ = player;
+//
+//	RegisterCharacter(player_);
+//	dropItemManager_->SetPlayer(player);
+//}
 
 MapManager::~MapManager(){}
 
@@ -297,7 +289,7 @@ void MapManager::Initialize()
 }
 
 
-// マップ名とファイルパスの対応表読み込み/保存
+// マップ名とファイルパスの対応表読み込み/保存 (マップ自体のデータは含まれていない)
 void MapManager::LoadNameAndPathMap(const std::string& filePath)
 {
 	std::string csvFilePath = filePath;
@@ -370,7 +362,7 @@ void MapManager::LoadMap(const std::string& mapName)
 		if (!chunk) continue;
 		for (int dir = 0; dir < 4; ++dir)
 		{
-			chunk->SetNeighborChunk(static_cast<DirectionXZ>(dir), nullptr);
+			chunk->SetNeighborChunk(static_cast<DirectionXYZ>(dir), nullptr);
 		}
 	}
 	// chunks 全解放&clear
@@ -379,11 +371,6 @@ void MapManager::LoadMap(const std::string& mapName)
 		pair.second.reset();
 	}
 	chunks.clear();
-	// chunkGenQueue_ を空に
-	while (!chunkGenQueue_.empty())
-	{
-		chunkGenQueue_.pop();
-	}
 	// chunkScheduled_/chunkCreated_ を clear
 	chunkScheduled_.clear();
 	chunkCreated_.clear();
@@ -397,9 +384,9 @@ void MapManager::LoadMap(const std::string& mapName)
 	//JsonManager json;
 	//json.LoadFromJson(*this, currentMapFilePath_);
 
-	player_->data_.translate.value.y = 20.0f;
-	player_->data_.translate.velocity.y = 0.0f;
-	player_->data_.translate.acceleration.y = GRAVITY;
+	//player_->data_.translate.value.y = 20.0f;
+	//player_->data_.translate.velocity.y = 0.0f;
+	//player_->data_.translate.acceleration.y = GRAVITY;
 }
 // マップ保存
 void MapManager::SaveMap()
@@ -411,29 +398,22 @@ void MapManager::SaveMap()
 	SaveNameAndPathMap("resources/Minecraft/Maps/MapNameAndPath.csv");
 }
 
-// チャンク有無確認
-bool MapManager::HasChunk(const Vector2int& chunkPos) const
-{
-	return chunks.find(chunkPos) != chunks.end();
-}
-
 // チャンク取得、なくても生成はしない
-Chunk* MapManager::TryGetChunk(const Vector2int& chunkPos) const
+Chunk* MapManager::TryGetChunk(const Vector3int& chunkPos) const
 {
 	auto it = chunks.find(chunkPos);
 	if (it == chunks.end()) { return nullptr; }
 	return it->second.get();
 }
 
-// チャンク取得、なければスケジュールに登録して生成
-Chunk* MapManager::GetOrCreateChunk(const Vector2int& chunkPos)
+// チャンク取得、なければ生成
+Chunk* MapManager::GetOrCreateChunk(const Vector3int& chunkPos)
 {
 	// chunkCreated_から既に生成済みか確認
 	if (chunkCreated_.find(chunkPos) != chunkCreated_.end())
 	{
 		return TryGetChunk(chunkPos);
 	}
-
 
 	// 欲しいチャンクが存在しなければスケジュールに登録
 	EnsureChunkScheduled(chunkPos);
@@ -443,82 +423,88 @@ Chunk* MapManager::GetOrCreateChunk(const Vector2int& chunkPos)
 	return TryGetChunk(chunkPos);
 }
 
-// 欲しいチャンクが存在しなければスケジュールに登録
-void MapManager::EnsureChunkScheduled(const Vector2int& chunkPos)
+// スケジュールに登録
+void MapManager::EnsureChunkScheduled(const Vector3int& chunkPos)
 {
 	// チャンクが既に作成されているならreturn
 	if (chunkCreated_.find(chunkPos) != chunkCreated_.end()) return;
 	// 既にスケジュール済みならreturn
 	if (chunkScheduled_.find(chunkPos) != chunkScheduled_.end()) return;
-	// スケジュール登録
-	chunkGenQueue_.push(chunkPos);
+
 	// スケジュール済み集合にも登録
 	chunkScheduled_.insert(chunkPos);
 
-	// chunkGenQueue_をプレイヤー位置から近い順にソートする
-	std::vector<Vector2int> tempQueue;
-	while (!chunkGenQueue_.empty())
-	{
-		tempQueue.push_back(chunkGenQueue_.front());
-		chunkGenQueue_.pop();
-	}
-	Vector2int playerIndex = ChunkIndexByPosition(player_->data_.translate.value);
-	std::sort(tempQueue.begin(), tempQueue.end(),
-		[playerIndex](const Vector2int& a, const Vector2int& b)
-		{
-			int distA = (a.x - playerIndex.x) * (a.x - playerIndex.x) + (a.y - playerIndex.y) * (a.y - playerIndex.y);
-			int distB = (b.x - playerIndex.x) * (b.x - playerIndex.x) + (b.y - playerIndex.y) * (b.y - playerIndex.y);
-			return distA < distB;
-		});
-	for (const auto& pos : tempQueue)
-	{
-		chunkGenQueue_.push(pos);
-	}
+	//// chunkGenQueue_をプレイヤー位置から近い順にソートする
+	//std::vector<Vector3int> tempQueue;
+	//while (!chunkGenQueue_.empty())
+	//{
+	//	tempQueue.push_back(chunkGenQueue_.front());
+	//	chunkGenQueue_.pop();
+	//}
+	//Vector3int playerIndex = ChunkIndexByPosition(player_->data_.translate.value);
+	//std::sort(tempQueue.begin(), tempQueue.end(),
+	//	[playerIndex](const Vector2int& a, const Vector2int& b)
+	//	{
+	//		int distA = (a.x - playerIndex.x) * (a.x - playerIndex.x) + (a.y - playerIndex.y) * (a.y - playerIndex.y);
+	//		int distB = (b.x - playerIndex.x) * (b.x - playerIndex.x) + (b.y - playerIndex.y) * (b.y - playerIndex.y);
+	//		return distA < distB;
+	//	});
+	//for (const auto& pos : tempQueue)
+	//{
+	//	chunkGenQueue_.push(pos);
+	//}
 }
 
 // スケジュールに登録されたチャンクを1つ生成
 void MapManager::ProcessChunkGeneration()
 {
 	// スケジュールキューが空ではないなら作成
-	if (!chunkGenQueue_.empty())
+	if (!chunkScheduled_.empty())
 	{
 		// キューから取り出し
-		Vector2int pos = chunkGenQueue_.front();
-		chunkGenQueue_.pop();
+		Vector3int pos = *chunkScheduled_.begin();
 		chunkScheduled_.erase(pos);
 
-		bool exists = HasChunk(pos);
-		// 既にあるなら取得、ないなら新規生成
-		std::unique_ptr<Chunk> chunk = exists ? std::move(chunks[pos]) : std::make_unique<Chunk>();
+		// 一応存在確認
+		if (TryGetChunk(pos) != nullptr)
+		{
+			// 生成済み集合に登録
+			chunkCreated_.insert(pos);
+			return;
+		}
+
+		// 新規生成
+		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>();
 		// チャンクデータ生成
 		chunk->CreateChunkData(noiseParam_, pos);
-		// チャンク登録
-		chunks[pos] = std::move(chunk);
-
 
 		// 隣接チャンク設定
-		static constexpr Vector2int dirOffsets[4] = 
+		static constexpr Vector3int dirOffsets[6] =
 			{
-			Vector2int(-1, 0),	// Left
-			Vector2int(1, 0),	// Right
-			Vector2int(0, -1),	// Back
-			Vector2int(0, 1)	// Front
+			Vector3int(-1, 0, 0),	// Left
+			Vector3int(1, 0, 0),	// Right
+			Vector3int(0, -1, 0),	// Back
+			Vector3int(0, 1, 0),	// Front
+			Vector3int(0, 0, -1),	// Down
+			Vector3int(0, 0, 1)		// Up
 		};
 
-		static constexpr DirectionXZ opposite[4] =
+		static constexpr DirectionXYZ opposite[6] =
 		{
-			DirectionXZ::Right,	// Left  の反対
-			DirectionXZ::Left,	// Right の反対
-			DirectionXZ::Front,	// Back  の反対
-			DirectionXZ::Back	// Front の反対
+			DirectionXYZ::Right,// Left  の反対
+			DirectionXYZ::Left,	// Right の反対
+			DirectionXYZ::Front,// Back  の反対
+			DirectionXYZ::Back,	// Front の反対
+			DirectionXYZ::Up,	// Down  の反対
+			DirectionXYZ::Down	// Up    の反対
 		};
 
-		for (int dir = 0; dir < 4; ++dir)
+		for (int dir = 0; dir < 6; ++dir)
 		{
 			Chunk* neighbor = TryGetChunk(pos + dirOffsets[dir]);
 
 			// 自分→隣（隣が無ければnullptrでOK）
-			chunk->SetNeighborChunk(static_cast<DirectionXZ>(dir), neighbor);
+			chunk->SetNeighborChunk(static_cast<DirectionXYZ>(dir), neighbor);
 
 			// 隣→自分（隣がある時だけ）
 			if (neighbor)
@@ -526,6 +512,9 @@ void MapManager::ProcessChunkGeneration()
 				neighbor->SetNeighborChunk(opposite[dir], chunk.get());
 			}
 		}
+
+		// チャンク登録
+		chunks[pos] = std::move(chunk);
 
 		// 生成済み集合に登録
 		chunkCreated_.insert(pos);
@@ -535,112 +524,107 @@ void MapManager::ProcessChunkGeneration()
 
 void MapManager::Update()
 {
-	// デバッグ用：マップロード/セーブ
-	//if (Game::IO::Key::IsJustPressed(DIK_0))
-	//{
-	//	LoadMap(mapFilePath_);
-	//}
-	//if (Game::IO::Key::IsJustPressed(DIK_1))
-	//{
-	//	SaveMap(mapFilePath_);
-	//}
-
-	// 生成を段階的に実行
+	// 1Fに1つのチャンクを作成する
 	ProcessChunkGeneration();
 
 	// プレイヤー周囲更新
-	Vector2int playerIndex = ChunkIndexByPosition(player_->data_.translate.value);
-	for (int32_t dx = -updateRadius_; dx <= updateRadius_; ++dx)
+	//Vector2int playerIndex = ChunkIndexByPosition(player_->data_.translate.value);
+	//Vector3int updateCenter = ChunkIndexByPosition(Vector3(0.0f, 0.0f, 0.0f));
+	Vector3int updateCenter = ChunkIndexByPosition(Game::Camera::Getter::GetCurrentCenter());
+	for (int32_t dx = -drawRadius_; dx <= drawRadius_; ++dx)
 	{
-		for (int32_t dz = -updateRadius_; dz <= updateRadius_; ++dz)
+		for (int32_t dy = -drawRadius_; dy <= drawRadius_; ++dy)
 		{
-			Vector2int pos(playerIndex.x + dx, playerIndex.y + dz);
-			Chunk* chunk = TryGetChunk(pos);
-			if (chunk) { chunk->Update(); }
+			for (int32_t dz = -drawRadius_; dz <= drawRadius_; ++dz)
+			{
+				Vector3int pos(updateCenter.x + dx, updateCenter.y + dy, updateCenter.z + dz);
+				Chunk* chunk = TryGetChunk(pos);
+				if (chunk) { chunk->Update(); }
+			}
 		}
 	}
-
-	// ドロップアイテム更新
-	dropItemManager_->Update();
 }
 
-void MapManager::Draw()
+void MapManager::Draw(int32_t renderTargetID)
 {
-	Vector2int drawCenter = ChunkIndexByPosition(player_->data_.translate.value);
+	//Vector2int drawCenter = ChunkIndexByPosition(player_->data_.translate.value);
+	//Vector3int drawCenter = ChunkIndexByPosition(Vector3(0.0f, 0.0f, 0.0f));
+	Vector3int drawCenter = ChunkIndexByPosition(Game::Camera::Getter::GetCurrentCenter());
 
 	// プレイヤー周囲描画
 	for (int32_t dx = -drawRadius_; dx <= drawRadius_; ++dx)
 	{
-		for (int32_t dz = -drawRadius_; dz <= drawRadius_; ++dz)
+		for (int32_t dy = -drawRadius_; dy <= drawRadius_; ++dy)
 		{
-			Vector2int chunkPos = Vector2int(drawCenter.x + dx, drawCenter.y + dz);
-			EnsureChunkScheduled(chunkPos);
-			Chunk* chunk = TryGetChunk(chunkPos);
-			if (chunk) { chunk->Draw(); }
+			for (int32_t dz = -drawRadius_; dz <= drawRadius_; ++dz)
+			{
+				Vector3int chunkPos = Vector3int(drawCenter.x + dx, drawCenter.y + dy, drawCenter.z + dz);
+				EnsureChunkScheduled(chunkPos);
+				Chunk* chunk = TryGetChunk(chunkPos);
+				if (chunk) { chunk->Draw(renderTargetID); }
+			}
 		}
 	}
-
-	// ドロップアイテム描画
-	dropItemManager_->Draw();
 }
 
 void MapManager::DrawImGui()
 {
 	ImGui::Begin("MapManager");
 	ImGui::Text("Chunks count: %zu", chunks.size());
-	ImGui::Text("Chunk Generation Queue size: %zu", chunkGenQueue_.size());
+	ImGui::Text("Chunk Generation Queue size: %zu", chunkScheduled_.size());
 	ImGui::End();
 }
 
-// 指定位置のブロックを破壊
-void MapManager::DestroyBlockAt(const Vector2int& chunkPos, const Vector3int& localIndex)
-{
-	// 破壊するチャンクを取得
-	Chunk* chunk = TryGetChunk(chunkPos);
-	if (!chunk) return;
+//// 指定位置のブロックを破壊
+//void MapManager::DestroyBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex)
+//{
+//	// 破壊するチャンクを取得
+//	Chunk* chunk = TryGetChunk(chunkPos);
+//	if (!chunk) return;
+//
+//	// 破壊するブロックを取得
+//	Block* targetBlock = chunk->blocks_[localIndex.x][localIndex.y][localIndex.z].get();
+//	if (!targetBlock) return;
+//
+//	// 破壊するブロックのIDを取得
+//	const BlockID destroyedId = targetBlock->GetBlockID();
+//	if (destroyedId == BlockID::Air) return;
+//
+//	// ブロック破壊
+//	chunk->DestroyBlock(localIndex);
+//
+//	// 露出状態更新
+//	chunk->SetExposedAroundBlocks(localIndex);
+//
+//	// ドロップアイテム生成
+//	//AddDropItemAt(targetBlock->position_, BlockIdToDropItemId(destroyedId));
+//}
 
-	// 破壊するブロックを取得
-	Block* targetBlock = chunk->blocks_[localIndex.x][localIndex.y][localIndex.z].get();
-	if (!targetBlock) return;
-
-	// 破壊するブロックのIDを取得
-	const BlockID destroyedId = targetBlock->GetBlockID();
-	if (destroyedId == BlockID::Air) return;
-
-	// ブロック破壊
-	chunk->DestroyBlock(localIndex);
-
-	// 露出状態更新
-	chunk->SetExposedAroundBlocks(localIndex);
-
-	// ドロップアイテム生成
-	AddDropItemAt(targetBlock->position_, BlockIdToDropItemId(destroyedId));
-}
-
-void MapManager::AddDropItemAt(const Vector3& position, ItemID id)
-{
-	Vector3 dropPos = position;
-	dropPos.x += Game::Math::RandFloat(-0.3f, 0.3f, 2);
-	dropPos.z += Game::Math::RandFloat(-0.3f, 0.3f, 2);
-	dropItemManager_->AddItem(id, dropPos);
-}
+//void MapManager::AddDropItemAt(const Vector3& position, ItemID id)
+//{
+//	//Vector3 dropPos = position;
+//	//dropPos.x += Game::Math::RandFloat(-0.3f, 0.3f, 2);
+//	//dropPos.z += Game::Math::RandFloat(-0.3f, 0.3f, 2);
+//	//dropItemManager_->AddItem(id, dropPos);
+//}
 
 // 指定位置にブロックを設置
-bool MapManager::SetBlockAt(const Vector2int& chunkPos, const Vector3int& localIndex, const BlockID id)
+bool MapManager::SetBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex, const BlockID id)
 {
 	// 設置するチャンクを取得
 	Chunk* chunk = TryGetChunk(chunkPos);
 	if (!chunk) return false;
 
 	// 設置するブロック単位の空間を取得
-	Block* targetBlock = chunk->blocks_[localIndex.x][localIndex.y][localIndex.z].get();
+	Block* targetBlock = chunk->GetBlock(localIndex);
 	if (!targetBlock) return false;
 
-	// Air ブロックは設置できない
-	if (id == BlockID::Air) return false;
-
-	// 指定位置に既にブロックが存在しているなら設置できない
-	if (targetBlock->GetBlockID() != BlockID::Air) return false;
+	// 置き換えも出来るようにするため以下はコメントアウト。この関数を利用する側で置き換えの可否を判断する
+	//// Air ブロックは設置できない
+	//if (id == BlockID::Air) return false;
+	//
+	//// 指定位置に既にブロックが存在しているなら設置できない
+	//if (targetBlock->GetBlockID() != BlockID::Air) return false;
 
 	// キャラクターと重なってたら設置できない
 	const AABB placeAabb = GetAABB(chunkPos, localIndex);
@@ -659,8 +643,6 @@ bool MapManager::SetBlockAt(const Vector2int& chunkPos, const Vector3int& localI
 }
 bool MapManager::SetBlockAt(const lookAtBlock& lab, const BlockID id)
 {
-	// Air ブロックならreturn
-	if (id == BlockID::Air) return false;
 	// 向きが不明ならreturn
 	if (lab.face == AABBFace::NONE) return false;
 
@@ -691,7 +673,7 @@ bool MapManager::SetBlockAt(const lookAtBlock& lab, const BlockID id)
 		break;
 	}
 
-	Vector2int chunkPos = lab.chunkIndex;
+	Vector3int chunkPos = lab.chunkIndex;
 	Vector3int localIndex = lab.localIndex + offset;
 
 	// チャンク跨ぎ対応
@@ -705,14 +687,24 @@ bool MapManager::SetBlockAt(const lookAtBlock& lab, const BlockID id)
 		chunkPos.x += 1;
 		localIndex.x -= CHUNK_X;
 	}
-	if (localIndex.z < 0)
+	if (localIndex.y < 0)
 	{
 		chunkPos.y -= 1;
+		localIndex.y += CHUNK_Y;
+	}
+	else if (localIndex.y >= CHUNK_Y)
+	{
+		chunkPos.y += 1;
+		localIndex.y -= CHUNK_Y;
+	}
+	if (localIndex.z < 0)
+	{
+		chunkPos.z -= 1;
 		localIndex.z += CHUNK_Z;
 	}
 	else if (localIndex.z >= CHUNK_Z)
 	{
-		chunkPos.y += 1;
+		chunkPos.z += 1;
 		localIndex.z -= CHUNK_Z;
 	}
 
@@ -723,500 +715,500 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 	return SetBlockAt(ChunkIndexByPosition(position), BlockIndexByPosition(position), id);
 }
 
-// 初期
-bool MapManager::SweepAABB(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
-{
-	outCorrectedDelta = delta;
-
-	// めり込み防止のスキン
-	const float skin = 0.001f;
-
-	// 与えられたAABBが重なり得るブロックを走査する
-	auto AnySolidOverlap = [&](const AABB& test) -> bool
-		{
-			// AABBの覆うワールドブロック範囲（min/maxは「セルインデックス」）
-			const Vector3int minBlockIndex = WorldBlockIndexByPosition(test.min);
-			const Vector3int maxBlockIndex = WorldBlockIndexByPosition(test.max - Vector3{ 1e-6f, 1e-6f, 1e-6f });
-
-			// floor_div（負数対応の床除算）
-			auto FloorDiv = [](int a, int n) -> int
-				{
-					// n > 0 前提
-					int q = a / n;
-					int r = a % n;
-					if (r != 0 && ((r > 0) != (n > 0)) != (a > 0)) {} // unused guard
-					// C++の / は0方向丸めなので、負数で割り切れないときだけ1引く
-					if (r != 0 && ((a < 0) ^ (n < 0))) --q;
-					return q;
-				};
-
-			for (int by = minBlockIndex.y; by <= maxBlockIndex.y; ++by)
-			{
-				// Y軸はワールド境界でクリップ
-				if (by < 0 || by >= CHUNK_Y) continue;
-				const int localY = by;
-
-				for (int bz = minBlockIndex.z; bz <= maxBlockIndex.z; ++bz)
-				{
-					const int chunkZ = FloorDiv(bz, CHUNK_Z);
-					const int localZ = LocalMod(bz, CHUNK_Z);
-
-					for (int bx = minBlockIndex.x; bx <= maxBlockIndex.x; ++bx)
-					{
-						const int chunkX = FloorDiv(bx, CHUNK_X);
-						const int localX = LocalMod(bx, CHUNK_X);
-
-						const Vector2int chunkPos{ chunkX, chunkZ };
-						Chunk* c = TryGetChunk(chunkPos);
-						if (!c) continue;
-
-						Block* b = c->blocks_[localX][localY][localZ].get();
-						if (!b) continue;
-						if (b->GetBlockID() == BlockID::Air) continue;
-
-						// ブロックAABBと実際に重なっているか
-						if (IsOverLap(test, b->aabb_))
-						{
-							return true;
-						}
-					}
-				}
-			}
-			return false;
-		};
-
-	// 「指定軸だけ」動かして、めり込むならその軸の移動量を詰める
-	auto ResolveAxis = [&](float& dAxis, int axis) -> bool
-		{
-			if (std::abs(dAxis) < 1e-6f) return false;
-
-			const float sign = (dAxis >= 0.0f) ? 1.0f : -1.0f;
-			const float dist = std::abs(dAxis);
-
-			bool hit = false;
-
-			// 二分探索で「当たらない最大距離」を探す（0..dist）
-			float lo = 0.0f;
-			float hi = dist;
-
-			auto MakeMove = [&](float signedAmount) -> Vector3
-				{
-					Vector3 move{ 0,0,0 };
-					if (axis == 0) move.x = signedAmount;
-					if (axis == 1) move.y = signedAmount;
-					if (axis == 2) move.z = signedAmount;
-					return move;
-				};
-
-			// dist動かしても当たらないなら終了
-			{
-				const Vector3 move = MakeMove(sign * dist);
-				Vector3 testMove = outCorrectedDelta + move;
-				const AABB test = aabb + testMove;
-				if (!AnySolidOverlap(test)) return false;
-			}
-
-			// 当たるので探索
-			for (int i = 0; i < 16; ++i)
-			{
-				const float mid = (lo + hi) * 0.5f;
-				const Vector3 move = MakeMove(sign * mid);
-				Vector3 testMove = outCorrectedDelta + move;
-				const AABB test = aabb + testMove;
-
-				if (AnySolidOverlap(test))
-				{
-					hi = mid;
-					hit = true;
-				}
-				else
-				{
-					lo = mid;
-				}
-			}
-
-			// skin分だけ手前で止める（距離側で引く）
-			float allowedDist = lo - skin;
-			if (allowedDist < 0.0f) allowedDist = 0.0f;
-
-			dAxis = sign * allowedDist;
-			return hit;
-		};
-
-	bool hitAny = false;
-
-	// X
-	{
-		float dx = outCorrectedDelta.x;
-		if (ResolveAxis(dx, 0)) hitAny = true;
-		outCorrectedDelta.x = dx;
-	}
-
-	// Z
-	{
-		float dz = outCorrectedDelta.z;
-		if (ResolveAxis(dz, 2)) hitAny = true;
-		outCorrectedDelta.z = dz;
-	}
-
-	// Y
-	{
-		float dy = outCorrectedDelta.y;
-		if (ResolveAxis(dy, 1)) hitAny = true;
-		outCorrectedDelta.y = dy;
-	}
-
-
-	return hitAny;
-}
-// 1) depenetration（先に「微妙な重なり」を毎フレ解消してから軸解決）
-bool MapManager::SweepAABB_DepentrationFirst(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
-{
-	outCorrectedDelta = delta;
-	const float skin = 0.001f;
-
-	// 0) depenetration（今フレーム開始時点の微小めり込みを解消）
-	//    ※ここでは「最小押し戻しベクトル」を厳密に求めず、接触してるブロックの深度を足し合わせて小さく押し戻す。
-	{
-		AABB cur = aabb;
-		const int iters = 4;            // 少なすぎると残る / 多すぎると重い
-		const float maxPush = 0.05f;    // 1フレで押し戻し過ぎない安全弁
-
-		for (int iter = 0; iter < iters; ++iter)
-		{
-			Vector3 push(0, 0, 0);
-			bool overlapped = false;
-
-			ForEachSolidBlockAABB_OverlappingRange(this, cur, [&](const AABB& block)
-				{
-					if (!IsOverLap(cur, block)) return;
-
-					overlapped = true;
-					// AABB::GetCollisionDepth は「衝突している時は深度ベクトル」を返す前提
-					// ※方向は実装依存なので、center比較で符号を付け直す
-					Vector3 depth = cur.GetCollisionDepth(block);
-
-					const Vector3 cC = cur.center();
-					const Vector3 cB = block.center();
-
-					// 最浅軸を選んでその軸だけ押す（順番依存を減らす）
-					float pen = depth.x;
-					int axis = 0;
-					if (depth.y < pen) { pen = depth.y; axis = 1; }
-					if (depth.z < pen) { pen = depth.z; axis = 2; }
-
-					Vector3 localPush(0, 0, 0);
-					if (axis == 0) localPush.x = (cC.x < cB.x) ? -pen : +pen;
-					if (axis == 1) localPush.y = (cC.y < cB.y) ? -pen : +pen;
-					if (axis == 2) localPush.z = (cC.z < cB.z) ? -pen : +pen;
-
-					// skin分だけ余裕を取る
-					localPush *= 1.0f + skin;
-
-					push += localPush;
-				});
-
-			if (!overlapped) break;
-
-			// 押し戻し過ぎない
-			push.x = std::clamp(push.x, -maxPush, +maxPush);
-			push.y = std::clamp(push.y, -maxPush, +maxPush);
-			push.z = std::clamp(push.z, -maxPush, +maxPush);
-
-			// 押し戻し
-			cur = cur + push;
-
-			// 実際の移動デルタ側にも反映（開始位置がズレた分だけ、deltaを補正する）
-			outCorrectedDelta -= push;
-		}
-	}
-
-	// 1) あなたの既存方式（軸ごとの二分探索）をそのまま呼ぶ形で書く
-	auto ResolveAxis = [&](float& dAxis, int axis) -> bool
-		{
-			if (std::abs(dAxis) < 1e-6f) return false;
-
-			const float sign = (dAxis >= 0.0f) ? 1.0f : -1.0f;
-			const float dist = std::abs(dAxis);
-
-			float lo = 0.0f;
-			float hi = dist;
-
-			auto MakeMove = [&](float signedAmount) -> Vector3
-				{
-					Vector3 move{ 0,0,0 };
-					if (axis == 0) move.x = signedAmount;
-					if (axis == 1) move.y = signedAmount;
-					if (axis == 2) move.z = signedAmount;
-					return move;
-				};
-
-			// dist動かしても当たらないならOK
-			{
-				const AABB test = aabb + (outCorrectedDelta + MakeMove(sign * dist));
-				if (!AnySolidOverlap_Map(this, test)) return false;
-			}
-
-			// 当たるので探索
-			for (int i = 0; i < 16; ++i)
-			{
-				const float mid = (lo + hi) * 0.5f;
-				const AABB test = aabb + (outCorrectedDelta + MakeMove(sign * mid));
-				if (AnySolidOverlap_Map(this, test)) hi = mid;
-				else lo = mid;
-			}
-
-			float allowedDist = lo - skin;
-			if (allowedDist < 0.0f) allowedDist = 0.0f;
-
-			dAxis = sign * allowedDist;
-			return true;
-		};
-
-	bool hitAny = false;
-
-	// 推奨順：X→Z→Y（あなたの「直った順」）
-	{
-		float dx = outCorrectedDelta.x;
-		if (ResolveAxis(dx, 0)) hitAny = true;
-		outCorrectedDelta.x = dx;
-	}
-	{
-		float dz = outCorrectedDelta.z;
-		if (ResolveAxis(dz, 2)) hitAny = true;
-		outCorrectedDelta.z = dz;
-	}
-	{
-		float dy = outCorrectedDelta.y;
-		if (ResolveAxis(dy, 1)) hitAny = true;
-		outCorrectedDelta.y = dy;
-	}
-
-	return hitAny;
-}
-// 2) 真正のSweep（TOI: time of impact）寄せ（「一番早く当たる面」を探して進める）
-bool MapManager::SweepAABB_TOI(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
-{
-	outCorrectedDelta = delta;
-
-	const float skin = 0.001f;
-
-	// 開始時点でめり込んでるなら、TOIは破綻するので軽く押し戻す（最小限）
-	if (AnySolidOverlap_Map(this, aabb))
-	{
-		outCorrectedDelta = Vector3{ 0,0,0 };
-		return true;
-	}
-
-	// 探索対象は「移動AABBを含む範囲」＝ swept broadphase AABB
-	AABB broad = aabb;
-	broad = broad + delta; // 端点含む（AABB::operator+ がmin/maxを両方動かす前提）
-	// ※本当は min/maxを吸収する broadphase を作るべきだが、ここでは簡易に「終点AABBも見る」方向
-
-	SweepHit best;
-	best.t = 1.0f;
-
-	ForEachSolidBlockAABB_OverlappingRange(this, broad, [&](const AABB& block)
-		{
-			SweepHit h = SweptAABBvsAABB(aabb, delta, block);
-			if (!h.hit) return;
-			if (h.t < best.t)
-			{
-				best = h;
-			}
-		});
-
-	if (!best.hit) return false;
-
-	// 当たる直前まで移動（skin分引く）
-	const float tMove = my_max(0.0f, best.t - (skin / (delta.Length() + 1e-6f)));
-	outCorrectedDelta = delta * tMove;
-	return true;
-}
-// 3) がっつりMTV方式（重なっているブロックとの“最小押し戻しベクトル”を計算して解消）
-bool MapManager::SweepAABB_MTV(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
-{
-	outCorrectedDelta = delta;
-	const float skin = 0.001f;
-
-	// まず通常の移動を仮適用して、終点でめり込むならMTVで押し戻す方式にする
-	AABB moved = aabb + delta;
-
-	// ① 終点がめり込んでないならそのままOK
-	if (!AnySolidOverlap_Map(this, moved))
-	{
-		return false;
-	}
-
-	// ② めり込むので「終点での押し戻し」で corrected delta を作る（押し戻した分だけdeltaを短く）
-	Vector3 totalPush(0, 0, 0);
-
-	const int iters = 8;
-	for (int iter = 0; iter < iters; ++iter)
-	{
-		bool overlapped = false;
-
-		Vector3 bestPush(0, 0, 0);
-		float bestMag = std::numeric_limits<float>::infinity();
-
-		ForEachSolidBlockAABB_OverlappingRange(this, moved, [&](const AABB& block)
-			{
-				if (!IsOverLap(moved, block)) return;
-				overlapped = true;
-
-				const Vector3 depth = moved.GetCollisionDepth(block);
-
-				// 最浅軸を選ぶ
-				float pen = depth.x;
-				int axis = 0;
-				if (depth.y < pen) { pen = depth.y; axis = 1; }
-				if (depth.z < pen) { pen = depth.z; axis = 2; }
-
-				const Vector3 cM = moved.center();
-				const Vector3 cB = block.center();
-
-				Vector3 push(0, 0, 0);
-				if (axis == 0) push.x = (cM.x < cB.x) ? -(pen + skin) : +(pen + skin);
-				if (axis == 1) push.y = (cM.y < cB.y) ? -(pen + skin) : +(pen + skin);
-				if (axis == 2) push.z = (cM.z < cB.z) ? -(pen + skin) : +(pen + skin);
-
-				const float mag = std::abs((axis == 0) ? push.x : (axis == 1) ? push.y : push.z);
-				if (mag < bestMag)
-				{
-					bestMag = mag;
-					bestPush = push;
-				}
-			});
-
-		if (!overlapped) break;
-
-		// 最小押し戻し1発を適用
-		moved = moved + bestPush;
-		totalPush += bestPush;
-	}
-
-	// corrected = delta + totalPush（押し戻し方向は“めり込み解消”なので、deltaから見ると逆方向に戻ることが多い）
-	outCorrectedDelta = delta + totalPush;
-	return true;
-}
-// 4) サンプル点方式（面上の 3x3 サンプル点で押し戻し方向を決める）
-bool MapManager::SweepAABB_SamplePoints(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
-{
-	outCorrectedDelta = delta;
-	const float skin = 0.001f;
-
-	// まずは「予定移動」を適用したAABBを作って、めり込みがあるなら押し戻し
-	AABB moved = aabb + delta;
-
-	if (!AnySolidOverlap_Map(this, moved)) return false;
-
-	auto PointInsideAnySolid = [&](const Vector3& p) -> bool
-		{
-			// 点を含むブロックを1個見る（高速）
-			// ※ブロック座標変換は MapManager に既にある
-			const Vector3int wb = WorldBlockIndexByPosition(p);
-			if (wb.y < 0 || wb.y >= CHUNK_Y) return false;
-
-			const int cx = FloorDivInt(wb.x, CHUNK_X);
-			const int cz = FloorDivInt(wb.z, CHUNK_Z);
-			const int lx = LocalMod(wb.x, CHUNK_X);
-			const int lz = LocalMod(wb.z, CHUNK_Z);
-
-			Chunk* c = TryGetChunk(Vector2int{ cx, cz });
-			if (!c) return false;
-
-			Block* b = c->blocks_[lx][wb.y][lz].get();
-			if (!b) return false;
-			if (b->GetBlockID() == BlockID::Air) return false;
-
-			// 点がブロックAABB内か
-			const AABB& ba = b->aabb_;
-			return (ba.min.x <= p.x && p.x <= ba.max.x &&
-				ba.min.y <= p.y && p.y <= ba.max.y &&
-				ba.min.z <= p.z && p.z <= ba.max.z);
-		};
-
-	// 押し戻す方向は「移動方向の逆」から始めて、サンプル点の侵入が減る方向を探す
-	// ここでは簡易に「X/Zの押し戻しを優先して、最後にY」を試す
-	Vector3 corrected = delta;
-
-	auto TryPushAxis = [&](int axis, float sign) -> bool
-		{
-			// sign: +1 なら +軸へ押す
-			const float step = 0.01f;      // 押し戻し刻み（粗いほど軽いが貫通しやすい）
-			const int maxSteps = 20;
-
-			for (int i = 0; i < maxSteps; ++i)
-			{
-				Vector3 push(0, 0, 0);
-				if (axis == 0) push.x = sign * step;
-				if (axis == 1) push.y = sign * step;
-				if (axis == 2) push.z = sign * step;
-
-				AABB test = moved + push;
-
-				// 動いてる方向の面をサンプル（押し戻し方向と逆側の面を見るのがコツ）
-				Vector3 pts[9];
-				if (axis == 0)
-				{
-					const float faceX = (sign > 0) ? test.max.x : test.min.x;
-					MakeFaceSamplePoints_X(test, faceX, pts);
-				}
-				else if (axis == 1)
-				{
-					const float faceY = (sign > 0) ? test.max.y : test.min.y;
-					MakeFaceSamplePoints_Y(test, faceY, pts);
-				}
-				else
-				{
-					const float faceZ = (sign > 0) ? test.max.z : test.min.z;
-					MakeFaceSamplePoints_Z(test, faceZ, pts);
-				}
-
-				int insideCount = 0;
-				for (int k = 0; k < 9; ++k)
-				{
-					if (PointInsideAnySolid(pts[k])) insideCount++;
-				}
-
-				// サンプル点が全部外に出たら「その方向で押し戻せた」とみなす
-				if (insideCount == 0 && !AnySolidOverlap_Map(this, test))
-				{
-					// skin分追加
-					Vector3 extra(0, 0, 0);
-					if (axis == 0) extra.x = sign * skin;
-					if (axis == 1) extra.y = sign * skin;
-					if (axis == 2) extra.z = sign * skin;
-
-					moved = test + extra;
-					corrected += (push + extra);
-					return true;
-				}
-
-				// まだダメなら押し戻しを積み増し
-				moved = test;
-				corrected += push;
-			}
-			return false;
-		};
-
-	// 押し込んでるときに落下が止まりやすいので、X/Z優先→最後にY
-	if (delta.x != 0.0f) TryPushAxis(0, (delta.x > 0) ? -1.0f : +1.0f);
-	if (delta.z != 0.0f) TryPushAxis(2, (delta.z > 0) ? -1.0f : +1.0f);
-	if (delta.y != 0.0f) TryPushAxis(1, (delta.y > 0) ? -1.0f : +1.0f);
-
-	outCorrectedDelta = corrected;
-	return true;
-}
+//// 初期
+//bool MapManager::SweepAABB(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
+//{
+//	outCorrectedDelta = delta;
+//
+//	// めり込み防止のスキン
+//	const float skin = 0.001f;
+//
+//	// 与えられたAABBが重なり得るブロックを走査する
+//	auto AnySolidOverlap = [&](const AABB& test) -> bool
+//		{
+//			// AABBの覆うワールドブロック範囲（min/maxは「セルインデックス」）
+//			const Vector3int minBlockIndex = WorldBlockIndexByPosition(test.min);
+//			const Vector3int maxBlockIndex = WorldBlockIndexByPosition(test.max - Vector3{ 1e-6f, 1e-6f, 1e-6f });
+//
+//			// floor_div（負数対応の床除算）
+//			auto FloorDiv = [](int a, int n) -> int
+//				{
+//					// n > 0 前提
+//					int q = a / n;
+//					int r = a % n;
+//					if (r != 0 && ((r > 0) != (n > 0)) != (a > 0)) {} // unused guard
+//					// C++の / は0方向丸めなので、負数で割り切れないときだけ1引く
+//					if (r != 0 && ((a < 0) ^ (n < 0))) --q;
+//					return q;
+//				};
+//
+//			for (int by = minBlockIndex.y; by <= maxBlockIndex.y; ++by)
+//			{
+//				// Y軸はワールド境界でクリップ
+//				if (by < 0 || by >= CHUNK_Y) continue;
+//				const int localY = by;
+//
+//				for (int bz = minBlockIndex.z; bz <= maxBlockIndex.z; ++bz)
+//				{
+//					const int chunkZ = FloorDiv(bz, CHUNK_Z);
+//					const int localZ = LocalMod(bz, CHUNK_Z);
+//
+//					for (int bx = minBlockIndex.x; bx <= maxBlockIndex.x; ++bx)
+//					{
+//						const int chunkX = FloorDiv(bx, CHUNK_X);
+//						const int localX = LocalMod(bx, CHUNK_X);
+//
+//						const Vector2int chunkPos{ chunkX, chunkZ };
+//						Chunk* c = TryGetChunk(chunkPos);
+//						if (!c) continue;
+//
+//						Block* b = c->blocks_[localX][localY][localZ].get();
+//						if (!b) continue;
+//						if (b->GetBlockID() == BlockID::Air) continue;
+//
+//						// ブロックAABBと実際に重なっているか
+//						if (IsOverLap(test, b->aabb_))
+//						{
+//							return true;
+//						}
+//					}
+//				}
+//			}
+//			return false;
+//		};
+//
+//	// 「指定軸だけ」動かして、めり込むならその軸の移動量を詰める
+//	auto ResolveAxis = [&](float& dAxis, int axis) -> bool
+//		{
+//			if (std::abs(dAxis) < 1e-6f) return false;
+//
+//			const float sign = (dAxis >= 0.0f) ? 1.0f : -1.0f;
+//			const float dist = std::abs(dAxis);
+//
+//			bool hit = false;
+//
+//			// 二分探索で「当たらない最大距離」を探す（0..dist）
+//			float lo = 0.0f;
+//			float hi = dist;
+//
+//			auto MakeMove = [&](float signedAmount) -> Vector3
+//				{
+//					Vector3 move{ 0,0,0 };
+//					if (axis == 0) move.x = signedAmount;
+//					if (axis == 1) move.y = signedAmount;
+//					if (axis == 2) move.z = signedAmount;
+//					return move;
+//				};
+//
+//			// dist動かしても当たらないなら終了
+//			{
+//				const Vector3 move = MakeMove(sign * dist);
+//				Vector3 testMove = outCorrectedDelta + move;
+//				const AABB test = aabb + testMove;
+//				if (!AnySolidOverlap(test)) return false;
+//			}
+//
+//			// 当たるので探索
+//			for (int i = 0; i < 16; ++i)
+//			{
+//				const float mid = (lo + hi) * 0.5f;
+//				const Vector3 move = MakeMove(sign * mid);
+//				Vector3 testMove = outCorrectedDelta + move;
+//				const AABB test = aabb + testMove;
+//
+//				if (AnySolidOverlap(test))
+//				{
+//					hi = mid;
+//					hit = true;
+//				}
+//				else
+//				{
+//					lo = mid;
+//				}
+//			}
+//
+//			// skin分だけ手前で止める（距離側で引く）
+//			float allowedDist = lo - skin;
+//			if (allowedDist < 0.0f) allowedDist = 0.0f;
+//
+//			dAxis = sign * allowedDist;
+//			return hit;
+//		};
+//
+//	bool hitAny = false;
+//
+//	// X
+//	{
+//		float dx = outCorrectedDelta.x;
+//		if (ResolveAxis(dx, 0)) hitAny = true;
+//		outCorrectedDelta.x = dx;
+//	}
+//
+//	// Z
+//	{
+//		float dz = outCorrectedDelta.z;
+//		if (ResolveAxis(dz, 2)) hitAny = true;
+//		outCorrectedDelta.z = dz;
+//	}
+//
+//	// Y
+//	{
+//		float dy = outCorrectedDelta.y;
+//		if (ResolveAxis(dy, 1)) hitAny = true;
+//		outCorrectedDelta.y = dy;
+//	}
+//
+//
+//	return hitAny;
+//}
+//// 1) depenetration（先に「微妙な重なり」を毎フレ解消してから軸解決）
+//bool MapManager::SweepAABB_DepentrationFirst(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
+//{
+//	outCorrectedDelta = delta;
+//	const float skin = 0.001f;
+//
+//	// 0) depenetration（今フレーム開始時点の微小めり込みを解消）
+//	//    ※ここでは「最小押し戻しベクトル」を厳密に求めず、接触してるブロックの深度を足し合わせて小さく押し戻す。
+//	{
+//		AABB cur = aabb;
+//		const int iters = 4;            // 少なすぎると残る / 多すぎると重い
+//		const float maxPush = 0.05f;    // 1フレで押し戻し過ぎない安全弁
+//
+//		for (int iter = 0; iter < iters; ++iter)
+//		{
+//			Vector3 push(0, 0, 0);
+//			bool overlapped = false;
+//
+//			ForEachSolidBlockAABB_OverlappingRange(this, cur, [&](const AABB& block)
+//				{
+//					if (!IsOverLap(cur, block)) return;
+//
+//					overlapped = true;
+//					// AABB::GetCollisionDepth は「衝突している時は深度ベクトル」を返す前提
+//					// ※方向は実装依存なので、center比較で符号を付け直す
+//					Vector3 depth = cur.GetCollisionDepth(block);
+//
+//					const Vector3 cC = cur.center();
+//					const Vector3 cB = block.center();
+//
+//					// 最浅軸を選んでその軸だけ押す（順番依存を減らす）
+//					float pen = depth.x;
+//					int axis = 0;
+//					if (depth.y < pen) { pen = depth.y; axis = 1; }
+//					if (depth.z < pen) { pen = depth.z; axis = 2; }
+//
+//					Vector3 localPush(0, 0, 0);
+//					if (axis == 0) localPush.x = (cC.x < cB.x) ? -pen : +pen;
+//					if (axis == 1) localPush.y = (cC.y < cB.y) ? -pen : +pen;
+//					if (axis == 2) localPush.z = (cC.z < cB.z) ? -pen : +pen;
+//
+//					// skin分だけ余裕を取る
+//					localPush *= 1.0f + skin;
+//
+//					push += localPush;
+//				});
+//
+//			if (!overlapped) break;
+//
+//			// 押し戻し過ぎない
+//			push.x = std::clamp(push.x, -maxPush, +maxPush);
+//			push.y = std::clamp(push.y, -maxPush, +maxPush);
+//			push.z = std::clamp(push.z, -maxPush, +maxPush);
+//
+//			// 押し戻し
+//			cur = cur + push;
+//
+//			// 実際の移動デルタ側にも反映（開始位置がズレた分だけ、deltaを補正する）
+//			outCorrectedDelta -= push;
+//		}
+//	}
+//
+//	// 1) あなたの既存方式（軸ごとの二分探索）をそのまま呼ぶ形で書く
+//	auto ResolveAxis = [&](float& dAxis, int axis) -> bool
+//		{
+//			if (std::abs(dAxis) < 1e-6f) return false;
+//
+//			const float sign = (dAxis >= 0.0f) ? 1.0f : -1.0f;
+//			const float dist = std::abs(dAxis);
+//
+//			float lo = 0.0f;
+//			float hi = dist;
+//
+//			auto MakeMove = [&](float signedAmount) -> Vector3
+//				{
+//					Vector3 move{ 0,0,0 };
+//					if (axis == 0) move.x = signedAmount;
+//					if (axis == 1) move.y = signedAmount;
+//					if (axis == 2) move.z = signedAmount;
+//					return move;
+//				};
+//
+//			// dist動かしても当たらないならOK
+//			{
+//				const AABB test = aabb + (outCorrectedDelta + MakeMove(sign * dist));
+//				if (!AnySolidOverlap_Map(this, test)) return false;
+//			}
+//
+//			// 当たるので探索
+//			for (int i = 0; i < 16; ++i)
+//			{
+//				const float mid = (lo + hi) * 0.5f;
+//				const AABB test = aabb + (outCorrectedDelta + MakeMove(sign * mid));
+//				if (AnySolidOverlap_Map(this, test)) hi = mid;
+//				else lo = mid;
+//			}
+//
+//			float allowedDist = lo - skin;
+//			if (allowedDist < 0.0f) allowedDist = 0.0f;
+//
+//			dAxis = sign * allowedDist;
+//			return true;
+//		};
+//
+//	bool hitAny = false;
+//
+//	// 推奨順：X→Z→Y（あなたの「直った順」）
+//	{
+//		float dx = outCorrectedDelta.x;
+//		if (ResolveAxis(dx, 0)) hitAny = true;
+//		outCorrectedDelta.x = dx;
+//	}
+//	{
+//		float dz = outCorrectedDelta.z;
+//		if (ResolveAxis(dz, 2)) hitAny = true;
+//		outCorrectedDelta.z = dz;
+//	}
+//	{
+//		float dy = outCorrectedDelta.y;
+//		if (ResolveAxis(dy, 1)) hitAny = true;
+//		outCorrectedDelta.y = dy;
+//	}
+//
+//	return hitAny;
+//}
+//// 2) 真正のSweep（TOI: time of impact）寄せ（「一番早く当たる面」を探して進める）
+//bool MapManager::SweepAABB_TOI(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
+//{
+//	outCorrectedDelta = delta;
+//
+//	const float skin = 0.001f;
+//
+//	// 開始時点でめり込んでるなら、TOIは破綻するので軽く押し戻す（最小限）
+//	if (AnySolidOverlap_Map(this, aabb))
+//	{
+//		outCorrectedDelta = Vector3{ 0,0,0 };
+//		return true;
+//	}
+//
+//	// 探索対象は「移動AABBを含む範囲」＝ swept broadphase AABB
+//	AABB broad = aabb;
+//	broad = broad + delta; // 端点含む（AABB::operator+ がmin/maxを両方動かす前提）
+//	// ※本当は min/maxを吸収する broadphase を作るべきだが、ここでは簡易に「終点AABBも見る」方向
+//
+//	SweepHit best;
+//	best.t = 1.0f;
+//
+//	ForEachSolidBlockAABB_OverlappingRange(this, broad, [&](const AABB& block)
+//		{
+//			SweepHit h = SweptAABBvsAABB(aabb, delta, block);
+//			if (!h.hit) return;
+//			if (h.t < best.t)
+//			{
+//				best = h;
+//			}
+//		});
+//
+//	if (!best.hit) return false;
+//
+//	// 当たる直前まで移動（skin分引く）
+//	const float tMove = my_max(0.0f, best.t - (skin / (delta.Length() + 1e-6f)));
+//	outCorrectedDelta = delta * tMove;
+//	return true;
+//}
+//// 3) がっつりMTV方式（重なっているブロックとの“最小押し戻しベクトル”を計算して解消）
+//bool MapManager::SweepAABB_MTV(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
+//{
+//	outCorrectedDelta = delta;
+//	const float skin = 0.001f;
+//
+//	// まず通常の移動を仮適用して、終点でめり込むならMTVで押し戻す方式にする
+//	AABB moved = aabb + delta;
+//
+//	// ① 終点がめり込んでないならそのままOK
+//	if (!AnySolidOverlap_Map(this, moved))
+//	{
+//		return false;
+//	}
+//
+//	// ② めり込むので「終点での押し戻し」で corrected delta を作る（押し戻した分だけdeltaを短く）
+//	Vector3 totalPush(0, 0, 0);
+//
+//	const int iters = 8;
+//	for (int iter = 0; iter < iters; ++iter)
+//	{
+//		bool overlapped = false;
+//
+//		Vector3 bestPush(0, 0, 0);
+//		float bestMag = std::numeric_limits<float>::infinity();
+//
+//		ForEachSolidBlockAABB_OverlappingRange(this, moved, [&](const AABB& block)
+//			{
+//				if (!IsOverLap(moved, block)) return;
+//				overlapped = true;
+//
+//				const Vector3 depth = moved.GetCollisionDepth(block);
+//
+//				// 最浅軸を選ぶ
+//				float pen = depth.x;
+//				int axis = 0;
+//				if (depth.y < pen) { pen = depth.y; axis = 1; }
+//				if (depth.z < pen) { pen = depth.z; axis = 2; }
+//
+//				const Vector3 cM = moved.center();
+//				const Vector3 cB = block.center();
+//
+//				Vector3 push(0, 0, 0);
+//				if (axis == 0) push.x = (cM.x < cB.x) ? -(pen + skin) : +(pen + skin);
+//				if (axis == 1) push.y = (cM.y < cB.y) ? -(pen + skin) : +(pen + skin);
+//				if (axis == 2) push.z = (cM.z < cB.z) ? -(pen + skin) : +(pen + skin);
+//
+//				const float mag = std::abs((axis == 0) ? push.x : (axis == 1) ? push.y : push.z);
+//				if (mag < bestMag)
+//				{
+//					bestMag = mag;
+//					bestPush = push;
+//				}
+//			});
+//
+//		if (!overlapped) break;
+//
+//		// 最小押し戻し1発を適用
+//		moved = moved + bestPush;
+//		totalPush += bestPush;
+//	}
+//
+//	// corrected = delta + totalPush（押し戻し方向は“めり込み解消”なので、deltaから見ると逆方向に戻ることが多い）
+//	outCorrectedDelta = delta + totalPush;
+//	return true;
+//}
+//// 4) サンプル点方式（面上の 3x3 サンプル点で押し戻し方向を決める）
+//bool MapManager::SweepAABB_SamplePoints(const AABB& aabb, const Vector3& delta, Vector3& outCorrectedDelta) const
+//{
+//	outCorrectedDelta = delta;
+//	const float skin = 0.001f;
+//
+//	// まずは「予定移動」を適用したAABBを作って、めり込みがあるなら押し戻し
+//	AABB moved = aabb + delta;
+//
+//	if (!AnySolidOverlap_Map(this, moved)) return false;
+//
+//	auto PointInsideAnySolid = [&](const Vector3& p) -> bool
+//		{
+//			// 点を含むブロックを1個見る（高速）
+//			// ※ブロック座標変換は MapManager に既にある
+//			const Vector3int wb = WorldBlockIndexByPosition(p);
+//			if (wb.y < 0 || wb.y >= CHUNK_Y) return false;
+//
+//			const int cx = FloorDivInt(wb.x, CHUNK_X);
+//			const int cz = FloorDivInt(wb.z, CHUNK_Z);
+//			const int lx = LocalMod(wb.x, CHUNK_X);
+//			const int lz = LocalMod(wb.z, CHUNK_Z);
+//
+//			Chunk* c = TryGetChunk(Vector2int{ cx, cz });
+//			if (!c) return false;
+//
+//			Block* b = c->blocks_[lx][wb.y][lz].get();
+//			if (!b) return false;
+//			if (b->GetBlockID() == BlockID::Air) return false;
+//
+//			// 点がブロックAABB内か
+//			const AABB& ba = b->aabb_;
+//			return (ba.min.x <= p.x && p.x <= ba.max.x &&
+//				ba.min.y <= p.y && p.y <= ba.max.y &&
+//				ba.min.z <= p.z && p.z <= ba.max.z);
+//		};
+//
+//	// 押し戻す方向は「移動方向の逆」から始めて、サンプル点の侵入が減る方向を探す
+//	// ここでは簡易に「X/Zの押し戻しを優先して、最後にY」を試す
+//	Vector3 corrected = delta;
+//
+//	auto TryPushAxis = [&](int axis, float sign) -> bool
+//		{
+//			// sign: +1 なら +軸へ押す
+//			const float step = 0.01f;      // 押し戻し刻み（粗いほど軽いが貫通しやすい）
+//			const int maxSteps = 20;
+//
+//			for (int i = 0; i < maxSteps; ++i)
+//			{
+//				Vector3 push(0, 0, 0);
+//				if (axis == 0) push.x = sign * step;
+//				if (axis == 1) push.y = sign * step;
+//				if (axis == 2) push.z = sign * step;
+//
+//				AABB test = moved + push;
+//
+//				// 動いてる方向の面をサンプル（押し戻し方向と逆側の面を見るのがコツ）
+//				Vector3 pts[9];
+//				if (axis == 0)
+//				{
+//					const float faceX = (sign > 0) ? test.max.x : test.min.x;
+//					MakeFaceSamplePoints_X(test, faceX, pts);
+//				}
+//				else if (axis == 1)
+//				{
+//					const float faceY = (sign > 0) ? test.max.y : test.min.y;
+//					MakeFaceSamplePoints_Y(test, faceY, pts);
+//				}
+//				else
+//				{
+//					const float faceZ = (sign > 0) ? test.max.z : test.min.z;
+//					MakeFaceSamplePoints_Z(test, faceZ, pts);
+//				}
+//
+//				int insideCount = 0;
+//				for (int k = 0; k < 9; ++k)
+//				{
+//					if (PointInsideAnySolid(pts[k])) insideCount++;
+//				}
+//
+//				// サンプル点が全部外に出たら「その方向で押し戻せた」とみなす
+//				if (insideCount == 0 && !AnySolidOverlap_Map(this, test))
+//				{
+//					// skin分追加
+//					Vector3 extra(0, 0, 0);
+//					if (axis == 0) extra.x = sign * skin;
+//					if (axis == 1) extra.y = sign * skin;
+//					if (axis == 2) extra.z = sign * skin;
+//
+//					moved = test + extra;
+//					corrected += (push + extra);
+//					return true;
+//				}
+//
+//				// まだダメなら押し戻しを積み増し
+//				moved = test;
+//				corrected += push;
+//			}
+//			return false;
+//		};
+//
+//	// 押し込んでるときに落下が止まりやすいので、X/Z優先→最後にY
+//	if (delta.x != 0.0f) TryPushAxis(0, (delta.x > 0) ? -1.0f : +1.0f);
+//	if (delta.z != 0.0f) TryPushAxis(2, (delta.z > 0) ? -1.0f : +1.0f);
+//	if (delta.y != 0.0f) TryPushAxis(1, (delta.y > 0) ? -1.0f : +1.0f);
+//
+//	outCorrectedDelta = corrected;
+//	return true;
+//}
 
 bool MapManager::isSolidAt(const Vector3& position) const
 {
-	Vector2int chunkPos = ChunkIndexByPosition(position);
+	Vector3int chunkPos = ChunkIndexByPosition(position);
 	Vector3int index = BlockIndexByPosition(position);
 	Chunk* chunk = TryGetChunk(chunkPos);
 	if (chunk)
 	{
-		Block* block = chunk->blocks_[index.x][index.y][index.z].get();
+		Block* block = chunk->GetBlock(index);
 		if (block && block->GetBlockID() != BlockID::Air)
 		{
 			return true;
@@ -1227,25 +1219,26 @@ bool MapManager::isSolidAt(const Vector3& position) const
 
 bool MapManager::IsOverlappingAnyCharacter(const AABB& aabb) const
 {
-	for (BaseCharacter* c : Characters_)
-	{
-		if (!c) continue;
-		const AABB& ca = c->data_.aabbs[0];
-		if (IsOverLap(aabb, ca))
-			return true;
-	}
+	//for (BaseCharacter* c : Characters_)
+	//{
+	//	if (!c) continue;
+	//	const AABB& ca = c->data_.aabbs[0];
+	//	if (IsOverLap(aabb, ca))
+	//		return true;
+	//}
 	return false;
 }
 
-AABB MapManager::GetAABB(const Vector2int& chunkPos, const Vector3int& index) const
+AABB MapManager::GetAABB(const Vector3int& chunkPos, const Vector3int& index) const
 {
 	// チャンクのワールド原点
 	float chunkWorldX = chunkPos.x * CHUNK_X * BLOCK_SIZE;
-	float chunkWorldZ = chunkPos.y * CHUNK_Z * BLOCK_SIZE;
+	float chunkWorldY = chunkPos.y * CHUNK_Y * BLOCK_SIZE;
+	float chunkWorldZ = chunkPos.z * CHUNK_Z * BLOCK_SIZE;
 
 	// ブロックのワールド座標
 	float worldX = chunkWorldX + index.x * BLOCK_SIZE;
-	float worldY = index.y * BLOCK_SIZE;
+	float worldY = chunkWorldY + index.y * BLOCK_SIZE;
 	float worldZ = chunkWorldZ + index.z * BLOCK_SIZE;
 
 	Vector3 mint(worldX, worldY, worldZ);
@@ -1255,16 +1248,16 @@ AABB MapManager::GetAABB(const Vector2int& chunkPos, const Vector3int& index) co
 }
 AABB MapManager::GetAABB(const Vector3& position) const
 {
-	Vector2int chunkPos = ChunkIndexByPosition(position);
+	Vector3int chunkPos = ChunkIndexByPosition(position);
 	Vector3int index = BlockIndexByPosition(position);
 	return GetAABB(chunkPos, index);
 }
-bool MapManager::GetIsActive(const Vector2int& chunkPos, const Vector3int& index) const
+bool MapManager::GetIsActive(const Vector3int& chunkPos, const Vector3int& index) const
 {
 	Chunk* chunk = TryGetChunk(chunkPos);
 	if (chunk)
 	{
-		if (chunk->blocks_[index.x][index.y][index.z]->blockInfo_.type != BlockID::Air)
+		if (chunk->GetBlock(index)->blockInfo_.type != BlockID::Air)
 		{
 			return true;
 		}
@@ -1273,20 +1266,22 @@ bool MapManager::GetIsActive(const Vector2int& chunkPos, const Vector3int& index
 }
 bool MapManager::GetIsActive(const Vector3& position) const
 {
-	Vector2int chunkPos = ChunkIndexByPosition(position);
+	Vector3int chunkPos = ChunkIndexByPosition(position);
 	Vector3int index = BlockIndexByPosition(position);
 	return GetIsActive(chunkPos, index);
 }
 
 // position が今どのチャンクに属しているか  例：position=(34, 0, 50) -> chunkIndex=(1, 2)
-Vector2int MapManager::ChunkIndexByPosition(const Vector3& position) const
+Vector3int MapManager::ChunkIndexByPosition(const Vector3& position) const
 {
 	int bx = static_cast<int>(std::floor(position.x / BLOCK_SIZE));
+	int by = static_cast<int>(std::floor(position.y / BLOCK_SIZE));
 	int bz = static_cast<int>(std::floor(position.z / BLOCK_SIZE));
 
-	Vector2int chunk;
+	Vector3int chunk;
 	chunk.x = static_cast<int>(std::floor((float)bx / CHUNK_X));
-	chunk.y = static_cast<int>(std::floor((float)bz / CHUNK_Z));
+	chunk.y = static_cast<int>(std::floor((float)by / CHUNK_Y));
+	chunk.z = static_cast<int>(std::floor((float)bz / CHUNK_Z));
 	return chunk;
 }
 
@@ -1335,11 +1330,12 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 			);
 		};
 
-	auto WorldChunkIndexFromWorldBlock = [](const Vector3int& wb) -> Vector2int
+	auto WorldChunkIndexFromWorldBlock = [](const Vector3int& wb) -> Vector3int
 		{
-			Vector2int cp;
+			Vector3int cp;
 			cp.x = int(std::floor(float(wb.x) / float(CHUNK_X)));
-			cp.y = int(std::floor(float(wb.z) / float(CHUNK_Z)));
+			cp.y = int(std::floor(float(wb.y) / float(CHUNK_Y)));
+			cp.z = int(std::floor(float(wb.z) / float(CHUNK_Z)));
 			return cp;
 		};
 
@@ -1401,7 +1397,7 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	for (int i = 0; i < maxSteps; ++i)
 	{
 		// currentWB -> chunk/local
-		const Vector2int chunkPos = WorldChunkIndexFromWorldBlock(currentWB);
+		const Vector3int chunkPos = WorldChunkIndexFromWorldBlock(currentWB);
 		const Vector3int local = LocalIndexFromWorldBlock(currentWB);
 
 		Chunk* chunk = TryGetChunk(chunkPos);
@@ -1412,7 +1408,7 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 				0 <= local.y && local.y < CHUNK_Y &&
 				0 <= local.z && local.z < CHUNK_Z)
 			{
-				Block* b = chunk->blocks_[local.x][local.y][local.z].get();
+				Block* b = chunk->GetBlock(local);
 				if (b && b->GetBlockID() != BlockID::Air)
 				{
 					const AABB& aabb = b->aabb_;
@@ -1508,52 +1504,52 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 RayHitResult MapManager::GetFirstHitByRay(const Ray& ray, float maxDistance, const BaseCharacter* ignore) const
 {
 	RayHitResult best{};
-
-	// 1) ブロック
-	if (auto b = GetBlockByCrossedRay(ray, maxDistance); b.has_value())
-	{
-		best.type = RayHitResult::Type::Block;
-		best.blockHit = b.value();
-		best.distance = b->distance;
-	}
-
-	// 2) キャラ（登録済みキャラのAABBと判定）
-	float bestCharDist = std::numeric_limits<float>::infinity();
-	BaseCharacter* bestChar = nullptr;
-
-	// ※ Characters_ を保持している前提（前の実装で追加）
-	for (BaseCharacter* c : Characters_)
-	{
-		if (!c) continue;
-		if (c == ignore) continue;
-
-		// 自分自身を除外したい場合は呼び出し側で ray.origin の所有者を渡す仕組みが必要。
-		// ここでは「Rayの原点がそのキャラAABB内なら無視」程度で回避する。
-		const AABB& ca = c->data_.aabbs[0];
-
-		float t = 0.0f;
-		if (!RayIntersectAABB_FirstT(ray, ca, t)) continue;
-		if (t < 0.0f) continue;
-
-		const float dist = t; // ray.diff が正規化されている前提。Player/Enemyでは Normalized() している。
-		if (dist <= maxDistance && dist < bestCharDist)
-		{
-			bestCharDist = dist;
-			bestChar = c;
-		}
-	}
-
-	if (bestChar)
-	{
-		// ブロックより手前ならキャラ優先
-		if (best.type == RayHitResult::Type::None || bestCharDist < best.distance)
-		{
-			best.type = RayHitResult::Type::Character;
-			best.Character = bestChar;
-			best.distance = bestCharDist;
-		}
-	}
-
+	//
+	//// 1) ブロック
+	//if (auto b = GetBlockByCrossedRay(ray, maxDistance); b.has_value())
+	//{
+	//	best.type = RayHitResult::Type::Block;
+	//	best.blockHit = b.value();
+	//	best.distance = b->distance;
+	//}
+	//
+	//// 2) キャラ（登録済みキャラのAABBと判定）
+	//float bestCharDist = std::numeric_limits<float>::infinity();
+	//BaseCharacter* bestChar = nullptr;
+	//
+	//// ※ Characters_ を保持している前提（前の実装で追加）
+	//for (BaseCharacter* c : Characters_)
+	//{
+	//	if (!c) continue;
+	//	if (c == ignore) continue;
+	//
+	//	// 自分自身を除外したい場合は呼び出し側で ray.origin の所有者を渡す仕組みが必要。
+	//	// ここでは「Rayの原点がそのキャラAABB内なら無視」程度で回避する。
+	//	const AABB& ca = c->data_.aabbs[0];
+	//
+	//	float t = 0.0f;
+	//	if (!RayIntersectAABB_FirstT(ray, ca, t)) continue;
+	//	if (t < 0.0f) continue;
+	//
+	//	const float dist = t; // ray.diff が正規化されている前提。Player/Enemyでは Normalized() している。
+	//	if (dist <= maxDistance && dist < bestCharDist)
+	//	{
+	//		bestCharDist = dist;
+	//		bestChar = c;
+	//	}
+	//}
+	//
+	//if (bestChar)
+	//{
+	//	// ブロックより手前ならキャラ優先
+	//	if (best.type == RayHitResult::Type::None || bestCharDist < best.distance)
+	//	{
+	//		best.type = RayHitResult::Type::Character;
+	//		best.Character = bestChar;
+	//		best.distance = bestCharDist;
+	//	}
+	//}
+	//
 	return best;
 }
 // レイとブロックの交差判定（衝突座標を返す）

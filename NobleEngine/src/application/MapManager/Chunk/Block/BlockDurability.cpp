@@ -1,5 +1,6 @@
-#include "MapManager/Chunk/Block/BlockDurability.h"
-#include "Game.h"
+#include <MapManager/Chunk/Block/BlockDurability.h>
+#include <Game.h>
+#include <algorithm>
 
 BlockDurability::BlockDurability(){}
 BlockDurability::~BlockDurability(){}

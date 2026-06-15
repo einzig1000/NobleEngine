@@ -1,5 +1,5 @@
 #pragma once
-#include "GameManager/Phase/PhaseParent/PhaseParent.h"
+#include "GameManager/Phase/IPhase/IPhase.h"
 
 class MapManager;
 class Player;
@@ -13,7 +13,7 @@ enum class TitlePhaseState
 };
 
 class TitlePhase :
-	public PhaseParent
+	public IPhase
 {
 public:
 	TitlePhase();

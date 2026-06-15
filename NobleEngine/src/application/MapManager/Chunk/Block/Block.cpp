@@ -1,6 +1,6 @@
-#include "MapManager/Chunk/Block/Block.h"
-#include "MapManager/Chunk/Block/BlockDurability.h"
-#include "Game.h"
+#include <MapManager/Chunk/Block/Block.h>
+#include <MapManager/Chunk/Block/BlockDurability.h>
+#include <algorithm>
 
 Block::Block()
 {

@@ -11,6 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp" />
+    <ClCompile Include="src\application\MapManager\Chunk\Block\Block.cpp" />
+    <ClCompile Include="src\application\MapManager\Chunk\Block\BlockConfig.cpp" />
+    <ClCompile Include="src\application\MapManager\Chunk\Block\BlockDurability.cpp" />
+    <ClCompile Include="src\application\MapManager\Chunk\Chunk.cpp" />
+    <ClCompile Include="src\application\MapManager\MapManager.cpp" />
+    <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Audio\AudioLoader\AudioLoader.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Audio\AudioBank\AudioBank.cpp" />
@@ -22,7 +29,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\application\GameManager\GameManager.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.cpp" />
-    <ClCompile Include="src\application\GameManager\Phase\PhaseParent\PhaseParent.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\IPhase\IPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.cpp" />
     <ClCompile Include="src\engine\Camera\Camera.cpp" />
@@ -78,6 +85,13 @@
     <ClCompile Include="src\application\TestMeshShader\TestMeshShader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h" />
+    <ClInclude Include="src\application\MapManager\Chunk\Block\Block.h" />
+    <ClInclude Include="src\application\MapManager\Chunk\Block\BlockConfig.h" />
+    <ClInclude Include="src\application\MapManager\Chunk\Block\BlockDurability.h" />
+    <ClInclude Include="src\application\MapManager\Chunk\Chunk.h" />
+    <ClInclude Include="src\application\MapManager\MapManager.h" />
+    <ClInclude Include="src\application\ResourceLoader\ResourceID.h" />
     <ClInclude Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.h" />
     <ClInclude Include="src\engine\ResourceManager\Audio\AudioLoader\AudioLoader.h" />
     <ClInclude Include="src\engine\ResourceManager\Audio\AudioBank\AudioBank.h" />
@@ -89,7 +103,7 @@
     <ClInclude Include="src\engine\ResourceManager\Animation\AnimationManager.h" />
     <ClInclude Include="src\application\GameManager\GameManager.h" />
     <ClInclude Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.h" />
-    <ClInclude Include="src\application\GameManager\Phase\PhaseParent\PhaseParent.h" />
+    <ClInclude Include="src\application\GameManager\Phase\IPhase\IPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.h" />
     <ClInclude Include="src\engine\Camera\Camera.h" />

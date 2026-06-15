@@ -1,5 +1,5 @@
 #pragma once
-#include "DrawSystem/RenderData/RenderData.h"
+#include <cstdint>
 
 class BlockDurability
 {

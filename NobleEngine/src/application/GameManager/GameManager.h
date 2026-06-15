@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "Game.h"
-#include "Phase/PhaseParent/PhaseParent.h"
+#include "Phase/IPhase/IPhase.h"
 
 
 class GameManager
@@ -18,9 +18,9 @@ public:
 private:
 
 	// フェーズクラス
-	std::unique_ptr<PhaseParent> currentPhase_;
+	std::unique_ptr<IPhase> currentPhase_;
 
-	std::unique_ptr<PhaseParent> CreatePhase(PHASE phase);
+	std::unique_ptr<IPhase> CreatePhase(PHASE phase);
 
 	PhaseContext phaseContext_;
 
