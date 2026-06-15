@@ -16,7 +16,7 @@ TestPhase::TestPhase()
 	int32_t model1 = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
 	int32_t model2 = Game::Resource::Model::Load("resources/prototypes/model/sphere/sphere.obj");
 	int32_t model3 = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
-	int32_t model4 = Game::Resource::Model::Load("resources/prototypes/model/bunny/bunny.obj");
+	//int32_t model4 = Game::Resource::Model::Load("resources/prototypes/model/bunny/bunny.obj");
 
 	audio1 = Game::Resource::Audio::Load("resources/prototypes/audio/BGM/InGame.mp3");
 	audio2 = Game::Resource::Audio::Load("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
@@ -108,6 +108,8 @@ TestPhase::TestPhase()
 	testAnimation_->Initialize();
 	testParticle_ = std::make_unique<TestParticle>();
 	testParticle_->Initialize();
+	testMeshShader_ = std::make_unique<TestMeshShader>();
+	testMeshShader_->Initialize();
 }
 
 TestPhase::~TestPhase()
@@ -205,6 +207,7 @@ void TestPhase::Update()
 
 	testAnimation_->Update(Game::Time::GetDeltaTime());
 	testParticle_->Update();
+	testMeshShader_->Update();
 
 
 	if (Game::IO::Key::IsHeld(DIK_F12))
@@ -220,14 +223,15 @@ void TestPhase::Update()
 void TestPhase::Draw()
 {
 	// mainに書き込む
-	cbvOnly_->Draw(rt_main_);
 	skybox_->Draw(rt_main_);
-	testParticle_->Draw();
-	testAnimation_->Draw();
+	testMeshShader_->Draw(rt_main_);
 
 	// miniMapに書き込む
-	cbvAndSrv_->Draw(rt_miniMap_);
+	skybox_->Draw(rt_miniMap_);
+	//cbvAndSrv_->Draw(rt_miniMap_);
 	environmentMap_->Draw(rt_miniMap_);
+	testParticle_->Draw(rt_miniMap_);
+	testAnimation_->Draw(rt_miniMap_);
 
 	//line_->Draw();
 	//PunctualLight_->Draw();
@@ -306,9 +310,9 @@ void TestPhase::DrawImGui()
 
 				ImGui::Separator();
 
-				ImGui::DragFloat3("miniMap scale", &miniMapScreenTransform_.scale.x, 0.1f, 0.1f, 100.0f);
+				ImGui::DragFloat3("miniMap scale", &miniMapScreenTransform_.scale.x, 0.1f);
 				ImGui::DragFloat3("miniMap rotate", &miniMapScreenTransform_.rotate.x, 0.1f);
-				ImGui::DragFloat3("miniMap translate", &miniMapScreenTransform_.translate.x, 0.1f, -100.0f, 100.0f);
+				ImGui::DragFloat3("miniMap translate", &miniMapScreenTransform_.translate.x, 0.1f);
 
 				ImGui::TreePop();
 			}

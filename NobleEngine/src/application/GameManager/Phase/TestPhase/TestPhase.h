@@ -2,6 +2,7 @@
 #include <GameManager/Phase/PhaseParent/PhaseParent.h>
 #include <TestAnimation/TestAnimation.h>
 #include <TestParticle/TestParticle.h>
+#include <TestMeshShader/TestMeshShader.h>
 #include <memory>
 
 class TestPhase :
@@ -45,6 +46,7 @@ private:
 
 	std::unique_ptr<TestAnimation> testAnimation_;
 	std::unique_ptr<TestParticle> testParticle_;
+	std::unique_ptr<TestMeshShader> testMeshShader_;
 
 	int32_t rt_main_;
 	int32_t rt_miniMap_;

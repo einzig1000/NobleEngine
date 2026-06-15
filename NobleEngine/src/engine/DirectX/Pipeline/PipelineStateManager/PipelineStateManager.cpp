@@ -418,124 +418,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
     return rs;
 }
 
-//Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateVertexShaderPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params)
-//{
-//    Log("パイプラインステート生成開始: VS=%s, PS=%s", cfg.vs.c_str(), cfg.ps.c_str());
-//
-//    HRESULT hr;
-//
-//    // シェーダー取得（なければコンパイル）
-//    std::wstring vsPath = StringConverter::Convert(cfg.vs);
-//    std::wstring psPath = StringConverter::Convert(cfg.ps);
-//    auto vsBlob = GetOrCompileShader(vsPath.c_str(), L"vs_6_5");
-//    auto psBlob = GetOrCompileShader(psPath.c_str(), L"ps_6_5");
-//
-//    // ルートシグネチャ取得（なければ生成）
-//    Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = GetOrCreateRootSignature(params);
-//
-//    // 各IDからDESCを取得
-//    const D3D12_BLEND_DESC blendDesc = MakeBlendDesc(cfg.blendID);
-//    const D3D12_RASTERIZER_DESC rasterizerDesc = MakeRasterizerDesc(cfg.rasterizerID);
-//    const D3D12_DEPTH_STENCIL_DESC depthStencilDesc = MakeDepthStencilDesc(cfg.depthStencilID);
-//    const DXGI_FORMAT dsvFormat = MakeDsvFormat(cfg.dsvFormatID);
-//    const D3D12_PRIMITIVE_TOPOLOGY_TYPE topoType = ToTopologyType(cfg.topology);
-//
-//    std::vector<InputElement> inputLayout = ShaderReflection::GetInputLayoutFromShader(vsBlob.Get());
-//    for (auto& elem : inputLayout)
-//    {
-//        elem.desc.SemanticName = elem.semanticName.c_str();
-//        elem.desc.SemanticIndex = elem.semanticIndex;
-//    }
-//
-//    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescs;
-//    inputElementDescs.reserve(inputLayout.size());
-//    for (auto& elem : inputLayout)
-//    {
-//        inputElementDescs.push_back(elem.desc);
-//    }
-//
-//    D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-//    graphicsPipelineStateDesc.pRootSignature = rs.Get();
-//    graphicsPipelineStateDesc.InputLayout.pInputElementDescs = inputElementDescs.data();
-//    graphicsPipelineStateDesc.InputLayout.NumElements = static_cast<UINT>(inputElementDescs.size());
-//    graphicsPipelineStateDesc.BlendState = blendDesc;
-//    graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-//    graphicsPipelineStateDesc.VS = { vsBlob->GetBufferPointer(), vsBlob->GetBufferSize() };
-//    graphicsPipelineStateDesc.PS = { psBlob->GetBufferPointer(), psBlob->GetBufferSize() };
-//    graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-//    graphicsPipelineStateDesc.DSVFormat = MakeDsvFormat(cfg.dsvFormatID);
-//    graphicsPipelineStateDesc.NumRenderTargets = 1;
-//    graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-//    graphicsPipelineStateDesc.PrimitiveTopologyType = topoType;
-//    graphicsPipelineStateDesc.SampleDesc.Count = 1;
-//    graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-//
-//    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
-//    hr = device_->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pso));
-//    assert(SUCCEEDED(hr));
-//    return pso;
-//}
-//
-//Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateMeshShaderPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params)
-//{
-//    Log("パイプラインステート生成開始: MS=%s, PS=%s", cfg.ms.c_str(), cfg.ps.c_str());
-//
-//    HRESULT hr;
-//
-//    // シェーダー取得（なければコンパイル）
-//    std::wstring msPath = StringConverter::Convert(cfg.ms);
-//    std::wstring psPath = StringConverter::Convert(cfg.ps);
-//    auto msBlob = GetOrCompileShader(msPath.c_str(), L"ms_6_5");
-//    auto psBlob = GetOrCompileShader(psPath.c_str(), L"ps_6_5");
-//
-//    // ルートシグネチャ取得（なければ生成）
-//    Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = GetOrCreateRootSignature(params);
-//    
-//    CD3DX12PipelineStateStream stream{};
-//
-//    // ストリームの各メンバを設定
-//	stream.pRootSignature = rs.Get();
-//
-//    stream.pMS = CD3DX12_SHADER_BYTECODE(msBlob->GetBufferPointer(), msBlob->GetBufferSize());
-//    stream.pPS = CD3DX12_SHADER_BYTECODE(psBlob->GetBufferPointer(), psBlob->GetBufferSize());
-//    //stream.pAS = ;
-//    stream.pBlend = CD3DX12_BLEND_DESC(MakeBlendDesc(cfg.blendID));
-//	stream.pDepthStencil = CD3DX12_DEPTH_STENCIL_DESC(MakeDepthStencilDesc(cfg.depthStencilID));
-//	//stream.pRTVFormats 
-//	stream.pDSVFormat = MakeDsvFormat(cfg.dsvFormatID);
-//	stream.pRasterizer = CD3DX12_RASTERIZER_DESC(MakeRasterizerDesc(cfg.rasterizerID));
-//
-//    // 生成
-//    D3D12_PIPELINE_STATE_STREAM_DESC streamDesc{};
-//    streamDesc.SizeInBytes = sizeof(stream);
-//    streamDesc.pPipelineStateSubobjectStream = &stream;
-//
-//    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
-//    hr = device_->CreatePipelineState(&streamDesc, IID_PPV_ARGS(&pso));
-//    assert(SUCCEEDED(hr));
-//    return pso;
-//
-//
-//
-//    // ★重要: device_ から ID3D12Device2 インターフェースをクエリする
-//    Microsoft::WRL::ComPtr<ID3D12Device2> device2;
-//    HRESULT hr = device_->QueryInterface(IID_PPV_ARGS(&device2));
-//    if (FAILED(hr))
-//    {
-//        Log("ID3D12Device2 の取得に失敗しました。メッシュシェーダーの作成にはID3D12Device2以降が必要です。");
-//        assert(false);
-//    }
-//
-//    Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
-//    // ★重要: device2 を使って CreatePipelineState を呼び出す
-//    hr = device2->CreatePipelineState(&streamDesc, IID_PPV_ARGS(&pipelineState));
-//    if (FAILED(hr))
-//    {
-//        Log("メッシュシェーダーPSOの生成に失敗しました。");
-//        assert(false);
-//    }
-//}
-
 Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphicsPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params)
 {
     bool isMeshShader = false;
@@ -701,7 +583,6 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
     // 実行用のバイナリを返却
     return shaderBlob;
 }
-
 
 
 D3D12_SHADER_VISIBILITY PipelineStateManager::GetShaderVisibilityFromShaderType(ShaderType shaderType)

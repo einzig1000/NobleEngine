@@ -12,11 +12,6 @@
 
 void RenderObject::SetupFromShaders()
 {
-	std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
-	std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
-	auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_5");
-	auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_5");
-
 	rootParams_.clear();
 	rootParamHashToIndexMap_.clear();
 	cpuStorage_.clear();
@@ -25,10 +20,30 @@ void RenderObject::SetupFromShaders()
 	uint32_t cbvSizeOffset = 0;
 	uint32_t srvIndexOffset = 0;
 
-	// VS の CBV / SRV を反映
-	ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_, cbvSizeOffset, srvIndexOffset);
-	// PS の CBV / SRV を反映
-	ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_, cbvSizeOffset, srvIndexOffset);
+	if (psoConfig_.vs != "unknown")
+	{
+		std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
+		auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_5");
+
+		// VS の CBV / SRV を反映
+		ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_, cbvSizeOffset, srvIndexOffset);
+	}
+	else if (psoConfig_.ms != "unknown")
+	{
+		std::wstring msPath = StringConverter::Convert(psoConfig_.ms);
+		auto msBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(msPath.c_str(), L"ms_6_5");
+
+		// MS の CBV / SRV を反映
+		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_, cbvSizeOffset, srvIndexOffset);
+	}
+
+	{
+		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
+		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_5");
+
+		// PS の CBV / SRV を反映
+		ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_, cbvSizeOffset, srvIndexOffset);
+	}
 
 	for (size_t i = 0; i < rootParams_.size(); ++i)
 	{

@@ -11,7 +11,7 @@ public:
 	~TestAnimation();
 	void Initialize();
 	void Update(float deltaTime);
-	void Draw();
+	void Draw(int32_t renderTextureID);
 
 private:
 	std::unique_ptr<RenderObject> render_;

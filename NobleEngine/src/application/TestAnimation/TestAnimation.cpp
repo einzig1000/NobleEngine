@@ -95,11 +95,9 @@ void TestAnimation::Update(float deltaTime)
 	render_->SetCBufferData(1, ShaderType::VertexShader, &animationMatrix);
 }
 
-void TestAnimation::Draw()
+void TestAnimation::Draw(int32_t renderTextureID)
 {
-	uint32_t rtID = Game::Resource::GetRenderTextureID("Main");
-
-	render_->Draw(rtID);
+	render_->Draw(renderTextureID);
 
 	ImGui::Begin("Animation Info");
 	ImGui::Text("Animation Time: %.2f / %.2f", animationTime_, animation.duration);

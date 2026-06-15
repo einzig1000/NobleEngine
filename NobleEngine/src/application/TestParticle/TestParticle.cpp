@@ -4,7 +4,8 @@
 
 TestParticle::TestParticle()
 {
-	t_uvChecker = Game::Resource::Texture::Load("resources/prototypes/texture/particle/circle2.png");
+	t_circle2 = Game::Resource::Texture::Load("resources/prototypes/texture/particle/circle2.png");
+	t_uvChecker = Game::Resource::Texture::Load("resources/prototypes/texture/uvChecker.png");
 	t_gradationLine = Game::Resource::Texture::Load("resources/prototypes/texture/particle/gradationLine.png");
 
 	// 円
@@ -138,6 +139,80 @@ TestParticle::TestParticle()
 			ringTransforms[i].rotate = { Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1) };
 		}
 	}
+
+	// 球
+	{
+		std::vector<VertexData> vertexData_Sphere;
+		const uint32_t kSlices = 32;   // 経度分割
+		const uint32_t kStacks = 16;   // 緯度分割
+		const float kRadius = 1.0f;
+
+		vertexData_Sphere.reserve(kSlices * kStacks * 6);
+
+		const float PI = std::numbers::pi_v<float>;
+		for (uint32_t stack = 0; stack < kStacks; ++stack)
+		{
+			// theta: 0..PI (緯度)
+			float theta = (float)stack / (float)kStacks * PI;
+			float thetaNext = (float)(stack + 1) / (float)kStacks * PI;
+
+			float sinTheta = std::sin(theta);
+			float cosTheta = std::cos(theta);
+			float sinThetaNext = std::sin(thetaNext);
+			float cosThetaNext = std::cos(thetaNext);
+
+			for (uint32_t slice = 0; slice < kSlices; ++slice)
+			{
+				// phi: 0..2PI (経度)
+				float phi = (float)slice / (float)kSlices * 2.0f * PI;
+				float phiNext = (float)(slice + 1) / (float)kSlices * 2.0f * PI;
+
+				float sinPhi = std::sin(phi);
+				float cosPhi = std::cos(phi);
+				float sinPhiNext = std::sin(phiNext);
+				float cosPhiNext = std::cos(phiNext);
+
+				// 4頂点（左上, 右上, 左下, 右下）
+				Vector3 p1 = { sinTheta * cosPhi * kRadius,  cosTheta * kRadius, sinTheta * sinPhi * kRadius };
+				Vector3 p2 = { sinTheta * cosPhiNext * kRadius,  cosTheta * kRadius, sinTheta * sinPhiNext * kRadius };
+				Vector3 p3 = { sinThetaNext * cosPhi * kRadius, cosThetaNext * kRadius, sinThetaNext * sinPhi * kRadius };
+				Vector3 p4 = { sinThetaNext * cosPhiNext * kRadius, cosThetaNext * kRadius, sinThetaNext * sinPhiNext * kRadius };
+
+				// UV
+				float u = (float)slice / (float)kSlices;
+				float uNext = (float)(slice + 1) / (float)kSlices;
+				float v = (float)stack / (float)kStacks;
+				float vNext = (float)(stack + 1) / (float)kStacks;
+
+				VertexData vtx1{ { p1.x, p1.y, p1.z, 1.0f }, { u,     v },     p1.Normalized() };
+				VertexData vtx2{ { p2.x, p2.y, p2.z, 1.0f }, { uNext, v },     p2.Normalized() };
+				VertexData vtx3{ { p3.x, p3.y, p3.z, 1.0f }, { u,     vNext },  p3.Normalized() };
+				VertexData vtx4{ { p4.x, p4.y, p4.z, 1.0f }, { uNext, vNext },  p4.Normalized() };
+
+				// 三角形① (左上 → 右上 → 左下)
+				vertexData_Sphere.push_back(vtx1);
+				vertexData_Sphere.push_back(vtx2);
+				vertexData_Sphere.push_back(vtx3);
+
+				// 三角形② (左下 → 右上 → 右下)
+				vertexData_Sphere.push_back(vtx3);
+				vertexData_Sphere.push_back(vtx2);
+				vertexData_Sphere.push_back(vtx4);
+			}
+		}
+
+		renderSphere_ = std::make_unique<RenderObject>();
+		renderSphere_->modelID_ = Game::Resource::Model::Create(vertexData_Sphere, "Sphere");
+		renderSphere_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+		renderSphere_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+		renderSphere_->psoConfig_.blendID = BlendStateID::Add;
+		renderSphere_->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
+		renderSphere_->SetupFromShaders();
+		sphereColor = Vector4{ 1.0f,1.0f,1.0f,1.0f };
+		sphereTransform.scale = { 6.0f,6.0f,6.0f };
+		sphereTransform.translate = { 0.0f, 0.0f, 0.0f };
+		sphereTransform.rotate = { Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1) };
+	}
 }
 
 TestParticle::~TestParticle()
@@ -160,7 +235,7 @@ void TestParticle::Update()
 		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(planeTransforms[i].scale, planeTransforms[i].rotate, planeTransforms[i].translate);
 		Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
 		renderPlanes_[i]->SetCBufferData(0, ShaderType::PixelShader, &planeColors[i]);
-		renderPlanes_[i]->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
+		renderPlanes_[i]->SetCBufferData(1, ShaderType::PixelShader, &t_circle2);
 		renderPlanes_[i]->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 		renderPlanes_[i]->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 	}
@@ -189,19 +264,28 @@ void TestParticle::Update()
 		renderCylinder_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 		renderCylinder_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 	}
+
+	{
+		sphereTransform.rotate.y += 0.002f;
+		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(sphereTransform.scale, sphereTransform.rotate, sphereTransform.translate);
+		Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
+		renderSphere_->SetCBufferData(0, ShaderType::PixelShader, &sphereColor);
+		renderSphere_->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
+		renderSphere_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
+		renderSphere_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+	}
 }
 
-void TestParticle::Draw()
+void TestParticle::Draw(int32_t renderTextureID)
 {
-	uint32_t rtID = Game::Resource::GetRenderTextureID("Main");
-
 	for (int i = 0; i < 10; ++i)
 	{
-		renderPlanes_[i]->Draw(rtID);
+		//renderPlanes_[i]->Draw(renderTextureID);
 	}
 	for (int i = 0; i < 10; ++i)
 	{
-		renderRings_[i]->Draw(rtID);
+		//renderRings_[i]->Draw(renderTextureID);
 	}
-	renderCylinder_->Draw(rtID);
+	//renderCylinder_->Draw(renderTextureID);
+	renderSphere_->Draw(renderTextureID);
 }

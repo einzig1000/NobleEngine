@@ -75,6 +75,7 @@
     <ClCompile Include="src\application\TestParticle\TestParticle.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Texture\TextureBank\TextureBank.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.cpp" />
+    <ClCompile Include="src\application\TestMeshShader\TestMeshShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.h" />
@@ -144,6 +145,7 @@
     <ClInclude Include="src\application\TestParticle\TestParticle.h" />
     <ClInclude Include="src\engine\ResourceManager\Texture\TextureBank\TextureBank.h" />
     <ClInclude Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.h" />
+    <ClInclude Include="src\application\TestMeshShader\TestMeshShader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

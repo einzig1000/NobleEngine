@@ -39,10 +39,7 @@ public:
 private:
 	// ルートシグネチャ生成
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> CreateRootSignature(const std::vector<RootParam>& params);
-	// VS用のPSO生成
-    //Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateVertexShaderPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
-    // MS用のPSO生成
-    //Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateMeshShaderPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
+	// PSO生成
     Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
 	// シェーダーコンパイル
     Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);

@@ -86,9 +86,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
 	// 2) PSOセット
 	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreatePipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
-	// 3) トポロジーセット
-	cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
-	// 4) CBV・SRVセット
+	// 3) CBV・SRVセット
 	const auto& cpuStrage = renderObject->GetCpuStorage();
 	const auto& rootParams = renderObject->GetRootParams();
 	for (size_t i = 0; i < rootParams.size(); ++i)
@@ -107,32 +105,42 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
 		}
 	}
-	// モデルの検索
-	const ModelData* obj = resourceManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
-	if (!obj) return;
-	// 5)頂点バッファをバインド
-	cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
 
-	const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
-	if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
+	// メッシュシェーダ使用かで分岐
+	if (renderObject->psoConfig_.ms != "unknown")
 	{
-		cmdList->IASetIndexBuffer(&obj->indexBufferView);
-		cmdList->DrawIndexedInstanced(indexCount, renderObject->instanceNum_, 0, 0, 0);
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6> cmdList6;
+		HRESULT hr = cmdList->QueryInterface(IID_PPV_ARGS(&cmdList6));
+
+		if (SUCCEEDED(hr))
+		{
+			cmdList6->DispatchMesh(1, 1, 1);
+			//cmdList->DispatchMesh(renderObject->dispatchX, renderObject->dispatchY, renderObject->dispatchZ);
+		}
 	}
 	else
 	{
-		const uint32_t vertexCount = static_cast<uint32_t>(obj->vertices.size());
-		cmdList->DrawInstanced(vertexCount, renderObject->instanceNum_, 0, 0);
+		// 4) トポロジーセット
+		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
+
+		// モデルの検索
+		const ModelData* obj = resourceManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
+		if (!obj) return;
+		// 5)頂点バッファをバインド
+		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
+
+		const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
+		if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
+		{
+			cmdList->IASetIndexBuffer(&obj->indexBufferView);
+			cmdList->DrawIndexedInstanced(indexCount, renderObject->instanceNum_, 0, 0, 0);
+		}
+		else
+		{
+			const uint32_t vertexCount = static_cast<uint32_t>(obj->vertices.size());
+			cmdList->DrawInstanced(vertexCount, renderObject->instanceNum_, 0, 0);
+		}
 	}
-
-	//// インデックスバッファがあればバインド
-	//if (obj->indexBufferView.BufferLocation != 0)
-	//{
-	//	cmdList->IASetIndexBuffer(&obj->indexBufferView);
-	//}
-
-	//// 6)描画
-	//cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
 }
 
 void DrawSystem::SceneDraw()
@@ -168,121 +176,6 @@ void DrawSystem::ScreenDraw()
 		DrawObject(renderObject);
 	}
 }
-
-
-//auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-//auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-//auto& cb = cbAllocators_[GetFrameIndex()];
-//
-//// 1) RootSignatureセット
-//cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(ScreenDrawRootParams_).Get());
-//// 2) PSOセット
-//cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(ScreenDrawPSOConfig_, ScreenDrawRootParams_).Get());
-//// 3) トポロジーセット
-//cmdList->IASetPrimitiveTopology(ScreenDrawPSOConfig_.topology);
-//// 4) CBV・SRVセット
-//
-//// dxManager_->GetRenderTextureManager()->Get(RenderTextureID::PreBackBuffer)->srvAlloc.indexを送る
-//const auto alloc = cb.Allocate(sizeof(uint32_t));
-////std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
-//std::memcpy(alloc.cpu, &dxManager_->GetRenderTextureManager()->Get(RenderTextureID::PreBackBuffer)->srvAlloc.index, sizeof(uint32_t));
-//cmdList->SetGraphicsRootConstantBufferView(0, alloc.gpu);
-//cmdList->SetGraphicsRootDescriptorTable(1, srvManager->GetGPUHandleAt(0));
-//// 6)描画
-//cmdList->DrawInstanced(3, 1, 0, 0);
-
-/// 既にいろいろいじってしまった過去のScreenDraw()。
-//void DrawSystem::ScreenDraw()
-//{
-//	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-//	auto& cb = cbAllocators_[GetFrameIndex()];
-//	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-//
-//	// トポロジーセット
-//	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//	// RootSignatureセット
-//	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
-//	// PSOセット
-//	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
-//	// CBV・SRVセット
-//	const auto& cpuStrage = renderObject->GetCpuStorage();
-//	const auto& rootParams = renderObject->GetRootParams();
-//	for (size_t i = 0; i < rootParams.size(); ++i)
-//	{
-//		const auto& param = rootParams[i];
-//
-//		if (param.paramType == ParamType::CBV)
-//		{
-//			const auto alloc = cb.Allocate(param.sizeBytes);
-//			std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
-//			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
-//		}
-//		else if (param.paramType == ParamType::SRV)
-//		{
-//			assert(param.srvAllocIndex != UINT32_MAX);
-//			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
-//		}
-//	}
-//
-//	// モデルの検索
-//	const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID);
-//	if (!obj) return;
-//	// 頂点数の取得
-//	const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
-//	// 頂点バッファをバインド
-//	cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-//
-//	// 描画
-//	cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
-//}
-
-/// 過去のSceneDraw()。RenderTexture指定がない
-//void DrawSystem::SceneDraw()
-//{
-//	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList();
-//	auto& cb = cbAllocators_[GetFrameIndex()];
-//	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-//
-//	for (auto* renderObject : sceneRenderObjects_)
-//	{
-//		// 1) RootSignatureセット
-//		cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetOrCreateRootSignature(renderObject->GetRootParams()).Get());
-//		// 2) PSOセット
-//		cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetOrCreateGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
-//		// 3) トポロジーセット
-//		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
-//		// 4) CBV・SRVセット
-//		const auto& cpuStrage = renderObject->GetCpuStorage();
-//		const auto& rootParams = renderObject->GetRootParams();
-//		for (size_t i = 0; i < rootParams.size(); ++i)
-//		{
-//			const auto& param = rootParams[i];
-//
-//			if (param.paramType == ParamType::CBV)
-//			{
-//				const auto alloc = cb.Allocate(param.sizeBytes);
-//				std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
-//				cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
-//			}
-//			else if (param.paramType == ParamType::SRV)
-//			{
-//				assert(param.srvAllocIndex != UINT32_MAX);
-//				cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
-//			}
-//		}
-//		// モデルの検索
-//		const ModelData* obj = resourceManager_->GetModelManager()->GetModelData(renderObject->modelID);
-//		if (!obj) continue;
-//		// 頂点数の取得
-//		const uint32_t kSumVertex = static_cast<uint32_t>(obj->vertices.size());
-//		// 5)頂点バッファをバインド
-//		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-//
-//		// 6)描画
-//		cmdList->DrawInstanced(kSumVertex, renderObject->instanceNum_, 0, 0);
-//	}
-//}
-
 
 
 void DrawSystem::AddDebugLineList(const Vector3& start, const Vector3& end, uint32_t color)

@@ -10,9 +10,10 @@ public:
 	~TestParticle();
 	void Initialize();
 	void Update();
-	void Draw();
+	void Draw(int32_t renderTextureID);
 
 private:
+	int32_t t_circle2;
 	int32_t t_uvChecker;
 	int32_t t_gradationLine;
 
@@ -27,6 +28,10 @@ private:
 	std::unique_ptr<RenderObject> renderCylinder_;
 	Vector4 cylinderColor;
 	EulerTransform cylinderTransform;
+
+	std::unique_ptr<RenderObject> renderSphere_;
+	Vector4 sphereColor;
+	EulerTransform sphereTransform;
 };
 
 
