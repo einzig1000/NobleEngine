@@ -10,11 +10,12 @@
 
 struct RenderTarget
 {
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-	Microsoft::WRL::ComPtr<ID3D12Resource> dsvResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> colorResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthResource;
 	RTVManager::Allocation rtvAlloc{};
 	DSVManager::Allocation dsvAlloc{};
-	SRV_UAVManager::Allocation srvAlloc{};
+	SRV_UAVManager::Allocation colorsrvAlloc{};
+	SRV_UAVManager::Allocation depthsrvAlloc{};
 	UINT width = 0;
 	UINT height = 0;
 	DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;

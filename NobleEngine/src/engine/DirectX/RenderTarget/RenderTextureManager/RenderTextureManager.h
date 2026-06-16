@@ -17,8 +17,7 @@ public:
 
     // テクスチャ作成
     int32_t CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName);
-    RenderTarget* CreateDepthTexture(UINT width, UINT height, DXGI_FORMAT format);
-
+ 
     // データ取得
     RenderTarget* Get(int32_t textureID) const;
     RenderTarget* Get(const std::string& textureName) const;
@@ -30,6 +29,9 @@ private:
     ID3D12Device2* device_;
     DescriptorHeapManager* descriptorHeapManager_;
 	std::unordered_map<std::string, int32_t> nameToIDMap_;
-    std::vector<std::unique_ptr<RenderTarget>> textures_;
+    // リソースの寿命管理用リスト
+    std::vector<std::unique_ptr<RenderTarget>> renderTargets_;
+    // バインドレスで参照するための生ポインタリスト
+    std::vector<RenderTarget*> textures_;
 };
 

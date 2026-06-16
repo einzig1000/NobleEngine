@@ -6,6 +6,8 @@
 #include <Utilities/PerlinNoise.h>
 #include <Utilities/functions.h>
 #include <filesystem>
+#include <algorithm>
+#include <limits>
 
 int LocalMod(int a, int n)
 {
@@ -224,18 +226,18 @@ namespace
 
 	//	for (int by = minWB.y; by <= maxWB.y; ++by)
 	//	{
-	//		if (by < 0 || by >= CHUNK_Y) continue;
+	//		if (by < 0 || by >= Constexprs::kChunkY) continue;
 	//		const int localY = by;
 
 	//		for (int bz = minWB.z; bz <= maxWB.z; ++bz)
 	//		{
-	//			const int chunkZ = FloorDivInt(bz, CHUNK_Z);
-	//			const int localZ = LocalMod(bz, CHUNK_Z);
+	//			const int chunkZ = FloorDivInt(bz, Constexprs::kChunkZ);
+	//			const int localZ = LocalMod(bz, Constexprs::kChunkZ);
 
 	//			for (int bx = minWB.x; bx <= maxWB.x; ++bx)
 	//			{
-	//				const int chunkX = FloorDivInt(bx, CHUNK_X);
-	//				const int localX = LocalMod(bx, CHUNK_X);
+	//				const int chunkX = FloorDivInt(bx, Constexprs::kChunkX);
+	//				const int localX = LocalMod(bx, Constexprs::kChunkX);
 
 	//				const Vector3int chunkPos{ chunkX, localY, chunkZ };
 	//				Chunk* c = self->TryGetChunk(chunkPos);
@@ -335,7 +337,8 @@ void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 	noiseParam_.scale = 32.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = CHUNK_Y;		// マップの高さ
+	//noiseParam_.height = Constexprs::kChunkY;		// マップの高さ
+	noiseParam_.height = std::numeric_limits<int>::max();		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 
 	// mapNameToFilePath_ に新規マップ登録
@@ -349,7 +352,7 @@ void MapManager::SetSeed(uint32_t seed)
 	noiseParam_.scale = 32.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = CHUNK_Y;		// マップの高さ
+	noiseParam_.height = Constexprs::kChunkY;		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 }
 
@@ -483,20 +486,20 @@ void MapManager::ProcessChunkGeneration()
 			{
 			Vector3int(-1, 0, 0),	// Left
 			Vector3int(1, 0, 0),	// Right
-			Vector3int(0, -1, 0),	// Back
-			Vector3int(0, 1, 0),	// Front
-			Vector3int(0, 0, -1),	// Down
-			Vector3int(0, 0, 1)		// Up
+			Vector3int(0, 0, -1),	// Back
+			Vector3int(0, 0, 1),	// Front
+			Vector3int(0, -1, 0),	// Down
+			Vector3int(0, 1, 0)		// Up
 		};
 
 		static constexpr DirectionXYZ opposite[6] =
 		{
 			DirectionXYZ::Right,// Left  の反対
 			DirectionXYZ::Left,	// Right の反対
-			DirectionXYZ::Front,// Back  の反対
-			DirectionXYZ::Back,	// Front の反対
 			DirectionXYZ::Up,	// Down  の反対
-			DirectionXYZ::Down	// Up    の反対
+			DirectionXYZ::Down,	// Up    の反対
+			DirectionXYZ::Front,// Back  の反対
+			DirectionXYZ::Back	// Front の反対
 		};
 
 		for (int dir = 0; dir < 6; ++dir)
@@ -680,32 +683,32 @@ bool MapManager::SetBlockAt(const lookAtBlock& lab, const BlockID id)
 	if (localIndex.x < 0)
 	{
 		chunkPos.x -= 1;
-		localIndex.x += CHUNK_X;
+		localIndex.x += Constexprs::kChunkX;
 	}
-	else if (localIndex.x >= CHUNK_X)
+	else if (localIndex.x >= Constexprs::kChunkX)
 	{
 		chunkPos.x += 1;
-		localIndex.x -= CHUNK_X;
+		localIndex.x -= Constexprs::kChunkX;
 	}
 	if (localIndex.y < 0)
 	{
 		chunkPos.y -= 1;
-		localIndex.y += CHUNK_Y;
+		localIndex.y += Constexprs::kChunkY;
 	}
-	else if (localIndex.y >= CHUNK_Y)
+	else if (localIndex.y >= Constexprs::kChunkY)
 	{
 		chunkPos.y += 1;
-		localIndex.y -= CHUNK_Y;
+		localIndex.y -= Constexprs::kChunkY;
 	}
 	if (localIndex.z < 0)
 	{
 		chunkPos.z -= 1;
-		localIndex.z += CHUNK_Z;
+		localIndex.z += Constexprs::kChunkZ;
 	}
-	else if (localIndex.z >= CHUNK_Z)
+	else if (localIndex.z >= Constexprs::kChunkZ)
 	{
 		chunkPos.z += 1;
-		localIndex.z -= CHUNK_Z;
+		localIndex.z -= Constexprs::kChunkZ;
 	}
 
 	return SetBlockAt(chunkPos, localIndex, id);
@@ -745,18 +748,18 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //			for (int by = minBlockIndex.y; by <= maxBlockIndex.y; ++by)
 //			{
 //				// Y軸はワールド境界でクリップ
-//				if (by < 0 || by >= CHUNK_Y) continue;
+//				if (by < 0 || by >= Constexprs::kChunkY) continue;
 //				const int localY = by;
 //
 //				for (int bz = minBlockIndex.z; bz <= maxBlockIndex.z; ++bz)
 //				{
-//					const int chunkZ = FloorDiv(bz, CHUNK_Z);
-//					const int localZ = LocalMod(bz, CHUNK_Z);
+//					const int chunkZ = FloorDiv(bz, Constexprs::kChunkZ);
+//					const int localZ = LocalMod(bz, Constexprs::kChunkZ);
 //
 //					for (int bx = minBlockIndex.x; bx <= maxBlockIndex.x; ++bx)
 //					{
-//						const int chunkX = FloorDiv(bx, CHUNK_X);
-//						const int localX = LocalMod(bx, CHUNK_X);
+//						const int chunkX = FloorDiv(bx, Constexprs::kChunkX);
+//						const int localX = LocalMod(bx, Constexprs::kChunkX);
 //
 //						const Vector2int chunkPos{ chunkX, chunkZ };
 //						Chunk* c = TryGetChunk(chunkPos);
@@ -1107,12 +1110,12 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //			// 点を含むブロックを1個見る（高速）
 //			// ※ブロック座標変換は MapManager に既にある
 //			const Vector3int wb = WorldBlockIndexByPosition(p);
-//			if (wb.y < 0 || wb.y >= CHUNK_Y) return false;
+//			if (wb.y < 0 || wb.y >= Constexprs::kChunkY) return false;
 //
-//			const int cx = FloorDivInt(wb.x, CHUNK_X);
-//			const int cz = FloorDivInt(wb.z, CHUNK_Z);
-//			const int lx = LocalMod(wb.x, CHUNK_X);
-//			const int lz = LocalMod(wb.z, CHUNK_Z);
+//			const int cx = FloorDivInt(wb.x, Constexprs::kChunkX);
+//			const int cz = FloorDivInt(wb.z, Constexprs::kChunkZ);
+//			const int lx = LocalMod(wb.x, Constexprs::kChunkX);
+//			const int lz = LocalMod(wb.z, Constexprs::kChunkZ);
 //
 //			Chunk* c = TryGetChunk(Vector2int{ cx, cz });
 //			if (!c) return false;
@@ -1232,17 +1235,17 @@ bool MapManager::IsOverlappingAnyCharacter(const AABB& aabb) const
 AABB MapManager::GetAABB(const Vector3int& chunkPos, const Vector3int& index) const
 {
 	// チャンクのワールド原点
-	float chunkWorldX = chunkPos.x * CHUNK_X * BLOCK_SIZE;
-	float chunkWorldY = chunkPos.y * CHUNK_Y * BLOCK_SIZE;
-	float chunkWorldZ = chunkPos.z * CHUNK_Z * BLOCK_SIZE;
+	float chunkWorldX = chunkPos.x * Constexprs::kChunkX * Constexprs::kBlockSize;
+	float chunkWorldY = chunkPos.y * Constexprs::kChunkY * Constexprs::kBlockSize;
+	float chunkWorldZ = chunkPos.z * Constexprs::kChunkZ * Constexprs::kBlockSize;
 
 	// ブロックのワールド座標
-	float worldX = chunkWorldX + index.x * BLOCK_SIZE;
-	float worldY = chunkWorldY + index.y * BLOCK_SIZE;
-	float worldZ = chunkWorldZ + index.z * BLOCK_SIZE;
+	float worldX = chunkWorldX + index.x * Constexprs::kBlockSize;
+	float worldY = chunkWorldY + index.y * Constexprs::kBlockSize;
+	float worldZ = chunkWorldZ + index.z * Constexprs::kBlockSize;
 
 	Vector3 mint(worldX, worldY, worldZ);
-	Vector3 maxt(worldX + BLOCK_SIZE, worldY + BLOCK_SIZE, worldZ + BLOCK_SIZE);
+	Vector3 maxt(worldX + Constexprs::kBlockSize, worldY + Constexprs::kBlockSize, worldZ + Constexprs::kBlockSize);
 
 	return AABB(mint, maxt);
 }
@@ -1274,14 +1277,14 @@ bool MapManager::GetIsActive(const Vector3& position) const
 // position が今どのチャンクに属しているか  例：position=(34, 0, 50) -> chunkIndex=(1, 2)
 Vector3int MapManager::ChunkIndexByPosition(const Vector3& position) const
 {
-	int bx = static_cast<int>(std::floor(position.x / BLOCK_SIZE));
-	int by = static_cast<int>(std::floor(position.y / BLOCK_SIZE));
-	int bz = static_cast<int>(std::floor(position.z / BLOCK_SIZE));
+	int bx = static_cast<int>(std::floor(position.x / Constexprs::kBlockSize));
+	int by = static_cast<int>(std::floor(position.y / Constexprs::kBlockSize));
+	int bz = static_cast<int>(std::floor(position.z / Constexprs::kBlockSize));
 
 	Vector3int chunk;
-	chunk.x = static_cast<int>(std::floor((float)bx / CHUNK_X));
-	chunk.y = static_cast<int>(std::floor((float)by / CHUNK_Y));
-	chunk.z = static_cast<int>(std::floor((float)bz / CHUNK_Z));
+	chunk.x = static_cast<int>(std::floor((float)bx / Constexprs::kChunkX));
+	chunk.y = static_cast<int>(std::floor((float)by / Constexprs::kChunkY));
+	chunk.z = static_cast<int>(std::floor((float)bz / Constexprs::kChunkZ));
 	return chunk;
 }
 
@@ -1293,20 +1296,20 @@ Vector3int MapManager::BlockIndexByPosition(const Vector3& position) const
 
 	// ② チャンク内インデックスへ正規化（数学的 mod）
 	Vector3int local;
-	local.x = LocalMod(wb.x, CHUNK_X);
-	local.y = LocalMod(wb.y, CHUNK_Y);
-	local.z = LocalMod(wb.z, CHUNK_Z);
+	local.x = LocalMod(wb.x, Constexprs::kChunkX);
+	local.y = LocalMod(wb.y, Constexprs::kChunkY);
+	local.z = LocalMod(wb.z, Constexprs::kChunkZ);
 
-	local.y = std::clamp(local.y, 0, CHUNK_Y - 1);
+	local.y = std::clamp(local.y, 0, Constexprs::kChunkY - 1);
 
 	return local;
 }
 
 Vector3int MapManager::WorldBlockIndexByPosition(const Vector3& position) const
 {
-	int bx = static_cast<int>(std::floor(position.x / BLOCK_SIZE));
-	int by = static_cast<int>(std::floor(position.y / BLOCK_SIZE));
-	int bz = static_cast<int>(std::floor(position.z / BLOCK_SIZE));
+	int bx = static_cast<int>(std::floor(position.x / Constexprs::kBlockSize));
+	int by = static_cast<int>(std::floor(position.y / Constexprs::kBlockSize));
+	int bz = static_cast<int>(std::floor(position.z / Constexprs::kBlockSize));
 	return Vector3int(bx, by, bz);
 }
 
@@ -1324,18 +1327,18 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	auto WorldBlockIndexByPosition = [](const Vector3& p) -> Vector3int
 		{
 			return Vector3int(
-				int(std::floor(p.x / BLOCK_SIZE)),
-				int(std::floor(p.y / BLOCK_SIZE)),
-				int(std::floor(p.z / BLOCK_SIZE))
+				int(std::floor(p.x / Constexprs::kBlockSize)),
+				int(std::floor(p.y / Constexprs::kBlockSize)),
+				int(std::floor(p.z / Constexprs::kBlockSize))
 			);
 		};
 
 	auto WorldChunkIndexFromWorldBlock = [](const Vector3int& wb) -> Vector3int
 		{
 			Vector3int cp;
-			cp.x = int(std::floor(float(wb.x) / float(CHUNK_X)));
-			cp.y = int(std::floor(float(wb.y) / float(CHUNK_Y)));
-			cp.z = int(std::floor(float(wb.z) / float(CHUNK_Z)));
+			cp.x = int(std::floor(float(wb.x) / float(Constexprs::kChunkX)));
+			cp.y = int(std::floor(float(wb.y) / float(Constexprs::kChunkY)));
+			cp.z = int(std::floor(float(wb.z) / float(Constexprs::kChunkZ)));
 			return cp;
 		};
 
@@ -1346,24 +1349,24 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	auto LocalIndexFromWorldBlock = [&](const Vector3int& wb) -> Vector3int
 		{
 			return Vector3int(
-				LocalMod(wb.x, CHUNK_X),
-				LocalMod(wb.y, CHUNK_Y),
-				LocalMod(wb.z, CHUNK_Z)
+				LocalMod(wb.x, Constexprs::kChunkX),
+				LocalMod(wb.y, Constexprs::kChunkY),
+				LocalMod(wb.z, Constexprs::kChunkZ)
 			);
 		};
 
 	// sideDist（次の境界までの距離 t）
 	auto NextBoundaryT = [](float origin, float dir, int cell, int step) -> float
 		{
-			// cell = floor(origin/BLOCK_SIZE) のブロック座標
+			// cell = floor(origin/Constexprs::kBlockSize) のブロック座標
 			if (step > 0)
 			{
-				const float next = (float(cell) + 1.0f) * BLOCK_SIZE;
+				const float next = (float(cell) + 1.0f) * Constexprs::kBlockSize;
 				return (next - origin) / dir;
 			}
 			else
 			{
-				const float next = float(cell) * BLOCK_SIZE;
+				const float next = float(cell) * Constexprs::kBlockSize;
 				return (next - origin) / dir;
 			}
 		};
@@ -1379,9 +1382,9 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 
 	// deltaDist（dir==0 は INF 扱い）
 	const float INF = std::numeric_limits<float>::infinity();
-	const float deltaDistX = (std::abs(dir.x) < 1e-6f) ? INF : std::abs(BLOCK_SIZE / dir.x);
-	const float deltaDistY = (std::abs(dir.y) < 1e-6f) ? INF : std::abs(BLOCK_SIZE / dir.y);
-	const float deltaDistZ = (std::abs(dir.z) < 1e-6f) ? INF : std::abs(BLOCK_SIZE / dir.z);
+	const float deltaDistX = (std::abs(dir.x) < 1e-6f) ? INF : std::abs(Constexprs::kBlockSize / dir.x);
+	const float deltaDistY = (std::abs(dir.y) < 1e-6f) ? INF : std::abs(Constexprs::kBlockSize / dir.y);
+	const float deltaDistZ = (std::abs(dir.z) < 1e-6f) ? INF : std::abs(Constexprs::kBlockSize / dir.z);
 
 	float sideDistX = (stepX == 0) ? INF : NextBoundaryT(rayStart.x, dir.x, currentWB.x, stepX);
 	float sideDistY = (stepY == 0) ? INF : NextBoundaryT(rayStart.y, dir.y, currentWB.y, stepY);
@@ -1404,9 +1407,9 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 		if (chunk)
 		{
 			// local.y は縦制限があるので範囲チェック
-			if (0 <= local.x && local.x < CHUNK_X &&
-				0 <= local.y && local.y < CHUNK_Y &&
-				0 <= local.z && local.z < CHUNK_Z)
+			if (0 <= local.x && local.x < Constexprs::kChunkX &&
+				0 <= local.y && local.y < Constexprs::kChunkY &&
+				0 <= local.z && local.z < Constexprs::kChunkZ)
 			{
 				Block* b = chunk->GetBlock(local);
 				if (b && b->GetBlockID() != BlockID::Air)

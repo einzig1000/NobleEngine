@@ -37,6 +37,8 @@ private:
 
 	std::unique_ptr<RenderObject> postEffect1_;
 	std::unique_ptr<RenderObject> postEffect2_;
+	std::unique_ptr<RenderObject> postEffect3_;
+
 
 	std::unique_ptr<RenderObject> screenDrawObjectMain_;
 	EulerTransform mainScreenTransform_;
@@ -49,9 +51,13 @@ private:
 	std::unique_ptr<TestMeshShader> testMeshShader_;
 
 	int32_t rt_main_;
+	int32_t rt_main_depth_;
 	int32_t rt_miniMap_;
 	int32_t rt_Vignette_;
 	int32_t rt_GrayScale_;
+	int32_t rt_luminanceBasedOutline_;
+	int32_t rt_depthBasedOutline_;
+
 	int32_t t_uvChecker;
 	int32_t t_monsterBall_;
 	int32_t t_white1x1_;

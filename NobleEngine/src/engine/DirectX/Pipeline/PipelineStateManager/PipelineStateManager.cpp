@@ -381,7 +381,8 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
 		vectorIndex++;
     }
 
-    D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+    // s0 Linear補間
+    D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
     staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
     staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -389,6 +390,15 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
     staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
     staticSamplers[0].ShaderRegister = 0; // s0
     staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	// s1 Point補間
+    staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+    staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+    staticSamplers[1].ShaderRegister = 1; // s1
+    staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
     D3D12_ROOT_SIGNATURE_DESC desc{};
     desc.NumParameters = static_cast<UINT>(rootParams.size());

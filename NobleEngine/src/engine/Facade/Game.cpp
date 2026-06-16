@@ -73,7 +73,7 @@ namespace Game
 
 		int32_t GetRenderTextureID(const std::string textureName)
 		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->srvAlloc.index;
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.index;
 		}
 	}
 

@@ -450,7 +450,7 @@
 //    uint32_t texture = 0;
 //	uint32_t breakTexture = 0;
 //
-//	uint32_t capacity = CHUNK_X * CHUNK_Y * CHUNK_Z;    // 最大ブロック数
+//	uint32_t capacity = Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ;    // 最大ブロック数
 //	uint32_t currentSum = 0;        // チャンク内に存在するブロック数
 //	uint32_t currentDrawSum = 0;    // チャンク内の描画されているブロック数
 //

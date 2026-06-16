@@ -4,9 +4,12 @@
 TestPhase::TestPhase()
 {
 	rt_main_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
+	rt_main_depth_ = rt_main_ + 1;
 	rt_miniMap_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "MiniMap");
 	rt_Vignette_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Vignette");
 	rt_GrayScale_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "GrayScale");
+	rt_luminanceBasedOutline_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "LuminanceBasedOutline");
+	rt_depthBasedOutline_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "DepthBasedOutline");
 
 	t_uvChecker = Game::Resource::Texture::Load("resources/prototypes/texture/uvChecker.png");
 	t_monsterBall_ = Game::Resource::Texture::Load("resources/prototypes/texture/monsterBall.png");
@@ -16,7 +19,6 @@ TestPhase::TestPhase()
 	int32_t model1 = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
 	int32_t model2 = Game::Resource::Model::Load("resources/prototypes/model/sphere/sphere.obj");
 	int32_t model3 = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
-	//int32_t model4 = Game::Resource::Model::Load("resources/prototypes/model/bunny/bunny.obj");
 
 	audio1 = Game::Resource::Audio::Load("resources/prototypes/audio/BGM/InGame.mp3");
 	audio2 = Game::Resource::Audio::Load("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
@@ -60,16 +62,23 @@ TestPhase::TestPhase()
 	postEffect1_ = std::make_unique<RenderObject>();
 	postEffect1_->modelID_ = model3;
 	postEffect1_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect1_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	postEffect1_->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
 	postEffect1_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	postEffect1_->SetupFromShaders();
 
 	postEffect2_ = std::make_unique<RenderObject>();
 	postEffect2_->modelID_ = model3;
 	postEffect2_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect2_->psoConfig_.ps = "resources/shaders/FullScreen/GrayScale.PS.hlsl";
+	postEffect2_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
 	postEffect2_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	postEffect2_->SetupFromShaders();
+
+	postEffect3_ = std::make_unique<RenderObject>();
+	postEffect3_->modelID_ = model3;
+	postEffect3_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	postEffect3_->psoConfig_.ps = "resources/shaders/FullScreen/DepthBasedOutline.PS.hlsl";
+	postEffect3_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	postEffect3_->SetupFromShaders();
 
 	screenDrawObjectMain_ = std::make_unique<RenderObject>();
 	screenDrawObjectMain_->modelID_ = model3;
@@ -96,13 +105,13 @@ TestPhase::TestPhase()
 
 	lightData_.LightCount = 1;
 
-	mainScreenTransform_.scale = { 12.800f,7.200f,0.0f };
-	mainScreenTransform_.translate = { 0.0f, 0.0f, 0.0f };
-	mainScreenTransform_.rotate = { 0.0f, 0.0f, 0.0f };
+	mainScreenTransform_.scale = { 640.0f,360.0f,0.0f };
+	mainScreenTransform_.translate = { 640.0f, 360.0f, 0.1f };
+	mainScreenTransform_.rotate = { -3.14159265f, 0.0f, 0.0f };
 
-	miniMapScreenTransform_.scale = { 128.0f,72.0f,0.0f };
-	miniMapScreenTransform_.translate = { 1280.0f - (128.0f + 50.0f), 720.0f - (72.0f + 50.0f), 0.1f };
-	miniMapScreenTransform_.rotate = { 0.0f, 0.0f, 0.0f };
+	miniMapScreenTransform_.scale = { 128.00f,72.00f,0.0f };
+	miniMapScreenTransform_.translate = { 1280.0f - 178.0f, 720.0f - 122.0f, 0.1f };
+	miniMapScreenTransform_.rotate = { -3.14159265f, 0.0f, 0.0f };
 	
 	testAnimation_ = std::make_unique<TestAnimation>();
 	testAnimation_->Initialize();
@@ -176,28 +185,31 @@ void TestPhase::Update()
 	environmentMap_->SetCBufferData(3, ShaderType::PixelShader, &t_uvChecker);
 	environmentMap_->SetCBufferData(4, ShaderType::PixelShader, &t_dds_);
 
+
 	// mainの画像をSetCBufferDataしrt_Vignetteに書き込む
 	postEffect1_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
 	// miniMapの画像をSetCBufferDataしrt_GrayScaleに書き込む
 	postEffect2_->SetCBufferData(0, ShaderType::PixelShader, &rt_miniMap_);
-
-	Matrix4x4 identityMatrix = Matrix4x4::MakeIdentity4x4();
+	// 
+	postEffect3_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
+	postEffect3_->SetCBufferData(1, ShaderType::PixelShader, &rt_main_depth_);
+	Matrix4x4 projectionInverse = projectionMatrix.Inverse();
+	postEffect3_->SetCBufferData(2, ShaderType::PixelShader, &projectionInverse);
 
 	Matrix4x4 mainScreenWorldMatrix = Matrix4x4::MakeAffineMatrix(mainScreenTransform_.scale, mainScreenTransform_.rotate, mainScreenTransform_.translate);
-	Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * viewProjection;
-	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProj;
-	//Matrix4x4 mainScreenWorldViewProjection = identityMatrix;
+	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * viewProjection;
+	Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProj;
 
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMain_->SetCBufferData(1, ShaderType::PixelShader, &rt_Vignette_);
+	//screenDrawObjectMain_->SetCBufferData(1, ShaderType::PixelShader, &rt_Vignette_);
+	screenDrawObjectMain_->SetCBufferData(1, ShaderType::PixelShader, &rt_depthBasedOutline_);
 	screenDrawObjectMain_->SetCBufferData(0, ShaderType::VertexShader, &mainScreenWorldViewProjection);
 	screenDrawObjectMain_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
 
 	Matrix4x4 miniMapWorldMatrix = Matrix4x4::MakeAffineMatrix(miniMapScreenTransform_.scale, miniMapScreenTransform_.rotate, miniMapScreenTransform_.translate);
 	//Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * viewProjection;
 	Matrix4x4 miniMapWorldViewProjection = miniMapWorldMatrix * orthoProj;
-	//Matrix4x4 miniMapWorldViewProjection = identityMatrix;
 
 	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMiniMap_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
@@ -224,11 +236,15 @@ void TestPhase::Draw()
 {
 	// mainに書き込む
 	skybox_->Draw(rt_main_);
-	testMeshShader_->Draw(rt_main_);
+	cbvAndSrv_->Draw(rt_main_);
+	//environmentMap_->Draw(rt_main_);
+	//testParticle_->Draw(rt_main_);
+	testAnimation_->Draw(rt_main_);
+	//testMeshShader_->Draw(rt_main_);
 
 	// miniMapに書き込む
 	skybox_->Draw(rt_miniMap_);
-	//cbvAndSrv_->Draw(rt_miniMap_);
+	cbvAndSrv_->Draw(rt_miniMap_);
 	environmentMap_->Draw(rt_miniMap_);
 	testParticle_->Draw(rt_miniMap_);
 	testAnimation_->Draw(rt_miniMap_);
@@ -240,6 +256,8 @@ void TestPhase::Draw()
 	postEffect1_->PostEffectDraw(rt_Vignette_);
 	// miniMapの画像をSetCBufferDataしrt_GrayScaleに書き込む
 	postEffect2_->PostEffectDraw(rt_GrayScale_);
+	// rt_luminanceBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
+	postEffect3_->PostEffectDraw(rt_depthBasedOutline_);
 
 	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
 	screenDrawObjectMain_->ScreenDraw();

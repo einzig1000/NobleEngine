@@ -7,12 +7,24 @@ static const float2 kIndex3x3[3][3] =
     { { -1.0f, 1.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } }
 };
 
-static const float kKernel3x3[3][3] =
+static const float kPrewittHorizontalKernel[3][3] =
 {
-    { 1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f },
-    { 1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f },
-    { 1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f }
+    { -1.0f / 6.0f, 0.0f, 1.0f / 6.0f },
+    { -1.0f / 6.0f, 0.0f, 1.0f / 6.0f },
+    { -1.0f / 6.0f, 0.0f, 1.0f / 6.0f }
 };
+
+static const float kPrewittVerticalKernel[3][3] =
+{
+    { -1.0f / 6.0f, -1.0f / 6.0f, -1.0f / 6.0f },
+    { 0.0f, 0.0f, 0.0f },
+    { 1.0f / 6.0f, 1.0f / 6.0f, 1.0f / 6.0f }
+};
+
+float Luminance(float3 color)
+{
+    return dot(color, float3(0.2125f, 0.7154f, 0.0721f));
+}
 
 struct PSInput
 {
@@ -39,18 +51,25 @@ PSOutput main(PSInput input)
     textures[textureIndex].GetDimensions(size.x, size.y);
     float2 uvStepSize = rcp(size);
     
-    PSOutput output;
-    output.Color.rgb = float3(0.0f, 0.0f, 0.0f);
-    output.Color.a = 1.0f;
+    
+    float2 difference = float2(0.0f, 0.0f);
     for (int y = 0; y < 3; ++y)
     {
         for (int x = 0; x < 3; ++x)
         {
             float2 texcoord = input.TexCoord + kIndex3x3[y][x] * uvStepSize;
             float3 fetchColor = textures[textureIndex].Sample(gSampler, texcoord).rgb;
-            output.Color.rgb += fetchColor * kKernel3x3[y][x];
+            float luminance = Luminance(fetchColor);
+            difference.x += luminance * kPrewittHorizontalKernel[y][x];
+            difference.y += luminance * kPrewittVerticalKernel[y][x];
         }
     }
+    
+    float weight = length(difference);
+    weight = saturate(weight);
+    PSOutput output;
+    output.Color.rgb = float3(weight, weight, weight);
+    output.Color.a = 1.0f;
     
     return output;
 }

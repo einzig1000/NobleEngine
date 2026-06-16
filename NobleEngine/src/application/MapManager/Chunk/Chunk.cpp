@@ -52,7 +52,7 @@ Chunk::Chunk()
 	renderData_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
 	renderData_->SetupFromShaders();
 
-	size_t blockCount = CHUNK_X * CHUNK_Z * CHUNK_Y;
+	size_t blockCount = Constexprs::kChunkX * Constexprs::kChunkZ * Constexprs::kChunkY;
 	instanceDataList_.reserve(blockCount);
 	instanceBlockMap_.reserve(blockCount);
 }
@@ -104,13 +104,13 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 	const int maxY = param.height - 1;
 
 	// チャンク内すべてのブロック生成
-	for (int x = 0; x < CHUNK_X; ++x)
+	for (int x = 0; x < Constexprs::kChunkX; ++x)
 	{
-		for (int z = 0; z < CHUNK_Z; ++z)
+		for (int z = 0; z < Constexprs::kChunkZ; ++z)
 		{
 			// ワールド座標でのブロックインデックス
-			const int worldX = chunkIndex_.x * CHUNK_X + x;
-			const int worldZ = chunkIndex_.y * CHUNK_Z + z;
+			const int worldX = chunkIndex_.x * Constexprs::kChunkX + x;
+			const int worldZ = chunkIndex_.z * Constexprs::kChunkZ + z;
 
 			// ワールド座標をノイズサンプル空間へスケールダウン
 			const float sampleX = static_cast<float>(worldX) * invScale;
@@ -134,7 +134,7 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 			const int dirtEnd = my_max(0, height - 1);              // [stoneEnd, dirtEnd)
 			const int lawnY = height - 1;                           // y==lawnY が Lawn（height>0のとき）
 
-			for (int y = 0; y < CHUNK_Y; ++y)
+			for (int y = 0; y < Constexprs::kChunkY; ++y)
 			{
 				// ブロックID決定
 				BlockID id;
@@ -151,7 +151,7 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 	}
 
 	GenerateOres(param);
-	GenerateTrees(param);
+	//GenerateTrees(param);
 }
 // 鉱石生成
 void Chunk::GenerateOres(const NoiseParameter& param)
@@ -162,7 +162,7 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 	auto ClampY = [&](int& minY, int& maxY)
 		{
 			minY = my_max(0, minY);
-			maxY = my_min(CHUNK_Y - 1, maxY);
+			maxY = my_min(Constexprs::kChunkY - 1, maxY);
 			if (minY > maxY) std::swap(minY, maxY);
 		};
 
@@ -180,9 +180,9 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 
 			for (int v = 0; v < veinsPerChunk; ++v)
 			{
-				int x = RandRange(rng, 0, CHUNK_X - 1);
+				int x = RandRange(rng, 0, Constexprs::kChunkX - 1);
 				int y = RandRange(rng, minY, maxY);
-				int z = RandRange(rng, 0, CHUNK_Z - 1);
+				int z = RandRange(rng, 0, Constexprs::kChunkZ - 1);
 
 				int veinSize = sizeMean + RandRange(rng, -sizeRand, sizeRand);
 				if (veinSize < 1) veinSize = 1;
@@ -197,9 +197,9 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 
 					// 次へ（ランダムウォーク）
 					const int dir = RandRange(rng, 0, 5);
-					x = my_min(CHUNK_X - 1, my_max(0, x + dx[dir]));
-					y = my_min(CHUNK_Y - 1, my_max(0, y + dy[dir]));
-					z = my_min(CHUNK_Z - 1, my_max(0, z + dz[dir]));
+					x = my_min(Constexprs::kChunkX - 1, my_max(0, x + dx[dir]));
+					y = my_min(Constexprs::kChunkY - 1, my_max(0, y + dy[dir]));
+					z = my_min(Constexprs::kChunkZ - 1, my_max(0, z + dz[dir]));
 
 					// 高さ帯から外れたら戻す（分布を安定させる）
 					if (y < minY) y = minY;
@@ -230,7 +230,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 	// 指定座標のLawnの一番上のY座標を取得
 	auto FindSurfaceY_Lawn = [&](int x, int z) -> int
 		{
-			for (int y = CHUNK_Y - 1; y >= 0; --y)
+			for (int y = Constexprs::kChunkY - 1; y >= 0; --y)
 			{
 				if (blocks_[x][y][z].GetBlockID() == BlockID::Lawn) return y;
 			}
@@ -240,7 +240,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 	// 指定位置に幹を立てられるか
 	auto CanPlaceTrunk = [&](int x, int y0, int z, int height) -> bool
 		{
-			if (y0 < 0 || y0 + height >= CHUNK_Y) return false;
+			if (y0 < 0 || y0 + height >= Constexprs::kChunkY) return false;
 			for (int y = y0; y < y0 + height; ++y)
 			{
 				if (blocks_[x][y][z].GetBlockID() != BlockID::Air) return false;
@@ -252,17 +252,17 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 	auto CanPlaceLeaves = [&](int x, int z, int trunkTopY, int leafRadius) -> bool
 		{
 			if (trunkTopY - leafRadius < 0) return false;
-			if (trunkTopY + leafRadius >= CHUNK_Y) return false;
+			if (trunkTopY + leafRadius >= Constexprs::kChunkY) return false;
 			if (x - leafRadius < 0) return false;
-			if (x + leafRadius >= CHUNK_X) return false;
+			if (x + leafRadius >= Constexprs::kChunkX) return false;
 			if (z - leafRadius < 0) return false;
-			if (z + leafRadius >= CHUNK_Z) return false;
+			if (z + leafRadius >= Constexprs::kChunkZ) return false;
 			return true;
 		};
 
-	for (int x = 0; x < CHUNK_X; ++x)
+	for (int x = 0; x < Constexprs::kChunkX; ++x)
 	{
-		for (int z = 0; z < CHUNK_Z; ++z)
+		for (int z = 0; z < Constexprs::kChunkZ; ++z)
 		{
 			if (Rand01(rng) > param.treeChancePerColumn) continue;
 
@@ -290,15 +290,15 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 			// 葉（幹先端に球っぽく）
 			for (int ly = leafCenterY - leafRadius; ly <= leafCenterY + leafRadius; ++ly)
 			{
-				if (ly < 0 || ly >= CHUNK_Y) continue;
+				if (ly < 0 || ly >= Constexprs::kChunkY) continue;
 
 				for (int lx = x - leafRadius; lx <= x + leafRadius; ++lx)
 				{
-					if (lx < 0 || lx >= CHUNK_X) continue;
+					if (lx < 0 || lx >= Constexprs::kChunkX) continue;
 
 					for (int lz = z - leafRadius; lz <= z + leafRadius; ++lz)
 					{
-						if (lz < 0 || lz >= CHUNK_Z) continue;
+						if (lz < 0 || lz >= Constexprs::kChunkZ) continue;
 
 						const int dx0 = lx - x;
 						const int dy0 = ly - leafCenterY;
@@ -400,11 +400,11 @@ bool Chunk::ComputeExposed(const Vector3int& localIndex)
 // チャンク内の全てのブロックの露出状態を更新
 void Chunk::SetExposedAllBlocks()
 {
-	for (int x = 0; x < CHUNK_X; x++)
+	for (int x = 0; x < Constexprs::kChunkX; x++)
 	{
-		for (int y = 0; y < CHUNK_Y; y++)
+		for (int y = 0; y < Constexprs::kChunkY; y++)
 		{
-			for (int z = 0; z < CHUNK_Z; z++)
+			for (int z = 0; z < Constexprs::kChunkZ; z++)
 			{
 				RefreshExposeAt(Vector3int(x, y, z));
 			}
@@ -426,43 +426,43 @@ void Chunk::SetExposedAroundBlocks(const Vector3int& localIndex)
 	{
 		Vector3int index(localIndex.x + dx[i], localIndex.y + dy[i], localIndex.z + dz[i]);
 
-		if (index.y < 0 || index.y >= CHUNK_Y) continue;
+		if (index.y < 0 || index.y >= Constexprs::kChunkY) continue;
 
 		if (index.x < 0)
 		{
 			targetChunk = neighbors_[DirectionXYZ::Left];
 			if (!targetChunk) continue;
-			index.x += CHUNK_X; // -1 -> CHUNK_X-1
+			index.x += Constexprs::kChunkX; // -1 -> Constexprs::kChunkX-1
 		}
-		else if (index.x >= CHUNK_X)
+		else if (index.x >= Constexprs::kChunkX)
 		{
 			targetChunk = neighbors_[DirectionXYZ::Right];
 			if (!targetChunk) continue;
-			index.x -= CHUNK_X; // CHUNK_X -> 0
+			index.x -= Constexprs::kChunkX; // Constexprs::kChunkX -> 0
 		}
 		else if (index.z < 0)
 		{
 			targetChunk = neighbors_[DirectionXYZ::Back];
 			if (!targetChunk) continue;
-			index.z += CHUNK_Z; // -1 -> CHUNK_Z-1
+			index.z += Constexprs::kChunkZ; // -1 -> Constexprs::kChunkZ-1
 		}
-		else if (index.z >= CHUNK_Z)
+		else if (index.z >= Constexprs::kChunkZ)
 		{
 			targetChunk = neighbors_[DirectionXYZ::Front];
 			if (!targetChunk) continue;
-			index.z -= CHUNK_Z; // CHUNK_Z -> 0
+			index.z -= Constexprs::kChunkZ; // Constexprs::kChunkZ -> 0
 		}
 		else if (index.y < 0)
 		{
 			targetChunk = neighbors_[DirectionXYZ::Down];
 			if (!targetChunk) continue;
-			index.y += CHUNK_Y; // -1 -> CHUNK_Y-1
+			index.y += Constexprs::kChunkY; // -1 -> Constexprs::kChunkY-1
 		}
-		else if (index.y >= CHUNK_Y)
+		else if (index.y >= Constexprs::kChunkY)
 		{
 			targetChunk = neighbors_[DirectionXYZ::Up];
 			if (!targetChunk) continue;
-			index.y -= CHUNK_Y; // CHUNK_Y -> 0
+			index.y -= Constexprs::kChunkY; // Constexprs::kChunkY -> 0
 		}
 		else targetChunk = this;
 
@@ -478,74 +478,74 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 	switch (direction)
 	{
 	case DirectionXYZ::Left: // -X
-		for (int y = 0; y < CHUNK_Y; ++y)
+		for (int y = 0; y < Constexprs::kChunkY; ++y)
 		{
-			for (int z = 0; z < CHUNK_Z; ++z)
+			for (int z = 0; z < Constexprs::kChunkZ; ++z)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(CHUNK_X - 1, y, z));
-				neighborChunk->RefreshExposeAt(Vector3int(CHUNK_X - 2, y, z));
+				neighborChunk->RefreshExposeAt(Vector3int(Constexprs::kChunkX - 1, y, z));
+				neighborChunk->RefreshExposeAt(Vector3int(Constexprs::kChunkX - 2, y, z));
 				this->RefreshExposeAt(Vector3int(0, y, z));	
 				this->RefreshExposeAt(Vector3int(1, y, z));
 			}
 		}
 		break;
 	case DirectionXYZ::Right: // +X
-		for (int y = 0; y < CHUNK_Y; ++y)
+		for (int y = 0; y < Constexprs::kChunkY; ++y)
 		{
-			for (int z = 0; z < CHUNK_Z; ++z)
+			for (int z = 0; z < Constexprs::kChunkZ; ++z)
 			{
 				neighborChunk->RefreshExposeAt(Vector3int(0, y, z));
 				neighborChunk->RefreshExposeAt(Vector3int(1, y, z));
-				this->RefreshExposeAt(Vector3int(CHUNK_X - 1, y, z));
-				this->RefreshExposeAt(Vector3int(CHUNK_X - 2, y, z));
+				this->RefreshExposeAt(Vector3int(Constexprs::kChunkX - 1, y, z));
+				this->RefreshExposeAt(Vector3int(Constexprs::kChunkX - 2, y, z));
 			}
 		}
 		break;
 	case DirectionXYZ::Back: // -Z
-		for (int y = 0; y < CHUNK_Y; ++y)
+		for (int y = 0; y < Constexprs::kChunkY; ++y)
 		{
-			for (int x = 0; x < CHUNK_X; ++x)
+			for (int x = 0; x < Constexprs::kChunkX; ++x)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(x, y, CHUNK_Z - 1));
-				neighborChunk->RefreshExposeAt(Vector3int(x, y, CHUNK_Z - 2));
+				neighborChunk->RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 1));
+				neighborChunk->RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 2));
 				this->RefreshExposeAt(Vector3int(x, y, 0));
 				this->RefreshExposeAt(Vector3int(x, y, 1));
 			}
 		}
 		break;
 	case DirectionXYZ::Front: // +Z
-		for (int y = 0; y < CHUNK_Y; ++y)
+		for (int y = 0; y < Constexprs::kChunkY; ++y)
 		{
-			for (int x = 0; x < CHUNK_X; ++x)
+			for (int x = 0; x < Constexprs::kChunkX; ++x)
 			{
 				neighborChunk->RefreshExposeAt(Vector3int(x, y, 0));
 				neighborChunk->RefreshExposeAt(Vector3int(x, y, 1));
-				this->RefreshExposeAt(Vector3int(x, y, CHUNK_Z - 1));
-				this->RefreshExposeAt(Vector3int(x, y, CHUNK_Z - 2));
+				this->RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 1));
+				this->RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 2));
 			}
 		}
 		break;
 	case DirectionXYZ::Down: // -Y
-		for (int z = 0; z < CHUNK_Z; ++z)
+		for (int z = 0; z < Constexprs::kChunkZ; ++z)
 		{
-			for (int x = 0; x < CHUNK_X; ++x)
+			for (int x = 0; x < Constexprs::kChunkX; ++x)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(x, CHUNK_Y - 1, z));
-				neighborChunk->RefreshExposeAt(Vector3int(x, CHUNK_Y - 2, z));
+				neighborChunk->RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 1, z));
+				neighborChunk->RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 2, z));
 				this->RefreshExposeAt(Vector3int(x, 0, z));
 				this->RefreshExposeAt(Vector3int(x, 1, z));
 			}
 		}
 		break;
 	case DirectionXYZ::Up: // +Y
-		for (int z = 0; z < CHUNK_Z; ++z)
+		for (int z = 0; z < Constexprs::kChunkZ; ++z)
 		{
-			for (int x = 0; x < CHUNK_X; ++x)
+			for (int x = 0; x < Constexprs::kChunkX; ++x)
 			{
 				neighborChunk->RefreshExposeAt(Vector3int(x, 0, z));
 				neighborChunk->RefreshExposeAt(Vector3int(x, 1, z));
-				this->RefreshExposeAt(Vector3int(x, CHUNK_Y - 1, z));
-				this->RefreshExposeAt(Vector3int(x, CHUNK_Y - 2, z));
+				this->RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 1, z));
+				this->RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 2, z));
 			}
 		}
 		break;
@@ -556,11 +556,11 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 
 void Chunk::Update()
 {
-	for (int x = 0; x < CHUNK_X; x++)
+	for (int x = 0; x < Constexprs::kChunkX; x++)
 	{
-		for (int y = 0; y < CHUNK_Y; y++)
+		for (int y = 0; y < Constexprs::kChunkY; y++)
 		{
-			for (int z = 0; z < CHUNK_Z; z++)
+			for (int z = 0; z < Constexprs::kChunkZ; z++)
 			{
 				if (blocks_[x][y][z].GetBlockID() != BlockID::Air)
 				{
@@ -596,9 +596,9 @@ void Chunk::Draw(int32_t renderTargetID)
 Block* Chunk::GetBlock(const Vector3int& index)
 {
 	// チャンク内
-	if (0 <= index.x && index.x < CHUNK_X &&
-		0 <= index.y && index.y < CHUNK_Y &&
-		0 <= index.z && index.z < CHUNK_Z)
+	if (0 <= index.x && index.x < Constexprs::kChunkX &&
+		0 <= index.y && index.y < Constexprs::kChunkY &&
+		0 <= index.z && index.z < Constexprs::kChunkZ)
 	{
 		return &blocks_[index.x][index.y][index.z];
 	}
@@ -610,37 +610,37 @@ Block* Chunk::GetBlock(const Vector3int& index)
 	{
 		targetChunk = neighbors_[DirectionXYZ::Left];
 		if (!targetChunk) return nullptr;
-		localIndex.x += CHUNK_X; // -1 -> CHUNK_X-1
+		localIndex.x += Constexprs::kChunkX; // -1 -> Constexprs::kChunkX-1
 	}
-	else if (localIndex.x >= CHUNK_X)
+	else if (localIndex.x >= Constexprs::kChunkX)
 	{
 		targetChunk = neighbors_[DirectionXYZ::Right];
 		if (!targetChunk) return nullptr;
-		localIndex.x -= CHUNK_X; // CHUNK_X -> 0
+		localIndex.x -= Constexprs::kChunkX; // Constexprs::kChunkX -> 0
 	}
 	else if (localIndex.z < 0)
 	{
 		targetChunk = neighbors_[DirectionXYZ::Back];
 		if (!targetChunk) return nullptr;
-		localIndex.z += CHUNK_Z; // -1 -> CHUNK_Z-1
+		localIndex.z += Constexprs::kChunkZ; // -1 -> Constexprs::kChunkZ-1
 	}
-	else if (localIndex.z >= CHUNK_Z)
+	else if (localIndex.z >= Constexprs::kChunkZ)
 	{
 		targetChunk = neighbors_[DirectionXYZ::Front];
 		if (!targetChunk) return nullptr;
-		localIndex.z -= CHUNK_Z; // CHUNK_Z -> 0
+		localIndex.z -= Constexprs::kChunkZ; // Constexprs::kChunkZ -> 0
 	}
 	else if (localIndex.y < 0)
 	{
 		targetChunk = neighbors_[DirectionXYZ::Down];
 		if (!targetChunk) return nullptr;
-		localIndex.y += CHUNK_Y; // -1 -> CHUNK_Y-1
+		localIndex.y += Constexprs::kChunkY; // -1 -> Constexprs::kChunkY-1
 	}
-	else if (localIndex.y >= CHUNK_Y)
+	else if (localIndex.y >= Constexprs::kChunkY)
 	{
 		targetChunk = neighbors_[DirectionXYZ::Up];
 		if (!targetChunk) return nullptr;
-		localIndex.y -= CHUNK_Y; // CHUNK_Y -> 0
+		localIndex.y -= Constexprs::kChunkY; // Constexprs::kChunkY -> 0
 	}
 	else targetChunk = this;
 
@@ -650,29 +650,31 @@ Block* Chunk::GetBlock(const Vector3int& index)
 AABB Chunk::GetAABB(const Vector3int& index)
 {
 	// チャンクのワールド原点
-	float chunkWorldX = chunkIndex_.x * CHUNK_X * BLOCK_SIZE;
-	float chunkWorldZ = chunkIndex_.y * CHUNK_Z * BLOCK_SIZE;
+	float chunkWorldX = chunkIndex_.x * Constexprs::kChunkX * Constexprs::kBlockSize;
+	float chunkWorldY = chunkIndex_.y * Constexprs::kChunkY * Constexprs::kBlockSize;
+	float chunkWorldZ = chunkIndex_.z * Constexprs::kChunkZ * Constexprs::kBlockSize;
 
 	// ブロックのワールド座標
-	float worldX = chunkWorldX + index.x * BLOCK_SIZE;
-	float worldY = index.y * BLOCK_SIZE;
-	float worldZ = chunkWorldZ + index.z * BLOCK_SIZE;
+	float worldX = chunkWorldX + index.x * Constexprs::kBlockSize;
+	float worldY = chunkWorldY + index.y * Constexprs::kBlockSize;
+	float worldZ = chunkWorldZ + index.z * Constexprs::kBlockSize;
 
 	Vector3 mint(worldX, worldY, worldZ);
-	Vector3 maxt(worldX + BLOCK_SIZE, worldY + BLOCK_SIZE, worldZ + BLOCK_SIZE);
+	Vector3 maxt(worldX + Constexprs::kBlockSize, worldY + Constexprs::kBlockSize, worldZ + Constexprs::kBlockSize);
 
 	return AABB(mint, maxt);
 }
 
 Vector3 Chunk::LocalCenter(const Vector3int& index) const
 {
-	const float half = BLOCK_SIZE * 0.5f;
-	const float baseX = chunkIndex_.x * CHUNK_X * BLOCK_SIZE + half;
-	const float baseZ = chunkIndex_.y * CHUNK_Z * BLOCK_SIZE + half;
+	const float half = Constexprs::kBlockSize * 0.5f;
+	const float baseX = chunkIndex_.x * Constexprs::kChunkX * Constexprs::kBlockSize + half;
+	const float baseY = chunkIndex_.y * Constexprs::kChunkY * Constexprs::kBlockSize + half;
+	const float baseZ = chunkIndex_.z * Constexprs::kChunkZ * Constexprs::kBlockSize + half;
 
-	const float cx = baseX + index.x * BLOCK_SIZE;
-	const float cy = index.y * BLOCK_SIZE + half;
-	const float cz = baseZ + index.z * BLOCK_SIZE;
+	const float cx = baseX + index.x * Constexprs::kBlockSize;
+	const float cy = baseY + index.y * Constexprs::kBlockSize;
+	const float cz = baseZ + index.z * Constexprs::kBlockSize;
 
 	return Vector3(cx, cy, cz);
 }

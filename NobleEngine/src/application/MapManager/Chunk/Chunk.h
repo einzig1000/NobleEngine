@@ -82,7 +82,7 @@ private:
 	// チャンク座標
 	Vector3int chunkIndex_;
 	// ブロックデータ配列
-	Block blocks_[CHUNK_X][CHUNK_Y][CHUNK_Z];
+	Block blocks_[Constexprs::kChunkX][Constexprs::kChunkY][Constexprs::kChunkZ];
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> renderData_;
 	// GPUインスタンスデータ配列

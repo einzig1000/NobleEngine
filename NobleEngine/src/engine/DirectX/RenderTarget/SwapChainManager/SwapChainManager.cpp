@@ -28,10 +28,9 @@ SwapChainManager::~SwapChainManager()
 RenderTarget* SwapChainManager::GetCurrentRenderTarget() const
 {
 	RenderTarget* rt = renderTargets_[backBufferIndex_].get();
-	rt->resource = swapChainResources_[backBufferIndex_];
-    rt->dsvResource = nullptr;
+	rt->colorResource = swapChainResources_[backBufferIndex_];
+	rt->depthResource = depthStencilResource_;
 	rt->rtvAlloc = rtvAllocations_[backBufferIndex_];
-	rt->dsvResource = depthStencilResource_;
 	rt->dsvAlloc = dsvAllocation_;
 	rt->width = swapChainDesc_.Width;
 	rt->height = swapChainDesc_.Height;

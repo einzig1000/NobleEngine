@@ -105,7 +105,8 @@ namespace Dx12ResourceFactory
         depthStencilDesc.Height = height;
         depthStencilDesc.DepthOrArraySize = 1;
         depthStencilDesc.MipLevels = 1;
-        depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        //depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
         depthStencilDesc.SampleDesc.Count = 1;
         depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
@@ -116,6 +117,7 @@ namespace Dx12ResourceFactory
         // クリア値の設定
         D3D12_CLEAR_VALUE clearValue = {};
         clearValue.DepthStencil.Depth = 1.0f;
+        //clearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         clearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
         // リソースを作成

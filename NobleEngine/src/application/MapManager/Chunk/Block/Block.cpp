@@ -1,4 +1,5 @@
 #include <MapManager/Chunk/Block/Block.h>
+#include <definition/constexprs.h>
 #include <MapManager/Chunk/Block/BlockDurability.h>
 #include <algorithm>
 
@@ -24,8 +25,8 @@ void Block::SetBlockType(Blockinfo info)
 void Block::SetBlockPosition(const Vector3& position)
 {
 	position_ = position;
-	aabb_.min = position - Vector3(BLOCK_SIZE / 2.0f, BLOCK_SIZE / 2.0f, BLOCK_SIZE / 2.0f);
-	aabb_.max = position + Vector3(BLOCK_SIZE / 2.0f, BLOCK_SIZE / 2.0f, BLOCK_SIZE / 2.0f);
+	aabb_.min = position - Vector3(Constexprs::kBlockSize / 2.0f, Constexprs::kBlockSize / 2.0f, Constexprs::kBlockSize / 2.0f);
+	aabb_.max = position + Vector3(Constexprs::kBlockSize / 2.0f, Constexprs::kBlockSize / 2.0f, Constexprs::kBlockSize / 2.0f);
 }
 
 void Block::Update()

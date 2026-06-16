@@ -49,6 +49,7 @@ public:
     Allocation CreateSRVforDDS(ID3D12Resource* resource, const DirectX::TexMetadata& metadata);
     Allocation CreateSRVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride);
 	Allocation CreateSRVforRenderTarget(ID3D12Resource* resource);
+	Allocation CreateSRVforDepthTexture(ID3D12Resource* resource);
     void RewriteSRVforStructuredBuffer(Allocation& allocation, ID3D12Resource* resource, UINT numElements, UINT structureByteStride);
 
 private:

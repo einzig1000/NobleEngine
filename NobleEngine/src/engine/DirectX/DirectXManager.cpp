@@ -5,7 +5,7 @@ namespace
 {
     void Transition(ID3D12GraphicsCommandList* cmd, RenderTarget* target, bool isDepth, D3D12_RESOURCE_STATES newState)
     {
-		ID3D12Resource* resource = isDepth ? target->dsvResource.Get() : target->resource.Get();
+		ID3D12Resource* resource = isDepth ? target->depthResource.Get() : target->colorResource.Get();
 		D3D12_RESOURCE_STATES& pre = isDepth ? target->dsvState : target->state;
 
 		if (pre == newState) return;

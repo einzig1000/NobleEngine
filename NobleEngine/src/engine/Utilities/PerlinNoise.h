@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <cmath>
 #include <numeric>
-#include "definition/definition.h"
+#include <definition/definition.h>
+#include <definition/constexprs.h>
 
 /// <summary>
 /// パーリンノイズ生成クラス
@@ -27,7 +28,7 @@ private:
 
 struct NoiseParameter
 {
-	int height = CHUNK_Y;       // マップの高さ
+	int height = Constexprs::kChunkY;       // マップの高さ
 	float scale = 32.0f;        // 地形の粗さ（大きくすると緩やか）
     int octaves = 4;            // 反復回数 (大きくすると細かい起伏が増える)
     float persistence = 0.5f;   // 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
@@ -40,19 +41,19 @@ struct NoiseParameter
 	int ironVeinSizeMean = 10;			// 平均鉱脈サイズ
 	int ironVeinSizeRand = 6;			// ±鉱脈サイズランダム幅
 	int ironMinY = 2;					// 鉱脈生成最低Y座標
-	int ironMaxY = CHUNK_Y - 4;			// 鉱脈生成最高Y座標
+	int ironMaxY = Constexprs::kChunkY - 4;			// 鉱脈生成最高Y座標
 
 	int diamondVeinsPerChunk = 1;		// チャンクあたりの鉱脈数
 	int diamondVeinSizeMean = 4;		// 平均鉱脈サイズ
 	int diamondVeinSizeRand = 3;		// ±鉱脈サイズランダム幅
 	int diamondMinY = 1;				// 鉱脈生成最低Y座標
-	int diamondMaxY = CHUNK_Y / 3;		// 鉱脈生成最高Y座標
+	int diamondMaxY = Constexprs::kChunkY / 3;		// 鉱脈生成最高Y座標
 
 	int goldVeinsPerChunk = 1;			// チャンクあたりの鉱脈数
 	int goldVeinSizeMean = 6;			// 平均鉱脈サイズ
 	int goldVeinSizeRand = 4;			// ±鉱脈サイズランダム幅
 	int goldMinY = 2;					// 鉱脈生成最低Y座標
-	int goldMaxY = CHUNK_Y / 2;			// 鉱脈生成最高Y座標
+	int goldMaxY = Constexprs::kChunkY / 2;			// 鉱脈生成最高Y座標
 
 	// ===== 木パラメータ =====
 	float treeChancePerColumn = 0.02f;	// 大きいほど木が増える

@@ -28,16 +28,17 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
     rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-    rt->resource = Dx12ResourceFactory::CreateRenderTargetResource(device_, width, height, format);
-    rt->rtvAlloc = descriptorHeapManager_->GetRTVManager()->CreateRTV(rt->resource.Get(), &rtvDesc);
-    rt->srvAlloc = descriptorHeapManager_->GetSRV_UAVManager()->CreateSRVforRenderTarget(rt->resource.Get());
+    rt->colorResource = Dx12ResourceFactory::CreateRenderTargetResource(device_, width, height, format);
+    rt->rtvAlloc = descriptorHeapManager_->GetRTVManager()->CreateRTV(rt->colorResource.Get(), &rtvDesc);
+    rt->colorsrvAlloc = descriptorHeapManager_->GetSRV_UAVManager()->CreateSRVforRenderTarget(rt->colorResource.Get());
 
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
     dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
     dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	rt->dsvResource = Dx12ResourceFactory::CreateDepthStencilResource(device_, width, height);
-	rt->dsvAlloc = descriptorHeapManager_->GetDSVManager()->CreateDSV(rt->dsvResource.Get(), &dsvDesc);
+	rt->depthResource = Dx12ResourceFactory::CreateDepthStencilResource(device_, width, height);
+	rt->dsvAlloc = descriptorHeapManager_->GetDSVManager()->CreateDSV(rt->depthResource.Get(), &dsvDesc);
+    rt->depthsrvAlloc = descriptorHeapManager_->GetSRV_UAVManager()->CreateSRVforDepthTexture(rt->depthResource.Get());
 
     // 5) Viewport / Scissor 初期化
     rt->viewport.TopLeftX = 0.0f;
@@ -55,19 +56,21 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	rt->state = D3D12_RESOURCE_STATE_COMMON;
     rt->dsvState = D3D12_RESOURCE_STATE_COMMON;
 
-	nameToIDMap_[textureName] = rt->srvAlloc.index;
-	if (textures_.size() <= static_cast<size_t>(rt->srvAlloc.index))
-	{
-		textures_.resize(rt->srvAlloc.index + 1);
-	}
-	textures_[rt->srvAlloc.index] = std::move(rt);
+	nameToIDMap_[textureName] = rt->colorsrvAlloc.index;
+	nameToIDMap_[textureName + "_DSV"] = rt->depthsrvAlloc.index;
+    int32_t maxIndex = std::max(rt->colorsrvAlloc.index, rt->depthsrvAlloc.index);
+    if (textures_.size() <= static_cast<size_t>(maxIndex))
+    {
+        textures_.resize(maxIndex + 1, nullptr);
+    }
+    // カラーと深度の両方のインデックスに同じRenderTargetのポインタを登録
+    textures_[rt->colorsrvAlloc.index] = rt.get();
+    textures_[rt->depthsrvAlloc.index] = rt.get();
+
+    // 所有権をリストに移動
+    renderTargets_.push_back(std::move(rt));
 
 	return nameToIDMap_[textureName];
-}
-
-RenderTarget* RenderTextureManager::CreateDepthTexture(UINT width, UINT height, DXGI_FORMAT format)
-{
-	return nullptr;
 }
 
 RenderTarget* RenderTextureManager::Get(int32_t textureID) const
@@ -79,7 +82,7 @@ RenderTarget* RenderTextureManager::Get(int32_t textureID) const
 		assert(false);
 		return nullptr;
 	}
-    return textures_[textureID].get();
+	return textures_[textureID];
 }
 
 RenderTarget* RenderTextureManager::Get(const std::string& textureName) const
@@ -87,7 +90,7 @@ RenderTarget* RenderTextureManager::Get(const std::string& textureName) const
 	auto it = nameToIDMap_.find(textureName);
 	if (it != nameToIDMap_.end())
 	{
-		return textures_[it->second].get();
+		return textures_[it->second];
 	}
 	return nullptr;
 }
