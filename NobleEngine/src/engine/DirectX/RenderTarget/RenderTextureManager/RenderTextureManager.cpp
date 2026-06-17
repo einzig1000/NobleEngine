@@ -1,12 +1,12 @@
 #include "RenderTextureManager.h"
 #include <Utilities/Logger/Logger.h>
 #include <DirectX/Resource/Dx12ResourceFactory.h>
-#include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
+#include <Utilities/Converter/StringConverter/StringConverter.h>
+#include <filesystem>
 
-RenderTextureManager::RenderTextureManager(ID3D12Device2* device, DescriptorHeapManager* descriptorHeapManager)
-    : device_(device), descriptorHeapManager_(descriptorHeapManager)
-{
-}
+RenderTextureManager::RenderTextureManager(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, DescriptorHeapManager* descriptorHeapManager)
+    : device_(device), commandQueue_(commandQueue), descriptorHeapManager_(descriptorHeapManager)
+{}
 
 RenderTextureManager::~RenderTextureManager()
 {}
@@ -14,10 +14,10 @@ RenderTextureManager::~RenderTextureManager()
 int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName)
 {
 	// 既に作成されていたらそのIDを返す
-	auto it = nameToIDMap_.find(textureName);
-	if (it != nameToIDMap_.end())
+	RenderTarget* renderTarget = Get(textureName);
+	if (renderTarget != nullptr)
 	{
-		return it->second;
+        return renderTarget->colorsrvAlloc.index;
 	}
 
     auto rt = std::make_unique<RenderTarget>();
@@ -56,41 +56,91 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	rt->state = D3D12_RESOURCE_STATE_COMMON;
     rt->dsvState = D3D12_RESOURCE_STATE_COMMON;
 
-	nameToIDMap_[textureName] = rt->colorsrvAlloc.index;
-	nameToIDMap_[textureName + "_DSV"] = rt->depthsrvAlloc.index;
-    int32_t maxIndex = std::max(rt->colorsrvAlloc.index, rt->depthsrvAlloc.index);
-    if (textures_.size() <= static_cast<size_t>(maxIndex))
+	nameToIndexMap_[textureName] = renderTargets_.size();
+    idToIndexMap_[rt->colorsrvAlloc.index] = renderTargets_.size();
+	idToIndexMap_[rt->depthsrvAlloc.index] = renderTargets_.size();
+	renderTargets_.push_back(std::move(rt));
+
+	return renderTargets_.back()->colorsrvAlloc.index;
+}
+
+bool RenderTextureManager::SaveTexture(const std::string& filePath, std::string textureName, bool color)
+{
+	std::string fullPath = color ? filePath + "/" + textureName + ".png" : filePath + "/" + textureName + "_depth.png";
+	// もし同じ名前のファイルが存在していたらtextureName2みたいにして保存する
+	if (std::filesystem::exists(fullPath))
+	{
+		int suffix = 2;
+		while (true)
+		{
+			fullPath = filePath + "/" + textureName + std::to_string(suffix) + ".png";
+			if (!std::filesystem::exists(fullPath))
+			{
+				break;
+			}
+			suffix++;
+		}
+	}
+
+	RenderTarget* targetRT = Get(textureName);
+	if (targetRT == nullptr)
+	{
+		return false;
+	}
+
+    DirectX::ScratchImage resultImage;
+    HRESULT hr = CaptureTexture(
+        commandQueue_,
+        color ? targetRT->colorResource.Get() : targetRT->depthResource.Get(),
+        false,
+        resultImage,
+        color ? targetRT->state : targetRT->dsvState,
+        color ? targetRT->state : targetRT->dsvState
+    );
+
+    if (FAILED(hr))
     {
-        textures_.resize(maxIndex + 1, nullptr);
+        return false;
     }
-    // カラーと深度の両方のインデックスに同じRenderTargetのポインタを登録
-    textures_[rt->colorsrvAlloc.index] = rt.get();
-    textures_[rt->depthsrvAlloc.index] = rt.get();
 
-    // 所有権をリストに移動
-    renderTargets_.push_back(std::move(rt));
+    const DirectX::Image* img = resultImage.GetImage(0, 0, 0);
+    if (!img)
+    {
+        return false;
+    }
 
-	return nameToIDMap_[textureName];
+    std::wstring wFilePath = StringConverter::Convert(fullPath);
+
+    hr = DirectX::SaveToWICFile(
+        *img,
+        DirectX::WIC_FLAGS_NONE,
+        DirectX::GetWICCodec(DirectX::WIC_CODEC_PNG),
+        wFilePath.c_str()
+    );
+
+    if (FAILED(hr))
+    {
+        wprintf(L"SaveToWICFile failed: 0x%08X\n", hr);
+        return false;
+    }
 }
 
 RenderTarget* RenderTextureManager::Get(int32_t textureID) const
 {
-	if (textureID < 0 || textureID >= static_cast<int32_t>(textures_.size()))
-	{
-		// IDが範囲外の場合はエラー
-		Log("テクスチャIDが範囲外です:%d", textureID);
-		assert(false);
-		return nullptr;
-	}
-	return textures_[textureID];
+    auto it = idToIndexMap_.find(textureID);
+    if (it != idToIndexMap_.end())
+    {
+        return renderTargets_[it->second].get();
+    }
+    return nullptr;
 }
 
 RenderTarget* RenderTextureManager::Get(const std::string& textureName) const
 {
-	auto it = nameToIDMap_.find(textureName);
-	if (it != nameToIDMap_.end())
+	auto it = nameToIndexMap_.find(textureName);
+	if (it != nameToIndexMap_.end())
 	{
-		return textures_[it->second];
+		return renderTargets_[it->second].get();
 	}
 	return nullptr;
 }

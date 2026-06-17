@@ -26,9 +26,9 @@ DirectXManager::DirectXManager(HWND hwnd)
     deviceManager = std::make_unique<DeviceManager>();
     commandContextManager = std::make_unique<CommandContextManager>(deviceManager->GetDevice());
     descriptorHeapManager = std::make_unique<DescriptorHeapManager>(deviceManager->GetDevice());
-    swapChainManager = std::make_unique<SwapChainManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), hwnd, descriptorHeapManager.get());
     pipelineStateManager = std::make_unique<PipelineStateManager>(deviceManager->GetDevice());
-	renderTextureManager = std::make_unique<RenderTextureManager>(deviceManager->GetDevice(), descriptorHeapManager.get());
+    swapChainManager = std::make_unique<SwapChainManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), hwnd, descriptorHeapManager.get());
+	renderTextureManager = std::make_unique<RenderTextureManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), descriptorHeapManager.get());
     synchronizationManager = std::make_unique<SynchronizationManager>(deviceManager->GetDevice());
     viewportScissorManager = std::make_unique<ViewportScissorManager>();
 

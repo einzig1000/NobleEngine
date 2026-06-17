@@ -12,12 +12,22 @@ class DescriptorHeapManager;
 class RenderTextureManager
 {
 public:
-	RenderTextureManager(ID3D12Device2* device, DescriptorHeapManager* descriptorHeapManager);
+	RenderTextureManager(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, DescriptorHeapManager* descriptorHeapManager);
 	~RenderTextureManager();
 
-    // テクスチャ作成
+    /// <summary>
+	/// レンダーテクスチャを作成する
+    /// </summary>
+	/// <param name="width">横幅</param>
+	/// <param name="height">縦幅</param>
+	/// <param name="format">テクスチャのフォーマット</param>
+	/// <param name="textureName">テクスチャの名前</param>
+	/// <returns>テクスチャID</returns>
     int32_t CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName);
- 
+
+	// テクスチャ保存
+    bool SaveTexture(const std::string& filePath, std::string textureName, bool color);
+
     // データ取得
     RenderTarget* Get(int32_t textureID) const;
     RenderTarget* Get(const std::string& textureName) const;
@@ -26,12 +36,16 @@ public:
     void ResizeAllWindowDependent(UINT newWidth, UINT newHeight);
 
 private:
-    ID3D12Device2* device_;
-    DescriptorHeapManager* descriptorHeapManager_;
-	std::unordered_map<std::string, int32_t> nameToIDMap_;
-    // リソースの寿命管理用リスト
+	ID3D12Device2* device_;
+	DescriptorHeapManager* descriptorHeapManager_;
+	ID3D12CommandQueue* commandQueue_;
+
+	// キー：テクスチャ名　値：renderTargets_配列のインデックス
+	std::unordered_map<std::string, int32_t> nameToIndexMap_;
+	// キー：テクスチャID　値：renderTargets_配列のインデックス
+	std::unordered_map<int32_t, int32_t> idToIndexMap_;
+
+    // レンダーテクスチャリスト
     std::vector<std::unique_ptr<RenderTarget>> renderTargets_;
-    // バインドレスで参照するための生ポインタリスト
-    std::vector<RenderTarget*> textures_;
 };
 

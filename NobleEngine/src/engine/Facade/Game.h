@@ -75,6 +75,8 @@ namespace Game
 
 		int32_t GetRenderTextureID(const std::string textureName);
 
+		int32_t GetRenderTextureDepthID(const std::string textureName);
+
 		/// <summary>
 		/// レンダーテクスチャ作成
 		/// </summary>
@@ -83,6 +85,8 @@ namespace Game
 		/// <param name="height">縦幅</param>
 		/// <returns>テクスチャID</returns>
 		int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName);
+
+		int32_t SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color = true);
 	};
 
 	namespace DebugDraw

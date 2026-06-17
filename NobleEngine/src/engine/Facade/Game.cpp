@@ -71,9 +71,18 @@ namespace Game
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
 		}
 
+		int32_t SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color)
+		{
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveTexture(filePath, textureName, color);
+		}
+
 		int32_t GetRenderTextureID(const std::string textureName)
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.index;
+		}
+		int32_t GetRenderTextureDepthID(const std::string textureName)
+		{
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->depthsrvAlloc.index;
 		}
 	}
 

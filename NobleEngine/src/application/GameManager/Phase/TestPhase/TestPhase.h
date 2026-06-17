@@ -38,21 +38,32 @@ private:
 	std::unique_ptr<RenderObject> postEffect1_;
 	std::unique_ptr<RenderObject> postEffect2_;
 	std::unique_ptr<RenderObject> postEffect3_;
+	std::unique_ptr<RenderObject> postEffect4_;
 
 
-	std::unique_ptr<RenderObject> screenDrawObjectMain_;
-	EulerTransform mainScreenTransform_;
-	std::unique_ptr<RenderObject> screenDrawObjectMiniMap_;
-	EulerTransform miniMapScreenTransform_;
+	std::unique_ptr<RenderObject> screenDrawObjectMain1_;
+	EulerTransform main1ScreenTransform_;
+	std::unique_ptr<RenderObject> screenDrawObjectMain2_;
+	EulerTransform main2ScreenTransform_;
+	std::unique_ptr<RenderObject> screenDrawObjectMiniMap1_;
+	EulerTransform miniMap1ScreenTransform_;
+	std::unique_ptr<RenderObject> screenDrawObjectMiniMap2_;
+	EulerTransform miniMap2ScreenTransform_;
 
 
 	std::unique_ptr<TestAnimation> testAnimation_;
 	std::unique_ptr<TestParticle> testParticle_;
 	std::unique_ptr<TestMeshShader> testMeshShader_;
 
-	int32_t rt_main_;
-	int32_t rt_main_depth_;
-	int32_t rt_miniMap_;
+	int32_t rt_main1_;
+	int32_t rt_main1_depth_;
+	int32_t rt_main2_;
+	int32_t rt_main2_depth_;
+	int32_t rt_miniMap1_;
+	int32_t rt_miniMap1_depth_;
+	int32_t rt_miniMap2_;
+	int32_t rt_miniMap2_depth_;
+
 	int32_t rt_Vignette_;
 	int32_t rt_GrayScale_;
 	int32_t rt_luminanceBasedOutline_;
