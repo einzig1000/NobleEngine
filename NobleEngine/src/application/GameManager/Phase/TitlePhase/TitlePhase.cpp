@@ -214,8 +214,8 @@ void TitlePhase::Initialize()
 	//}
 
 	Game::IO::Mouse::ShowCursor(true);
-	Game::Camera::MoveCameraCenter({ 0.0f, 15.0f, 0.0f }, 0, EaseType::LINEAR);
-	Game::Camera::MoveCameraDistance(0.1f, 0, EaseType::LINEAR);
+	Game::Camera::Setter::SetCenter({ 0.0f, 15.0f, 0.0f }, 0, EaseType::LINEAR, 0);
+	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::LINEAR, 0);
 
 	frameCount = 0;
 }

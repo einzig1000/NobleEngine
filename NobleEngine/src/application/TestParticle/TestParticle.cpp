@@ -223,7 +223,7 @@ void TestParticle::Initialize()
 
 void TestParticle::Update()
 {
-	Matrix4x4 viewProjection = Game::Camera::Getter::GetCurrentViewProjectionMatrix();
+	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(0);
 	for (int i = 0; i < 10; ++i)
 	{
 		planeColors[i].w -= 0.02f;

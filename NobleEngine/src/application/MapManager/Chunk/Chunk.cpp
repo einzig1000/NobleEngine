@@ -575,7 +575,7 @@ void Chunk::Update()
 		}
 	}
 
-	Matrix4x4 viewPro = Game::Camera::Getter::GetCurrentViewProjectionMatrix();
+	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(0);
 	renderData_->SetCBufferData(0, ShaderType::VertexShader, &viewPro);
 	//if (instanceBufferDirty_)
 	{

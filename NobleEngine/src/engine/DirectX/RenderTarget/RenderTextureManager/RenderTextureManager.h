@@ -28,6 +28,8 @@ public:
 	// テクスチャ保存
     bool SaveTexture(const std::string& filePath, std::string textureName, bool color);
 
+	bool SaveAllRenderTextures(const std::string& directoryPath, bool color);
+
     // データ取得
     RenderTarget* Get(int32_t textureID) const;
     RenderTarget* Get(const std::string& textureName) const;

@@ -960,24 +960,15 @@ enum class EaseType
 };
 std::string EnumToString(EaseType e);
 
-struct EasingSetVector3
+template <typename t>
+struct EasingSet
 {
-    Vector3 start;
-    Vector3 end;
-    bool easingFlag = 0;
-    int flame = 0;
-    int maxFrame = 0;
-    EaseType easetype = EaseType::OUT_QUART;
-};
-
-struct EasingSetFloat
-{
-    float start;
-    float end;
-    bool easingFlag = 0;
-    int flame = 0;
-    int maxFrame = 0;
-    EaseType easetype = EaseType::OUT_QUART;
+    int32_t duration = 0;
+    int32_t currentFrame = 0;
+    EaseType easetype = EaseType::LINEAR;
+    t start{};
+    t target{};
+    bool easeing = false;
 };
 
 #pragma endregion

@@ -70,15 +70,16 @@ void Engine::BeginFrame()
 	// インプット系を更新
 	ioManager_->Update();
 
-	// カメラを更新	
-	cameraManager_->Update();
-
-	cameraManager_->Draw();
+	//// カメラを更新	
+	//cameraManager_->Update(0);
 }
 void Engine::EndFrame()
 {
 	// 入力終了処理
 	ioManager_->EndFrame();
+
+	// カメラのImGui描画
+	cameraManager_->DrawImGui();
 
 	// 描画処理
 	drawSystem_->SceneDraw();

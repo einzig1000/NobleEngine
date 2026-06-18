@@ -533,7 +533,7 @@ void MapManager::Update()
 	// プレイヤー周囲更新
 	//Vector2int playerIndex = ChunkIndexByPosition(player_->data_.translate.value);
 	//Vector3int updateCenter = ChunkIndexByPosition(Vector3(0.0f, 0.0f, 0.0f));
-	Vector3int updateCenter = ChunkIndexByPosition(Game::Camera::Getter::GetCurrentCenter());
+	Vector3int updateCenter = ChunkIndexByPosition(Game::Camera::Getter::GetCenter(0));
 	for (int32_t dx = -drawRadius_; dx <= drawRadius_; ++dx)
 	{
 		for (int32_t dy = -drawRadius_; dy <= drawRadius_; ++dy)
@@ -552,7 +552,7 @@ void MapManager::Draw(int32_t renderTargetID)
 {
 	//Vector2int drawCenter = ChunkIndexByPosition(player_->data_.translate.value);
 	//Vector3int drawCenter = ChunkIndexByPosition(Vector3(0.0f, 0.0f, 0.0f));
-	Vector3int drawCenter = ChunkIndexByPosition(Game::Camera::Getter::GetCurrentCenter());
+	Vector3int drawCenter = ChunkIndexByPosition(Game::Camera::Getter::GetCenter(0));
 
 	// プレイヤー周囲描画
 	for (int32_t dx = -drawRadius_; dx <= drawRadius_; ++dx)

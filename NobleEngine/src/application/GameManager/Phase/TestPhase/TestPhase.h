@@ -74,6 +74,12 @@ private:
 	int32_t t_white1x1_;
 	int32_t t_dds_;
 
+	int32_t c_worldView_;
+	int32_t c_main1_;
+	int32_t c_main2_;
+	int32_t c_miniMap1_;
+	int32_t c_miniMap2_;
+
 	uint32_t audio1;
 	uint32_t audio2;
 };

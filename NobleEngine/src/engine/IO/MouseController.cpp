@@ -1,7 +1,8 @@
-#include "IO/MouseController.h"
-#include "Utilities/functions.h"
-#include "Window/WindowManager.h"
-#include "Camera/CameraManager.h"
+#include <IO/MouseController.h>
+#include <Utilities/functions.h>
+#include <Window/WindowManager.h>
+#include <Camera/CameraManager.h>
+#include <Camera/Camera.h>
 #include <ImGuiManager/ImGuiManager.h>
 
 MouseController::MouseController(HWND hwnd, CameraManager* cameraManager)
@@ -15,10 +16,13 @@ MouseController::MouseController(HWND hwnd, CameraManager* cameraManager)
 void MouseController::Update()
 {
     // マウスポジション取得
-    UpdatePosition();
+    Compute2DPosition();
 
-    // マウスレイ取得
-    UpdateRay();
+    // マウスレイ配列リセット
+    for (auto& r : ray_)
+	{
+		r.reset();
+	}
 
     // マウスボタン状態取得
     UpdateButtonState();
@@ -34,6 +38,29 @@ void MouseController::EndFrame()
 
     // マウス相対移動量リセット
     rawDelta_ = Vector2{ 0,0 }; 
+}
+
+Vector3 MouseController::GetWorldPosition(int32_t cameraID)
+{
+	return GetRay(cameraID).origin;
+}
+
+Ray MouseController::GetRay(int32_t cameraID)
+{
+	if (ray_.size() <= cameraID)
+	{
+		ray_.resize(cameraID + 1);
+	}
+
+	// そのフレーム中に既に計算されていた場合はキャッシュから返す
+    if (ray_[cameraID].has_value())
+    {
+        return ray_[cameraID].value();
+    }
+
+    ray_[cameraID] = ComputeRay(cameraID);
+
+	return ray_[cameraID].value();
 }
 
 // 今押しているか  i: 0=左ボタン、1=右ボタン、2=中ボタン
@@ -132,9 +159,8 @@ void MouseController::ShowCursor(bool visible)
 }
 
 // マウスポジション取得
-void MouseController::UpdatePosition()
+void MouseController::Compute2DPosition()
 {
-
     // ゲームウィンドウが非アクティブならロックしない
     const bool isAppFocused = (::GetForegroundWindow() == hwnd_);
 
@@ -177,7 +203,7 @@ void MouseController::UpdatePosition()
 }
 
 // マウスレイ取得
-void MouseController::UpdateRay()
+Ray MouseController::ComputeRay(int32_t cameraID)
 {
     // 左下が０、右上が１とした時のマウスポジション
     float ndcX = (position_.x / WindowManager::winWidth_) * 2.0f - 1.0f;
@@ -188,19 +214,21 @@ void MouseController::UpdateRay()
     Vector4 farPoint = { ndcX, ndcY, 1.0f, 1.0f };
 
     // 逆射影行列
-    Matrix4x4 inverseViewProj = cameraManager_->GetCurrentViewProjectionMatrix().Inverse();
+    Matrix4x4 inverseViewProj = cameraManager_->GetCamera(cameraID)->GetViewProjectionMatrix().Inverse();
 
     // ワールド空間に変換
     Vector4 nearWorld = Transform(nearPoint, inverseViewProj);
     Vector4 farWorld = Transform(farPoint, inverseViewProj);
 
     // マウスレイの始点・方向
-    ray_.origin = { nearWorld.x / nearWorld.w, nearWorld.y / nearWorld.w, nearWorld.z / nearWorld.w };
-    ray_.diff = Vector3{
-    (farWorld.x / farWorld.w) - ray_.origin.x,
-    (farWorld.y / farWorld.w) - ray_.origin.y,
-    (farWorld.z / farWorld.w) - ray_.origin.z
-    }.Normalized();
+	Ray ray;
+	ray.origin = Vector3{ nearWorld.x / nearWorld.w, nearWorld.y / nearWorld.w, nearWorld.z / nearWorld.w };
+	ray.diff = Vector3{ 
+        (farWorld.x / farWorld.w) - ray.origin.x, 
+        (farWorld.y / farWorld.w) - ray.origin.y, 
+        (farWorld.z / farWorld.w) - ray.origin.z }.Normalized();
+
+	return ray;
 }
 
 // マウスボタン状態取得

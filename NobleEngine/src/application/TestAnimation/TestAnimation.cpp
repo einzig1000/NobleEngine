@@ -75,7 +75,7 @@ void TestAnimation::Update(float deltaTime)
 	animationTime_ += deltaTime;
 	animationTime_ = fmod(animationTime_, animation.duration);
 
-	Matrix4x4 viewProjection = Game::Camera::Getter::GetCurrentViewProjectionMatrix();
+	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(0);
 
 	Vector4 color = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 

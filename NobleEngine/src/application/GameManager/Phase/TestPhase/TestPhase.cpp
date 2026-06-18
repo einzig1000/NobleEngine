@@ -3,31 +3,49 @@
 
 TestPhase::TestPhase()
 {
-	// 加工前テクスチャ
-	rt_main1_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main1_");
+	c_worldView_ = Game::Camera::AddCamera();
+	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_worldView_);
+
+	c_main1_ = Game::Camera::AddCamera();
+	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_main1_);
+
+	c_main2_ = Game::Camera::AddCamera();
+	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_main2_);
+
+	c_miniMap1_ = Game::Camera::AddCamera();
+	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap1_);
+
+	c_miniMap2_ = Game::Camera::AddCamera();
+	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap2_);
+
+	// 加工前レンダーテクスチャ
+	rt_main1_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "Main1_");
 	rt_main1_depth_ = Game::Resource::GetRenderTextureDepthID("Main1_");
-	rt_main2_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main2_");
+	rt_main2_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "Main2_");
 	rt_main2_depth_ = Game::Resource::GetRenderTextureDepthID("Main2_");
 	rt_miniMap1_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "MiniMap1_");
 	rt_miniMap1_depth_ = Game::Resource::GetRenderTextureDepthID("MiniMap1_");
 	rt_miniMap2_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "MiniMap2_");
 	rt_miniMap2_depth_ = Game::Resource::GetRenderTextureDepthID("MiniMap2_");
 
-	// 加工後テクスチャ
-	rt_Vignette_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Vignette");
-	rt_GrayScale_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "GrayScale");
+	// 加工後レンダーテクスチャ
+	rt_Vignette_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "Vignette");
+	rt_GrayScale_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "GrayScale");
 	rt_luminanceBasedOutline_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "LuminanceBasedOutline");
 	rt_depthBasedOutline_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "DepthBasedOutline");
 
+	// テクスチャ読み込み
 	t_uvChecker = Game::Resource::Texture::Load("resources/prototypes/texture/uvChecker.png");
 	t_monsterBall_ = Game::Resource::Texture::Load("resources/prototypes/texture/monsterBall.png");
 	t_white1x1_ = Game::Resource::Texture::Load("resources/prototypes/texture/white1x1.png");
 	t_dds_ = Game::Resource::Texture::Load("resources/prototypes/texture/rostock_laage_airport_4k.dds");
 
+	// モデル読み込み
 	int32_t model1 = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
 	int32_t model2 = Game::Resource::Model::Load("resources/prototypes/model/sphere/sphere.obj");
 	int32_t model3 = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
 
+	// オーディオ読み込み
 	audio1 = Game::Resource::Audio::Load("resources/prototypes/audio/BGM/InGame.mp3");
 	audio2 = Game::Resource::Audio::Load("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
 
@@ -169,20 +187,31 @@ void TestPhase::Initialize()
 
 void TestPhase::Update()
 {
-	Matrix4x4 viewMatrix = Game::Camera::Getter::GetCurrentViewMatrix();
-	Matrix4x4 projectionMatrix = Game::Camera::Getter::GetCurrentProjectionMatrix();
-	Matrix4x4 viewProjection = Game::Camera::Getter::GetCurrentViewProjectionMatrix();
-	Matrix4x4 orthoProj = Game::Camera::Getter::GetCurrentOrthoProjectionMatrix();
-	Matrix4x4 projectionInverse = projectionMatrix.Inverse();
-	Vector3 cameraPos = Game::Camera::Getter::GetCurrentTranslate();
+#pragma region メインカメラ１
 
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform1_.scale, transform1_.rotate, transform1_.translate);
-	Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
+	// メインカメラ1
+	Game::Camera::Update(c_main1_);
+	Matrix4x4 viewMatrix_main1 = Game::Camera::Getter::GetViewMatrix(c_main1_);
+	Matrix4x4 projectionMatrix_main1 = Game::Camera::Getter::GetProjectionMatrix(c_main1_);
+	Matrix4x4 viewProjection_main1 = Game::Camera::Getter::GetViewProjectionMatrix(c_main1_);
+	Matrix4x4 orthoProj_main1 = Game::Camera::Getter::GetOrthoProjectionMatrix(c_main1_);
+	Matrix4x4 projectionInverse_main1 = projectionMatrix_main1.Inverse();
+	Vector3 cameraPos_main1 = Game::Camera::Getter::GetTranslate(c_main1_);
 	
+	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform1_.scale, transform1_.rotate, transform1_.translate);
+	Matrix4x4 worldViewProjection = worldMatrix * viewProjection_main1;
 	cbvOnly_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
 	cbvOnly_->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
 	cbvOnly_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 	cbvOnly_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+
+#pragma endregion
+
+
+#pragma region メインカメラ２
+
+	Game::Camera::Update(c_main2_);
+	Matrix4x4 viewProjection_main2 = Game::Camera::Getter::GetViewProjectionMatrix(c_main2_);
 
 	std::vector<Matrix4x4> worldMatrices2;
 	for (int i = 0; i < 10; ++i)
@@ -190,38 +219,101 @@ void TestPhase::Update()
 		Matrix4x4 worldMatrix2 = Matrix4x4::MakeAffineMatrix(transform2_[i].scale, transform2_[i].rotate, transform2_[i].translate);
 		worldMatrices2.push_back(worldMatrix2);
 	}
-
 	cbvAndSrv_->SetSBufferData(0, ShaderType::PixelShader, &color2_, sizeof(Vector4), 10);
 	cbvAndSrv_->SetSBufferData(1, ShaderType::PixelShader, &tex2_, sizeof(int32_t), 10);
-	cbvAndSrv_->SetCBufferData(0, ShaderType::VertexShader, &viewProjection);
+	cbvAndSrv_->SetCBufferData(0, ShaderType::VertexShader, &viewProjection_main2);
 	cbvAndSrv_->SetSBufferData(0, ShaderType::VertexShader, worldMatrices2.data(), sizeof(Matrix4x4), worldMatrices2.size());
 
-	line_->SetCBufferData(0, ShaderType::VertexShader, &viewProjection);
+	line_->SetCBufferData(0, ShaderType::VertexShader, &viewProjection_main2);
 	line_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
 
-	Matrix4x4 noTranslateView = viewMatrix;
+#pragma endregion
+
+
+#pragma region ミニマップカメラ１
+
+	Game::Camera::Update(c_miniMap1_);
+	Matrix4x4 viewMatrix_miniMap1 = Game::Camera::Getter::GetViewMatrix(c_miniMap1_);
+	Matrix4x4 projectionMatrix_miniMap1 = Game::Camera::Getter::GetProjectionMatrix(c_miniMap1_);
+
+	Matrix4x4 noTranslateView = viewMatrix_miniMap1;
 	noTranslateView.m[3][0] = 0.0f;
 	noTranslateView.m[3][1] = 0.0f;
 	noTranslateView.m[3][2] = 0.0f;
-	Matrix4x4 noTranslateViewProjection = noTranslateView * projectionMatrix;
-
+	Matrix4x4 noTranslateViewProjection = noTranslateView * projectionMatrix_miniMap1;
 	skybox_->SetCBufferData(0, ShaderType::VertexShader, &noTranslateViewProjection);
 	skybox_->SetCBufferData(0, ShaderType::PixelShader, &t_dds_);
 
+#pragma endregion
+
+
+#pragma region ミニマップカメラ２
+
+	Game::Camera::Update(c_miniMap2_);
+	Vector3 cameraPos_miniMap2_ = Game::Camera::Getter::GetTranslate(c_miniMap2_);
+	Matrix4x4 projectionMatrix_miniMap2_ = Game::Camera::Getter::GetProjectionMatrix(c_miniMap2_);
+	Matrix4x4 projectionInverse_miniMap2_ = projectionMatrix_miniMap2_.Inverse();
+
 	PunctualLight_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 	PunctualLight_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
-	PunctualLight_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos);
+	PunctualLight_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos_miniMap2_);
 	PunctualLight_->SetCBufferData(1, ShaderType::PixelShader, &lightData_);
 	PunctualLight_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
 	PunctualLight_->SetCBufferData(3, ShaderType::PixelShader, &t_uvChecker);
 
 	environmentMap_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 	environmentMap_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
-	environmentMap_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos);
+	environmentMap_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos_miniMap2_);
 	environmentMap_->SetCBufferData(1, ShaderType::PixelShader, &lightData_);
 	environmentMap_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
 	environmentMap_->SetCBufferData(3, ShaderType::PixelShader, &t_uvChecker);
 	environmentMap_->SetCBufferData(4, ShaderType::PixelShader, &t_dds_);
+
+#pragma endregion
+
+
+#pragma region スクリーンカメラ
+
+	Game::Camera::Update(c_worldView_);
+	Matrix4x4 orthoProj_world = Game::Camera::Getter::GetOrthoProjectionMatrix(c_worldView_);
+
+	Matrix4x4 mainScreenWorldMatrix = Matrix4x4::MakeAffineMatrix(main1ScreenTransform_.scale, main1ScreenTransform_.rotate, main1ScreenTransform_.translate);
+	Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProj_world;
+	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
+	screenDrawObjectMain1_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	screenDrawObjectMain1_->SetCBufferData(1, ShaderType::PixelShader, &rt_Vignette_);
+	screenDrawObjectMain1_->SetCBufferData(0, ShaderType::VertexShader, &mainScreenWorldViewProjection);
+	screenDrawObjectMain1_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
+
+	Matrix4x4 mainScreen2WorldMatrix = Matrix4x4::MakeAffineMatrix(main2ScreenTransform_.scale, main2ScreenTransform_.rotate, main2ScreenTransform_.translate);
+	Matrix4x4 mainScreen2WorldViewProjection = mainScreen2WorldMatrix * orthoProj_world;
+	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
+	screenDrawObjectMain2_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	screenDrawObjectMain2_->SetCBufferData(1, ShaderType::PixelShader, &rt_GrayScale_);
+	screenDrawObjectMain2_->SetCBufferData(0, ShaderType::VertexShader, &mainScreen2WorldViewProjection);
+	screenDrawObjectMain2_->SetCBufferData(1, ShaderType::VertexShader, &mainScreen2WorldMatrix);
+
+	Matrix4x4 miniMap1WorldMatrix = Matrix4x4::MakeAffineMatrix(miniMap1ScreenTransform_.scale, miniMap1ScreenTransform_.rotate, miniMap1ScreenTransform_.translate);
+	Matrix4x4 miniMap1WorldViewProjection = miniMap1WorldMatrix * orthoProj_world;
+	// rt_luminanceBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
+	screenDrawObjectMiniMap1_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	screenDrawObjectMiniMap1_->SetCBufferData(1, ShaderType::PixelShader, &rt_luminanceBasedOutline_);
+	screenDrawObjectMiniMap1_->SetCBufferData(0, ShaderType::VertexShader, &miniMap1WorldViewProjection);
+	screenDrawObjectMiniMap1_->SetCBufferData(1, ShaderType::VertexShader, &miniMap1WorldMatrix);
+
+	Matrix4x4 miniMap2WorldMatrix = Matrix4x4::MakeAffineMatrix(miniMap2ScreenTransform_.scale, miniMap2ScreenTransform_.rotate, miniMap2ScreenTransform_.translate);
+	Matrix4x4 miniMap2WorldViewProjection = miniMap2WorldMatrix * orthoProj_world;
+	// rt_depthBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
+	screenDrawObjectMiniMap2_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	screenDrawObjectMiniMap2_->SetCBufferData(1, ShaderType::PixelShader, &rt_depthBasedOutline_);
+	screenDrawObjectMiniMap2_->SetCBufferData(0, ShaderType::VertexShader, &miniMap2WorldViewProjection);
+	screenDrawObjectMiniMap2_->SetCBufferData(1, ShaderType::VertexShader, &miniMap2WorldMatrix);
+
+#pragma endregion
+
+	testAnimation_->Update(Game::Time::GetDeltaTime());
+	testParticle_->Update();
+	testMeshShader_->Update();
 
 
 	// main1の画像をSetCBufferDataしrt_Vignetteに書き込む
@@ -233,44 +325,7 @@ void TestPhase::Update()
 	// miniMap2の画像をSetCBufferDataしrt_depthBasedOutlineに書き込む
 	postEffect4_->SetCBufferData(0, ShaderType::PixelShader, &rt_miniMap2_);
 	postEffect4_->SetCBufferData(1, ShaderType::PixelShader, &rt_miniMap2_depth_);
-	postEffect4_->SetCBufferData(2, ShaderType::PixelShader, &projectionInverse);
-
-	Matrix4x4 mainScreenWorldMatrix = Matrix4x4::MakeAffineMatrix(main1ScreenTransform_.scale, main1ScreenTransform_.rotate, main1ScreenTransform_.translate);
-	Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProj;
-	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMain1_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMain1_->SetCBufferData(1, ShaderType::PixelShader, &rt_Vignette_);
-	screenDrawObjectMain1_->SetCBufferData(0, ShaderType::VertexShader, &mainScreenWorldViewProjection);
-	screenDrawObjectMain1_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
-
-	Matrix4x4 mainScreen2WorldMatrix = Matrix4x4::MakeAffineMatrix(main2ScreenTransform_.scale, main2ScreenTransform_.rotate, main2ScreenTransform_.translate);
-	Matrix4x4 mainScreen2WorldViewProjection = mainScreen2WorldMatrix * orthoProj;
-	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMain2_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMain2_->SetCBufferData(1, ShaderType::PixelShader, &rt_GrayScale_);
-	screenDrawObjectMain2_->SetCBufferData(0, ShaderType::VertexShader, &mainScreen2WorldViewProjection);
-	screenDrawObjectMain2_->SetCBufferData(1, ShaderType::VertexShader, &mainScreen2WorldMatrix);
-
-	Matrix4x4 miniMap1WorldMatrix = Matrix4x4::MakeAffineMatrix(miniMap1ScreenTransform_.scale, miniMap1ScreenTransform_.rotate, miniMap1ScreenTransform_.translate);
-	Matrix4x4 miniMap1WorldViewProjection = miniMap1WorldMatrix * orthoProj;
-	// rt_luminanceBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMiniMap1_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMiniMap1_->SetCBufferData(1, ShaderType::PixelShader, &rt_luminanceBasedOutline_);
-	screenDrawObjectMiniMap1_->SetCBufferData(0, ShaderType::VertexShader, &miniMap1WorldViewProjection);
-	screenDrawObjectMiniMap1_->SetCBufferData(1, ShaderType::VertexShader, &miniMap1WorldMatrix);
-
-	Matrix4x4 miniMap2WorldMatrix = Matrix4x4::MakeAffineMatrix(miniMap2ScreenTransform_.scale, miniMap2ScreenTransform_.rotate, miniMap2ScreenTransform_.translate);
-	Matrix4x4 miniMap2WorldViewProjection = miniMap2WorldMatrix * orthoProj;
-	// rt_depthBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMiniMap2_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMiniMap2_->SetCBufferData(1, ShaderType::PixelShader, &rt_depthBasedOutline_);
-	screenDrawObjectMiniMap2_->SetCBufferData(0, ShaderType::VertexShader, &miniMap2WorldViewProjection);
-	screenDrawObjectMiniMap2_->SetCBufferData(1, ShaderType::VertexShader, &miniMap2WorldMatrix);
-
-	testAnimation_->Update(Game::Time::GetDeltaTime());
-	testParticle_->Update();
-	testMeshShader_->Update();
-
+	postEffect4_->SetCBufferData(2, ShaderType::PixelShader, &projectionMatrix_miniMap2_);
 
 	if (Game::IO::Key::IsJustPressed(DIK_F12))
 	{
@@ -296,34 +351,17 @@ void TestPhase::Update()
 void TestPhase::Draw()
 {
 	// main1に書き込む
-	skybox_->Draw(rt_main1_);
-	cbvAndSrv_->Draw(rt_main1_);
-	environmentMap_->Draw(rt_main1_);
-	testParticle_->Draw(rt_main1_);
-	testAnimation_->Draw(rt_main1_);
-	testMeshShader_->Draw(rt_main1_);
+	cbvOnly_->Draw(rt_main1_);
 
 	// main2に書き込む
-	skybox_->Draw(rt_main2_);
 	cbvAndSrv_->Draw(rt_main2_);
-	environmentMap_->Draw(rt_main2_);
-	testParticle_->Draw(rt_main2_);
-	testAnimation_->Draw(rt_main2_);
-	testMeshShader_->Draw(rt_main2_);
 
 	// miniMap1に書き込む
 	skybox_->Draw(rt_miniMap1_);
-	cbvAndSrv_->Draw(rt_miniMap1_);
-	environmentMap_->Draw(rt_miniMap1_);
-	testParticle_->Draw(rt_miniMap1_);
-	testAnimation_->Draw(rt_miniMap1_);
 
 	// miniMap2に書き込む
-	skybox_->Draw(rt_miniMap2_);
-	cbvAndSrv_->Draw(rt_miniMap2_);
+	PunctualLight_->Draw(rt_miniMap2_);
 	environmentMap_->Draw(rt_miniMap2_);
-	testParticle_->Draw(rt_miniMap2_);
-	testAnimation_->Draw(rt_miniMap2_);
 
 
 	//line_->Draw();
@@ -554,7 +592,7 @@ void TestPhase::DrawImGui()
 			ImGui::DragInt("camera center frame", &cameraCenterFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Center"))
 			{
-				Game::Camera::MoveCameraCenter(cameraCenterTarget, cameraCenterFrame, EaseType::IN_CUBIC);
+				Game::Camera::Setter::SetCenter(cameraCenterTarget, cameraCenterFrame, EaseType::IN_CUBIC, c_main1_);
 			}
 
 			static Vector3 cameraRotateTarget;
@@ -563,7 +601,7 @@ void TestPhase::DrawImGui()
 			ImGui::DragInt("camera rotate frame", &cameraRotateFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Rotate"))
 			{
-				Game::Camera::MoveCameraRotate(cameraRotateTarget, cameraRotateFrame, EaseType::IN_CUBIC);
+				Game::Camera::Setter::SetRotate(cameraRotateTarget, cameraRotateFrame, EaseType::IN_CUBIC, c_main1_);
 			}
 
 			static float cameraDistanceTarget = 0.0f;
@@ -572,7 +610,7 @@ void TestPhase::DrawImGui()
 			ImGui::DragInt("camera distance frame", &cameraDistanceFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Distance"))
 			{
-				Game::Camera::MoveCameraDistance(cameraDistanceTarget, cameraDistanceFrame, EaseType::IN_CUBIC);
+				Game::Camera::Setter::SetDistance(cameraDistanceTarget, cameraDistanceFrame, EaseType::IN_CUBIC, c_main1_);
 			}
 
 			static float intensity = 3.0f;
@@ -583,12 +621,12 @@ void TestPhase::DrawImGui()
 			ImGui::DragFloat("camera shake frequency", &frequency, 0.1f);
 			if (ImGui::Button("Start Camera Shake"))
 			{
-				Game::Camera::StartCameraShake(intensity, duration, frequency);
+				Game::Camera::Shake::Start(intensity, duration, frequency, c_main1_);
 			}
-			ImGui::Text("is camera shaking : %d", Game::Camera::IsShaking());
+			ImGui::Text("is camera shaking : %d", Game::Camera::Shake::IsShaking(c_main1_));
 			if (ImGui::Button("Stop Camera Shake"))
 			{
-				Game::Camera::StopShake();
+				Game::Camera::Shake::Stop(c_main1_);
 			}
 
 			ImGui::EndTabItem();
@@ -600,10 +638,10 @@ void TestPhase::DrawImGui()
 
 		if (ImGui::BeginTabItem("mouse Test"))
 		{
-			ImGui::Text("Mouse Position: (%.1f, %.1f)", Game::IO::Mouse::GetPosition().x, Game::IO::Mouse::GetPosition().y);
-			ImGui::Text("Mouse World Position: (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetWorldPosition().x, Game::IO::Mouse::GetWorldPosition().y, Game::IO::Mouse::GetWorldPosition().z);
-			ImGui::Text("Mouse Ray Origin: (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay().origin.x, Game::IO::Mouse::GetRay().origin.y, Game::IO::Mouse::GetRay().origin.z);
-			ImGui::Text("Mouse Ray Diff  : (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay().diff.x, Game::IO::Mouse::GetRay().diff.y, Game::IO::Mouse::GetRay().diff.z);
+			ImGui::Text("Mouse Position: (%.1f, %.1f)", Game::IO::Mouse::Get2DPosition().x, Game::IO::Mouse::Get2DPosition().y);
+			ImGui::Text("Mouse World Position: (%.1f, %.1f, %.1f)", Game::IO::Mouse::Get3DPosition(c_main1_).x, Game::IO::Mouse::Get3DPosition(c_main1_).y, Game::IO::Mouse::Get3DPosition(c_main1_).z);
+			ImGui::Text("Mouse Ray Origin: (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(c_main1_).origin.x, Game::IO::Mouse::GetRay(c_main1_).origin.y, Game::IO::Mouse::GetRay(c_main1_).origin.z);
+			ImGui::Text("Mouse Ray Diff  : (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(c_main1_).diff.x, Game::IO::Mouse::GetRay(c_main1_).diff.y, Game::IO::Mouse::GetRay(c_main1_).diff.z);
 			ImGui::Text("Mouse Wheel: %d", Game::IO::Mouse::GetWheel());
 
 			ImGui::Text("Mouse Buttons:");
@@ -785,120 +823,16 @@ void TestPhase::DrawImGui()
 	}
 	ImGui::End();
 
-	ImGui::Begin("QuaternionFunctionsTest");
-	if (ImGui::BeginTabBar("QuaternionFunctionsTest", ImGuiTabBarFlags_::ImGuiTabBarFlags_Reorderable))
-	{
-		if (ImGui::BeginTabItem("01-02"))
-		{
-			Vector3 from0 = Vector3{ 1.0f,0.7f,0.5f }.Normalize();
-			Vector3 to0 = -from0;
-			Vector3 from1 = Vector3{ -0.6f,0.9f,0.2f }.Normalize();
-			Vector3 to1 = Vector3{ 0.4f,0.7f,-0.5f }.Normalize();
-			Matrix4x4 rotateMatrix0 = Matrix4x4::DirectionToDirectionMatrix(Vector3{ 1.0f,0.0f,0.0f }, Vector3{ -1.0f,0.0f,0.0f });
-			Matrix4x4 rotateMatrix1 = Matrix4x4::DirectionToDirectionMatrix(from0, to0);
-			Matrix4x4 rotateMatrix2 = Matrix4x4::DirectionToDirectionMatrix(from1, to1);
 
-			ImGui::Text("from0 : (%5.2f, %5.2f, %5.2f)", from0.x, from0.y, from0.z);
-			ImGui::Text("to0   : (%5.2f, %5.2f, %5.2f)", to0.x, to0.y, to0.z);
-			ImGui::Text("from1 : (%5.2f, %5.2f, %5.2f)", from1.x, from1.y, from1.z);
-			ImGui::Text("to1   : (%5.2f, %5.2f, %5.2f)", to1.x, to1.y, to1.z);
-			ImGui::Text("rotateMatrix0 :");
-			ImGui::NewLine();
-			for (int j = 0; j < 4; ++j)
-			{
-				for (int i = 0; i < 4; ++i)
-				{
-					ImGui::SameLine();
-					ImGui::Text("%6.3f ", rotateMatrix0.m[j][i]);
-				}
-				ImGui::NewLine();
-			}
-			ImGui::Text("rotateMatrix1 :");
-			ImGui::NewLine();
-			for (int j = 0; j < 4; ++j)
-			{
-				for (int i = 0; i < 4; ++i)
-				{
-					ImGui::SameLine();
-					ImGui::Text("%6.3f ", rotateMatrix1.m[j][i]);
-				}
-				ImGui::NewLine();
-			}
-			ImGui::Text("rotateMatrix2 :");
-			ImGui::NewLine();
-			for (int j = 0; j < 4; ++j)
-			{
-				for (int i = 0; i < 4; ++i)
-				{
-					ImGui::SameLine();
-					ImGui::Text("%6.3f ", rotateMatrix2.m[j][i]);
-				}
-				ImGui::NewLine();
-			}
-			ImGui::EndTabItem();
-		}
-
-		if (ImGui::BeginTabItem("01-03"))
-		{
-			Quaternion q0 = Quaternion{ 2.0f,3.0f,4.0f,1.0f };
-			Quaternion q1 = Quaternion{ 1.0f,3.0f,5.0f,2.0f };
-			Quaternion identity = Quaternion::MakeIdentityQuaternion();
-			Quaternion conj = q0.MakeConjugateQuaternion();
-			Quaternion inv = q0.Inverse();
-			Quaternion normal = q0.Normalize();
-			Quaternion mul1 = q0 * q1;
-			Quaternion mul2 = q1 * q0;
-			float norm = q0.Norm();
-
-			ImGui::Text("q1       : (%5.2f, %5.2f, %5.2f, %5.2f)", q0.x, q0.y, q0.z, q0.w);
-			ImGui::Text("q2       : (%5.2f, %5.2f, %5.2f, %5.2f)", q1.x, q1.y, q1.z, q1.w);
-			ImGui::Text("identity : (%5.2f, %5.2f, %5.2f, %5.2f)", identity.x, identity.y, identity.z, identity.w);
-			ImGui::Text("conj     : (%5.2f, %5.2f, %5.2f, %5.2f)", conj.x, conj.y, conj.z, conj.w);
-			ImGui::Text("inv      : (%5.2f, %5.2f, %5.2f, %5.2f)", inv.x, inv.y, inv.z, inv.w);
-			ImGui::Text("normal   : (%5.2f, %5.2f, %5.2f, %5.2f)", normal.x, normal.y, normal.z, normal.w);
-			ImGui::Text("mul1     : (%5.2f, %5.2f, %5.2f, %5.2f)", mul1.x, mul1.y, mul1.z, mul1.w);
-			ImGui::Text("mul2     : (%5.2f, %5.2f, %5.2f, %5.2f)", mul2.x, mul2.y, mul2.z, mul2.w);
-			ImGui::Text("norm     : %5.2f", norm);
-
-			ImGui::EndTabItem();
-		}
-
-		if (ImGui::BeginTabItem("01-04"))
-		{
-			Quaternion rotation =
-				Quaternion::MakeRotateAxisAngleQuaternion(Vector3(1.0f, 0.4f, -0.2f).Normalize(), 0.45f);
-			Matrix4x4 rotateMatrix = rotation.MakeRotateMatrix();
-			Vector3 pointY = Vector3(2.1f, -0.9f, 1.3f);
-			Vector3 rotateByQuaternion = pointY.RotateByQuaternion(rotation);
-			Vector3 rotateByMatrix = Transform(pointY, rotateMatrix);
-
-			ImGui::Text("%5.2f, %5.2f, %5.2f %5.2f : rotation",
-				rotation.x, rotation.y, rotation.z, rotation.w);
-			ImGui::Text("rotateMatrix:\n");
-			ImGui::Text("%5.2f, %5.2f, %5.2f, %5.2f",
-				rotateMatrix.m[0][0], rotateMatrix.m[1][0], rotateMatrix.m[2][0], rotateMatrix.m[3][0]);
-			ImGui::Text("%5.2f, %5.2f, %5.2f, %5.2f",
-				rotateMatrix.m[0][1], rotateMatrix.m[1][1], rotateMatrix.m[2][1], rotateMatrix.m[3][1]);
-			ImGui::Text("%5.2f, %5.2f, %5.2f, %5.2f",
-				rotateMatrix.m[0][2], rotateMatrix.m[1][2], rotateMatrix.m[2][2], rotateMatrix.m[3][2]);
-			ImGui::Text("%5.2f, %5.2f, %5.2f, %5.2f",
-				rotateMatrix.m[0][3], rotateMatrix.m[1][3], rotateMatrix.m[2][3], rotateMatrix.m[3][3]);
-			ImGui::Text("%5.2f, %5.2f, %5.2f : rotateByQuaternion",
-				rotateByQuaternion.x, rotateByQuaternion.y, rotateByQuaternion.z);
-			ImGui::Text("%5.2f, %5.2f, %5.2f : rotateByMatrix",
-				rotateByMatrix.x, rotateByMatrix.y, rotateByMatrix.z);
-
-			ImGui::EndTabItem();
-		}
-
-		ImGui::EndTabBar();
-	}
+	ImGui::Begin("------debug info------");
+	ImGui::Text("ESC : Quit Application");
+	ImGui::Text("F1  : Hide Debug Info");
+	ImGui::Text("F3  : Toggle Camera Release or Debug");
+	ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
+	ImGui::Text("F12 : Toggle Fullscreen");
+	ImGui::Text("DeltaTime: %.3f ms", Game::Time::GetDeltaTime() * 1000.0f);
+	ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
 	ImGui::End();
-
-
-
-
-
 
 	// ImGui の主な関数一覧
 	//📐 レイアウト・カーソル操作

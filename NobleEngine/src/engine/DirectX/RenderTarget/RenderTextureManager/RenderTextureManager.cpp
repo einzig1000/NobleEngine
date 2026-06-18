@@ -56,9 +56,9 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	rt->state = D3D12_RESOURCE_STATE_COMMON;
     rt->dsvState = D3D12_RESOURCE_STATE_COMMON;
 
-	nameToIndexMap_[textureName] = renderTargets_.size();
-    idToIndexMap_[rt->colorsrvAlloc.index] = renderTargets_.size();
-	idToIndexMap_[rt->depthsrvAlloc.index] = renderTargets_.size();
+	nameToIndexMap_[textureName] = int32_t(renderTargets_.size());
+    idToIndexMap_[rt->colorsrvAlloc.index] = int32_t(renderTargets_.size());
+	idToIndexMap_[rt->depthsrvAlloc.index] = int32_t(renderTargets_.size());
 	renderTargets_.push_back(std::move(rt));
 
 	return renderTargets_.back()->colorsrvAlloc.index;
@@ -123,6 +123,21 @@ bool RenderTextureManager::SaveTexture(const std::string& filePath, std::string 
         wprintf(L"SaveToWICFile failed: 0x%08X\n", hr);
         return false;
     }
+
+	return true;
+}
+
+bool RenderTextureManager::SaveAllRenderTextures(const std::string& directoryPath, bool color)
+{
+	for (const auto& pair : nameToIndexMap_)
+	{
+		const std::string& textureName = pair.first;
+		if (!SaveTexture(directoryPath, textureName, color))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 RenderTarget* RenderTextureManager::Get(int32_t textureID) const

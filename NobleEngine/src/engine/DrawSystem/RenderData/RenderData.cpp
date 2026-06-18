@@ -484,12 +484,12 @@
 //
 #pragma region 描画範囲内判定
 //
-//	bool inFrustum = false;
+//	bool InCamera = false;
 //	for (const auto& aabb : this->aabbs)
 //	{
 //		if (Game::Camera::InCamera(aabb))
 //		{
-//			inFrustum = true;
+//			InCamera = true;
 //			break;
 //		}
 //	}

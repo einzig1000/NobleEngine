@@ -1,7 +1,6 @@
 #pragma once
-#include "definition/definition.h"
+#include <definition/definition.h>
 #include <array>
-
 
 // カメラは常にcenter_を見る
 // ↳オービットの時はcenterを中心に、カメラが回転する。
@@ -18,9 +17,11 @@ public:
     void Resize();
 
     // 動かす先の設定
-    void SetCenterTarget(Vector3 target, int spendFrame, EaseType easetype);
-    void SetRotateTarget(Vector3 target, int spendFrame, EaseType easetype);
-    void SetDistanceTarget(float target, int spendFrame, EaseType easetype);
+    void SetCenterTarget(Vector3 target, int duration, EaseType easetype);
+    void SetRotateTarget(Vector3 target, int duration, EaseType easetype);
+    void SetDistanceTarget(float target, int duration, EaseType easetype);
+	void SetScreenSizeTarget(Vector2 target, int duration, EaseType easetype);
+	void SetFovTarget(float target, int duration, EaseType easetype);
 
     // シェイク
     void StartShake(float intensity, float duration, float frequency = 25.0f);
@@ -28,16 +29,12 @@ public:
     void StopShake();
 
     // 視錐台内にAABBがあるか
-    bool InFrustum(const AABB& aabb);
+    bool InCamera(const AABB& aabb);
 
     // 操作可能か設定
     void SetEnableControl(bool enable) { enableControl_ = enable; }
 
     void SetCameraMode(CameraMode_ORBIT_FPS mode) { cameraMode_ = mode; }
-
-    // カメラ名
-    std::string name_;
-
 
 public:
     // 情報取得
@@ -71,15 +68,26 @@ private:
 	Vector3 center_ = { 0.0f, 0.0f, 0.0f };
     // カメラの最終的な変換
 	EulerTransform transform_;
+	// スクリーンサイズ
+    Vector2 screenSize_;
+
 
     /// カメラ回転
     void MovingCenter();
-
+	EasingSet<Vector3> centerEasing_;
     /// 回転中心
     void MovingRotate();
-
+	EasingSet<Vector3> rotateEasing_;
     /// カメラ距離
     void MovingDistance();
+	EasingSet<float> distanceEasing_;
+	/// 画面サイズ
+	void MovingScreenSize();
+	EasingSet<Vector2> screenSizeEasing_;
+	/// FOV
+	void MovingFov();
+	EasingSet<float> fovEasing_;
+
 
     /// 視錐台判定用
     void CreateFrustumPlanes();
@@ -99,7 +107,7 @@ private:
 	float fovY_ = 0.45f;
     float aspect_;
     float nearZ_ = 0.01f;
-	float farZ_ = 1000.0f;
+	float farZ_ = 500.0f;
 
 	// ビュープロジェクション行列
     Matrix4x4 viewProjectionMatrix;

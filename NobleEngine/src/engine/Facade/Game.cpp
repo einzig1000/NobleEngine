@@ -2,6 +2,7 @@
 #include <Engine.h>
 
 #include <Camera/CameraManager.h>
+#include <Camera/Camera.h>
 #include <ResourceManager/ResourceManager.h>
 #include <DrawSystem/DrawSystem.h>
 #include <IO/IOManager.h>
@@ -71,9 +72,14 @@ namespace Game
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
 		}
 
-		int32_t SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color)
+		bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color)
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveTexture(filePath, textureName, color);
+		}
+
+		bool SaveAllRenderTextureToFile(const std::string& filePath, bool color)
+		{
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveAllRenderTextures(filePath, color);
 		}
 
 		int32_t GetRenderTextureID(const std::string textureName)
@@ -166,23 +172,23 @@ namespace Game
 	{
 		namespace Mouse
 		{
-			// マウス関連
-			Vector2 GetPosition()
+			Vector2 Get2DPosition()
 			{
-				return Engine::Instance().GetIOManager()->GetMouseController()->GetPosition();
+				return Engine::Instance().GetIOManager()->GetMouseController()->Get2DPosition();
 			}
-			Vector2 GetPositionDelta()
+			Vector2 Get2DPositionDelta()
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->GetRawDelta();
 			}
-			Vector3 GetWorldPosition()
+			Vector3 Get3DPosition(int32_t cameraID)
 			{
-				return Engine::Instance().GetIOManager()->GetMouseController()->GetWorldPosition();
+				return Engine::Instance().GetIOManager()->GetMouseController()->GetWorldPosition(cameraID);
 			}
-			Ray GetRay()
+			Ray GetRay(int32_t cameraID)
 			{
-				return Engine::Instance().GetIOManager()->GetMouseController()->GetRay();
+				return Engine::Instance().GetIOManager()->GetMouseController()->GetRay(cameraID);
 			}
+
 			bool IsHeld(int i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->IsHeld(i);
@@ -290,89 +296,109 @@ namespace Game
 
 	namespace Camera
 	{
-		void MoveCameraCenter(Vector3 target, int spendFrame, EaseType easetype)
+		int32_t AddCamera()
 		{
-			Engine::Instance().GetCameraManager()->SetCenterTarget(target, spendFrame, easetype);
-		}
-		void MoveCameraRotate(Vector3 target, int spendFrame, EaseType easetype)
-		{
-			Engine::Instance().GetCameraManager()->SetRotateTarget(target, spendFrame, easetype);
-		}
-		void MoveCameraDistance(float target, int spendFrame, EaseType easetype)
-		{
-			Engine::Instance().GetCameraManager()->SetDistanceTarget(target, spendFrame, easetype);
-		}
-		
-		void StartCameraShake(float intensity, float duration, float frequency)
-		{
-			Engine::Instance().GetCameraManager()->StartShake(intensity, duration, frequency);
-		}
-		bool IsShaking()
-		{
-			return Engine::Instance().GetCameraManager()->IsShaking();
-		}
-		void StopShake()
-		{
-			Engine::Instance().GetCameraManager()->StopShake();
-		}
-		
-		bool InCamera(const AABB& aabb)
-		{
-			return Engine::Instance().GetCameraManager()->InCamera(aabb);
+			return Engine::Instance().GetCameraManager()->AddCamera();
 		}
 
-		void SetEnableControl(bool enable)
+		void Update(int32_t cameraID)
 		{
-			Engine::Instance().GetCameraManager()->SetEnableControl(enable);
+			Engine::Instance().GetCameraManager()->Update(cameraID);
 		}
 
-		void ToggleCamera()
+		bool InCamera(const AABB& aabb, int32_t cameraID)
 		{
-			Engine::Instance().GetCameraManager()->ToggleCamera();
-		}
-		void ToggleCamera(const std::string name)
-		{
-			Engine::Instance().GetCameraManager()->ToggleCamera(name);
+			return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->InCamera(aabb);
 		}
 
-		void SetCameraMode(CameraMode_ORBIT_FPS mode)
-		{
-			Engine::Instance().GetCameraManager()->SetCameraMode(mode);
-		}
 
 		namespace Getter
 		{
-			Vector3 GetCurrentCenter()
+			Vector3 GetCenter(int32_t cameraID)
 			{
-				return Engine::Instance().GetCameraManager()->GetCurrentCenter();
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetCenter();
 			}
-			Vector3 GetCurrentTranslate()
+			Vector3 GetTranslate(int32_t cameraID)
 			{
-				return Engine::Instance().GetCameraManager()->GetCurrentTranslate();
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetTranslate();
 			}
-			Vector3 GetCurrentRotate()
+			Vector3 GetRotate(int32_t cameraID)
 			{
-				return Engine::Instance().GetCameraManager()->GetCurrentRotate();
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetRotate();
 			}
-			Matrix4x4 GetCurrentViewProjectionMatrix()
+			float GetDistance(int32_t cameraID)
 			{
-				return Engine::Instance().GetCameraManager()->GetCurrentViewProjectionMatrix();
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetDistance();
 			}
-			Matrix4x4 GetCurrentOrthoProjectionMatrix()
+			Matrix4x4 GetViewProjectionMatrix(int32_t cameraID)
 			{
-				return Engine::Instance().GetCameraManager()->GetCurrentOrthoProjectionMatrix();
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetViewProjectionMatrix();
 			}
-			Matrix4x4 GetCurrentViewMatrix()
+			Matrix4x4 GetOrthoProjectionMatrix(int32_t cameraID)
 			{
-				return Engine::Instance().GetCameraManager()->GetCurrentViewMatrix();
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetOrthoProjectionMatrix();
 			}
-			Matrix4x4 GetCurrentProjectionMatrix()
+			Matrix4x4 GetViewMatrix(int32_t cameraID)
 			{
-				return Engine::Instance().GetCameraManager()->GetCurrentProjectionMatrix();
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetViewMatrix();
 			}
-			float GetCurrentDistance()
+			Matrix4x4 GetProjectionMatrix(int32_t cameraID)
 			{
-				return Engine::Instance().GetCameraManager()->GetCurrentDistance();
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetProjectionMatrix();
+			}
+		}
+
+		namespace Setter
+		{
+			void SetCenter(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCenterTarget(target, spendFrame, easetype);
+			}
+
+			void SetRotate(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetRotateTarget(target, spendFrame, easetype);
+			}
+
+			void SetDistance(float target, int spendFrame, EaseType easetype, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetDistanceTarget(target, spendFrame, easetype);
+			}
+
+			void SetScreenSize(Vector2 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetScreenSizeTarget(target, spendFrame, easetype);
+			}
+
+			void SetFovTarget(float target, int duration, EaseType easetype, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetFovTarget(target, duration, easetype);
+			}
+
+			void SetEnableControl(bool enable, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetEnableControl(enable);
+			}
+
+			void SetCameraMode(CameraMode_ORBIT_FPS mode, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCameraMode(mode);
+			}
+		}
+
+		namespace Shake
+		{
+			void Start(float intensity, float duration, float frequency, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->StartShake(intensity, duration, frequency);
+			}
+			bool IsShaking(int32_t cameraID)
+			{
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->IsShaking();
+			}
+			void Stop(int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->StopShake();
 			}
 		}
 	}
@@ -560,7 +586,7 @@ namespace Game
 			Engine::Instance().GetDirectXManager()->Resize();
 			
 			// カメラのアスペクト比更新
-			Engine::Instance().GetCameraManager()->Resize();
+			//Engine::Instance().GetCameraManager()->Resize();
 		}
 	}
 

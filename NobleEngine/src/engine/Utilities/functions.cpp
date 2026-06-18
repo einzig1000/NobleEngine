@@ -1,6 +1,5 @@
 #include "Utilities/functions.h"
 #include "definition/definition.h"
-#include "DrawSystem/RenderData/RenderData.h"
 
 #include <cassert>
 #include <cmath>
