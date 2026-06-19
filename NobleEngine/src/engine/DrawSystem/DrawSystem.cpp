@@ -1,8 +1,9 @@
 #include "DrawSystem.h"
-#include <DirectX/DirectXManager.h>
 #include <ResourceManager/ResourceManager.h>
-#include <Engine.h>
+#include <ImGuiManager/ImGuiManager.h>
+#include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
+#include <Engine.h>
 #include <numbers>
 
 DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager)
@@ -167,7 +168,7 @@ void DrawSystem::PostEffectDraw()
 
 void DrawSystem::PreScreenDraw()
 {
-	dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true);
+	dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true, 1.0f);
 	for (const auto* renderObject : screenRenderObjects_)
 	{
 		DrawObject(renderObject);
@@ -177,8 +178,26 @@ void DrawSystem::PreScreenDraw()
 
 void DrawSystem::ScreenDraw()
 {
+	ImGui::Begin("mainDisplay");
+	ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
+	ImGui::End();
+
+// デバッグモードの時は、PreScreenDrawで描画した内容をImGuiのウィンドウに表示する
+#ifdef DEBUG_
+
+	ImGui::Begin("a");
+	ImGui::Image(ImTextureID(CD3DX12_GPU_DESCRIPTOR_HANDLE::ptr), ImVec2(1280, 720));
+	ImGui::End();
+
+#endif // DEBUG
+
+// リリースモードの時は、PreScreenDrawで描画した内容をそのままバックバッファにコピーして表示する
+#ifdef RELEASE_
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
 	DrawObject(screenRenderObject_.get());
+
+#endif // RELEASE_
+
 }
 
 

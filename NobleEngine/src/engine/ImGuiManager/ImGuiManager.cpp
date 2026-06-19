@@ -11,8 +11,9 @@ void ImGuiManager::Initialize(DirectXManager* dxManager, WindowManager* windowMa
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
-	//auto& io = ImGui::GetIO();
-	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	auto& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	// imguiのスタイルを設定
 	ImGui::StyleColorsDark();
@@ -37,6 +38,11 @@ void ImGuiManager::BeginFrame()
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+	
+	// 画面全体をドッキング可能なスペース（DockSpace）にする
+	//ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
+	ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+	//ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
 void ImGuiManager::EndFrame()

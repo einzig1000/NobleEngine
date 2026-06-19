@@ -57,7 +57,7 @@ void DirectXManager::BeginFrame()
     commandContextManager->GetCommandList(backBufferIndex)->SetDescriptorHeaps(1, descriptorHeaps);
 }
 
-void DirectXManager::BeginRenderPass(RenderTarget* target, bool isDepthWrite)
+void DirectXManager::BeginRenderPass(RenderTarget* target, bool isDepthWrite, float clearColorA)
 {
 	// バックバッファのインデックスを取得
     UINT backBufferIndex = swapChainManager->GetCurrentBackBufferIndex();
@@ -80,8 +80,8 @@ void DirectXManager::BeginRenderPass(RenderTarget* target, bool isDepthWrite)
     }
 
     // RTVのクリア
-    float clearColor[4] = { 0.396078f, 0.894117f, 1.0f, 0.0f };
-    commandContextManager->GetCommandList(backBufferIndex)->ClearRenderTargetView(target->rtvAlloc.handle, clearColor, 0, nullptr);
+    float clearColorArray[4] = { 0.396078f, 0.894117f, 1.0f, clearColorA };
+    commandContextManager->GetCommandList(backBufferIndex)->ClearRenderTargetView(target->rtvAlloc.handle, clearColorArray, 0, nullptr);
     // DSVのクリア
     if (isDepthWrite)
     {
