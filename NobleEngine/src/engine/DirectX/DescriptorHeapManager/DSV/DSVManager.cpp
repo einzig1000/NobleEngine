@@ -1,6 +1,6 @@
 #include "DSVManager.h"
 #include <Window/WindowManager.h>
-#include "Utilities/Logger/Logger.h"
+#include <Utilities/Logger/Logger.h>
 
 
 DSVManager::DSVManager(ID3D12Device2* device)

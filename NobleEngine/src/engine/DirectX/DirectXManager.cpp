@@ -1,5 +1,5 @@
-#include "DirectX/DirectXManager.h"
-#include "Utilities/Logger/Logger.h"
+#include "DirectXManager.h"
+#include <Utilities/Logger/Logger.h>
 
 namespace
 {

@@ -1,8 +1,8 @@
-#include "DirectX/DescriptorHeapManager/DescriptorHeapManager.h"
-#include "Utilities/Logger/Logger.h"
-#include "SRV_UAV/SRV_UAVManager.h"
-#include "DSV/DSVManager.h"
-#include "RTV/RTVManager.h"
+#include "DescriptorHeapManager.h"
+#include <Utilities/Logger/Logger.h>
+#include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
+#include <DirectX/DescriptorHeapManager/DSV/DSVManager.h>
+#include <DirectX/DescriptorHeapManager/RTV/RTVManager.h>
 
 
 DescriptorHeapManager::DescriptorHeapManager(ID3D12Device2* device)

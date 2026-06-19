@@ -2,7 +2,7 @@
 #include <vector>
 #include <d3d12sdklayers.h>
 #include <dxgi1_6.h> 
-#include "Utilities/Logger/Logger.h"
+#include <Utilities/Logger/Logger.h>
 
 #pragma comment(lib, "dxgi.lib") 
 #pragma comment(lib, "d3d12.lib") 

@@ -1,6 +1,5 @@
 #pragma once
 #include "definition/definition.h"
-#include "DrawSystem/RenderData/RenderData.h"
 #include <memory>
 
 class BlockDurability;

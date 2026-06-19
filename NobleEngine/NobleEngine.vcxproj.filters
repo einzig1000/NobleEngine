@@ -51,9 +51,6 @@
     <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceFactory.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DirectX\View\Dx12ViewFactory.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\DirectX\CommandContextManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -270,9 +267,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceFactory.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\DirectX\View\Dx12ViewFactory.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\CommandContextManager.h">

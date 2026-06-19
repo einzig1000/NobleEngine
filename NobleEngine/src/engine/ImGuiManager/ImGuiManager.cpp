@@ -1,6 +1,6 @@
-#include "ImGuiManager/ImGuiManager.h"
-#include "DirectX/DirectXManager.h"
-#include "Window/WindowManager.h"
+#include <ImGuiManager/ImGuiManager.h>
+#include <DirectX/DirectXManager.h>
+#include <Window/WindowManager.h>
 
 void ImGuiManager::Initialize(DirectXManager* dxManager, WindowManager* windowManager)
 {

@@ -1,5 +1,5 @@
 #include "CameraManager.h"
-#include "Camera.h"
+#include <Camera/Camera.h>
 #include <ImGuiManager/ImGuiManager.h>
 
 CameraManager::CameraManager()

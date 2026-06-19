@@ -1,7 +1,7 @@
 #include "definition.h"
-#include<cmath>
-#include<cstdint>
-#include<numbers>
+#include <cmath>
+#include <cstdint>
+#include <numbers>
 
 #pragma region Vector2
 

@@ -50,7 +50,6 @@
     <ClCompile Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.cpp" />
     <ClCompile Include="src\engine\DirectX\SynchronizationManager.cpp" />
     <ClCompile Include="src\engine\DirectX\ViewportScissorManager.cpp" />
-    <ClCompile Include="src\engine\DirectX\View\Dx12ViewFactory.cpp" />
     <ClCompile Include="src\engine\DrawSystem\DrawSystem.cpp" />
     <ClCompile Include="src\engine\DrawSystem\RenderData\RenderData.cpp" />
     <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp" />
@@ -127,7 +126,6 @@
     <ClInclude Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.h" />
     <ClInclude Include="src\engine\DirectX\SynchronizationManager.h" />
     <ClInclude Include="src\engine\DirectX\ViewportScissorManager.h" />
-    <ClInclude Include="src\engine\DirectX\View\Dx12ViewFactory.h" />
     <ClInclude Include="src\engine\DrawSystem\DrawSystem.h" />
     <ClInclude Include="src\engine\DrawSystem\RenderData\RenderData.h" />
     <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h" />

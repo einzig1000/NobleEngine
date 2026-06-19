@@ -821,8 +821,6 @@ void TestPhase::DrawImGui()
 	ImGui::Begin("------debug info------");
 	ImGui::Text("ESC : Quit Application");
 	ImGui::Text("F1  : Hide Debug Info");
-	ImGui::Text("F3  : Toggle Camera Release or Debug");
-	ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
 	ImGui::Text("F11 : Screenshot");
 	ImGui::Text("F12 : Toggle Fullscreen");
 	ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
