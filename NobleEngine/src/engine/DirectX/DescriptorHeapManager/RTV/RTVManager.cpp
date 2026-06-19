@@ -5,11 +5,11 @@
 RTVManager::RTVManager(ID3D12Device2* device)
 	: device_(device)
 {
-	// DSVスロット一つ分のサイズを取得
+	// RTVスロット一つ分のサイズを取得
 	descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	// DSV用のディスクリプタヒープ作成
-	capacity_ = 10;
+	// RTV用のディスクリプタヒープ作成
+	capacity_ = 32;
 	nextIndex_ = 0;
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = capacity_;
@@ -31,7 +31,7 @@ uint32_t RTVManager::Allocate()
 {
 	if (nextIndex_ >= capacity_)
 	{
-		Log("DSVのスロットが足りません。容量を増やしてください。");
+		Log("RTVのスロットが足りません。容量を増やしてください。");
 		assert(false);
 		return UINT32_MAX;
 	}

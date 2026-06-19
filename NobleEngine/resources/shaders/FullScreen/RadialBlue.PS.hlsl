@@ -33,8 +33,7 @@ PSOutput main(PSInput input)
     }
     outputColor *= rcp(kNumSamples);
     
-    
     PSOutput output;
-    output.Color = float4(outputColor, 1.0);
+    output.Color = float4(outputColor, textures[textureIndex].Sample(gSampler, input.TexCoord).a);
     return output;
 }

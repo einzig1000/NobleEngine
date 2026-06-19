@@ -1,4 +1,3 @@
-
 static const uint kNumVertex = 3;
 static const float4 kPosition[kNumVertex] =
 {

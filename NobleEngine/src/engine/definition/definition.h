@@ -1191,25 +1191,6 @@ struct AtlasInfo
     Vector2 padding1 = { 0.0f, 0.0f };
 };
 
-enum class BlendMode
-{
-    // ブレンドなし
-    kBlendModeNone,
-    // 通常アルファブレンド
-    kBlendModeNormal,
-    // 加算
-    kBlendModeAdd,
-    // 減算
-    kBlendModeSub,
-    // 乗算
-    kBlendModeMul,
-    // スクリーン
-    kBlendModeScreen,
-    // 使用したら殺す
-    Wireframe
-};
-std::string EnumToString(BlendMode e);
-
 enum class LightMode
 {
     None = 0,
@@ -1254,18 +1235,6 @@ struct DirectionalLight
     float intensity = 1.0f;//輝度
     LightMode mode = LightMode::HalfLambert;
     bool phong = false;
-};
-
-struct DrawOptions
-{
-    // ワイヤーフレーム
-    bool wireframe = false;
-    // 固有ライトを使うか共有ライトを使うか
-    bool useOwnLight = false;
-    // ライト
-    DirectionalLight dirLight;
-    // ブレンドモード
-    BlendMode blendMode = BlendMode::kBlendModeNormal;
 };
 
 //struct Material

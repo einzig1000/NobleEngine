@@ -84,9 +84,11 @@ void Engine::EndFrame()
 	// 描画処理
 	drawSystem_->SceneDraw();
 	drawSystem_->PostEffectDraw();
+	drawSystem_->PreScreenDraw();
+
 	dxManager_->BeginRenderPass(dxManager_->GetSwapChain()->GetCurrentRenderTarget(), true);
-	imguiManager_->EndFrame();
 	drawSystem_->ScreenDraw();
+	imguiManager_->EndFrame();
 	imguiManager_->Draw();
 	dxManager_->EndRenderPass(dxManager_->GetSwapChain()->GetCurrentRenderTarget(), true, D3D12_RESOURCE_STATE_PRESENT);
 

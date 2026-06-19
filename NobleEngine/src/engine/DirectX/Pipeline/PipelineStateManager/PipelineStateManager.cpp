@@ -66,7 +66,6 @@ namespace
         // 
         d.IndependentBlendEnable = FALSE;
         auto& rt = d.RenderTarget[0];
-        rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL & ~D3D12_COLOR_WRITE_ENABLE_ALPHA;
 
         switch (id)
         {
@@ -75,9 +74,20 @@ namespace
             rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
             rt.BlendOp = D3D12_BLEND_OP_ADD;
             rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-            rt.SrcBlendAlpha = D3D12_BLEND_ONE;
-            rt.DestBlendAlpha = D3D12_BLEND_ZERO;
+            rt.SrcBlendAlpha = D3D12_BLEND_SRC_ALPHA;
+            rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
             rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+            break;
+        case BlendStateID::Normal2:
+            rt.BlendEnable = TRUE;
+            rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+            rt.BlendOp = D3D12_BLEND_OP_ADD;
+            rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+            rt.SrcBlendAlpha = D3D12_BLEND_SRC_ALPHA;
+            rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+            rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL & ~D3D12_COLOR_WRITE_ENABLE_ALPHA;
             break;
 		case BlendStateID::Alpha:
             rt.BlendEnable = TRUE;
@@ -87,6 +97,7 @@ namespace
             rt.SrcBlendAlpha = D3D12_BLEND_ONE;
             rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
             rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
             break;
         case BlendStateID::Add:
             rt.BlendEnable = TRUE;
@@ -96,6 +107,7 @@ namespace
             rt.SrcBlendAlpha = D3D12_BLEND_ONE;
             rt.DestBlendAlpha = D3D12_BLEND_ZERO;
             rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
             break;
         case BlendStateID::Sub:
             rt.BlendEnable = TRUE;
@@ -105,6 +117,7 @@ namespace
             rt.SrcBlendAlpha = D3D12_BLEND_ONE;
             rt.DestBlendAlpha = D3D12_BLEND_ZERO;
             rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
             break;
         case BlendStateID::Mul:
             rt.BlendEnable = TRUE;
@@ -114,6 +127,7 @@ namespace
             rt.SrcBlendAlpha = D3D12_BLEND_ONE;
             rt.DestBlendAlpha = D3D12_BLEND_ZERO;
             rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
             break;
         case BlendStateID::Screen:
             rt.BlendEnable = TRUE;
@@ -123,6 +137,7 @@ namespace
             rt.SrcBlendAlpha = D3D12_BLEND_ONE;
             rt.DestBlendAlpha = D3D12_BLEND_ZERO;
             rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
             break;
 		case BlendStateID::Opaque:
 			rt.BlendEnable = FALSE;

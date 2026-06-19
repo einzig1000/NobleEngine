@@ -20,6 +20,8 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
         return renderTarget->colorsrvAlloc.index;
 	}
 
+    Log("レンダーテクスチャ作成開始:%s", textureName.c_str());
+
     auto rt = std::make_unique<RenderTarget>();
     rt->width = width;
     rt->height = height;
@@ -56,10 +58,13 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	rt->state = D3D12_RESOURCE_STATE_COMMON;
     rt->dsvState = D3D12_RESOURCE_STATE_COMMON;
 
-	nameToIndexMap_[textureName] = int32_t(renderTargets_.size());
-    idToIndexMap_[rt->colorsrvAlloc.index] = int32_t(renderTargets_.size());
-	idToIndexMap_[rt->depthsrvAlloc.index] = int32_t(renderTargets_.size());
+	int32_t id = static_cast<int32_t>(renderTargets_.size());
+	nameToIndexMap_[textureName] = id;
+    idToIndexMap_[rt->colorsrvAlloc.index] = id;
+	idToIndexMap_[rt->depthsrvAlloc.index] = id;
 	renderTargets_.push_back(std::move(rt));
+
+    Log("成功");
 
 	return renderTargets_.back()->colorsrvAlloc.index;
 }

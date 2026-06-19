@@ -11,6 +11,9 @@ void ImGuiManager::Initialize(DirectXManager* dxManager, WindowManager* windowMa
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
+	//auto& io = ImGui::GetIO();
+	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 	// imguiのスタイルを設定
 	ImGui::StyleColorsDark();
 

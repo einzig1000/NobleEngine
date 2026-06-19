@@ -80,7 +80,7 @@ PSOutput main(PSInput input)
     float weight = length(difference);
     weight = saturate(weight);
     PSOutput output;
-    output.Color.rgb = float3(weight, weight, weight);
+    output.Color.rgb = (1.0f - weight) * textures[textureIndex].Sample(gSampler, input.TexCoord).rgb;
     output.Color.a = 1.0f;
     
     return output;

@@ -26,6 +26,7 @@ public:
 	};
 
 	// いずれ統合予定
+	// この時点で引数にrenderTextureID n が書き終わるまで待つみたいなのを持たせて
 	void Draw(int32_t renderTextureID) const;
 	void PostEffectDraw(int32_t renderTextureID) const;
 	void ScreenDraw() const;

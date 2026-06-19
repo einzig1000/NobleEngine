@@ -27,6 +27,7 @@ void CameraManager::Update(const int32_t cameraID)
 
 void CameraManager::DrawImGui()
 {
+	ImGui::Begin("CameraManager");
 	if (ImGui::BeginTabBar("Camera", ImGuiTabBarFlags_::ImGuiTabBarFlags_Reorderable))
 	{
 		for (size_t i = 0; i < camera_.size(); i++)
@@ -40,9 +41,14 @@ void CameraManager::DrawImGui()
 		}
 		ImGui::EndTabBar();
 	}
+	ImGui::End();
 }
 
 Camera* CameraManager::GetCamera(const int32_t cameraID)
 {
+	if (cameraID < 0 || cameraID >= static_cast<int32_t>(camera_.size()))
+	{
+		return nullptr;
+	}
 	return &camera_[cameraID];
 }

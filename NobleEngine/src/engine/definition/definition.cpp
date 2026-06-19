@@ -929,29 +929,6 @@ std::string EnumToString(EaseType e)
     }
 }
 
-std::string EnumToString(BlendMode e)
-{
-    switch (e)
-    {
-    case BlendMode::kBlendModeNone:
-        return "kBlendModeNone";
-    case BlendMode::kBlendModeNormal:
-        return "kBlendModeNormal";
-    case BlendMode::kBlendModeAdd:
-        return "kBlendModeAdd";
-    case BlendMode::kBlendModeSub:
-        return "kBlendModeSub";
-    case BlendMode::kBlendModeMul:
-        return "kBlendModeMul";
-    case BlendMode::kBlendModeScreen:
-        return "kBlendModeScreen";
-    case BlendMode::Wireframe:
-        return "Wireframe";
-    default:
-        return "Unknown";
-    }
-}
-
 std::string EnumToString(LightMode e)
 {
     switch (e)

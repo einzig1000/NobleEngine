@@ -3,20 +3,21 @@
 
 TestPhase::TestPhase()
 {
+	// カメラ
 	c_worldView_ = Game::Camera::AddCamera();
 	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_worldView_);
-
 	c_main1_ = Game::Camera::AddCamera();
 	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_main1_);
-
 	c_main2_ = Game::Camera::AddCamera();
 	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_main2_);
-
 	c_miniMap1_ = Game::Camera::AddCamera();
 	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap1_);
-
 	c_miniMap2_ = Game::Camera::AddCamera();
 	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap2_);
+
+	ImGui::Begin("a");
+	ImGui::Image(ImTextureID(CD3DX12_GPU_DESCRIPTOR_HANDLE::ptr), ImVec2(1280, 720));
+	ImGui::End();
 
 	// 加工前レンダーテクスチャ
 	rt_main1_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "Main1_");
@@ -110,42 +111,46 @@ TestPhase::TestPhase()
 	postEffect4_ = std::make_unique<RenderObject>();
 	postEffect4_->modelID_ = model3;
 	postEffect4_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect4_->psoConfig_.ps = "resources/shaders/FullScreen/DepthBasedOutline.PS.hlsl";
+	postEffect4_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
 	postEffect4_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	postEffect4_->SetupFromShaders();
 
 
 	screenDrawObjectMain1_ = std::make_unique<RenderObject>();
 	screenDrawObjectMain1_->modelID_ = model3;
+	//screenDrawObjectMain1_->psoConfig_.blendID = BlendStateID::Normal2;
 	screenDrawObjectMain1_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	screenDrawObjectMain1_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	screenDrawObjectMain1_->SetupFromShaders();
 
 	screenDrawObjectMain2_ = std::make_unique<RenderObject>();
 	screenDrawObjectMain2_->modelID_ = model3;
+	//screenDrawObjectMain2_->psoConfig_.blendID = BlendStateID::Normal2;
 	screenDrawObjectMain2_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	screenDrawObjectMain2_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	screenDrawObjectMain2_->SetupFromShaders();
 
 	screenDrawObjectMiniMap1_ = std::make_unique<RenderObject>();
 	screenDrawObjectMiniMap1_->modelID_ = model3;
+	//screenDrawObjectMiniMap1_->psoConfig_.blendID = BlendStateID::Normal2;
 	screenDrawObjectMiniMap1_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	screenDrawObjectMiniMap1_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	screenDrawObjectMiniMap1_->SetupFromShaders();
 
 	screenDrawObjectMiniMap2_ = std::make_unique<RenderObject>();
 	screenDrawObjectMiniMap2_->modelID_ = model3;
+	//screenDrawObjectMiniMap2_->psoConfig_.blendID = BlendStateID::Normal2;
 	screenDrawObjectMiniMap2_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	screenDrawObjectMiniMap2_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	screenDrawObjectMiniMap2_->SetupFromShaders();
 
 
-	transform1_.scale = { 1.0f,1.0f,1.0f };
+	transform1_.scale = { 10.0f,10.0f,10.0f };
 	color1_ = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 	for (int i = 0; i < 10; ++i)
 	{
 		transform2_[i].scale = { 10.0f,10.0f,10.0f };
-		transform2_[i].translate = { static_cast<float>(((i + 1) * 15)), 0.0f, 0.0f };
+		transform2_[i].translate = { 0.0f, 0.0f, static_cast<float>(((i + 1) * -15)) };
 		color2_[i] = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 		tex2_[i] = t_monsterBall_;
 	}
@@ -333,14 +338,7 @@ void TestPhase::Update()
 	}
 	if (Game::IO::Key::IsJustPressed(DIK_F11))
 	{
-		Game::Resource::SaveRenderTextureToFile("screenshots", "Main1_");
-		Game::Resource::SaveRenderTextureToFile("screenshots", "Main2_");
-		Game::Resource::SaveRenderTextureToFile("screenshots", "MiniMap1_");
-		Game::Resource::SaveRenderTextureToFile("screenshots", "MiniMap2_");
-		Game::Resource::SaveRenderTextureToFile("screenshots", "Vignette");
-		Game::Resource::SaveRenderTextureToFile("screenshots", "GrayScale");
-		Game::Resource::SaveRenderTextureToFile("screenshots", "LuminanceBasedOutline");
-		Game::Resource::SaveRenderTextureToFile("screenshots", "DepthBasedOutline");
+		Game::Resource::SaveAllRenderTextureToFile("screenshots");
 	}
 	if (Game::IO::Key::IsJustPressed(DIK_ESCAPE))
 	{
@@ -829,8 +827,8 @@ void TestPhase::DrawImGui()
 	ImGui::Text("F1  : Hide Debug Info");
 	ImGui::Text("F3  : Toggle Camera Release or Debug");
 	ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
+	ImGui::Text("F11 : Screenshot");
 	ImGui::Text("F12 : Toggle Fullscreen");
-	ImGui::Text("DeltaTime: %.3f ms", Game::Time::GetDeltaTime() * 1000.0f);
 	ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
 	ImGui::End();
 

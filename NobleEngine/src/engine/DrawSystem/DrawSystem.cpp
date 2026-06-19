@@ -1,9 +1,8 @@
-#include <DrawSystem/DrawSystem.h>
+#include "DrawSystem.h"
 #include <DirectX/DirectXManager.h>
 #include <ResourceManager/ResourceManager.h>
+#include <Engine.h>
 #include <Window/WindowManager.h>
-#include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
-#include <Utilities/Converter/StringConverter/StringConverter.h>
 #include <numbers>
 
 DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager)
@@ -14,20 +13,17 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
 	}
 
-	ScreenDrawPSOConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	ScreenDrawPSOConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	ScreenDrawPSOConfig_.dsvFormatID = DSVFormatID::Unknown;
+	rt_nobleScreenID_ = Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(
+		Engine::Instance().GetWindowManager()->winHeight_, 
+		Engine::Instance().GetWindowManager()->winHeight_,
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen");
 
-	RootParam rootParam{};
-	rootParam.paramType = ParamType::CBV;
-	rootParam.shaderType = ShaderType::PixelShader;
-	rootParam.ComputeHash();
-	ScreenDrawRootParams_.push_back(rootParam);
-	rootParam.paramType = ParamType::SRV;
-	rootParam.shaderType = ShaderType::PixelShader;
-	rootParam.ComputeHash(); 
-	rootParam.srvAllocIndex = 0;
-	ScreenDrawRootParams_.push_back(rootParam);
+	screenRenderObject_ = std::make_unique<RenderObject>();
+	screenRenderObject_->psoConfig_.blendID = BlendStateID::Normal2;
+	screenRenderObject_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	screenRenderObject_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	screenRenderObject_->modelID_ = resourceManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
+	screenRenderObject_->SetupFromShaders();
 }
 
 DrawSystem::~DrawSystem()
@@ -169,12 +165,20 @@ void DrawSystem::PostEffectDraw()
 	}
 }
 
-void DrawSystem::ScreenDraw()
+void DrawSystem::PreScreenDraw()
 {
+	dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true);
 	for (const auto* renderObject : screenRenderObjects_)
 	{
 		DrawObject(renderObject);
 	}
+	dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true);
+}
+
+void DrawSystem::ScreenDraw()
+{
+	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
+	DrawObject(screenRenderObject_.get());
 }
 
 

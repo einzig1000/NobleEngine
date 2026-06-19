@@ -74,6 +74,7 @@ enum class BlendStateID : uint8_t
     Opaque,
 	Alpha,
     Normal,
+    Normal2,
     Add,
     Sub,
     Mul,

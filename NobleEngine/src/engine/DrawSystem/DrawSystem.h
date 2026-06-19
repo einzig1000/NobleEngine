@@ -1,9 +1,9 @@
 #pragma once
 #include <definition/definition.h>
-
+#include <definition/constexprs.h>
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <DirectX/FrameCbAllocator/FrameCbAllocator.h>
-#include <definition/constexprs.h>
+#include <memory>
 
 class DirectXManager;
 class ResourceManager;
@@ -25,7 +25,9 @@ public:
 	void SceneDraw();
 	// 書き込み終わったレンダーテクスチャにポストエフェクトをかけるフェーズ
 	void PostEffectDraw();
-	// 加工が終わったレンダーテクスチャを利用してバックバッファに書き込むフェーズ
+	// 加工が終わったレンダーテクスチャを利用して最終レンダーテクスチャに書き込むフェーズ
+	void PreScreenDraw();
+	// 最終レンダーテクスチャをバックバッファに書き込むフェーズ
 	void ScreenDraw();
 
 	void AddSceneDrawList(const RenderObject* renderObject, int32_t renderTextureID);
@@ -49,6 +51,10 @@ private:
 	std::vector<const RenderObject*> screenRenderObjects_{};
 
 	std::unordered_map<uint32_t, std::vector<Vector3>> debugLineList_{};
+
+	int32_t rt_nobleScreenID_ = -1;
+
+	std::unique_ptr<RenderObject> screenRenderObject_ = nullptr;
 
 	PSOConfig ScreenDrawPSOConfig_;
 	std::vector<RootParam> ScreenDrawRootParams_;

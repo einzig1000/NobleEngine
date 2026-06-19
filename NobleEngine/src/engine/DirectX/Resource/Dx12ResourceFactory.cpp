@@ -165,10 +165,10 @@ namespace Dx12ResourceFactory
 		// クリア値の設定
 		D3D12_CLEAR_VALUE clearValue{};
 		clearValue.Format = format;
-		clearValue.Color[0] = 0.396078f;
+        clearValue.Color[0] = 0.396078f;
         clearValue.Color[1] = 0.894117f;
         clearValue.Color[2] = 1.0f;
-		clearValue.Color[3] = 1.0f;
+        clearValue.Color[3] = 0.0f;
 
         // リソースを作成
         Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
