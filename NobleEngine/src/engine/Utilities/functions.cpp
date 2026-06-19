@@ -6,7 +6,6 @@
 #include <vector>
 #include <algorithm>
 
-#define NOMINMAX
 #include <windows.h>
 #include <DbgHelp.h>
 #include <strsafe.h>

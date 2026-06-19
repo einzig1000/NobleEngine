@@ -15,9 +15,9 @@ TestPhase::TestPhase()
 	c_miniMap2_ = Game::Camera::AddCamera();
 	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap2_);
 
-	ImGui::Begin("a");
-	ImGui::Image(ImTextureID(CD3DX12_GPU_DESCRIPTOR_HANDLE::ptr), ImVec2(1280, 720));
-	ImGui::End();
+	//ImGui::Begin("a");
+	//ImGui::Image(ImTextureID(CD3DX12_GPU_DESCRIPTOR_HANDLE::ptr), ImVec2(1280, 720));
+	//ImGui::End();
 
 	// 加工前レンダーテクスチャ
 	rt_main1_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "Main1_");
