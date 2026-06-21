@@ -1,0 +1,32 @@
+{
+  "render_targets": [
+    {
+      "height": 720,
+      "in": [],
+      "name": "mainL",
+      "out": [],
+      "width": 640
+    },
+    {
+      "height": 720,
+      "in": [],
+      "name": "mainR",
+      "out": [],
+      "width": 640
+    },
+    {
+      "height": 72,
+      "in": [],
+      "name": "minimapL",
+      "out": [],
+      "width": 128
+    },
+    {
+      "height": 72,
+      "in": [],
+      "name": "minimapR",
+      "out": [],
+      "width": 128
+    }
+  ]
+}

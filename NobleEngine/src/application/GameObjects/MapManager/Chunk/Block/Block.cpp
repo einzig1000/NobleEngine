@@ -1,6 +1,6 @@
-#include <MapManager/Chunk/Block/Block.h>
+#include <GameObjects/MapManager/Chunk/Block/Block.h>
 #include <definition/constexprs.h>
-#include <MapManager/Chunk/Block/BlockDurability.h>
+#include <GameObjects/MapManager/Chunk/Block/BlockDurability.h>
 #include <algorithm>
 
 Block::Block()

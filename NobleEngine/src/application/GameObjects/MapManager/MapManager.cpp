@@ -1,6 +1,6 @@
 #include "MapManager.h"
-#include <MapManager/Chunk/Chunk.h>
-#include <MapManager/Chunk/Block/Block.h>
+#include <GameObjects/MapManager/Chunk/Chunk.h>
+#include <GameObjects/MapManager/Chunk/Block/Block.h>
 #include <fstream>
 #include <sstream>
 #include <Utilities/PerlinNoise.h>

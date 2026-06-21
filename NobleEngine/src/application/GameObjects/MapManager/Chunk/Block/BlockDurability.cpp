@@ -1,4 +1,4 @@
-#include <MapManager/Chunk/Block/BlockDurability.h>
+#include <GameObjects/MapManager/Chunk/Block/BlockDurability.h>
 #include <Game.h>
 #include <algorithm>
 

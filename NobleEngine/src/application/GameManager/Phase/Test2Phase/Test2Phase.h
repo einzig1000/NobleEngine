@@ -1,13 +1,13 @@
 #pragma once
 #include <GameManager/Phase/IPhase.h>
+#include <TestParticle/TestParticle.h>
 
 
-class BattlePhase
-	: public IPhase
+class Test2Phase : public IPhase
 {
 public:
-	BattlePhase();
-	~BattlePhase() override;
+	Test2Phase();
+	~Test2Phase() override;
 
 	void Initialize() override;
 	void Update() override;
@@ -15,8 +15,14 @@ public:
 	void DrawImGui() override;
 	void ChangePhase(PHASE phase) override { nextPhase_ = phase; }
 
-
 private:
+	TestParticle TestParticle;
 
+	Vector3 cameraRotate_;
+
+	float frame_ = 0.0f;
+
+	int32_t rt_main_;
+	int32_t c_main_;
 };
 

@@ -23,6 +23,7 @@ int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const
 	// 表記揺れを防ぐため小文字に変換してファイルパスとして扱う
     std::string filePath = name;
     std::transform(filePath.begin(), filePath.end(), filePath.begin(), ::tolower);
+	obj->filePath = filePath;
 
     // 頂点バッファ作成
     obj->vertices = vertices;

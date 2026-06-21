@@ -1,7 +1,7 @@
-#include <MapManager/Chunk/Chunk.h>
-#include <MapManager/Chunk/Block/Block.h>
-#include <MapManager/Chunk/Block/BlockConfig.h>
-#include <MapManager/Chunk/Block/BlockDurability.h>
+#include <GameObjects/MapManager/Chunk/Chunk.h>
+#include <GameObjects/MapManager/Chunk/Block/Block.h>
+#include <GameObjects/MapManager/Chunk/Block/BlockConfig.h>
+#include <GameObjects/MapManager/Chunk/Block/BlockDurability.h>
 #include <Utilities/Json/JsonManager.h>
 #include <Utilities/Logger/Logger.h>
 #include <ResourceLoader/ResourceID.h>

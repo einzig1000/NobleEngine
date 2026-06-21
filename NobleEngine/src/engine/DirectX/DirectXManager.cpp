@@ -80,7 +80,7 @@ void DirectXManager::BeginRenderPass(RenderTarget* target, bool isDepthWrite, fl
     }
 
     // RTVのクリア
-    float clearColorArray[4] = { 0.396078f, 0.894117f, 1.0f, clearColorA };
+    float clearColorArray[4] = { 0.5333333f, 0.5333333f, 0.5333333f, clearColorA };
     commandContextManager->GetCommandList(backBufferIndex)->ClearRenderTargetView(target->rtvAlloc.handle, clearColorArray, 0, nullptr);
     // DSVのクリア
     if (isDepthWrite)

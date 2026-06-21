@@ -1,35 +1,52 @@
 #include "GameManager/Phase/TestPhase/TestPhase.h"
-#include <Utilities/functions.h>
+#include <Utilities/Json/JsonManager.h>
+#include <externals/imgui/imgui_stdlib.h>
 
 TestPhase::TestPhase()
 {
+	Load_renderTarget();
+
+	Load_camera();
+
+	Load_renderObject();
+
 	// カメラ
-	c_worldView_ = Game::Camera::AddCamera();
-	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_worldView_);
-	c_main1_ = Game::Camera::AddCamera();
-	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_main1_);
-	c_main2_ = Game::Camera::AddCamera();
-	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_main2_);
-	c_miniMap1_ = Game::Camera::AddCamera();
-	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap1_);
-	c_miniMap2_ = Game::Camera::AddCamera();
-	Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap2_);
+	//c_worldView_ = Game::Camera::AddCamera();
+	//Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_worldView_);
+	//c_main1_ = Game::Camera::AddCamera();
+	//Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_main1_);
+	//c_main2_ = Game::Camera::AddCamera();
+	//Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_main2_);
+	//c_miniMap1_ = Game::Camera::AddCamera();
+	//Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap1_);
+	//c_miniMap2_ = Game::Camera::AddCamera();
+	//Game::Camera::Setter::SetScreenSize(Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight())), 0, EaseType::IN_BACK, c_miniMap2_);
 
-	// 加工前レンダーテクスチャ
-	rt_main1_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "Main1_");
-	rt_main1_depth_ = Game::Resource::GetRenderTextureDepthID("Main1_");
-	rt_main2_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "Main2_");
-	rt_main2_depth_ = Game::Resource::GetRenderTextureDepthID("Main2_");
-	rt_miniMap1_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "MiniMap1_");
-	rt_miniMap1_depth_ = Game::Resource::GetRenderTextureDepthID("MiniMap1_");
-	rt_miniMap2_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "MiniMap2_");
-	rt_miniMap2_depth_ = Game::Resource::GetRenderTextureDepthID("MiniMap2_");
+	//// 加工前レンダーテクスチャ
+	//renderTargetSizes_["main1"] = Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight()));
+	//renderTargetNames_["main1"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["main1"].x), uint32_t(renderTargetSizes_["main1"].y), "Main1_");
+	//rt_main1_depth_ = Game::Resource::GetRenderTextureDepthID("Main1_");
+	//renderTargetSizes_["main2"] = Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight()));
+	//renderTargetNames_["main2"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["main2"].x), uint32_t(renderTargetSizes_["main2"].y), "Main2_");
+	//rt_main2_depth_ = Game::Resource::GetRenderTextureDepthID("Main2_");
+	//renderTargetSizes_["miniMap1"] = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
+	//renderTargetNames_["miniMap1"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["miniMap1"].x), uint32_t(renderTargetSizes_["miniMap1"].y), "MiniMap1_");
+	//rt_miniMap1_depth_ = Game::Resource::GetRenderTextureDepthID("MiniMap1_");
+	//renderTargetSizes_["miniMap2"] = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
+	//renderTargetNames_["miniMap2"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["miniMap2"].x), uint32_t(renderTargetSizes_["miniMap2"].y), "MiniMap2_");
+	//rt_miniMap2_depth_ = Game::Resource::GetRenderTextureDepthID("MiniMap2_");
 
-	// 加工後レンダーテクスチャ
-	rt_Vignette_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "Vignette");
-	rt_GrayScale_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth() / 2, Game::Window::GetHeight(), "GrayScale");
-	rt_luminanceBasedOutline_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "LuminanceBasedOutline");
-	rt_depthBasedOutline_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "DepthBasedOutline");
+	//// 加工後レンダーテクスチャ
+	//renderTargetSizes_["postEffect1"] = Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight()));
+	//renderTargetNames_["postEffect1"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect1"].x), uint32_t(renderTargetSizes_["postEffect1"].y), "postEffect1");
+	//
+	//renderTargetSizes_["postEffect2"] = Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight()));
+	//renderTargetNames_["postEffect2"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect2"].x), uint32_t(renderTargetSizes_["postEffect2"].y), "postEffect2");
+	//
+	//renderTargetSizes_["postEffect3"] = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
+	//renderTargetNames_["postEffect3"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect3"].x), uint32_t(renderTargetSizes_["postEffect3"].y), "postEffect3");
+	//renderTargetSizes_["postEffect4"] = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
+	//renderTargetNames_["postEffect4"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect4"].x), uint32_t(renderTargetSizes_["postEffect4"].y), "postEffect4");
 
 	// テクスチャ読み込み
 	t_uvChecker = Game::Resource::Texture::Load("resources/prototypes/texture/uvChecker.png");
@@ -46,99 +63,216 @@ TestPhase::TestPhase()
 	audio1 = Game::Resource::Audio::Load("resources/prototypes/audio/BGM/InGame.mp3");
 	audio2 = Game::Resource::Audio::Load("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
 
-	cbvOnly_ = std::make_unique<RenderObject>();
-	cbvOnly_->modelID_ = model1;
-	cbvOnly_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	cbvOnly_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	cbvOnly_->SetupFromShaders();
 
-	cbvAndSrv_ = std::make_unique<RenderObject>();
-	cbvAndSrv_->modelID_ = model1;
-	cbvAndSrv_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModels.PS.hlsl";
-	cbvAndSrv_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModels.VS.hlsl";
-	cbvAndSrv_->instanceNum_ = 10;
-	cbvAndSrv_->SetupFromShaders();
+	//RenderObjectData data1;
+	//data1.name = "cbvOnly";
+	//data1.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data1.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data1.modelPath = "resources/prototypes/model/cube/cube.obj";
+	//data1.out.push_back("mainL");
 
-	line_ = std::make_unique<RenderObject>();
-	line_->psoConfig_.ps = "resources/shaders/Line/Line.PS.hlsl";
-	line_->psoConfig_.vs = "resources/shaders/Line/Line.VS.hlsl";
-	line_->SetupFromShaders();
+	//renderObjectData_.push_back(data1);
 
-	skybox_ = std::make_unique<RenderObject>();
-	skybox_->modelID_ = model1;
-	skybox_->psoConfig_.ps = "resources/shaders/SkyBox/SkyBox.PS.hlsl";
-	skybox_->psoConfig_.vs = "resources/shaders/SkyBox/SkyBox.VS.hlsl";
-	skybox_->SetupFromShaders();
+	//RenderObjectData data2;
+	//data2.name = "cbvAndSrv";
+	//data2.config.ps = "resources/shaders/SimpleModel/SimpleModels.PS.hlsl";
+	//data2.config.vs = "resources/shaders/SimpleModel/SimpleModels.VS.hlsl";
+	//data2.modelPath = "resources/prototypes/model/cube/cube.obj";
+	//data2.out.push_back("mainR");
 
-	PunctualLight_ = std::make_unique<RenderObject>();
-	PunctualLight_->modelID_ = model2;
-	PunctualLight_->psoConfig_.ps = "resources/shaders/PunctualLight/PunctualLight.PS.hlsl";
-	PunctualLight_->psoConfig_.vs = "resources/shaders/PunctualLight/PunctualLight.VS.hlsl";
-	PunctualLight_->SetupFromShaders();
+	//renderObjectData_.push_back(data2);
 
-	environmentMap_ = std::make_unique<RenderObject>();
-	environmentMap_->modelID_ = model2;
-	environmentMap_->psoConfig_.ps = "resources/shaders/EnvironmentMap/EnvironmentMap.PS.hlsl";
-	environmentMap_->psoConfig_.vs = "resources/shaders/EnvironmentMap/EnvironmentMap.VS.hlsl";
-	environmentMap_->SetupFromShaders();
+	//RenderObjectData data3;
+	//data3.name = "skybox";
+	//data3.config.ps = "resources/shaders/SkyBox/SkyBox.PS.hlsl";
+	//data3.config.vs = "resources/shaders/SkyBox/SkyBox.VS.hlsl";
+	//data3.modelPath = "resources/prototypes/model/sphere/sphere.obj";
+	//data3.out.push_back("minimapL");
 
+	//renderObjectData_.push_back(data3);
 
-	postEffect1_ = std::make_unique<RenderObject>();
-	postEffect1_->modelID_ = model3;
-	postEffect1_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect1_->psoConfig_.ps = "resources/shaders/FullScreen/RadialBlue.PS.hlsl";
-	postEffect1_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
-	postEffect1_->SetupFromShaders();
+	//RenderObjectData data4;
+	//data4.name = "PunctualLight";
+	//data4.config.ps = "resources/shaders/PunctualLight/PunctualLight.PS.hlsl";
+	//data4.config.vs = "resources/shaders/PunctualLight/PunctualLight.VS.hlsl";
+	//data4.modelPath = "resources/prototypes/model/sphere/sphere.obj";
+	//data4.out.push_back("minimapR");
 
-	postEffect2_ = std::make_unique<RenderObject>();
-	postEffect2_->modelID_ = model3;
-	postEffect2_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect2_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
-	postEffect2_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
-	postEffect2_->SetupFromShaders();
+	//renderObjectData_.push_back(data4);
 
-	postEffect3_ = std::make_unique<RenderObject>();
-	postEffect3_->modelID_ = model3;
-	postEffect3_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect3_->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
-	postEffect3_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
-	postEffect3_->SetupFromShaders();
+	//RenderObjectData data5;
+	//data5.name = "postEffects1";
+	//data5.config.ps = "resources/shaders/FullScreen/RadialBlue.PS.hlsl";
+	//data5.config.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//data5.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data5.config.dsvFormatID = DSVFormatID::Unknown;
+	//data5.out.push_back("minimapR");
 
-	postEffect4_ = std::make_unique<RenderObject>();
-	postEffect4_->modelID_ = model3;
-	postEffect4_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	postEffect4_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	postEffect4_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
-	postEffect4_->SetupFromShaders();
+	//renderObjectData_.push_back(data5);
 
+	//RenderObjectData data6;
+	//data6.name = "postEffects2";
+	//data6.config.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	//data6.config.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//data6.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data6.config.dsvFormatID = DSVFormatID::Unknown;
+	//data6.out.push_back("minimapR");
 
-	screenDrawObjectMain1_ = std::make_unique<RenderObject>();
-	screenDrawObjectMain1_->modelID_ = model3;
-	//screenDrawObjectMain1_->psoConfig_.blendID = BlendStateID::Normal2;
-	screenDrawObjectMain1_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	screenDrawObjectMain1_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	screenDrawObjectMain1_->SetupFromShaders();
+	//renderObjectData_.push_back(data6);
 
-	screenDrawObjectMain2_ = std::make_unique<RenderObject>();
-	screenDrawObjectMain2_->modelID_ = model3;
-	//screenDrawObjectMain2_->psoConfig_.blendID = BlendStateID::Normal2;
-	screenDrawObjectMain2_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	screenDrawObjectMain2_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	screenDrawObjectMain2_->SetupFromShaders();
+	//RenderObjectData data7;
+	//data7.name = "postEffects3";
+	//data7.config.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
+	//data7.config.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//data7.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data7.config.dsvFormatID = DSVFormatID::Unknown;
+	//data7.out.push_back("minimapR");
 
-	screenDrawObjectMiniMap1_ = std::make_unique<RenderObject>();
-	screenDrawObjectMiniMap1_->modelID_ = model3;
-	//screenDrawObjectMiniMap1_->psoConfig_.blendID = BlendStateID::Normal2;
-	screenDrawObjectMiniMap1_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	screenDrawObjectMiniMap1_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	screenDrawObjectMiniMap1_->SetupFromShaders();
+	//renderObjectData_.push_back(data7);
 
-	screenDrawObjectMiniMap2_ = std::make_unique<RenderObject>();
-	screenDrawObjectMiniMap2_->modelID_ = model3;
-	//screenDrawObjectMiniMap2_->psoConfig_.blendID = BlendStateID::Normal2;
-	screenDrawObjectMiniMap2_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	screenDrawObjectMiniMap2_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	screenDrawObjectMiniMap2_->SetupFromShaders();
+	//RenderObjectData data8;
+	//data8.name = "postEffects3";
+	//data8.config.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	//data8.config.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//data8.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data8.config.dsvFormatID = DSVFormatID::Unknown;
+	//data8.out.push_back("minimapR");
+
+	//renderObjectData_.push_back(data8);
+
+	//RenderObjectData data9;
+	//data9.name = "screenDraw1";
+	//data9.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data9.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data9.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data9.config.dsvFormatID = DSVFormatID::Unknown;
+	//data9.out.push_back("minimapR");
+
+	//renderObjectData_.push_back(data9);
+
+	//RenderObjectData data10;
+	//data10.name = "screenDraw1";
+	//data10.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data10.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data10.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data10.config.dsvFormatID = DSVFormatID::Unknown;
+	//data10.out.push_back("minimapR");
+
+	//renderObjectData_.push_back(data10);
+
+	//RenderObjectData data11;
+	//data11.name = "screenDraw1";
+	//data11.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data11.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data11.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data11.config.dsvFormatID = DSVFormatID::Unknown;
+	//data11.out.push_back("minimapR");
+
+	//renderObjectData_.push_back(data11);
+
+	//RenderObjectData data12;
+	//data12.name = "screenDraw1";
+	//data12.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data12.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data12.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data12.config.dsvFormatID = DSVFormatID::Unknown;
+	//data12.out.push_back("minimapR");
+
+	//renderObjectData_.push_back(data12);
+
+	//Save_renderObject();
+
+	//cbvOnly_ = std::make_unique<RenderObject>();
+	//cbvOnly_->modelID_ = model1;
+	//cbvOnly_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//cbvOnly_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//cbvOnly_->SetupFromShaders();
+
+	//cbvAndSrv_ = std::make_unique<RenderObject>();
+	//cbvAndSrv_->modelID_ = model1;
+	//cbvAndSrv_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModels.PS.hlsl";
+	//cbvAndSrv_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModels.VS.hlsl";
+	//cbvAndSrv_->instanceNum_ = 10;
+	//cbvAndSrv_->SetupFromShaders();
+
+	//line_ = std::make_unique<RenderObject>();
+	//line_->psoConfig_.ps = "resources/shaders/Line/Line.PS.hlsl";
+	//line_->psoConfig_.vs = "resources/shaders/Line/Line.VS.hlsl";
+	//line_->SetupFromShaders();
+
+	//skybox_ = std::make_unique<RenderObject>();
+	//skybox_->modelID_ = model1;
+	//skybox_->psoConfig_.ps = "resources/shaders/SkyBox/SkyBox.PS.hlsl";
+	//skybox_->psoConfig_.vs = "resources/shaders/SkyBox/SkyBox.VS.hlsl";
+	//skybox_->SetupFromShaders();
+
+	//PunctualLight_ = std::make_unique<RenderObject>();
+	//PunctualLight_->modelID_ = model2;
+	//PunctualLight_->psoConfig_.ps = "resources/shaders/PunctualLight/PunctualLight.PS.hlsl";
+	//PunctualLight_->psoConfig_.vs = "resources/shaders/PunctualLight/PunctualLight.VS.hlsl";
+	//PunctualLight_->SetupFromShaders();
+
+	//environmentMap_ = std::make_unique<RenderObject>();
+	//environmentMap_->modelID_ = model2;
+	//environmentMap_->psoConfig_.ps = "resources/shaders/EnvironmentMap/EnvironmentMap.PS.hlsl";
+	//environmentMap_->psoConfig_.vs = "resources/shaders/EnvironmentMap/EnvironmentMap.VS.hlsl";
+	//environmentMap_->SetupFromShaders();
+
+	//postEffects_[0] = std::make_unique<RenderObject>();
+	//postEffects_[0]->modelID_ = model3;
+	//postEffects_[0]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//postEffects_[0]->psoConfig_.ps = "resources/shaders/FullScreen/RadialBlue.PS.hlsl";
+	//postEffects_[0]->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	//postEffects_[0]->SetupFromShaders();
+
+	//postEffects_[1] = std::make_unique<RenderObject>();
+	//postEffects_[1]->modelID_ = model3;
+	//postEffects_[1]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//postEffects_[1]->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	//postEffects_[1]->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	//postEffects_[1]->SetupFromShaders();
+
+	//postEffects_[2] = std::make_unique<RenderObject>();
+	//postEffects_[2]->modelID_ = model3;
+	//postEffects_[2]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//postEffects_[2]->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
+	//postEffects_[2]->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	//postEffects_[2]->SetupFromShaders();
+
+	//postEffects_[3] = std::make_unique<RenderObject>();
+	//postEffects_[3]->modelID_ = model3;
+	//postEffects_[3]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//postEffects_[3]->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	//postEffects_[3]->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	//postEffects_[3]->SetupFromShaders();
+
+	//screenDrawObjectMain1_ = std::make_unique<RenderObject>();
+	//screenDrawObjectMain1_->modelID_ = model3;
+	////screenDrawObjectMain1_->psoConfig_.blendID = BlendStateID::Normal2;
+	//screenDrawObjectMain1_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//screenDrawObjectMain1_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//screenDrawObjectMain1_->SetupFromShaders();
+
+	//screenDrawObjectMain2_ = std::make_unique<RenderObject>();
+	//screenDrawObjectMain2_->modelID_ = model3;
+	////screenDrawObjectMain2_->psoConfig_.blendID = BlendStateID::Normal2;
+	//screenDrawObjectMain2_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//screenDrawObjectMain2_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//screenDrawObjectMain2_->SetupFromShaders();
+
+	//screenDrawObjectMiniMap1_ = std::make_unique<RenderObject>();
+	//screenDrawObjectMiniMap1_->modelID_ = model3;
+	////screenDrawObjectMiniMap1_->psoConfig_.blendID = BlendStateID::Normal2;
+	//screenDrawObjectMiniMap1_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//screenDrawObjectMiniMap1_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//screenDrawObjectMiniMap1_->SetupFromShaders();
+
+	//screenDrawObjectMiniMap2_ = std::make_unique<RenderObject>();
+	//screenDrawObjectMiniMap2_->modelID_ = model3;
+	////screenDrawObjectMiniMap2_->psoConfig_.blendID = BlendStateID::Normal2;
+	//screenDrawObjectMiniMap2_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//screenDrawObjectMiniMap2_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//screenDrawObjectMiniMap2_->SetupFromShaders();
 
 
 	transform1_.scale = { 10.0f,10.0f,10.0f };
@@ -191,13 +325,9 @@ void TestPhase::Update()
 #pragma region メインカメラ１
 
 	// メインカメラ1
-	Game::Camera::Update(c_main1_);
-	Matrix4x4 viewMatrix_main1 = Game::Camera::Getter::GetViewMatrix(c_main1_);
-	Matrix4x4 projectionMatrix_main1 = Game::Camera::Getter::GetProjectionMatrix(c_main1_);
-	Matrix4x4 viewProjection_main1 = Game::Camera::Getter::GetViewProjectionMatrix(c_main1_);
-	Matrix4x4 orthoProj_main1 = Game::Camera::Getter::GetOrthoProjectionMatrix(c_main1_);
-	Matrix4x4 projectionInverse_main1 = projectionMatrix_main1.Inverse();
-	Vector3 cameraPos_main1 = Game::Camera::Getter::GetTranslate(c_main1_);
+	//Game::Camera::Update(c_main1_);
+	Game::Camera::Update(0);
+	Matrix4x4 viewProjection_main1 = Game::Camera::Getter::GetViewProjectionMatrix(0);
 	
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform1_.scale, transform1_.rotate, transform1_.translate);
 	Matrix4x4 worldViewProjection = worldMatrix * viewProjection_main1;
@@ -211,8 +341,9 @@ void TestPhase::Update()
 
 #pragma region メインカメラ２
 
-	Game::Camera::Update(c_main2_);
-	Matrix4x4 viewProjection_main2 = Game::Camera::Getter::GetViewProjectionMatrix(c_main2_);
+	//Game::Camera::Update(c_main2_);
+	Game::Camera::Update(1);
+	Matrix4x4 viewProjection_main2 = Game::Camera::Getter::GetViewProjectionMatrix(1);
 
 	std::vector<Matrix4x4> worldMatrices2;
 	for (int i = 0; i < 10; ++i)
@@ -233,9 +364,9 @@ void TestPhase::Update()
 
 #pragma region ミニマップカメラ１
 
-	Game::Camera::Update(c_miniMap1_);
-	Matrix4x4 viewMatrix_miniMap1 = Game::Camera::Getter::GetViewMatrix(c_miniMap1_);
-	Matrix4x4 projectionMatrix_miniMap1 = Game::Camera::Getter::GetProjectionMatrix(c_miniMap1_);
+	Game::Camera::Update(2);
+	Matrix4x4 viewMatrix_miniMap1 = Game::Camera::Getter::GetViewMatrix(2);
+	Matrix4x4 projectionMatrix_miniMap1 = Game::Camera::Getter::GetProjectionMatrix(2);
 
 	Matrix4x4 noTranslateView = viewMatrix_miniMap1;
 	noTranslateView.m[3][0] = 0.0f;
@@ -250,9 +381,9 @@ void TestPhase::Update()
 
 #pragma region ミニマップカメラ２
 
-	Game::Camera::Update(c_miniMap2_);
-	Vector3 cameraPos_miniMap2_ = Game::Camera::Getter::GetTranslate(c_miniMap2_);
-	Matrix4x4 projectionMatrix_miniMap2_ = Game::Camera::Getter::GetProjectionMatrix(c_miniMap2_);
+	Game::Camera::Update(3);
+	Vector3 cameraPos_miniMap2_ = Game::Camera::Getter::GetTranslate(3);
+	Matrix4x4 projectionMatrix_miniMap2_ = Game::Camera::Getter::GetProjectionMatrix(3);
 	Matrix4x4 projectionInverse_miniMap2_ = projectionMatrix_miniMap2_.Inverse();
 
 	PunctualLight_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
@@ -275,58 +406,58 @@ void TestPhase::Update()
 
 #pragma region スクリーンカメラ
 
-	Game::Camera::Update(c_worldView_);
-	Matrix4x4 orthoProj_world = Game::Camera::Getter::GetOrthoProjectionMatrix(c_worldView_);
+	//Game::Camera::Update(c_worldView_);
+	//Matrix4x4 orthoProj_world = Game::Camera::Getter::GetOrthoProjectionMatrix(c_worldView_);
 
-	Matrix4x4 mainScreenWorldMatrix = Matrix4x4::MakeAffineMatrix(main1ScreenTransform_.scale, main1ScreenTransform_.rotate, main1ScreenTransform_.translate);
-	Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProj_world;
-	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMain1_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMain1_->SetCBufferData(1, ShaderType::PixelShader, &rt_Vignette_);
-	screenDrawObjectMain1_->SetCBufferData(0, ShaderType::VertexShader, &mainScreenWorldViewProjection);
-	screenDrawObjectMain1_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
+	//Matrix4x4 mainScreenWorldMatrix = Matrix4x4::MakeAffineMatrix(main1ScreenTransform_.scale, main1ScreenTransform_.rotate, main1ScreenTransform_.translate);
+	//Matrix4x4 mainScreenWorldViewProjection = mainScreenWorldMatrix * orthoProj_world;
+	//// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
+	//screenDrawObjectMain1_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	//screenDrawObjectMain1_->SetCBufferData(1, ShaderType::PixelShader, &rt_Vignette_);
+	//screenDrawObjectMain1_->SetCBufferData(0, ShaderType::VertexShader, &mainScreenWorldViewProjection);
+	//screenDrawObjectMain1_->SetCBufferData(1, ShaderType::VertexShader, &mainScreenWorldMatrix);
 
-	Matrix4x4 mainScreen2WorldMatrix = Matrix4x4::MakeAffineMatrix(main2ScreenTransform_.scale, main2ScreenTransform_.rotate, main2ScreenTransform_.translate);
-	Matrix4x4 mainScreen2WorldViewProjection = mainScreen2WorldMatrix * orthoProj_world;
-	// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMain2_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMain2_->SetCBufferData(1, ShaderType::PixelShader, &rt_GrayScale_);
-	screenDrawObjectMain2_->SetCBufferData(0, ShaderType::VertexShader, &mainScreen2WorldViewProjection);
-	screenDrawObjectMain2_->SetCBufferData(1, ShaderType::VertexShader, &mainScreen2WorldMatrix);
+	//Matrix4x4 mainScreen2WorldMatrix = Matrix4x4::MakeAffineMatrix(main2ScreenTransform_.scale, main2ScreenTransform_.rotate, main2ScreenTransform_.translate);
+	//Matrix4x4 mainScreen2WorldViewProjection = mainScreen2WorldMatrix * orthoProj_world;
+	//// rt_GrayScaleの画像をSetCBufferDataしBackBufferに書き込む
+	//screenDrawObjectMain2_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	//screenDrawObjectMain2_->SetCBufferData(1, ShaderType::PixelShader, &rt_GrayScale_);
+	//screenDrawObjectMain2_->SetCBufferData(0, ShaderType::VertexShader, &mainScreen2WorldViewProjection);
+	//screenDrawObjectMain2_->SetCBufferData(1, ShaderType::VertexShader, &mainScreen2WorldMatrix);
 
-	Matrix4x4 miniMap1WorldMatrix = Matrix4x4::MakeAffineMatrix(miniMap1ScreenTransform_.scale, miniMap1ScreenTransform_.rotate, miniMap1ScreenTransform_.translate);
-	Matrix4x4 miniMap1WorldViewProjection = miniMap1WorldMatrix * orthoProj_world;
-	// rt_luminanceBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMiniMap1_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMiniMap1_->SetCBufferData(1, ShaderType::PixelShader, &rt_luminanceBasedOutline_);
-	screenDrawObjectMiniMap1_->SetCBufferData(0, ShaderType::VertexShader, &miniMap1WorldViewProjection);
-	screenDrawObjectMiniMap1_->SetCBufferData(1, ShaderType::VertexShader, &miniMap1WorldMatrix);
+	//Matrix4x4 miniMap1WorldMatrix = Matrix4x4::MakeAffineMatrix(miniMap1ScreenTransform_.scale, miniMap1ScreenTransform_.rotate, miniMap1ScreenTransform_.translate);
+	//Matrix4x4 miniMap1WorldViewProjection = miniMap1WorldMatrix * orthoProj_world;
+	//// rt_luminanceBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
+	//screenDrawObjectMiniMap1_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	//screenDrawObjectMiniMap1_->SetCBufferData(1, ShaderType::PixelShader, &rt_luminanceBasedOutline_);
+	//screenDrawObjectMiniMap1_->SetCBufferData(0, ShaderType::VertexShader, &miniMap1WorldViewProjection);
+	//screenDrawObjectMiniMap1_->SetCBufferData(1, ShaderType::VertexShader, &miniMap1WorldMatrix);
 
-	Matrix4x4 miniMap2WorldMatrix = Matrix4x4::MakeAffineMatrix(miniMap2ScreenTransform_.scale, miniMap2ScreenTransform_.rotate, miniMap2ScreenTransform_.translate);
-	Matrix4x4 miniMap2WorldViewProjection = miniMap2WorldMatrix * orthoProj_world;
-	// rt_depthBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMiniMap2_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	screenDrawObjectMiniMap2_->SetCBufferData(1, ShaderType::PixelShader, &rt_depthBasedOutline_);
-	screenDrawObjectMiniMap2_->SetCBufferData(0, ShaderType::VertexShader, &miniMap2WorldViewProjection);
-	screenDrawObjectMiniMap2_->SetCBufferData(1, ShaderType::VertexShader, &miniMap2WorldMatrix);
+	//Matrix4x4 miniMap2WorldMatrix = Matrix4x4::MakeAffineMatrix(miniMap2ScreenTransform_.scale, miniMap2ScreenTransform_.rotate, miniMap2ScreenTransform_.translate);
+	//Matrix4x4 miniMap2WorldViewProjection = miniMap2WorldMatrix * orthoProj_world;
+	//// rt_depthBasedOutlineの画像をSetCBufferDataしBackBufferに書き込む
+	//screenDrawObjectMiniMap2_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	//screenDrawObjectMiniMap2_->SetCBufferData(1, ShaderType::PixelShader, &rt_depthBasedOutline_);
+	//screenDrawObjectMiniMap2_->SetCBufferData(0, ShaderType::VertexShader, &miniMap2WorldViewProjection);
+	//screenDrawObjectMiniMap2_->SetCBufferData(1, ShaderType::VertexShader, &miniMap2WorldMatrix);
 
 #pragma endregion
 
+	//// main1の画像をSetCBufferDataしrt_Vignetteに書き込む
+	//postEffects_[0]->SetCBufferData(0, ShaderType::PixelShader, &rt_main1_);
+	//// main2の画像をSetCBufferDataしrt_GrayScaleに書き込む
+	//postEffects_[1]->SetCBufferData(0, ShaderType::PixelShader, &rt_main2_);
+	//// miniMap1の画像をSetCBufferDataしrt_luminanceBasedOutlineに書き込む
+	//postEffects_[2]->SetCBufferData(0, ShaderType::PixelShader, &rt_miniMap1_);
+	//// miniMap2の画像をSetCBufferDataしrt_depthBasedOutlineに書き込む
+	//postEffects_[3]->SetCBufferData(0, ShaderType::PixelShader, &rt_miniMap2_);
+	//postEffects_[3]->SetCBufferData(1, ShaderType::PixelShader, &rt_miniMap2_depth_);
+	//postEffects_[3]->SetCBufferData(2, ShaderType::PixelShader, &projectionMatrix_miniMap2_);
+
+
 	testAnimation_->Update(Game::Time::GetDeltaTime());
-	testParticle_->Update();
+	testParticle_->Update(0);
 	testMeshShader_->Update();
-
-
-	// main1の画像をSetCBufferDataしrt_Vignetteに書き込む
-	postEffect1_->SetCBufferData(0, ShaderType::PixelShader, &rt_main1_);
-	// main2の画像をSetCBufferDataしrt_GrayScaleに書き込む
-	postEffect2_->SetCBufferData(0, ShaderType::PixelShader, &rt_main2_);
-	// miniMap1の画像をSetCBufferDataしrt_luminanceBasedOutlineに書き込む
-	postEffect3_->SetCBufferData(0, ShaderType::PixelShader, &rt_miniMap1_);
-	// miniMap2の画像をSetCBufferDataしrt_depthBasedOutlineに書き込む
-	postEffect4_->SetCBufferData(0, ShaderType::PixelShader, &rt_miniMap2_);
-	postEffect4_->SetCBufferData(1, ShaderType::PixelShader, &rt_miniMap2_depth_);
-	postEffect4_->SetCBufferData(2, ShaderType::PixelShader, &projectionMatrix_miniMap2_);
 
 	if (Game::IO::Key::IsJustPressed(DIK_F12))
 	{
@@ -344,45 +475,107 @@ void TestPhase::Update()
 
 void TestPhase::Draw()
 {
-	// main1に書き込む
-	cbvOnly_->Draw(rt_main1_);
+	//// main1に書き込む
+	//cbvOnly_->Draw(rt_main1_);
 
-	// main2に書き込む
-	cbvAndSrv_->Draw(rt_main2_);
+	//// main2に書き込む
+	//cbvAndSrv_->Draw(rt_main2_);
 
-	// miniMap1に書き込む
-	skybox_->Draw(rt_miniMap1_);
+	//// miniMap1に書き込む
+	//skybox_->Draw(rt_miniMap1_);
 
-	// miniMap2に書き込む
-	PunctualLight_->Draw(rt_miniMap2_);
-	environmentMap_->Draw(rt_miniMap2_);
+	//// miniMap2に書き込む
+	//PunctualLight_->Draw(rt_miniMap2_);
+	//environmentMap_->Draw(rt_miniMap2_);
 
 
-	//line_->Draw();
-	//PunctualLight_->Draw();
+	////line_->Draw();
+	////PunctualLight_->Draw();
 
-	// rt_main1_の画像をSetCBufferDataしrt_Vignetteに書き込む
-	postEffect1_->PostEffectDraw(rt_Vignette_);
-	// rt_main2_の画像をSetCBufferDataしrt_GrayScaleに書き込む
-	postEffect2_->PostEffectDraw(rt_GrayScale_);
-	// rt_miniMap1_の画像をSetCBufferDataしrt_luminanceBasedOutline_に書き込む
-	postEffect3_->PostEffectDraw(rt_luminanceBasedOutline_);
-	// rt_miniMap2_の画像をSetCBufferDataしrt_depthBasedOutline_に書き込む
-	postEffect4_->PostEffectDraw(rt_depthBasedOutline_);
+	//// rt_main1_の画像をSetCBufferDataしrt_Vignetteに書き込む
+	//postEffects_[0]->PostEffectDraw(rt_Vignette_);
+	//// rt_main2_の画像をSetCBufferDataしrt_GrayScaleに書き込む
+	//postEffects_[1]->PostEffectDraw(rt_GrayScale_);
+	//// rt_miniMap1_の画像をSetCBufferDataしrt_luminanceBasedOutline_に書き込む
+	//postEffects_[2]->PostEffectDraw(rt_luminanceBasedOutline_);
+	//// rt_miniMap2_の画像をSetCBufferDataしrt_depthBasedOutline_に書き込む
+	//postEffects_[3]->PostEffectDraw(rt_depthBasedOutline_);
 
-	// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMain1_->ScreenDraw();
-	// rt_GrayScale_の画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMain2_->ScreenDraw();
-	// rt_luminanceBasedOutline_の画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMiniMap1_->ScreenDraw();
-	// rt_depthBasedOutline_の画像をSetCBufferDataしBackBufferに書き込む
-	screenDrawObjectMiniMap2_->ScreenDraw();
+	//// rt_Vignetteの画像をSetCBufferDataしBackBufferに書き込む
+	//screenDrawObjectMain1_->ScreenDraw();
+	//// rt_GrayScale_の画像をSetCBufferDataしBackBufferに書き込む
+	//screenDrawObjectMain2_->ScreenDraw();
+	//// rt_luminanceBasedOutline_の画像をSetCBufferDataしBackBufferに書き込む
+	//screenDrawObjectMiniMap1_->ScreenDraw();
+	//// rt_depthBasedOutline_の画像をSetCBufferDataしBackBufferに書き込む
+	//screenDrawObjectMiniMap2_->ScreenDraw();
 }
 
 
 void TestPhase::DrawImGui()
 {
+	Game::Resource::Model::Preview();
+
+
+	ImGui::Begin("renderTexture"); 
+
+	static RenderTargetData renderTargetData;
+	const uint32_t minSize = 1;
+	const uint32_t maxSize = 4096;
+
+	ImGui::InputText("name", &renderTargetData.name);
+	ImGui::DragScalar("renderTarget width", ImGuiDataType_U32, &renderTargetData.width, 1.0f, &minSize, &maxSize);
+	ImGui::DragScalar("renderTarget height", ImGuiDataType_U32, &renderTargetData.height, 1.0f, &minSize, &maxSize);
+	if (ImGui::Button("AddList"))
+	{
+		if (!renderTargetData.name.empty())
+		{
+			int32_t renderTargetID = Game::Resource::CreateRenderTexture(renderTargetData.width, renderTargetData.height, renderTargetData.name);
+			renderTargetData_[renderTargetID] = renderTargetData;
+		}
+	}
+
+	if (ImGui::Button("Save"))Save_renderTarget();
+	ImGui::SameLine();
+	if (ImGui::Button("Load"))Load_renderTarget();
+
+	for (auto& [id, data] : renderTargetData_)
+	{
+		if (ImGui::TreeNode(data.name.c_str()))
+		{
+			ImGui::Image((ImTextureID)Game::Resource::GetRenderTexture(data.name), ImVec2(data.width / 10, data.height / 10));
+
+			ImGui::TreePop();
+		}
+	}
+
+	ImGui::End();
+
+
+
+
+	ImGui::Begin("Camera");
+
+	static CameraData cameraData;
+	ImGui::InputText("name", &cameraData.name);
+	ImGui::DragFloat2("camera size", &cameraData.size.x, 1.0f);
+	if (ImGui::Button("AddList"))
+	{
+		if (!renderTargetData.name.empty())
+		{
+			int32_t renderTargetID = Game::Resource::CreateRenderTexture(renderTargetData.width, renderTargetData.height, renderTargetData.name);
+			renderTargetData_[renderTargetID] = renderTargetData;
+		}
+	}
+
+	if (ImGui::Button("Save"))Save_camera();
+	ImGui::SameLine();
+	if (ImGui::Button("Load"))Load_camera();
+
+
+	ImGui::End();
+
+
 	ImGui::Begin("Facade Test");
 	if (ImGui::BeginTabBar("Facade Test", ImGuiTabBarFlags_::ImGuiTabBarFlags_Reorderable))
 	{
@@ -586,7 +779,7 @@ void TestPhase::DrawImGui()
 			ImGui::DragInt("camera center frame", &cameraCenterFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Center"))
 			{
-				Game::Camera::Setter::SetCenter(cameraCenterTarget, cameraCenterFrame, EaseType::IN_CUBIC, c_main1_);
+				Game::Camera::Setter::SetCenter(cameraCenterTarget, cameraCenterFrame, EaseType::IN_CUBIC, 0);
 			}
 
 			static Vector3 cameraRotateTarget;
@@ -595,7 +788,7 @@ void TestPhase::DrawImGui()
 			ImGui::DragInt("camera rotate frame", &cameraRotateFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Rotate"))
 			{
-				Game::Camera::Setter::SetRotate(cameraRotateTarget, cameraRotateFrame, EaseType::IN_CUBIC, c_main1_);
+				Game::Camera::Setter::SetRotate(cameraRotateTarget, cameraRotateFrame, EaseType::IN_CUBIC, 0);
 			}
 
 			static float cameraDistanceTarget = 0.0f;
@@ -604,7 +797,7 @@ void TestPhase::DrawImGui()
 			ImGui::DragInt("camera distance frame", &cameraDistanceFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Distance"))
 			{
-				Game::Camera::Setter::SetDistance(cameraDistanceTarget, cameraDistanceFrame, EaseType::IN_CUBIC, c_main1_);
+				Game::Camera::Setter::SetDistance(cameraDistanceTarget, cameraDistanceFrame, EaseType::IN_CUBIC, 0);
 			}
 
 			static float intensity = 3.0f;
@@ -615,12 +808,12 @@ void TestPhase::DrawImGui()
 			ImGui::DragFloat("camera shake frequency", &frequency, 0.1f);
 			if (ImGui::Button("Start Camera Shake"))
 			{
-				Game::Camera::Shake::Start(intensity, duration, frequency, c_main1_);
+				Game::Camera::Shake::Start(intensity, duration, frequency, 0);
 			}
-			ImGui::Text("is camera shaking : %d", Game::Camera::Shake::IsShaking(c_main1_));
+			ImGui::Text("is camera shaking : %d", Game::Camera::Shake::IsShaking(0));
 			if (ImGui::Button("Stop Camera Shake"))
 			{
-				Game::Camera::Shake::Stop(c_main1_);
+				Game::Camera::Shake::Stop(0);
 			}
 
 			ImGui::EndTabItem();
@@ -633,9 +826,9 @@ void TestPhase::DrawImGui()
 		if (ImGui::BeginTabItem("mouse Test"))
 		{
 			ImGui::Text("Mouse Position: (%.1f, %.1f)", Game::IO::Mouse::Get2DPosition().x, Game::IO::Mouse::Get2DPosition().y);
-			ImGui::Text("Mouse World Position: (%.1f, %.1f, %.1f)", Game::IO::Mouse::Get3DPosition(c_main1_).x, Game::IO::Mouse::Get3DPosition(c_main1_).y, Game::IO::Mouse::Get3DPosition(c_main1_).z);
-			ImGui::Text("Mouse Ray Origin: (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(c_main1_).origin.x, Game::IO::Mouse::GetRay(c_main1_).origin.y, Game::IO::Mouse::GetRay(c_main1_).origin.z);
-			ImGui::Text("Mouse Ray Diff  : (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(c_main1_).diff.x, Game::IO::Mouse::GetRay(c_main1_).diff.y, Game::IO::Mouse::GetRay(c_main1_).diff.z);
+			ImGui::Text("Mouse World Position: (%.1f, %.1f, %.1f)", Game::IO::Mouse::Get3DPosition(0).x, Game::IO::Mouse::Get3DPosition(0).y, Game::IO::Mouse::Get3DPosition(0).z);
+			ImGui::Text("Mouse Ray Origin: (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(0).origin.x, Game::IO::Mouse::GetRay(0).origin.y, Game::IO::Mouse::GetRay(0).origin.z);
+			ImGui::Text("Mouse Ray Diff  : (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(0).diff.x, Game::IO::Mouse::GetRay(0).diff.y, Game::IO::Mouse::GetRay(0).diff.z);
 			ImGui::Text("Mouse Wheel: %d", Game::IO::Mouse::GetWheel());
 
 			ImGui::Text("Mouse Buttons:");
@@ -870,6 +1063,176 @@ void TestPhase::DrawImGui()
 	//	- IsItemHovered() : マウスが乗っているか判定
 	//	- IsItemActive() : アクティブ状態判定
 
+}
+
+void TestPhase::Load_renderTarget()
+{
+	const std::string filePath = "resources/json/TestPhase/";
+
+	const std::string fileName = "renderTargets.json";
+
+	if (JsonManager::Load(filePath + fileName))
+	{
+		renderTargetData_.clear();
+
+		int32_t i = 0;
+		while (true)
+		{
+			std::string basePath = "/render_targets/" + std::to_string(i);
+
+			RenderTargetData data;
+
+			if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
+			JsonManager::Load(filePath + fileName, basePath + "/width", data.width);
+			JsonManager::Load(filePath + fileName, basePath + "/height", data.height);
+			JsonManager::Load(filePath + fileName, basePath + "/in", data.in);
+			JsonManager::Load(filePath + fileName, basePath + "/out", data.out);
+
+			int32_t id = Game::Resource::CreateRenderTexture(data.width, data.height, data.name);
+
+			renderTargetData_[id] = data;
+
+			i++;
+		}
+	}
+
+}
+
+void TestPhase::Save_renderTarget()
+{
+	const std::string filePath = "resources/json/TestPhase/";
+
+	const std::string fileName = "renderTargets.json";
+
+	int32_t i = 0;
+	for (auto [key, value] : renderTargetData_)
+	{
+		std::string basePath = "/render_targets/" + std::to_string(i);
+
+		JsonManager::AddParam(filePath + fileName, basePath + "/name", value.name);
+		JsonManager::AddParam(filePath + fileName, basePath + "/width", value.width);
+		JsonManager::AddParam(filePath + fileName, basePath + "/height", value.height);
+		JsonManager::AddParam(filePath + fileName, basePath + "/in", value.in);
+		JsonManager::AddParam(filePath + fileName, basePath + "/out", value.out);
+
+		i++;
+	}
+	JsonManager::Save(filePath + fileName);
+}
+
+void TestPhase::Load_camera()
+{
+	const std::string filePath = "resources/json/TestPhase/";
+
+	const std::string fileName = "cameras.json";
+
+	if (JsonManager::Load(filePath + fileName))
+	{
+		cameraData_.clear();
+
+		int32_t i = 0;
+		while (true)
+		{
+			std::string basePath = "/cameras/" + std::to_string(i);
+
+			CameraData data;
+
+			if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
+			JsonManager::Load(filePath + fileName, basePath + "/size", data.size);
+			JsonManager::Load(filePath + fileName, basePath + "/center", data.center);
+			JsonManager::Load(filePath + fileName, basePath + "/rotation", data.rotation);
+			JsonManager::Load(filePath + fileName, basePath + "/distance", data.distance);
+			JsonManager::Load(filePath + fileName, basePath + "/fov", data.fov);
+
+			int32_t id = Game::Camera::AddCamera();
+			Game::Camera::Setter::SetCenter(data.center, 0, EaseType::IN_BACK, id);
+			Game::Camera::Setter::SetDistance(data.distance, 0, EaseType::IN_BACK, id);
+			Game::Camera::Setter::SetFovTarget(data.fov, 0, EaseType::IN_BACK, id);
+			Game::Camera::Setter::SetRotate(data.rotation, 0, EaseType::IN_BACK, id);
+			Game::Camera::Setter::SetScreenSize(data.size, 0, EaseType::IN_BACK, id);
+
+			cameraData_[id] = data;
+
+			i++;
+		}
+	}
+}
+
+void TestPhase::Save_camera()
+{
+	const std::string filePath = "resources/json/TestPhase/";
+
+	const std::string fileName = "cameras.json";
+
+	int32_t i = 0;
+	for (auto [key, value] : cameraData_)
+	{
+		std::string basePath = "/cameras/" + std::to_string(i);
+
+		JsonManager::AddParam(filePath + fileName, basePath + "/name", value.name);
+		JsonManager::AddParam(filePath + fileName, basePath + "/size", value.size);
+		JsonManager::AddParam(filePath + fileName, basePath + "/center", value.center);
+		JsonManager::AddParam(filePath + fileName, basePath + "/rotation", value.rotation);
+		JsonManager::AddParam(filePath + fileName, basePath + "/distance", value.distance);
+		JsonManager::AddParam(filePath + fileName, basePath + "/fov", value.fov);
+
+		i++;
+	}
+	JsonManager::Save(filePath + fileName);
+}
+
+void TestPhase::Load_renderObject()
+{
+	const std::string filePath = "resources/json/TestPhase/";
+
+	const std::string fileName = "renderObjects.json";
+
+	if (JsonManager::Load(filePath + fileName))
+	{
+		renderObjectData_.clear();
+
+		int32_t i = 0;
+		while (true)
+		{
+			std::string basePath = "/render_objects/" + std::to_string(i);
+
+			RenderObjectData data;
+
+			if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
+			JsonManager::Load(filePath + fileName, basePath + "/modelPath", data.modelPath);
+			JsonManager::Load(filePath + fileName, basePath + "/out", data.out);
+			JsonManager::Load(filePath + fileName, basePath + "/config.vs", data.config.vs);
+			JsonManager::Load(filePath + fileName, basePath + "/config.ps", data.config.ps);
+			JsonManager::Load(filePath + fileName, basePath + "/config.ms", data.config.ms);
+			JsonManager::Load(filePath + fileName, basePath + "/config.dsvFormatID", data.config.dsvFormatID);
+
+			renderObjectData_.push_back(data);
+
+			i++;
+		}
+	}
+}
+
+void TestPhase::Save_renderObject()
+{
+	const std::string filePath = "resources/json/TestPhase/";
+
+	const std::string fileName = "renderObjects.json";
+
+	for (size_t i = 0; i < renderObjectData_.size(); ++i)
+	{
+		const auto& value = renderObjectData_[i];
+		std::string basePath = "/render_objects/" + std::to_string(i);
+
+		JsonManager::AddParam(filePath + fileName, basePath + "/name", value.name);
+		JsonManager::AddParam(filePath + fileName, basePath + "/modelPath", value.modelPath);
+		JsonManager::AddParam(filePath + fileName, basePath + "/out", value.out);
+		JsonManager::AddParam(filePath + fileName, basePath + "/config.vs", value.config.vs);
+		JsonManager::AddParam(filePath + fileName, basePath + "/config.ps", value.config.ps);
+		JsonManager::AddParam(filePath + fileName, basePath + "/config.ms", value.config.ms);
+		JsonManager::AddParam(filePath + fileName, basePath + "/config.dsvFormatID", value.config.dsvFormatID);
+	}
+	JsonManager::Save(filePath + fileName);
 }
 
 void TestPhase::DrawDebugInfo()

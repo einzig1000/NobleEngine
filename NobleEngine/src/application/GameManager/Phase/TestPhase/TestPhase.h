@@ -1,9 +1,50 @@
 #pragma once
-#include <GameManager/Phase/IPhase/IPhase.h>
+#include <GameManager/Phase/IPhase.h>
 #include <TestAnimation/TestAnimation.h>
 #include <TestParticle/TestParticle.h>
 #include <TestMeshShader/TestMeshShader.h>
 #include <memory>
+
+struct RenderTargetData
+{
+	// 名前
+	std::string name;
+	// サイズ
+	uint32_t width;
+	uint32_t height;
+	// 参照するレンダーテクスチャ
+	std::vector<std::string> in;
+	// 書きだすレンダーテクスチャ
+	std::vector<std::string> out;
+};
+
+struct CameraData
+{
+	// 名前
+	std::string name;
+	// サイズ
+	Vector2 size;
+	// 位置
+	Vector3 center;
+	// 回転
+	Vector3 rotation;
+	// 距離
+	float distance = 20.0f;
+	// 画角
+	float fov = 0.45f;
+};
+
+struct RenderObjectData
+{
+	// 名前
+	std::string name;
+	// psoConfig
+	PSOConfig config;
+	// 書きだすレンダーテクスチャ
+	std::vector<std::string> out;
+	// モデルパス
+	std::string modelPath;
+};
 
 class TestPhase :
 	public IPhase
@@ -17,6 +58,16 @@ public:
 	void Draw() override;
 	void DrawImGui() override;
 	void ChangePhase(PHASE phase) override { nextPhase_ = phase; }
+
+	void Load_renderTarget();
+	void Save_renderTarget();
+
+	void Load_camera();
+	void Save_camera();
+
+	void Load_renderObject();
+	void Save_renderObject();
+
 
 	void DrawDebugInfo();
 
@@ -35,10 +86,6 @@ private:
 	Material materialData_;
 	std::unique_ptr<RenderObject> environmentMap_;
 
-	std::unique_ptr<RenderObject> postEffect1_;
-	std::unique_ptr<RenderObject> postEffect2_;
-	std::unique_ptr<RenderObject> postEffect3_;
-	std::unique_ptr<RenderObject> postEffect4_;
 
 
 	std::unique_ptr<RenderObject> screenDrawObjectMain1_;
@@ -55,30 +102,20 @@ private:
 	std::unique_ptr<TestParticle> testParticle_;
 	std::unique_ptr<TestMeshShader> testMeshShader_;
 
-	int32_t rt_main1_;
-	int32_t rt_main1_depth_;
-	int32_t rt_main2_;
-	int32_t rt_main2_depth_;
-	int32_t rt_miniMap1_;
-	int32_t rt_miniMap1_depth_;
-	int32_t rt_miniMap2_;
-	int32_t rt_miniMap2_depth_;
+	std::unordered_map<int32_t, RenderTargetData> renderTargetData_;
+	std::unordered_map<int32_t, CameraData> cameraData_;
+	std::vector<std::unique_ptr<RenderObject>> remderObjects_;
+	std::vector<RenderObjectData> renderObjectData_;
 
-	int32_t rt_Vignette_;
-	int32_t rt_GrayScale_;
-	int32_t rt_luminanceBasedOutline_;
-	int32_t rt_depthBasedOutline_;
+	int32_t rt_main1_depth_;
+	int32_t rt_main2_depth_;
+	int32_t rt_miniMap1_depth_;
+	int32_t rt_miniMap2_depth_;
 
 	int32_t t_uvChecker;
 	int32_t t_monsterBall_;
 	int32_t t_white1x1_;
 	int32_t t_dds_;
-
-	int32_t c_worldView_;
-	int32_t c_main1_;
-	int32_t c_main2_;
-	int32_t c_miniMap1_;
-	int32_t c_miniMap2_;
 
 	uint32_t audio1;
 	uint32_t audio2;

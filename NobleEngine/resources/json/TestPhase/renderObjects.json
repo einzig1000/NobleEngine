@@ -1,0 +1,136 @@
+{
+  "render_objects": [
+    {
+      "config.dsvFormatID": 0,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/SimpleModel/SimpleModel.PS.hlsl",
+      "config.vs": "resources/shaders/SimpleModel/SimpleModel.VS.hlsl",
+      "modelPath": "resources/prototypes/model/cube/cube.obj",
+      "name": "cbvOnly",
+      "out": [
+        "mainL"
+      ]
+    },
+    {
+      "config.dsvFormatID": 0,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/SimpleModel/SimpleModels.PS.hlsl",
+      "config.vs": "resources/shaders/SimpleModel/SimpleModels.VS.hlsl",
+      "modelPath": "resources/prototypes/model/cube/cube.obj",
+      "name": "cbvAndSrv",
+      "out": [
+        "mainR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 0,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/SkyBox/SkyBox.PS.hlsl",
+      "config.vs": "resources/shaders/SkyBox/SkyBox.VS.hlsl",
+      "modelPath": "resources/prototypes/model/sphere/sphere.obj",
+      "name": "skybox",
+      "out": [
+        "minimapL"
+      ]
+    },
+    {
+      "config.dsvFormatID": 0,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/PunctualLight/PunctualLight.PS.hlsl",
+      "config.vs": "resources/shaders/PunctualLight/PunctualLight.VS.hlsl",
+      "modelPath": "resources/prototypes/model/sphere/sphere.obj",
+      "name": "PunctualLight",
+      "out": [
+        "minimapR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 1,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/FullScreen/RadialBlue.PS.hlsl",
+      "config.vs": "resources/shaders/FullScreen/FullScreen.VS.hlsl",
+      "modelPath": "resources/prototypes/model/plane/plane.obj",
+      "name": "postEffects1",
+      "out": [
+        "minimapR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 1,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/FullScreen/Vignette.PS.hlsl",
+      "config.vs": "resources/shaders/FullScreen/FullScreen.VS.hlsl",
+      "modelPath": "resources/prototypes/model/plane/plane.obj",
+      "name": "postEffects2",
+      "out": [
+        "minimapR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 1,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl",
+      "config.vs": "resources/shaders/FullScreen/FullScreen.VS.hlsl",
+      "modelPath": "resources/prototypes/model/plane/plane.obj",
+      "name": "postEffects3",
+      "out": [
+        "minimapR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 1,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/FullScreen/CopyImage.PS.hlsl",
+      "config.vs": "resources/shaders/FullScreen/FullScreen.VS.hlsl",
+      "modelPath": "resources/prototypes/model/plane/plane.obj",
+      "name": "postEffects3",
+      "out": [
+        "minimapR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 1,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/SimpleModel/SimpleModel.PS.hlsl",
+      "config.vs": "resources/shaders/SimpleModel/SimpleModel.VS.hlsl",
+      "modelPath": "resources/prototypes/model/plane/plane.obj",
+      "name": "screenDraw1",
+      "out": [
+        "minimapR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 1,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/SimpleModel/SimpleModel.PS.hlsl",
+      "config.vs": "resources/shaders/SimpleModel/SimpleModel.VS.hlsl",
+      "modelPath": "resources/prototypes/model/plane/plane.obj",
+      "name": "screenDraw1",
+      "out": [
+        "minimapR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 1,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/SimpleModel/SimpleModel.PS.hlsl",
+      "config.vs": "resources/shaders/SimpleModel/SimpleModel.VS.hlsl",
+      "modelPath": "resources/prototypes/model/plane/plane.obj",
+      "name": "screenDraw1",
+      "out": [
+        "minimapR"
+      ]
+    },
+    {
+      "config.dsvFormatID": 1,
+      "config.ms": "unknown",
+      "config.ps": "resources/shaders/SimpleModel/SimpleModel.PS.hlsl",
+      "config.vs": "resources/shaders/SimpleModel/SimpleModel.VS.hlsl",
+      "modelPath": "resources/prototypes/model/plane/plane.obj",
+      "name": "screenDraw1",
+      "out": [
+        "minimapR"
+      ]
+    }
+  ]
+}

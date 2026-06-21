@@ -28,11 +28,11 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 
 	windowManager_ = std::make_unique<WindowManager>(width, height, title);
 	dxManager_ = std::make_unique<DirectXManager>(windowManager_->GetHwnd());
-	resourceManager_ = std::make_unique<ResourceManager>(dxManager_.get());
-	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), resourceManager_.get());
 	cameraManager_ = std::make_unique<CameraManager>();
-	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd(), cameraManager_.get());
 	imguiManager_ = std::make_unique<ImGuiManager>();
+	resourceManager_ = std::make_unique<ResourceManager>(dxManager_.get());
+	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd(), cameraManager_.get());
+	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), resourceManager_.get());
 	imguiManager_->Initialize(dxManager_.get(), windowManager_.get());
 	//physicsSystem_ = std::make_unique<PhysicsSystem>();
 	fixFPS_ = std::make_unique<FixFPS>();

@@ -145,7 +145,7 @@ namespace Dx12ResourceFactory
 		return resource;
     }
 
-    Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetResource(ID3D12Device2* device, UINT width, UINT height, DXGI_FORMAT format)
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetResource(ID3D12Device2* device, UINT width, UINT height, DXGI_FORMAT format, Vector4 clearColor)
     {
         // リソース記述子を作成
         D3D12_RESOURCE_DESC resourceDesc{};
@@ -165,10 +165,14 @@ namespace Dx12ResourceFactory
 		// クリア値の設定
 		D3D12_CLEAR_VALUE clearValue{};
 		clearValue.Format = format;
-        clearValue.Color[0] = 0.396078f;
-        clearValue.Color[1] = 0.894117f;
-        clearValue.Color[2] = 1.0f;
-        clearValue.Color[3] = 0.0f;
+        //clearValue.Color[0] = 0.396078f;
+        //clearValue.Color[1] = 0.894117f;
+        //clearValue.Color[2] = 1.0f;
+        //clearValue.Color[3] = 0.0f;
+        clearValue.Color[0] = clearColor.x;
+        clearValue.Color[1] = clearColor.y;
+        clearValue.Color[2] = clearColor.z;
+        clearValue.Color[3] = clearColor.w;
 
         // リソースを作成
         Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;

@@ -153,7 +153,7 @@
     <ClCompile Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameManager\Phase\IPhase\IPhase.cpp">
+    <ClCompile Include="src\application\GameManager\Phase\IPhase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp">
@@ -210,22 +210,31 @@
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\MapManager\MapManager.cpp">
+    <ClCompile Include="src\application\GameObjects\MapManager\MapManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\MapManager\Chunk\Chunk.cpp">
+    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Chunk.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\MapManager\Chunk\Block\Block.cpp">
+    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\Block.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\MapManager\Chunk\Block\BlockConfig.cpp">
+    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\BlockConfig.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\MapManager\Chunk\Block\BlockDurability.cpp">
+    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\BlockDurability.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\ResourceManager\Model\ModelEditor\ModelEditor.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -371,7 +380,7 @@
     <ClInclude Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameManager\Phase\IPhase\IPhase.h">
+    <ClInclude Include="src\application\GameManager\Phase\IPhase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h">
@@ -434,22 +443,31 @@
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\MapManager\MapManager.h">
+    <ClInclude Include="src\application\GameObjects\MapManager\MapManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\MapManager\Chunk\Chunk.h">
+    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Chunk.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\MapManager\Chunk\Block\Block.h">
+    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\Block.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\MapManager\Chunk\Block\BlockConfig.h">
+    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\BlockConfig.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\MapManager\Chunk\Block\BlockDurability.h">
+    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\BlockDurability.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\ResourceLoader\ResourceID.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\ResourceManager\Model\ModelEditor\ModelEditor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

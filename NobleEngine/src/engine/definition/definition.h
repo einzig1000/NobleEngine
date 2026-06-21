@@ -207,6 +207,7 @@ enum class PHASE
 {
     Phase_None,
     Phase_Test,
+    Phase_Test2,
     Phase_Title,
     Phase_GameScene,
     Phase_StageSelect,
@@ -1091,6 +1092,9 @@ struct ModelData
 	// インデックスバッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+
+    // ファイルパス
+	std::string filePath;
 
     // AABB
     std::vector<AABB> aabb;

@@ -1,6 +1,6 @@
 #pragma once
-#include "definition/definition.h"
-#include "Item/Item.h"
+#include <definition/definition.h>
+#include <GameObjects/Item/Item.h>
 
 struct CraftRecipe
 {

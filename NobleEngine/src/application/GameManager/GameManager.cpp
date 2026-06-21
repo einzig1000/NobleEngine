@@ -1,13 +1,15 @@
 #include "GameManager.h"
 #include <Utilities/Logger/Logger.h>
-#include "Phase/TestPhase/TestPhase.h"
-#include "Phase/BattlePhase/BattlePhase.h"
-#include "Phase/TitlePhase/TitlePhase.h"
-#include "Phase/GameScenePhase/GameScenePhase.h"
+#include <GameManager/Phase/TestPhase/TestPhase.h>
+#include <GameManager/Phase/Test2Phase/Test2Phase.h>
+#include <GameManager/Phase/BattlePhase/BattlePhase.h>
+#include <GameManager/Phase/TitlePhase/TitlePhase.h>
+#include <GameManager/Phase/GameScenePhase/GameScenePhase.h>
+
 
 GameManager::GameManager()
 {
-	currentPhase_ = CreatePhase(PHASE::Phase_Test);
+	currentPhase_ = CreatePhase(PHASE::Phase_Test2);
 	currentPhase_->SetContext(&phaseContext_);
 	currentPhase_->Initialize();
 }
@@ -44,6 +46,8 @@ std::unique_ptr<IPhase> GameManager::CreatePhase(PHASE phase)
 	{
 	case PHASE::Phase_Test:
 		return std::make_unique<TestPhase>();
+	case PHASE::Phase_Test2:
+		return std::make_unique<Test2Phase>();
 	case PHASE::Phase_Title:
 		return std::make_unique<TitlePhase>();
 	case PHASE::Phase_GameScene:

@@ -1,5 +1,5 @@
 #pragma once
-#include "GameManager/Phase/IPhase/IPhase.h"
+#include <GameManager/Phase/IPhase.h>
 
 class MapManager;
 class Player;

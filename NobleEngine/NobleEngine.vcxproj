@@ -11,12 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\ResourceManager\Model\ModelEditor\ModelEditor.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp" />
-    <ClCompile Include="src\application\MapManager\Chunk\Block\Block.cpp" />
-    <ClCompile Include="src\application\MapManager\Chunk\Block\BlockConfig.cpp" />
-    <ClCompile Include="src\application\MapManager\Chunk\Block\BlockDurability.cpp" />
-    <ClCompile Include="src\application\MapManager\Chunk\Chunk.cpp" />
-    <ClCompile Include="src\application\MapManager\MapManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\Block.cpp" />
+    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\BlockConfig.cpp" />
+    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\BlockDurability.cpp" />
+    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Chunk.cpp" />
+    <ClCompile Include="src\application\GameObjects\MapManager\MapManager.cpp" />
     <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Audio\AudioLoader\AudioLoader.cpp" />
@@ -29,7 +31,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\application\GameManager\GameManager.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.cpp" />
-    <ClCompile Include="src\application\GameManager\Phase\IPhase\IPhase.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\IPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.cpp" />
     <ClCompile Include="src\engine\Camera\Camera.cpp" />
@@ -82,14 +84,17 @@
     <ClCompile Include="src\engine\ResourceManager\Texture\TextureBank\TextureBank.cpp" />
     <ClCompile Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.cpp" />
     <ClCompile Include="src\application\TestMeshShader\TestMeshShader.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\ResourceManager\Model\ModelEditor\ModelEditor.h" />
+    <ClInclude Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h" />
-    <ClInclude Include="src\application\MapManager\Chunk\Block\Block.h" />
-    <ClInclude Include="src\application\MapManager\Chunk\Block\BlockConfig.h" />
-    <ClInclude Include="src\application\MapManager\Chunk\Block\BlockDurability.h" />
-    <ClInclude Include="src\application\MapManager\Chunk\Chunk.h" />
-    <ClInclude Include="src\application\MapManager\MapManager.h" />
+    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\Block.h" />
+    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\BlockConfig.h" />
+    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\BlockDurability.h" />
+    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Chunk.h" />
+    <ClInclude Include="src\application\GameObjects\MapManager\MapManager.h" />
     <ClInclude Include="src\application\ResourceLoader\ResourceID.h" />
     <ClInclude Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.h" />
     <ClInclude Include="src\engine\ResourceManager\Audio\AudioLoader\AudioLoader.h" />
@@ -102,7 +107,7 @@
     <ClInclude Include="src\engine\ResourceManager\Animation\AnimationManager.h" />
     <ClInclude Include="src\application\GameManager\GameManager.h" />
     <ClInclude Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.h" />
-    <ClInclude Include="src\application\GameManager\Phase\IPhase\IPhase.h" />
+    <ClInclude Include="src\application\GameManager\Phase\IPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.h" />
     <ClInclude Include="src\engine\Camera\Camera.h" />
@@ -158,6 +163,7 @@
     <ClInclude Include="src\engine\ResourceManager\Texture\TextureBank\TextureBank.h" />
     <ClInclude Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.h" />
     <ClInclude Include="src\application\TestMeshShader\TestMeshShader.h" />
+    <ClInclude Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

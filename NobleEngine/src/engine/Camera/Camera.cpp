@@ -43,32 +43,35 @@ void Camera::Update()
 
 void Camera::Update_Orbit()
 {
-    // マウス移動量
-    Vector2 mouseDelta = Game::IO::Mouse::Get2DPositionDelta();
-    // マウスホイール
-    int32_t mouseWheel = Game::IO::Mouse::GetWheel();
-    // マウス中クリック
-	bool isMiddleHeld = Game::IO::Mouse::IsHeld(2);
-	// Shiftキー
-	bool isShiftHeld = Game::IO::Key::IsHeld(DIK_LSHIFT);
+	if (enableControl_)
+	{
+		// マウス移動量
+		Vector2 mouseDelta = Game::IO::Mouse::Get2DPositionDelta();
+		// マウスホイール
+		int32_t mouseWheel = Game::IO::Mouse::GetWheel();
+		// マウス中クリック
+		bool isMiddleHeld = Game::IO::Mouse::IsHeld(2);
+		// Shiftキー
+		bool isShiftHeld = Game::IO::Key::IsHeld(DIK_LSHIFT);
 
-    // パン
-    if (isMiddleHeld && isShiftHeld)
-    {
-        Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(transform_.rotate.x) * Matrix4x4::MakeRotateYMatrix(transform_.rotate.y);
-        Vector3 right = { rot.m[0][0], rot.m[1][0], rot.m[2][0] };
-        Vector3 up = { rot.m[0][1], rot.m[1][1], rot.m[2][1] };
+		// パン
+		if (isMiddleHeld && isShiftHeld)
+		{
+			Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(transform_.rotate.x) * Matrix4x4::MakeRotateYMatrix(transform_.rotate.y);
+			Vector3 right = { rot.m[0][0], rot.m[1][0], rot.m[2][0] };
+			Vector3 up = { rot.m[0][1], rot.m[1][1], rot.m[2][1] };
 
-        float speed = spherical_.radius * 0.02f;
-        center_ += (right * mouseDelta.x + up * mouseDelta.y) * 0.1f * speed;
-    }
-	// 回転
-	if (isMiddleHeld && !isShiftHeld)
-    {
-        spherical_.phi -= mouseDelta.y * -0.01f;
-        spherical_.theta -= mouseDelta.x * 0.01f;
-    }
-	spherical_.radius -= mouseWheel * spherical_.radius * 0.001f;
+			float speed = spherical_.radius * 0.02f;
+			center_ += (right * mouseDelta.x + up * mouseDelta.y) * 0.1f * speed;
+		}
+		// 回転
+		if (isMiddleHeld && !isShiftHeld)
+		{
+			spherical_.phi -= mouseDelta.y * -0.01f;
+			spherical_.theta -= mouseDelta.x * 0.01f;
+		}
+		spherical_.radius -= mouseWheel * spherical_.radius * 0.001f;
+	}
 
     // イージング
 	MovingCenter();

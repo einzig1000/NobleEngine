@@ -11,7 +11,7 @@ RenderTextureManager::RenderTextureManager(ID3D12Device2* device, ID3D12CommandQ
 RenderTextureManager::~RenderTextureManager()
 {}
 
-int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName)
+int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName, Vector4 clearColor)
 {
 	// 既に作成されていたらそのIDを返す
 	RenderTarget* renderTarget = Get(textureName);
@@ -30,7 +30,7 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
     rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-    rt->colorResource = Dx12ResourceFactory::CreateRenderTargetResource(device_, width, height, format);
+    rt->colorResource = Dx12ResourceFactory::CreateRenderTargetResource(device_, width, height, format, clearColor);
     rt->rtvAlloc = descriptorHeapManager_->GetRTVManager()->CreateRTV(rt->colorResource.Get(), &rtvDesc);
     rt->colorsrvAlloc = descriptorHeapManager_->GetSRV_UAVManager()->CreateSRVforRenderTarget(rt->colorResource.Get());
 

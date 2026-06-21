@@ -9,7 +9,7 @@ public:
 	TestParticle();
 	~TestParticle();
 	void Initialize();
-	void Update();
+	void Update(int32_t cameraID);
 	void Draw(int32_t renderTextureID);
 
 private:

@@ -221,9 +221,9 @@ TestParticle::~TestParticle()
 void TestParticle::Initialize()
 {}
 
-void TestParticle::Update()
+void TestParticle::Update(int32_t cameraID)
 {
-	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(0);
+	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	for (int i = 0; i < 10; ++i)
 	{
 		planeColors[i].w -= 0.02f;
@@ -278,14 +278,24 @@ void TestParticle::Update()
 
 void TestParticle::Draw(int32_t renderTextureID)
 {
-	for (int i = 0; i < 10; ++i)
-	{
-		//renderPlanes_[i]->Draw(renderTextureID);
-	}
-	for (int i = 0; i < 10; ++i)
-	{
-		//renderRings_[i]->Draw(renderTextureID);
-	}
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderPlanes_[i]->Draw(renderTextureID);
+	//}
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderRings_[i]->Draw(renderTextureID);
+	//}
 	//renderCylinder_->Draw(renderTextureID);
-	renderSphere_->Draw(renderTextureID);
+	//renderSphere_->Draw(renderTextureID);
+	for (int i = 0; i < 10; ++i)
+	{
+		renderPlanes_[i]->ScreenDraw();
+	}
+	for (int i = 0; i < 10; ++i)
+	{
+		renderRings_[i]->ScreenDraw();
+	}
+	renderCylinder_->ScreenDraw();
+	renderSphere_->ScreenDraw();
 }

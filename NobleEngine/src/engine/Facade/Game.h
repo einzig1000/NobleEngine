@@ -35,6 +35,9 @@ namespace Game
 			/// <param name="modelID">モデルID</param>
 			/// <returns>モデルデータ</returns>
 			ModelData* GetData(int32_t modelID);
+
+
+			void Preview();
 		}
 
 		namespace Texture
@@ -76,6 +79,8 @@ namespace Game
 		int32_t GetRenderTextureID(const std::string textureName);
 
 		int32_t GetRenderTextureDepthID(const std::string textureName);
+
+		UINT64 GetRenderTexture(const std::string textureName);
 
 		/// <summary>
 		/// レンダーテクスチャ作成

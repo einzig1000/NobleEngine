@@ -14,10 +14,11 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
 	}
 
-	rt_nobleScreenID_ = Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(
-		Engine::Instance().GetWindowManager()->winHeight_, 
-		Engine::Instance().GetWindowManager()->winHeight_,
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen");
+	rt_nobleScreenID_ = dxManager_->GetRenderTextureManager()->CreateRenderTarget(
+		//Engine::Instance().GetWindowManager()->winHeight_,
+		//Engine::Instance().GetWindowManager()->winHeight_,
+		1280, 720,
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", Vector4{ 0.5333333f, 0.5333333f, 0.5333333f, 0.0f });
 
 	screenRenderObject_ = std::make_unique<RenderObject>();
 	screenRenderObject_->psoConfig_.blendID = BlendStateID::Normal2;
@@ -178,16 +179,27 @@ void DrawSystem::PreScreenDraw()
 
 void DrawSystem::ScreenDraw()
 {
-	ImGui::Begin("mainDisplay");
-	ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
-	ImGui::End();
+
+	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
+	DrawObject(screenRenderObject_.get());
 
 // デバッグモードの時は、PreScreenDrawで描画した内容をImGuiのウィンドウに表示する
 #ifdef DEBUG_
 
-	ImGui::Begin("a");
-	ImGui::Image(ImTextureID(CD3DX12_GPU_DESCRIPTOR_HANDLE::ptr), ImVec2(1280, 720));
+	ImGui::Begin("mainDisplay");
+	//ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
+	if (ImGui::ImageButton("texture##nobleScreen", ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450)))
+	{
+		ImGui::OpenPopup("nobleScreen");
+	}
 	ImGui::End();
+
+	if (ImGui::BeginPopup("nobleScreen"))
+	{
+		ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(1280, 720));
+		if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
 
 #endif // DEBUG
 

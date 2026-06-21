@@ -3,7 +3,7 @@
 #include <map>
 #include <Utilities/PerlinNoise.h>
 #include <DrawSystem/RenderData/RenderObject.h>
-#include <MapManager/Chunk/Block/Block.h>
+#include <GameObjects/MapManager/Chunk/Block/Block.h>
 
 class BlockConfig;
 

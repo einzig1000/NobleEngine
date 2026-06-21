@@ -15,12 +15,13 @@ public:
 	/// </summary>
 	/// <typeparam name="T"> 値の型 </typeparam>
 	/// <param name="path"> ファイルパス </param>
-	/// <param name="key"> キー </param>
+	/// <param name="key"> キー '/'でネスト </param>
 	/// <param name="value"> 値 </param>
 	template<typename T>
 	static void AddParam(const std::string& path, const std::string& key, const T& value)
 	{
-		dataMap[path][key] = value;
+		//dataMap[path][key] = value; 
+		dataMap[path][nlohmann::json::json_pointer(key)] = value;
 	}
 
 	/// <summary>
@@ -28,7 +29,7 @@ public:
 	/// </summary>
 	/// <typeparam name="T"> 値の型 </typeparam>
 	/// <param name="path"> ファイルパス </param>
-	/// <param name="key"> キー </param>
+	/// <param name="key"> キー '/'でネスト </param>
 	/// <param name="outValue"> 取得した値の出力先 </param>
 	/// <returns> 成否 </returns>
 	template<typename T>
@@ -37,9 +38,10 @@ public:
 		auto it = dataMap.find(path);
 		if (it == dataMap.end()) return false;
 
-		if (!it->second.contains(key)) return false;
+		auto ptr = nlohmann::json::json_pointer(key);
+		if (!it->second.contains(ptr)) return false;
 
-		outValue = it->second.at(key).get<T>();
+		outValue = it->second.at(ptr).get<T>();
 		return true;
 	}
 

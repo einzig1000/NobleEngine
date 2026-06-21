@@ -31,6 +31,9 @@ int32_t ModelLoader::LoadModel(const std::string & filePath)
     // AABB読み込み
     obj->aabb = LoadAABB(filePath, obj->vertices);
 
+	// ファイルパスを保存
+	obj->filePath = filePath;
+
     // 頂点バッファ作成
     size_t vertexBufferSize = sizeof(VertexData) * obj->vertices.size();
     obj->vertexBuffer = Dx12ResourceFactory::CreateBufferResource(device_, vertexBufferSize);

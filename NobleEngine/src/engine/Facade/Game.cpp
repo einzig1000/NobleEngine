@@ -39,6 +39,11 @@ namespace Game
 			{
 				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelBank()->GetModelData(modelID);
 			}
+
+			void Preview()
+			{
+				Engine::Instance().GetResourceManager()->GetModelManager()->GetModelEditor()->DrawImGui();
+			}
 		}
 
 		namespace Texture
@@ -89,6 +94,10 @@ namespace Game
 		int32_t GetRenderTextureDepthID(const std::string textureName)
 		{
 			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->depthsrvAlloc.index;
+		}
+		UINT64 GetRenderTexture(const std::string textureName)
+		{
+			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.gpu.ptr;
 		}
 	}
 

@@ -1,19 +1,17 @@
 #include "GameScenePhase.h"
-#include <MapManager/MapManager.h>
+#include <GameObjects/MapManager/MapManager.h>
 #include <ResourceLoader/ResourceID.h>
 #include <Character/Player/Player.h>
 #include <Character/Enemy/EnemyManager.h>
 #include <Camera/CameraController.h>
 #include <UIManager/UIManager.h>
 #include <Physics/IWorldCollider.h>
-#include <Item/CraftRecipe/CraftRecipe.h>
+#include <GameObjects/Item/CraftRecipe/CraftRecipe.h>
 #include <fstream>
 
 GameScenePhase::GameScenePhase()
 {
-	Game::Resource::Texture::Load("resources/prototypes/texture/uvChecker.png");
-	Game::Resource::Texture::Load("resources/prototypes/texture/monsterBall.png");
-	Game::Resource::Texture::Load("resources/prototypes/texture/white1x1.png");
+	Game::Camera::AddCamera();
 
 	rt_main_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
 

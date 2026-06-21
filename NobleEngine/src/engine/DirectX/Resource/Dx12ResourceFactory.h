@@ -1,5 +1,6 @@
 #pragma once
 #include <externals/DirectXTex/DirectXTex.H>
+#include <definition/definition.h>
 #include <d3d12.h>
 #include <wrl.h>
 
@@ -51,5 +52,5 @@ namespace Dx12ResourceFactory
 	/// <param name="format">テクスチャのフォーマット</param>
 	/// <returns>作成されたレンダーターゲット用のテクスチャリソース</returns>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetResource(
-		ID3D12Device2* device, UINT width, UINT height, DXGI_FORMAT format);
+		ID3D12Device2* device, UINT width, UINT height, DXGI_FORMAT format, Vector4 clearColor);
 }
