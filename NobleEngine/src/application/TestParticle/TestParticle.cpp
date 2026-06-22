@@ -288,15 +288,4 @@ void TestParticle::Draw(int32_t renderTextureID)
 	}
 	renderCylinder_->Draw(renderTextureID);
 	renderSphere_->Draw(renderTextureID);
-
-	//for (int i = 0; i < 10; ++i)
-	//{
-	//	renderPlanes_[i]->ScreenDraw();
-	//}
-	//for (int i = 0; i < 10; ++i)
-	//{
-	//	renderRings_[i]->ScreenDraw();
-	//}
-	//renderCylinder_->ScreenDraw();
-	//renderSphere_->ScreenDraw();
 }

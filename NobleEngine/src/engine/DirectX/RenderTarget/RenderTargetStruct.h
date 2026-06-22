@@ -3,6 +3,7 @@
 #include <dxgiformat.h>
 #include <d3d12.h>
 #include <Windows.h>
+#include <string>
 #include <wrl/client.h>
 #include <DirectX/DescriptorHeapManager/DSV/DSVManager.h>
 #include <DirectX/DescriptorHeapManager/RTV/RTVManager.h>
@@ -24,4 +25,5 @@ struct RenderTarget
 	D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON;
 	D3D12_RESOURCE_STATES dsvState = D3D12_RESOURCE_STATE_COMMON;
 	float clearColor[4] = { 0.53f, 0.53f, 0.53f, 1.0f };
+	std::string name;
 };

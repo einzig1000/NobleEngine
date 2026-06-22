@@ -1,29 +1,28 @@
-#include "TextureEditor.h"
+#include "TexturePreview.h"
 #include <ImGuiManager/ImGuiManager.h>
 #include <ResourceManager/Texture/TextureBank/TextureBank.h>
 #include <DirectX/DirectXManager.h>
 
-TextureEditor::TextureEditor(DirectXManager* dxManager, TextureBank* bank)
+TexturePreview::TexturePreview(DirectXManager* dxManager, TextureBank* bank)
 	: dxManager_(dxManager), bank_(bank)
 {}
 
-TextureEditor::~TextureEditor()
+TexturePreview::~TexturePreview()
 {}
 
-void TextureEditor::Update()
+void TexturePreview::Update()
 {}
 
-void TextureEditor::Draw()
+void TexturePreview::Draw()
 {}
 
-void TextureEditor::DrawImGui()
+void TexturePreview::DrawImGui()
 {
-	ImGui::Begin("Texture Editor");
+	ImGui::Begin("Texture Preview");
+	std::unordered_map<int32_t, std::unique_ptr<TextureData>>& textureList = bank_->GetTextureList();
 
 	if (ImGui::BeginListBox("##texture list"))
 	{
-		std::unordered_map<int32_t, std::unique_ptr<TextureData>>& textureList = bank_->GetTextureList();
-
 		for (auto& texture : textureList)
 		{
 			ImGui::BeginGroup();
@@ -31,6 +30,21 @@ void TextureEditor::DrawImGui()
 			if (ImGui::Selectable(filePath.c_str(), textureID_ == texture.first))
 			{
 				textureID_ = texture.first;
+				size_t textureW = bank_->GetTextureList().at(textureID_)->metadata.width;
+				size_t textureH = bank_->GetTextureList().at(textureID_)->metadata.height;
+
+				// 長い方を512に合わせて正規化
+				bool isWidthLonger = textureW > textureH;
+				if (isWidthLonger)
+				{
+					windowSize_.x = 512;
+					windowSize_.y = static_cast<int>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
+				}
+				else
+				{
+					windowSize_.y = 512;
+					windowSize_.x = static_cast<int>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
+				}
 			}
 			ImGui::EndGroup();
 		}
@@ -52,9 +66,9 @@ void TextureEditor::DrawImGui()
 
 	if (fullscreen_)
 	{
-		ImGui::Begin("Texture Preview", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+		ImGui::Begin("texturepreview", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
 
-		ImGui::Image(ImTextureID(dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(textureID_).ptr), ImVec2(512, 512));
+		ImGui::Image(ImTextureID(dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(textureID_).ptr), ImVec2(windowSize_.x, windowSize_.y));
 		
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 		{

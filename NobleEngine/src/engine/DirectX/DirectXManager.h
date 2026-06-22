@@ -31,7 +31,7 @@ public:
     void BeginFrame();
 
     // 書き込みたいRenderTextureを指定してResourceのStateをD3D12_RESOURCE_STATE_RENDER_TARGETに遷移させる。
-    void BeginRenderPass(RenderTarget* target, bool isDepthWrite, float clearColorA = 0.0f);
+    void BeginRenderPass(RenderTarget* target, bool isDepthWrite);
     // SetRenderTargetで変えたResouruceのStateをD3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCEに遷移させる。
 	void EndRenderPass(RenderTarget* target, bool isDepthWrite, D3D12_RESOURCE_STATES nextState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 

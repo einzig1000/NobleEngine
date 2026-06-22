@@ -11,8 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp" />
-    <ClCompile Include="src\engine\Editor\ModelEditor\ModelEditor.cpp" />
+    <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp" />
     <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\Block.cpp" />
@@ -86,11 +87,12 @@
     <ClCompile Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.cpp" />
     <ClCompile Include="src\application\TestMeshShader\TestMeshShader.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.cpp" />
-    <ClCompile Include="src\engine\Editor\TextureEditor\TextureEditor.cpp" />
+    <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h" />
     <ClInclude Include="src\engine\Editor\EngineEditor.h" />
-    <ClInclude Include="src\engine\Editor\ModelEditor\ModelEditor.h" />
+    <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h" />
     <ClInclude Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h" />
     <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\Block.h" />
@@ -167,7 +169,7 @@
     <ClInclude Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.h" />
     <ClInclude Include="src\application\TestMeshShader\TestMeshShader.h" />
     <ClInclude Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.h" />
-    <ClInclude Include="src\engine\Editor\TextureEditor\TextureEditor.h" />
+    <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

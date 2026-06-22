@@ -7,11 +7,11 @@ class ModelBank;
 class DirectXManager;
 class CameraManager;
 
-class ModelEditor
+class ModelPreview
 {
 public:
-	ModelEditor(DirectXManager* dxManager, CameraManager* cameraManager, ModelBank* bank);
-	~ModelEditor();
+	ModelPreview(DirectXManager* dxManager, CameraManager* cameraManager, ModelBank* bank);
+	~ModelPreview();
 
 	void Update();
 	void Draw();
@@ -26,7 +26,7 @@ private:
 	int32_t cameraID_ = -1;
 	int32_t renderTarget_ = -1;
 	int32_t textureID = -1;
-	EulerTransform objectTransform_;
+	QuaternionTransform objectTransform_;
 
 	bool fullscreen_ = false;
 };

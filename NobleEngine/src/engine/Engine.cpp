@@ -40,7 +40,7 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 
 	windowManager_->AttachMouseController(ioManager_->GetMouseController());
 
-	#ifdef _DEBUG
+#ifdef _DEBUG
 	engineEditor_ = std::make_unique<EngineEditor>(
 		windowManager_.get(),
 		dxManager_.get(),
@@ -48,7 +48,7 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 		ioManager_.get(),
 		cameraManager_.get(),
 		resourceManager_.get());
-	#endif
+#endif
 }
 
 // メインループ用

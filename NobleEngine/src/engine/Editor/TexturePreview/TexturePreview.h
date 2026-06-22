@@ -4,11 +4,11 @@
 class TextureBank;
 class DirectXManager;
 
-class TextureEditor
+class TexturePreview
 {
 public:
-	TextureEditor(DirectXManager* dxManager, TextureBank* bank);
-	~TextureEditor();
+	TexturePreview(DirectXManager* dxManager, TextureBank* bank);
+	~TexturePreview();
 
 	void Update();
 	void Draw();
@@ -18,7 +18,8 @@ private:
 	TextureBank* bank_;
 	DirectXManager* dxManager_;
 
-	int32_t textureID_;
+	int32_t textureID_ = 0;
 	bool fullscreen_ = false;
+	Vector2int windowSize_ = Vector2int( 512, 512 );
 };
 

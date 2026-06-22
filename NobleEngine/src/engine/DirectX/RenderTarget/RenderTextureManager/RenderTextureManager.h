@@ -38,6 +38,8 @@ public:
     // リサイズ
     void ResizeAllWindowDependent(UINT newWidth, UINT newHeight);
 
+	std::vector<std::unique_ptr<RenderTarget>>& GetRenderTargets() { return renderTargets_; }
+
 private:
 	ID3D12Device2* device_;
 	DescriptorHeapManager* descriptorHeapManager_;

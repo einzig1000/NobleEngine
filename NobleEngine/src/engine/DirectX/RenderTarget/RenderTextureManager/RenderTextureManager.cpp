@@ -23,6 +23,7 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
     Log("レンダーテクスチャ作成開始:%s", textureName.c_str());
 
     auto rt = std::make_unique<RenderTarget>();
+	rt->name = textureName;
     rt->width = width;
     rt->height = height;
     rt->format = format;

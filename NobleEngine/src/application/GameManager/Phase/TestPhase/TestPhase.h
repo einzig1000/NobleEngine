@@ -10,8 +10,8 @@ struct RenderTargetData
 	// 名前
 	std::string name;
 	// サイズ
-	uint32_t width;
-	uint32_t height;
+	uint32_t width = 1280;
+	uint32_t height = 720;
 	// 参照するレンダーテクスチャ
 	std::vector<std::string> in;
 	// 書きだすレンダーテクスチャ

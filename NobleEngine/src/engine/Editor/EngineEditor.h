@@ -4,6 +4,7 @@
 class WindowManager;
 
 class DirectXManager;
+class RenderTexturePreview;
 
 class DrawSystem;
 
@@ -12,8 +13,8 @@ class IOManager;
 class CameraManager;
 
 class ResourceManager;
-class ModelEditor;
-class TextureEditor;
+class ModelPreview;
+class TexturePreview;
 
 class EngineEditor
 {
@@ -34,6 +35,7 @@ public:
 
 private:
 	DirectXManager* dxManager_ = nullptr;
+	std::unique_ptr<RenderTexturePreview> renderTexturePreview_;
 	
 	WindowManager* windowManager_ = nullptr;
 	
@@ -44,8 +46,8 @@ private:
 	CameraManager* cameraManager_ = nullptr;
 
 	ResourceManager* resourceManager_ = nullptr;
-	std::unique_ptr<ModelEditor> modelEditor_;
-	std::unique_ptr<TextureEditor> textureEditor_;
+	std::unique_ptr<ModelPreview> modelEditor_;
+	std::unique_ptr<TexturePreview> textureEditor_;
 
 };
 

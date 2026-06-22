@@ -1,6 +1,7 @@
 #include "EngineEditor.h"
-#include "ModelEditor/ModelEditor.h"
-#include "TextureEditor/TextureEditor.h"
+#include "ModelPreview/ModelPreview.h"
+#include "TexturePreview/TexturePreview.h"
+#include "RenderTexturePreview/RenderTexturePreview.h"
 
 #include <IO/IOManager.h>
 #include <Window/WindowManager.h>
@@ -25,8 +26,10 @@ EngineEditor::EngineEditor(
 	cameraManager_(cameraManager),
 	resourceManager_(resourceManager)
 {
-	modelEditor_ = std::make_unique<ModelEditor>(dxManager, cameraManager, resourceManager->GetModelManager()->GetModelBank());
-	textureEditor_ = std::make_unique<TextureEditor>(dxManager, resourceManager->GetTextureManager()->GetTextureBank());
+	modelEditor_ = std::make_unique<ModelPreview>(dxManager, cameraManager, resourceManager->GetModelManager()->GetModelBank());
+	textureEditor_ = std::make_unique<TexturePreview>(dxManager, resourceManager->GetTextureManager()->GetTextureBank());
+
+	renderTexturePreview_ = std::make_unique<RenderTexturePreview>(dxManager);
 }
 
 EngineEditor::~EngineEditor()
@@ -49,4 +52,5 @@ void EngineEditor::DrawImGui()
 {
 	modelEditor_->DrawImGui();
 	textureEditor_->DrawImGui();
+	renderTexturePreview_->DrawImGui();
 }

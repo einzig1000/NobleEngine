@@ -38,11 +38,10 @@ void ImGuiManager::BeginFrame()
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
 	
-	// 画面全体をドッキング可能なスペース（DockSpace）にする
-	//ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
+	// 画面全体をドッキング可能なスペースにする
 	ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-	//ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
 void ImGuiManager::EndFrame()

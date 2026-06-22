@@ -18,7 +18,7 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 		//Engine::Instance().GetWindowManager()->winHeight_,
 		//Engine::Instance().GetWindowManager()->winHeight_,
 		1280, 720,
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", 0.0f);
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", 1.0f);
 
 	screenRenderObject_ = std::make_unique<RenderObject>();
 	screenRenderObject_->psoConfig_.blendID = BlendStateID::Normal2;
@@ -169,7 +169,7 @@ void DrawSystem::PostEffectDraw()
 
 void DrawSystem::PreScreenDraw()
 {
-	dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true, 1.0f);
+	dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true);
 	for (const auto* renderObject : screenRenderObjects_)
 	{
 		DrawObject(renderObject);
