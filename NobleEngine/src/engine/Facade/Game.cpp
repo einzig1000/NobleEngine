@@ -39,11 +39,6 @@ namespace Game
 			{
 				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelBank()->GetModelData(modelID);
 			}
-
-			void Preview()
-			{
-				Engine::Instance().GetResourceManager()->GetModelManager()->GetModelEditor()->DrawImGui();
-			}
 		}
 
 		namespace Texture

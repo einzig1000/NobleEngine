@@ -514,8 +514,6 @@ void TestPhase::Draw()
 
 void TestPhase::DrawImGui()
 {
-	Game::Resource::Model::Preview();
-
 
 	ImGui::Begin("renderTexture"); 
 

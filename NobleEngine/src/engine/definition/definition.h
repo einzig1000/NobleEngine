@@ -1113,6 +1113,9 @@ struct TextureData
 
 	// テクスチャリソース
     Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
+
+    // ファイルパス
+    std::string filePath;
 };
 
 #pragma endregion

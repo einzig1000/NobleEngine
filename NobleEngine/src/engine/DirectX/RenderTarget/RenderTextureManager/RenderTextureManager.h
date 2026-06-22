@@ -24,7 +24,7 @@ public:
 	/// <param name="format">テクスチャのフォーマット</param>
 	/// <param name="textureName">テクスチャの名前</param>
 	/// <returns>テクスチャID</returns>
-    int32_t CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName, Vector4 clearColor = { 0.5333333f, 0.5333333f, 0.5333333f, 1.0f});
+    int32_t CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName, float clearColorA = 0.0f);
 
 	// テクスチャ保存
     bool SaveTexture(const std::string& filePath, std::string textureName, bool color);

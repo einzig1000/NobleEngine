@@ -18,6 +18,7 @@ class IWorldCollider;
 class ResourceManager;
 class FixFPS;
 class RenderObject;
+class EngineEditor;
 
 class Engine
 {
@@ -72,4 +73,7 @@ private:
 	std::unique_ptr<ResourceManager> resourceManager_;
 	// フレームレート制御
 	std::unique_ptr<FixFPS> fixFPS_;
+	// エディタ
+	std::unique_ptr<EngineEditor> engineEditor_;
+
 };

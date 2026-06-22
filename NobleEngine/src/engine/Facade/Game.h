@@ -35,9 +35,6 @@ namespace Game
 			/// <param name="modelID">モデルID</param>
 			/// <returns>モデルデータ</returns>
 			ModelData* GetData(int32_t modelID);
-
-
-			void Preview();
 		}
 
 		namespace Texture

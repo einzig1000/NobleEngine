@@ -18,11 +18,14 @@ public:
 private:
 	TestParticle TestParticle;
 
+	std::unique_ptr<RenderObject> render_;
+
 	Vector3 cameraRotate_;
 
 	float frame_ = 0.0f;
 
 	int32_t rt_main_;
+	int32_t rt_postEffect_;
 	int32_t c_main_;
 };
 

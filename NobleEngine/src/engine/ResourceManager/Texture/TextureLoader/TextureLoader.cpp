@@ -28,6 +28,9 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
     HRESULT hr = S_OK;
     std::unique_ptr<TextureData> text = std::make_unique<TextureData>();
 
+    // ファイルパスの保存
+	text->filePath = filePath;
+
     // 識別子を判定
     std::filesystem::path path(filePath);
     std::string ext = path.extension().string();

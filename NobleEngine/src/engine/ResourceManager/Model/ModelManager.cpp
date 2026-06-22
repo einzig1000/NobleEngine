@@ -9,8 +9,6 @@ ModelManager::ModelManager(DirectXManager* dxManager)
 	loader_ = std::make_unique<ModelLoader>(dxManager->GetDevice(), bank_.get());
 	// モデルクリエイター作成
 	creater_ = std::make_unique<ModelCreater>(dxManager->GetDevice(), bank_.get());
-	// モデルエディター作成
-	editor_ = std::make_unique<ModelEditor>(dxManager, bank_.get());
 }
 
 ModelManager::~ModelManager()

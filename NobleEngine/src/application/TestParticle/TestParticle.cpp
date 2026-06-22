@@ -278,24 +278,25 @@ void TestParticle::Update(int32_t cameraID)
 
 void TestParticle::Draw(int32_t renderTextureID)
 {
-	//for (int i = 0; i < 10; ++i)
-	//{
-	//	renderPlanes_[i]->Draw(renderTextureID);
-	//}
-	//for (int i = 0; i < 10; ++i)
-	//{
-	//	renderRings_[i]->Draw(renderTextureID);
-	//}
-	//renderCylinder_->Draw(renderTextureID);
-	//renderSphere_->Draw(renderTextureID);
 	for (int i = 0; i < 10; ++i)
 	{
-		renderPlanes_[i]->ScreenDraw();
+		renderPlanes_[i]->Draw(renderTextureID);
 	}
 	for (int i = 0; i < 10; ++i)
 	{
-		renderRings_[i]->ScreenDraw();
+		renderRings_[i]->Draw(renderTextureID);
 	}
-	renderCylinder_->ScreenDraw();
-	renderSphere_->ScreenDraw();
+	renderCylinder_->Draw(renderTextureID);
+	renderSphere_->Draw(renderTextureID);
+
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderPlanes_[i]->ScreenDraw();
+	//}
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderRings_[i]->ScreenDraw();
+	//}
+	//renderCylinder_->ScreenDraw();
+	//renderSphere_->ScreenDraw();
 }

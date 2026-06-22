@@ -25,6 +25,6 @@ public:
 private:
 	DirectXManager* dxManager_ = nullptr;
 	WindowManager* windowManager_ = nullptr;
-	bool isDraw_ = false;
+	bool isDraw_ = true;
 };
 

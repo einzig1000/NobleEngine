@@ -18,7 +18,7 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 		//Engine::Instance().GetWindowManager()->winHeight_,
 		//Engine::Instance().GetWindowManager()->winHeight_,
 		1280, 720,
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", Vector4{ 0.5333333f, 0.5333333f, 0.5333333f, 0.0f });
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", 0.0f);
 
 	screenRenderObject_ = std::make_unique<RenderObject>();
 	screenRenderObject_->psoConfig_.blendID = BlendStateID::Normal2;
@@ -184,7 +184,7 @@ void DrawSystem::ScreenDraw()
 	DrawObject(screenRenderObject_.get());
 
 // デバッグモードの時は、PreScreenDrawで描画した内容をImGuiのウィンドウに表示する
-#ifdef DEBUG_
+#ifdef _DEBUG
 
 	ImGui::Begin("mainDisplay");
 	//ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
@@ -204,9 +204,10 @@ void DrawSystem::ScreenDraw()
 #endif // DEBUG
 
 // リリースモードの時は、PreScreenDrawで描画した内容をそのままバックバッファにコピーして表示する
-#ifdef RELEASE_
-	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
-	DrawObject(screenRenderObject_.get());
+#ifndef _RELEASE
+
+	//screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
+	//DrawObject(screenRenderObject_.get());
 
 #endif // RELEASE_
 

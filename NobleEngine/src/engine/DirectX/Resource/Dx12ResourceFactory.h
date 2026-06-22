@@ -44,7 +44,7 @@ namespace Dx12ResourceFactory
 		ID3D12Device2* device, UINT width, UINT height);
 
 	/// <summary>
-	/// レンダーターゲット用のテクスチャリソースを作成する関数
+	/// レンダーターゲット用のテクスチャリソースを作成する関数000000
 	/// </summary>
 	/// <param name="device">DirectX 12 デバイス</param>
 	/// <param name="width">テクスチャの幅</param>
@@ -52,5 +52,5 @@ namespace Dx12ResourceFactory
 	/// <param name="format">テクスチャのフォーマット</param>
 	/// <returns>作成されたレンダーターゲット用のテクスチャリソース</returns>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetResource(
-		ID3D12Device2* device, UINT width, UINT height, DXGI_FORMAT format, Vector4 clearColor);
+		ID3D12Device2* device, UINT width, UINT height, DXGI_FORMAT format, float clearColor[4]);
 }

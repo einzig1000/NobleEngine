@@ -8,6 +8,7 @@
 #include <Camera/CameraManager.h>
 #include <imGuiManager/ImGuiManager.h>
 #include <FixFPS/FixFPS.h>
+#include <Editor/EngineEditor.h>
 
 using namespace DirectX;
 
@@ -38,6 +39,16 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 	fixFPS_ = std::make_unique<FixFPS>();
 
 	windowManager_->AttachMouseController(ioManager_->GetMouseController());
+
+	#ifdef _DEBUG
+	engineEditor_ = std::make_unique<EngineEditor>(
+		windowManager_.get(),
+		dxManager_.get(),
+		drawSystem_.get(),
+		ioManager_.get(),
+		cameraManager_.get(),
+		resourceManager_.get());
+	#endif
 }
 
 // メインループ用
@@ -70,13 +81,22 @@ void Engine::BeginFrame()
 	// インプット系を更新
 	ioManager_->Update();
 
-	//// カメラを更新	
-	//cameraManager_->Update(0);
+	// デバッグモードの時のみ呼び出す
+#ifdef _DEBUG
+	engineEditor_->Update();
+#endif
 }
+
 void Engine::EndFrame()
 {
 	// 入力終了処理
 	ioManager_->EndFrame();
+
+	// デバッグモードの時のみ呼び出す
+#ifdef _DEBUG
+	engineEditor_->Draw();
+	engineEditor_->DrawImGui();
+#endif
 
 	// カメラのImGui描画
 	cameraManager_->DrawImGui();

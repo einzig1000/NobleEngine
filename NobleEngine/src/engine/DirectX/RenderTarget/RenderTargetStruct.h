@@ -23,4 +23,5 @@ struct RenderTarget
 	D3D12_RECT scissorRect{};
 	D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON;
 	D3D12_RESOURCE_STATES dsvState = D3D12_RESOURCE_STATE_COMMON;
+	float clearColor[4] = { 0.53f, 0.53f, 0.53f, 1.0f };
 };
