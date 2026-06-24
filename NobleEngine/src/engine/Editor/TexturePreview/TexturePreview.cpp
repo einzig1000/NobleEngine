@@ -66,10 +66,10 @@ void TexturePreview::DrawImGui()
 
 	if (fullscreen_)
 	{
-		ImGui::Begin("texturepreview", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+		ImGui::Begin("texturepreview");
 
-		ImGui::Image(ImTextureID(dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(textureID_).ptr), ImVec2(windowSize_.x, windowSize_.y));
-		
+		ImGui::Image(ImTextureID(dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(textureID_).ptr), ImVec2(static_cast<float>(windowSize_.x), static_cast<float>(windowSize_.y)));
+
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 		{
 			ImGui::SetDragDropPayload("DAD_TEXTURE_ID", &textureID_, sizeof(int32_t));

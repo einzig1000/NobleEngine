@@ -56,7 +56,7 @@ void RenderTexturePreview::DrawImGui()
 	ImGui::SameLine();
 
 
-	if (renderTargetIndex_ != 2 && ImGui::ImageButton("##sssed", ImTextureID(gpuDescriptorHandlePtr_), ImVec2(128, 128)))
+	if (renderTargetIndex_ != 22193211 && ImGui::ImageButton("##sssed", ImTextureID(gpuDescriptorHandlePtr_), ImVec2(128, 128)))
 	{
 		fullscreen_ = !fullscreen_;
 	}
@@ -69,7 +69,7 @@ void RenderTexturePreview::DrawImGui()
 
 	if (fullscreen_)
 	{
-		ImGui::Begin("rendertexturepreview", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+		ImGui::Begin("rendertexturepreview");
 
 		ImGui::Image(ImTextureID(gpuDescriptorHandlePtr_), ImVec2(static_cast<float>(windowSize_.x), static_cast<float>(windowSize_.y)));
 

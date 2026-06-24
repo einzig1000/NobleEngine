@@ -47,7 +47,8 @@ Chunk::Chunk()
 
 	// ブロックデータの初期化
 	renderData_ = std::make_unique<RenderObject>();
-	renderData_->psoConfig_.vs = "resources/shaders/Block.VS.hlsl";
+	//renderData_->psoConfig_.vs = "resources/shaders/Block.VS.hlsl";
+	renderData_->psoConfig_.ms = "resources/shaders/Block.MS.hlsl";
 	renderData_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
 	renderData_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
 	renderData_->SetupFromShaders();
@@ -554,7 +555,7 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 	}
 }
 
-void Chunk::Update()
+void Chunk::Update(int32_t cameraID)
 {
 	for (int x = 0; x < Constexprs::kChunkX; x++)
 	{
@@ -575,21 +576,29 @@ void Chunk::Update()
 		}
 	}
 
-	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(0);
-	renderData_->SetCBufferData(0, ShaderType::VertexShader, &viewPro);
+	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	renderData_->SetCBufferData(0, ShaderType::MeshShader, &viewPro);
 	//if (instanceBufferDirty_)
 	{
-		renderData_->SetSBufferData(0, ShaderType::VertexShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
+		renderData_->SetSBufferData(0, ShaderType::MeshShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
 		instanceBufferDirty_ = false;
 	}
+
+	//Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(0);
+	//renderData_->SetCBufferData(0, ShaderType::VertexShader, &viewPro);
+	//if (instanceBufferDirty_)
+	//{
+	//renderData_->SetSBufferData(0, ShaderType::VertexShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
+	//}
+	//instanceBufferDirty_ = false;
 
 	renderData_->instanceNum_ = uint32_t(instanceDataList_.size());
 }
 
 void Chunk::Draw(int32_t renderTargetID)
 {
-	//renderData_->Draw(renderTargetID);
-	renderData_->ScreenDraw();
+	renderData_->Draw(renderTargetID);
+	//renderData_->ScreenDraw();
 }
 
 // チャンクを跨いだブロックも取得できる

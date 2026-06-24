@@ -112,7 +112,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 
 		if (SUCCEEDED(hr))
 		{
-			cmdList6->DispatchMesh(1, 1, 1);
+			cmdList6->DispatchMesh(renderObject->instanceNum_, 1, 1);
 			//cmdList->DispatchMesh(renderObject->dispatchX, renderObject->dispatchY, renderObject->dispatchZ);
 		}
 	}

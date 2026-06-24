@@ -28,7 +28,7 @@ PSOutput main(PSInput input)
     float4 breakColor = textures[input.breakTextureID].Sample(gSampler, input.texcoord2);
 
     float useBreak = step(1e-5, breakColor.a);
-    float4 blended = lerp(baseColor, breakColor, useBreak);
+    float4 blended = lerp(breakColor, baseColor, useBreak);
 
     output.color = input.color * blended;
 

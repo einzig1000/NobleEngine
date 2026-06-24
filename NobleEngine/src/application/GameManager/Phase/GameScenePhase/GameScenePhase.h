@@ -25,6 +25,9 @@ public:
 private:
 
 	int32_t rt_main_ = -1;
+	int32_t c_main_ = -1;
+
+	std::unique_ptr<RenderObject> render_;
 
 	// カメラ
 	//std::unique_ptr<CameraController> cameraController_;

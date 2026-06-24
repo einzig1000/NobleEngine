@@ -618,6 +618,8 @@ D3D12_SHADER_VISIBILITY PipelineStateManager::GetShaderVisibilityFromShaderType(
         return D3D12_SHADER_VISIBILITY_VERTEX;
     case ShaderType::PixelShader:
         return D3D12_SHADER_VISIBILITY_PIXEL;
+    case ShaderType::MeshShader:
+        return D3D12_SHADER_VISIBILITY_MESH;
 	case ShaderType::ComputeShader:
 		return D3D12_SHADER_VISIBILITY_ALL;
 

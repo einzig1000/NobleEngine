@@ -6,7 +6,11 @@ struct VSOutput
     float3 normal : NORMAL0;
 };
 
+
+
 // 1つのグループに3スレッド（三角形の頂点数分）を割り当てる
+// 3次元配列のノリ
+// [numthreads(スレッドグループ数, x軸, y軸)]最終的なスレッド数はグループ数 * x軸 * y軸
 [NumThreads(3, 1, 1)]
 // 出力するプリミティブの形状を指定
 [OutputTopology("triangle")]

@@ -7,12 +7,13 @@ Test2Phase::Test2Phase()
 	Game::Camera::Setter::SetDistance(5.0f, 0, EaseType::IN_BACK, c_main_);
 	Game::Camera::Setter::SetEnableControl(true, c_main_);
 
-	rt_main_ = Game::Resource::CreateRenderTexture(1280, 720, "main");
-	rt_postEffect_ = Game::Resource::CreateRenderTexture(1280, 720, "postEffect");
+	t_dissolveMaskTexture_ = Game::Resource::Texture::Load("resources/prototypes/texture/noise0.png");
 
+	rt_main_ = Game::Resource::CreateRenderTexture(1280, 720, "main");
 
 	render_ = std::make_unique<RenderObject>();
-	render_->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
+	//render_->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
+	render_->psoConfig_.ps = "resources/shaders/FullScreen/Dissolve.PS.hlsl";
 	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
 	//render_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	render_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
@@ -44,8 +45,13 @@ void Test2Phase::Update()
 
 	frame_ += 1.0f;
 
+	//render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
 
 	render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
+	render_->SetCBufferData(1, ShaderType::PixelShader, &t_dissolveMaskTexture_);
+	render_->SetCBufferData(2, ShaderType::PixelShader, &threshold);
+	Vector3 edgeColor = Vector3(1.0f, 0.0f, 0.0f);
+	render_->SetCBufferData(3, ShaderType::PixelShader, &edgeColor);
 }
 
 void Test2Phase::Draw()
@@ -56,4 +62,9 @@ void Test2Phase::Draw()
 }
 
 void Test2Phase::DrawImGui()
-{}
+{
+
+	ImGui::Begin("Test2Phase"); 
+	ImGui::DragFloat("Threshold", &threshold, 0.01f, 0.0f, 1.0f);
+	ImGui::End();
+}

@@ -14,6 +14,7 @@ GameScenePhase::GameScenePhase()
 	Game::Camera::AddCamera();
 
 	rt_main_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
+	c_main_ = Game::Camera::AddCamera();
 
 	// プレイヤー生成
 	//player_ = std::make_unique<Player>();
@@ -26,10 +27,9 @@ GameScenePhase::GameScenePhase()
 	// 敵マネージャー生成
 	//enemyManager_ = std::make_unique<EnemyManager>();
 
-	// マップマネージャーにプレイヤーをセット
-	//map_->SetPlayer(player_.get());
 	// マップ名とパスのマップ読み込み
 	map_->LoadNameAndPathMap("resources/Minecraft/Maps/MapNameAndPath.csv");
+	map_->SetCameraID(c_main_);
 
 	// カメラコントローラーにプレイヤーとマップマネージャーをセット
 	//cameraController_->SetPlayer(player_.get());
@@ -57,8 +57,17 @@ GameScenePhase::GameScenePhase()
 	//Game::Physics::RegisterDynamic(&player_->data_);
 
 	//CraftRecipeList::InitializeRecipes();
-
 	ResourceID::reload();
+
+	render_ = std::make_unique<RenderObject>();
+	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	render_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	//render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//render_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
+	render_->modelID_ = ResourceID::GetModelID(ModelID::Plane);
+	render_->SetupFromShaders();
+
 }
 
 GameScenePhase::~GameScenePhase() {}
@@ -82,16 +91,6 @@ void GameScenePhase::Initialize()
 
 void GameScenePhase::Update()
 {
-	//if (Game::IO::Key::IsJustPressed(DIK_F))
-	//{
-	//	enemyManager_->AddNewEnemy(player_->data_.GetWorldPosition() + Vector3{ 0.0f,20.0f,0.0f });
-	//}
-
-	//if (Game::IO::Key::IsJustPressed(DIK_L))
-	//{
-	//	map_->SaveMap();
-	//}
-
 	// プレイヤー更新
 	//player_->Update();
 	// 敵マネージャー更新
@@ -103,6 +102,8 @@ void GameScenePhase::Update()
 	// カメラ更新
 	//cameraController_->Update();
 
+
+	render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
 }
 
 
@@ -116,6 +117,8 @@ void GameScenePhase::Draw()
 	//enemyManager_->Draw();
 	// UI描画
 	//uiManager_->Draw();
+
+	render_->ScreenDraw();
 }
 
 void GameScenePhase::DrawImGui()
@@ -128,6 +131,7 @@ void GameScenePhase::DrawImGui()
 	//enemyManager_->DrawImGui();
 	// UIImGui描画
 	//uiManager_->DrawImGui();
+
 	ImGui::Begin("------debug info------");
 	ImGui::Text("ESC : Quit Application");
 	ImGui::Text("F1  : Hide Debug Info");

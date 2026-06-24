@@ -24,7 +24,7 @@ class Chunk
 public:
 	Chunk();
 	~Chunk();
-	void Update();
+	void Update(int32_t cameraID);
 	void Draw(int32_t renderTargetID);
 
 	// チャンクデータ生成

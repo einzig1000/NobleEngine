@@ -19,6 +19,8 @@ public:
 	MapManager();
 	~MapManager();
 
+	void SetCameraID(int32_t cameraID) { cameraID_ = cameraID; }
+
 	void LoadNameAndPathMap(const std::string& filePath);
 	void SaveNameAndPathMap(const std::string& filePath);
 	void LoadMap(const std::string& mapName);
@@ -117,5 +119,7 @@ private:
 	int updateRadius_ = 2;   // 更新半径（チャンク単位）
 	NoiseParameter noiseParam_;
 
+
+	int32_t cameraID_ = -1;	// カメラID
 };
 

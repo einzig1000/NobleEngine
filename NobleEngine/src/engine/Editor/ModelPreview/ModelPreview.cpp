@@ -108,11 +108,14 @@ void ModelPreview::DrawImGui()
 	// フルスクリーン表示
 	if (fullscreen_)
 	{
-		ImGui::Begin("Model Preview", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+		//ImGui::Begin("Model Preview", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+		ImGui::Begin("Model Preview");
 
 		if (ImGui::RadioButton("Translate", currentOperation == ImGuizmo::TRANSLATE)) currentOperation = ImGuizmo::TRANSLATE;
 		ImGui::SameLine();
 		if (ImGui::RadioButton("Rotate", currentOperation == ImGuizmo::ROTATE)) currentOperation = ImGuizmo::ROTATE;
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Scale", currentOperation == ImGuizmo::SCALE)) currentOperation = ImGuizmo::SCALE;
 
 		ImVec2 imagePos = ImGui::GetCursorScreenPos();
 		ImVec2 imageSize = ImVec2(512, 512);
