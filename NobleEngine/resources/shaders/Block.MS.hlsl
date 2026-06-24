@@ -18,6 +18,7 @@ struct InstanceData
     uint BaseTextureID;
     uint BreakTextureID;
 };
+
 StructuredBuffer<InstanceData> instanceData : register(t0);
 
 cbuffer ViewProjection : register(b0)

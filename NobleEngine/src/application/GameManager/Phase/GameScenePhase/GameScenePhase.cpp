@@ -62,9 +62,6 @@ GameScenePhase::GameScenePhase()
 	render_ = std::make_unique<RenderObject>();
 	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
 	render_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	//render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	//render_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	render_->modelID_ = ResourceID::GetModelID(ModelID::Plane);
 	render_->SetupFromShaders();
 
@@ -102,6 +99,7 @@ void GameScenePhase::Update()
 	// カメラ更新
 	//cameraController_->Update();
 
+	Game::Camera::Update(c_main_);
 
 	render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
 }

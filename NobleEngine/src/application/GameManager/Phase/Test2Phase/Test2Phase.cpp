@@ -15,7 +15,6 @@ Test2Phase::Test2Phase()
 	//render_->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
 	render_->psoConfig_.ps = "resources/shaders/FullScreen/Dissolve.PS.hlsl";
 	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//render_->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	render_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
 	render_->SetupFromShaders();
 }
@@ -44,8 +43,6 @@ void Test2Phase::Update()
 	}
 
 	frame_ += 1.0f;
-
-	//render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
 
 	render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
 	render_->SetCBufferData(1, ShaderType::PixelShader, &t_dissolveMaskTexture_);

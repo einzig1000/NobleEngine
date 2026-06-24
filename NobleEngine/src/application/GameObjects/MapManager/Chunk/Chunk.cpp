@@ -578,19 +578,16 @@ void Chunk::Update(int32_t cameraID)
 
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	renderData_->SetCBufferData(0, ShaderType::MeshShader, &viewPro);
-	//if (instanceBufferDirty_)
-	{
-		renderData_->SetSBufferData(0, ShaderType::MeshShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
-		instanceBufferDirty_ = false;
-	}
+	renderData_->SetSBufferData(0, ShaderType::MeshShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
+	instanceBufferDirty_ = false;
 
 	//Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(0);
 	//renderData_->SetCBufferData(0, ShaderType::VertexShader, &viewPro);
 	//if (instanceBufferDirty_)
 	//{
 	//renderData_->SetSBufferData(0, ShaderType::VertexShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
-	//}
 	//instanceBufferDirty_ = false;
+	//}
 
 	renderData_->instanceNum_ = uint32_t(instanceDataList_.size());
 }
