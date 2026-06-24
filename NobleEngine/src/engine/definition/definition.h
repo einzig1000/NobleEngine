@@ -37,14 +37,7 @@
 #define PAD_RIGHT           0x0D
 #define PAD_BUTTON_MAX      0x0E
 
-//
-//#define WIDTH 1280
-//#define HEIGHT 720
 #define eps 1e-6f
-//#define Constexprs::kChunkX 8
-//#define Constexprs::kChunkY 24
-//#define Constexprs::kChunkZ 8
-//#define Constexprs::kBlockSize 1.0f
 
 #define PLAYER_SPEED 0.1f
 #define GRAVITY -0.0061f

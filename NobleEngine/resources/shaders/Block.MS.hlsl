@@ -19,6 +19,19 @@ struct InstanceData
     uint BreakTextureID;
 };
 
+//struct InstanceData
+//{
+//    float4x4 World;
+//    float4 Color;
+//    uint BaseTextureTopID;
+//    uint BaseTextureSide1ID;
+//    uint BaseTextureSide2ID;
+//    uint BaseTextureSide3ID;
+//    uint BaseTextureSide4ID;
+//    uint BaseTextureBottomID;
+//    uint BreakTextureID;
+//};
+
 StructuredBuffer<InstanceData> instanceData : register(t0);
 
 cbuffer ViewProjection : register(b0)
@@ -28,14 +41,14 @@ cbuffer ViewProjection : register(b0)
 
 static const float3 basePositions[8] =
 {
-    float3(-0.5, 0.5, -0.5),
-    float3(0.5, 0.5, -0.5),
-    float3(0.5, -0.5, -0.5), 
-    float3(-0.5, -0.5, -0.5),
-    float3(-0.5, 0.5, 0.5),
-    float3(0.5, 0.5, 0.5),
-    float3(0.5, -0.5, 0.5),
-    float3(-0.5, -0.5, 0.5)
+    float3(-0.05, 0.05, -0.05),
+    float3(0.05, 0.05, -0.05),
+    float3(0.05, -0.05, -0.05), 
+    float3(-0.05, -0.05, -0.05),
+    float3(-0.05, 0.05, 0.05),
+    float3(0.05, 0.05, 0.05),
+    float3(0.05, -0.05, 0.05),
+    float3(-0.05, -0.05, 0.05)
 };
 
 static const uint faceIndices[24] =

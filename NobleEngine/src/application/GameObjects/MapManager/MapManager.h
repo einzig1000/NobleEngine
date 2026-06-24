@@ -115,7 +115,7 @@ private:
 	std::unordered_set<Vector3int, Vector3intHash> chunkCreated_;
 
 	// パラメータ
-	int drawRadius_ = 2;    // 描画半径（チャンク単位）
+	int drawRadius_ = 3;    // 描画半径（チャンク単位）
 	int updateRadius_ = 2;   // 更新半径（チャンク単位）
 	NoiseParameter noiseParam_;
 

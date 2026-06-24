@@ -562,9 +562,9 @@ void MapManager::Draw(int32_t renderTargetID)
 			for (int32_t dz = -drawRadius_; dz <= drawRadius_; ++dz)
 			{
 				Vector3int chunkPos = Vector3int(drawCenter.x + dx, drawCenter.y + dy, drawCenter.z + dz);
-				EnsureChunkScheduled(chunkPos);
 				Chunk* chunk = TryGetChunk(chunkPos);
 				if (chunk) { chunk->Draw(renderTargetID); }
+				else EnsureChunkScheduled(chunkPos);
 			}
 		}
 	}
