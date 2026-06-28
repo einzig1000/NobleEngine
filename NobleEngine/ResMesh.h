@@ -12,18 +12,18 @@ struct ResMeshlet
 	uint32_t primitiveCount = 0;	// プリミティブ数
 };
 
-struct ResPrimitiveIndex
-{
-	uint32_t index0 : 10;	// 出力頂点番号 (10bit)
-	uint32_t index1 : 10;	// 出力頂点番号 (10bit)
-	uint32_t index2 : 10;	// 出力頂点番号 (10bit)
-	uint32_t reserved : 2;	// 予約領域 (2bit)
-};
-
 //struct ResPrimitiveIndex
 //{
-//	uint32_t index = 0;	// 10bit * 3 = 30bit, 残り2bitは予約領域
+//	uint32_t index0 : 10;	// 出力頂点番号 (10bit)
+//	uint32_t index1 : 10;	// 出力頂点番号 (10bit)
+//	uint32_t index2 : 10;	// 出力頂点番号 (10bit)
+//	uint32_t reserved : 2;	// 予約領域 (2bit)
 //};
+
+struct ResPrimitiveIndex
+{
+	uint32_t index = 0;	// 10bit * 3 = 30bit, 残り2bitは予約領域
+};
 
 struct ResMesh
 {

@@ -107,15 +107,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	// メッシュシェーダ使用かで分岐
 	if (renderObject->psoConfig_.ms != "unknown")
 	{
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6> cmdList6;
-		HRESULT hr = cmdList->QueryInterface(IID_PPV_ARGS(&cmdList6));
-
-		if (SUCCEEDED(hr))
-		{
-			cmdList6->DispatchMesh(renderObject->instanceNum_, 1, 1);
-			//cmdList6->DispatchMesh(1, 1, 1);
-			//cmdList->DispatchMesh(renderObject->dispatchX, renderObject->dispatchY, renderObject->dispatchZ);
-		}
+		cmdList->DispatchMesh(renderObject->instanceNum_, 1, 1);
 	}
 	else
 	{

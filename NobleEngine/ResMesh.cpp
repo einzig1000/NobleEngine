@@ -199,13 +199,13 @@ void MeshLoader::ParseMesh(ResMesh& mesh, const aiMesh* aiMeshPtr)
 				mesh.uniqueVertexIndices.push_back(meshletVertices[meshlet.vertex_offset + i]);
 			}
 
-			for (unsigned int i = 0; i < meshlet.triangle_count * 3; ++i)
+			for (unsigned int i = 0; i < meshlet.triangle_count; ++i)
 			{
 				ResPrimitiveIndex tris{};
 				uint32_t baseIndex = meshlet.triangle_offset + (i * 3);
-				tris.index0 = meshletTriangles[baseIndex];
-				tris.index1 = meshletTriangles[baseIndex + 1];
-				tris.index2 = meshletTriangles[baseIndex + 2];
+				tris.index = (meshletTriangles[baseIndex]) |
+					(meshletTriangles[baseIndex + 1] << 10) |
+					(meshletTriangles[baseIndex + 2] << 20);
 				mesh.primitiveIndices.push_back(tris);
 			}
 
@@ -224,4 +224,88 @@ void MeshLoader::ParseMesh(ResMesh& mesh, const aiMesh* aiMeshPtr)
 		mesh.primitiveIndices.shrink_to_fit();
 		mesh.meshlets.shrink_to_fit();
 	}
+}
+
+
+template <typename T>
+[[nodiscard]]
+Microsoft::WRL::ComPtr<ID3D12Resource> UploadBufferData(
+	ID3D12Resource* buffer,
+	const std::vector<T>& data,
+	ID3D12Device2* device,
+	ID3D12GraphicsCommandList6* commandList)
+{
+	D3D12_SUBRESOURCE_DATA subresourceData{};
+	subresourceData.pData = data.data();                         // データの先頭ポインタ
+	subresourceData.RowPitch = data.size() * sizeof(T);          // 全体のバイトサイズ
+	subresourceData.SlicePitch = subresourceData.RowPitch;        // バッファなのでRowPitchと同じ
+
+	// 2. 中間リソース(Uploadヒープ)に必要なサイズを取得
+	uint64_t intermediateSize = GetRequiredIntermediateSize(buffer, 0, 1);
+
+	// 3. 既存のFactoryを利用して中間リソースを作成
+	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =
+		Dx12ResourceFactory::CreateBufferResource(device, intermediateSize);
+
+	// 4. コマンドリストにコピー処理を記録
+	UpdateSubresources(commandList, buffer, intermediateResource.Get(), 0, 0, 1, &subresourceData);
+
+	// 5. コピー先(COPY_DEST)から、シェーダー読み込み用(GENERIC_READ)へリソースバリアを張る
+	// ※メッシュシェーダーおよびピクセルシェーダーのSRVとして安全に読むため、GENERIC_READが最適です
+	D3D12_RESOURCE_BARRIER barrier{};
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrier.Transition.pResource = buffer;
+	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+	commandList->ResourceBarrier(1, &barrier);
+
+	return intermediateResource;
+}
+
+// 使用例：特定の構造体データをGPUバッファ化してSRVを割り当てる関数（イメージ）
+template <typename T>
+int32_t CreateStructuredBufferSRV(const std::vector<T>& data)
+{
+	auto* device = dxManager_->GetDevice();
+	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+
+	// 全体のバイトサイズを計算
+	uint64_t bufferSize = data.size() * sizeof(T);
+
+	// ① GPU側のデフォルトリソースを作成 (※FactoryにBuffer用があると仮定)
+	// もし既存のFactoryがフラグ等を弄れない場合は、内部で以下のようにD3D12_RESOURCE_STATE_COPY_DESTで作成します。
+	/*
+	auto desc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
+	auto heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &desc,
+		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&gpuResource));
+	*/
+	Microsoft::WRL::ComPtr<ID3D12Resource> gpuResource = Dx12ResourceFactory::CreateBufferResource(device, bufferSize);
+
+	// ② データのアップロード（上記で作った関数を呼び出し、中間リソースを保持）
+	Microsoft::WRL::ComPtr<ID3D12Resource> intermediate = UploadBufferData(gpuResource.Get(), data, device, cmdList);
+	intermediateUploadResources_.push_back(intermediate); // 既存システム同様、フレーム終了まで維持
+
+	// ③ StructuredBuffer用のSRVを作成
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;               // StructuredBufferの時は必ずUNKNOWNにする
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER; // バッファを指定
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Buffer.FirstElement = 0;
+	srvDesc.Buffer.NumElements = static_cast<UINT>(data.size());       // 要素数（配列の長さ）
+	srvDesc.Buffer.StructureByteStride = static_cast<UINT>(sizeof(T)); // 1要素のバイトサイズ
+	srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+	// 既存のマネージャーからディスクリプタを割り当てて作成
+	SRV_UAVManager::Allocation srvAllocation = srvManager->Allocate(); // ※既存の仕組みに合わせて調整してください
+	device->CreateShaderResourceView(gpuResource.Get(), &srvDesc, srvAllocation.cpuHandle);
+
+	// ④ バンク等に保存してインデックスを返す
+	// bank_->AddBufferData(..., srvAllocation.index, ...);
+
+	return srvAllocation.index;
 }
