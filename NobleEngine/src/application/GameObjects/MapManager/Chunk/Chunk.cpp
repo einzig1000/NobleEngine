@@ -355,8 +355,8 @@ void Chunk::RefreshExposeAt(const Vector3int& localIndex)
 	{
 		InstanceData data;
 		data.World = Matrix4x4::MakeTranslateMatrix(targetBlock->position_);
-		data.BaseTextureID = ResourceID::Get3DTextureID(targetBlock->GetBlockID());
-		data.BreakTextureID = 0;
+		//data.BaseTextureID = ResourceID::Get3DTextureID(targetBlock->GetBlockID());
+		//data.BreakTextureID = 0;
 		data.Color = Vector4(1, 1, 1, 1);
 		int32_t slot = AllocateInstanceSlot(targetBlock, data);
 	}

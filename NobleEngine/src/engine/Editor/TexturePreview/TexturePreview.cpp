@@ -52,7 +52,7 @@ void TexturePreview::DrawImGui()
 	}
 	ImGui::SameLine();
 
-	if (ImGui::ImageButton("##sssed", ImTextureID(dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(textureID_).ptr), ImVec2(128, 128)))
+	if (textureID_ != -1 && ImGui::ImageButton("##sssed", ImTextureID(dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(textureID_).ptr), ImVec2(128, 128)))
 	{
 		fullscreen_ = !fullscreen_;
 	}
