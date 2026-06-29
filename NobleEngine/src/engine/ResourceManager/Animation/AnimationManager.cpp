@@ -97,6 +97,18 @@ void AnimationManager::TestUpdateSkeleton(Skeleton& skeleton)
 	}
 }
 
+void AnimationManager::TestUpdateSkinCluster(const Skeleton& skeleton, SkinCluster& skinCluster)
+{
+	for (size_t jointIndex = 0; jointIndex < skeleton.joints.size(); ++jointIndex)
+	{
+		assert(jointIndex < skinCluster.inverseBindPoseMatrices.size());
+		skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix = 
+			skinCluster.inverseBindPoseMatrices[jointIndex] * skeleton.joints[jointIndex].skeletonSpaceMatrix;
+		skinCluster.mappedPalette[jointIndex].skeletonSpaceInverseTransposeMatrix = 
+			skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix.Inverse().Transpose();
+	}
+}
+
 void AnimationManager::TestApplyAnimation(Skeleton& skeleton, const Animation& animation, float time)
 {
 	for (Joint& joint : skeleton.joints)
@@ -154,3 +166,6 @@ Animation AnimationManager::LoadAnimationFile(const std::string& filePath)
 
 	return animation;
 }
+
+
+

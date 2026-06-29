@@ -11,6 +11,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="externals\meshoptimizer-1.1\allocator.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\clusterizer.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\indexanalyzer.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\indexcodec.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\indexgenerator.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\meshletcodec.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\meshletutils.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\opacitymap.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\overdrawoptimizer.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\partition.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\quantization.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\rasterizer.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\simplifier.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\spatialorder.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\stripifier.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\vcacheoptimizer.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\vertexcodec.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\vertexfilter.cpp" />
+    <ClCompile Include="externals\meshoptimizer-1.1\vfetchoptimizer.cpp" />
     <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp" />
     <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp" />
@@ -90,6 +109,7 @@
     <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h" />
     <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h" />
     <ClInclude Include="src\engine\Editor\EngineEditor.h" />
     <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h" />

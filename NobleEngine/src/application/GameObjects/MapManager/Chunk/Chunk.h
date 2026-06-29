@@ -13,10 +13,10 @@ struct InstanceData
 	Matrix4x4 World;
 	// 色
 	Vector4 Color;
-	// ベーステクスチャID
-	int32_t BaseTextureID = 0;
-	// 破壊テクスチャID
-	int32_t BreakTextureID = 0;
+	//// ベーステクスチャID
+	//int32_t BaseTextureID = 0;
+	//// 破壊テクスチャID
+	//int32_t BreakTextureID = 0;
 };
 
 class Chunk

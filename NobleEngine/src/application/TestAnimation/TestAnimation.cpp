@@ -54,14 +54,20 @@ TestAnimation::TestAnimation()
 	render_ = std::make_unique<RenderObject>();
 	render_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/human/sneakWalk.gltf");
 	render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	render_->psoConfig_.vs = "resources/shaders/Skinning/Skinning.VS.hlsl";
+	//render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_->SetupFromShaders();
 
+	// 頂点データ
+	modelData_ = Game::Resource::Model::GetData(render_->modelID_);
+	// アニメーションデータ
 	animation = animationManager_.LoadAnimation("resources/prototypes/model/human/sneakWalk.gltf");
+	// テクスチャデータ
 	tex = Game::Resource::Texture::Load("resources/prototypes/texture/AnimatedCube_BaseColor.png");
+
 	//nodeAnimation = &animation.nodeAnimations["AnimatedCube"];
-	ModelData* modelData = Game::Resource::Model::GetData(render_->modelID_);
-	skeleton = modelData->skeleton;
+	skeleton = modelData_->skeleton;
+	skinCluster_ = modelData_->skinCluster;
 }
 
 TestAnimation::~TestAnimation()
@@ -81,11 +87,8 @@ void TestAnimation::Update(float deltaTime)
 
 	animationManager_.TestApplyAnimation(skeleton, animation, animationTime_);
 	animationManager_.TestUpdateSkeleton(skeleton);
+	animationManager_.TestUpdateSkinCluster(skeleton, skinCluster_);
 
-	//Vector3 translate = CalculateValue(animationTime_, nodeAnimation->translate);
-	//Quaternion rotate = CalculateValue(animationTime_, nodeAnimation->rotate);
-	//Vector3 scale = CalculateValue(animationTime_, nodeAnimation->scale);
-	//Matrix4x4 animationMatrix = Matrix4x4::MakeAffineMatrix(scale, rotate, translate);
 	Matrix4x4 animationMatrix = Matrix4x4::MakeIdentity4x4();
 	Matrix4x4 worldViewProjection = animationMatrix * viewProjection;
 
@@ -93,6 +96,9 @@ void TestAnimation::Update(float deltaTime)
 	render_->SetCBufferData(1, ShaderType::PixelShader, &tex);
 	render_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 	render_->SetCBufferData(1, ShaderType::VertexShader, &animationMatrix);
+	render_->SetSBufferData(0, ShaderType::VertexShader, skinCluster_.mappedPalette.data(), sizeof(WellForGPU), skinCluster_.mappedPalette.size());
+
+	//render_->SetCBufferData(1, ShaderType::VertexShader, &animationMatrix);
 }
 
 void TestAnimation::Draw(int32_t renderTextureID)

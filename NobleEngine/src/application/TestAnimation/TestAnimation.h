@@ -20,8 +20,10 @@ private:
 
 	AnimationManager animationManager_;
 	Animation animation;
-	Skeleton skeleton;
 	NodeAnimation* nodeAnimation = nullptr;
+	ModelData* modelData_ = nullptr;
+	SkinCluster skinCluster_;
+	Skeleton skeleton;
 	uint32_t tex;
 
 };

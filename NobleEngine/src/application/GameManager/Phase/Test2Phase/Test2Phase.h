@@ -1,7 +1,7 @@
 #pragma once
 #include <GameManager/Phase/IPhase.h>
 #include <TestParticle/TestParticle.h>
-
+#include <TestAnimation/TestAnimation.h>
 
 class Test2Phase : public IPhase
 {
@@ -17,6 +17,7 @@ public:
 
 private:
 	TestParticle TestParticle;
+	TestAnimation TestAnimation;
 
 	std::unique_ptr<RenderObject> render_;
 
@@ -28,6 +29,6 @@ private:
 	int32_t c_main_;
 
 	int32_t t_dissolveMaskTexture_ = -1;
-	float threshold = 0.5f;
+	float threshold = 0.2f;
 };
 

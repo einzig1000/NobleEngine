@@ -1,8 +1,11 @@
 #pragma once
 #include <vector>
+#include <array>
+#include <span>
 #include <string>
 #include <cstdint>
 #include <map>
+#include <unordered_map>
 #include <optional>
 
 #include <initguid.h>
@@ -18,7 +21,7 @@
 
 #include <wrl.h>
 
-#include "externals/DirectXTex/DirectXTex.h"
+#include <externals/DirectXTex/DirectXTex.h>
 
 
 #define PAD_A               0x00
@@ -1054,6 +1057,31 @@ struct Skeleton
 
 #pragma region モデルデータ構造体
 
+struct VertexInfluence
+{
+	std::array<float, 4> weights;
+	std::array<int32_t, 4> jointIndices;
+};
+
+struct WellForGPU
+{
+	Matrix4x4 skeletonSpaceMatrix;
+	Matrix4x4 skeletonSpaceInverseTransposeMatrix;
+};
+
+struct SkinCluster
+{
+	std::vector<Matrix4x4> inverseBindPoseMatrices;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> influenceResource;
+	D3D12_VERTEX_BUFFER_VIEW influenceBufferView;
+	std::span<VertexInfluence> mappedInfluences;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
+	std::span<WellForGPU> mappedPalette;
+	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> paletteSrvHandle;
+};
+
 // 材質データ(今はテクスチャパスしかいれてない.質感とか追加するようになったら使うのかも)
 struct MaterialData
 {
@@ -1068,15 +1096,27 @@ struct VertexData
     Vector3 normal;
 };
 
+struct VertexWeightData
+{
+	float weight;
+	uint32_t vertexIndex;
+};
+
+struct JointWeightData
+{
+	Matrix4x4 inverseBindPoseMatrix;
+	std::vector<VertexWeightData> vertexWeights;
+};
+
 // モデルデータ
 struct ModelData
 {
-	// データ本体
-    std::vector<VertexData> vertices;
-	std::vector<uint32_t> indices;
-    MaterialData material;
-	Node rootNode;
-	Skeleton skeleton;
+	std::vector<VertexData> vertices;   // 頂点データ
+	std::vector<uint32_t> indices;      // インデックスデータ
+	MaterialData material;              // 材質データ
+	Node rootNode;                      // ノード
+	Skeleton skeleton;                  // スケルトン
+	std::map<std::string, JointWeightData> skinClusterData; // ジョイントのウェイトデータ
 
     // 頂点バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
@@ -1085,6 +1125,8 @@ struct ModelData
 	// インデックスバッファ
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+
+	SkinCluster skinCluster;
 
     // ファイルパス
 	std::string filePath;

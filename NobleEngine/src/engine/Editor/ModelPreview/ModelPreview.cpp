@@ -88,7 +88,7 @@ void ModelPreview::DrawImGui()
 	}
 	ImGui::SameLine();
 
-	if (ImGui::ImageButton("##ss", ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), ImVec2(128, 128)))
+	if (modelRenderObject_->modelID_ != -1 && ImGui::ImageButton("##ss", ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), ImVec2(128, 128)))
 	{
 		fullscreen_ = !fullscreen_;
 	}

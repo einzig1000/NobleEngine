@@ -97,7 +97,6 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRV(ID3D12Resource* resource, c
 
 	return Allocation{ index, cpu, gpu };
 }
-
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforTexture(ID3D12Resource* resource, const DirectX::TexMetadata& metadata)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -107,7 +106,6 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforTexture(ID3D12Resource* r
     srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
     return CreateSRV(resource, &srvDesc, ResourceType::Texture2D);
 }
-
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforDDS(ID3D12Resource* resource, const DirectX::TexMetadata& metadata)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -119,7 +117,6 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforDDS(ID3D12Resource* resou
 	srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
     return CreateSRV(resource, &srvDesc, ResourceType::TextureCube);
 }
-
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforRenderTarget(ID3D12Resource* resource)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -131,7 +128,6 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforRenderTarget(ID3D12Resour
     srvDesc.Texture2D.MipLevels = 1;
     return CreateSRV(resource, &srvDesc, ResourceType::Texture2D);
 }
-
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforDepthTexture(ID3D12Resource* resource)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -141,7 +137,6 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforDepthTexture(ID3D12Resour
     srvDesc.Texture2D.MipLevels = 1;
     return CreateSRV(resource, &srvDesc, ResourceType::Texture2D);
 }
-
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};

@@ -44,15 +44,24 @@ namespace ShaderReflection
             D3D12_SIGNATURE_PARAMETER_DESC paramDesc;
             reflection->GetInputParameterDesc(i, &paramDesc);
 
+			std::string semanticName = NormalizeSemanticName(paramDesc.SemanticName);
+
             D3D12_INPUT_ELEMENT_DESC elemDesc{};
             elemDesc.Format = GetDXGIFormatFromComponentType(paramDesc.ComponentType, __popcnt(paramDesc.Mask));
-            elemDesc.InputSlot = 0;
+            if (semanticName == "WEIGHT" || semanticName == "INDEX")
+            {
+                elemDesc.InputSlot = 1; // ウェイトとインデックスは2つ目のバッファ(スロット1)
+            }
+            else
+            {
+                elemDesc.InputSlot = 0; // それ以外(POSITION, NORMAL, TEXCOORD)はスロット0
+            }
             elemDesc.AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
             elemDesc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
             elemDesc.InstanceDataStepRate = 0;
 
             InputElement elem{};
-            elem.semanticName = NormalizeSemanticName(paramDesc.SemanticName);
+            elem.semanticName = semanticName;
             elem.semanticIndex = paramDesc.SemanticIndex;
             elem.desc = elemDesc;
 
@@ -85,7 +94,17 @@ namespace ShaderReflection
             {
             case 1: return DXGI_FORMAT_R32_UINT;
             case 2: return DXGI_FORMAT_R32G32_UINT;
+            case 3: return DXGI_FORMAT_R32G32B32_UINT;
             case 4: return DXGI_FORMAT_R32G32B32A32_UINT;
+            }
+            break;
+        case D3D_REGISTER_COMPONENT_SINT32:
+            switch (componentCount)
+            {
+            case 1: return DXGI_FORMAT_R32_SINT;
+            case 2: return DXGI_FORMAT_R32G32_SINT;
+            case 3: return DXGI_FORMAT_R32G32B32_SINT;
+            case 4: return DXGI_FORMAT_R32G32B32A32_SINT;
             }
             break;
         }

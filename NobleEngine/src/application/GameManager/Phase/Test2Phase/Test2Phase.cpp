@@ -25,6 +25,7 @@ Test2Phase::~Test2Phase()
 void Test2Phase::Initialize()
 {
 	TestParticle.Initialize();
+	TestAnimation.Initialize();
 }
 
 void Test2Phase::Update()
@@ -36,6 +37,7 @@ void Test2Phase::Update()
 	Game::Camera::Setter::SetRotate(cameraRotate_, 0, EaseType::IN_BACK, c_main_);
 
 	TestParticle.Update(c_main_);
+	TestAnimation.Update(0.016f); // Assuming a fixed timestep of 16ms
 
 	if (Game::IO::Key::IsJustPressed(DIK_F11))
 	{
@@ -53,7 +55,8 @@ void Test2Phase::Update()
 
 void Test2Phase::Draw()
 {
-	TestParticle.Draw(rt_main_);
+	//TestParticle.Draw(rt_main_);
+	TestAnimation.Draw(rt_main_);
 
 	render_->ScreenDraw();
 }
