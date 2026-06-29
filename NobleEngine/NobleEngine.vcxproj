@@ -30,7 +30,6 @@
     <ClCompile Include="externals\meshoptimizer-1.1\vertexcodec.cpp" />
     <ClCompile Include="externals\meshoptimizer-1.1\vertexfilter.cpp" />
     <ClCompile Include="externals\meshoptimizer-1.1\vfetchoptimizer.cpp" />
-    <ClCompile Include="ResMesh.cpp" />
     <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp" />
     <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp" />
@@ -111,7 +110,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h" />
-    <ClInclude Include="ResMesh.h" />
     <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h" />
     <ClInclude Include="src\engine\Editor\EngineEditor.h" />
     <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h" />

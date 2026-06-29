@@ -246,9 +246,6 @@
     <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="ResMesh.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="externals\meshoptimizer-1.1\allocator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -546,9 +543,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ResMesh.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h">

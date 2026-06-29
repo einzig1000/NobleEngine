@@ -116,9 +116,15 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 
 		// モデルの検索
 		const ModelData* obj = resourceManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
+		//cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
 		if (!obj) return;
+		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
+			obj->vertexBufferView,
+			obj->skinCluster.influenceBufferView
+		};
+
 		// 5)頂点バッファをバインド
-		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
+		cmdList->IASetVertexBuffers(0, 2, vbvs);
 
 		const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
 		if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
@@ -172,7 +178,6 @@ void DrawSystem::PreScreenDraw()
 
 void DrawSystem::ScreenDraw()
 {
-
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
 	DrawObject(screenRenderObject_.get());
 
@@ -180,30 +185,15 @@ void DrawSystem::ScreenDraw()
 #ifdef _DEBUG
 
 	ImGui::Begin("mainDisplay");
-	//ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
-	if (ImGui::ImageButton("texture##nobleScreen", ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450)))
-	{
-		ImGui::OpenPopup("nobleScreen");
-	}
+	ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
+	//if (ImGui::ImageButton("texture##nobleScreen", ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450)))
+	//{
+	//	ImGui::OpenPopup("nobleScreen");
+	//}
 	ImGui::End();
 
-	if (ImGui::BeginPopup("nobleScreen"))
-	{
-		ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(1280, 720));
-		if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
-		ImGui::EndPopup();
-	}
 
 #endif // DEBUG
-
-// リリースモードの時は、PreScreenDrawで描画した内容をそのままバックバッファにコピーして表示する
-#ifndef _RELEASE
-
-	//screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
-	//DrawObject(screenRenderObject_.get());
-
-#endif // RELEASE_
-
 }
 
 

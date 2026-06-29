@@ -15,18 +15,17 @@ public:
 	
 	// アニメーション数を取得
 	size_t GetAnimationCount() const { return animations.size(); }
-	
-	void TestUpdateSkeleton(Skeleton& skeleton);
 
+	// 1,骨ごとのlocal情報を更新し
 	void TestApplyAnimation(Skeleton& skeleton, const Animation& animation, float time);
 
-	// アニメーションリストを取得
-	//std::vector<Animation>& GetAnimationList() { return animations; }
+	// 2,骨ごとのlocal情報からSkeltonSpaceの情報を更新する
+	void TestUpdateSkeleton(Skeleton& skeleton);
+
+	// 3,SkeltonSpaceの情報からSkinClusterの情報を更新する
+	void TestUpdateSkinCluster(const Skeleton& skeleton, SkinCluster& skinCluster);
 
 private:
-	// アニメーションデータを詰める
-	//std::vector<Animation> animations;
-	//std::unordered_map<std::string, int32_t> animationPathToID;
 
 	std::unordered_map<std::string, Animation> animations;
 
