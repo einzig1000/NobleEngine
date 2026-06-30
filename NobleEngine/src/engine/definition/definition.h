@@ -1108,25 +1108,47 @@ struct JointWeightData
 	std::vector<VertexWeightData> vertexWeights;
 };
 
+
+
+struct ResMeshlet
+{
+    uint32_t vertexOffset = 0;		// 頂点番号オフセット
+    uint32_t vertexCount = 0;		// 頂点数
+    uint32_t primitiveOffset = 0;	// プリミティブ番号オフセット
+    uint32_t primitiveCount = 0;	// プリミティブ数
+};
+
 // モデルデータ
 struct ModelData
 {
-	std::vector<VertexData> vertices;   // 頂点データ
-	std::vector<uint32_t> indices;      // インデックスデータ
+    // 頂点データ
+    std::vector<VertexData> vertices;
+    Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+    uint32_t vertexSrvindex = UINT32_MAX;
+    // インデックスデータ
+    std::vector<uint32_t> indices;
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+    // メッシュレットデータ
+    std::vector<ResMeshlet> meshlets;
+    Microsoft::WRL::ComPtr<ID3D12Resource> meshletBuffer;
+    uint32_t meshletSrvIndex = UINT32_MAX;
+    // メッシュレットの頂点インデックスのユニーク化された配列
+    std::vector<uint32_t> uniqueVertexIndices;
+    Microsoft::WRL::ComPtr<ID3D12Resource> uniqueVertexIndexBuffer;
+    uint32_t uniqueVertexIndexSrvIndex = UINT32_MAX;
+    // メッシュレットのプリミティブインデックスの配列
+    std::vector<uint32_t> primitiveIndices;         // 10bit * 3 = 30bit, 残り2bitは予約領域
+    Microsoft::WRL::ComPtr<ID3D12Resource> primitiveIndexBuffer;
+    uint32_t primitiveIndexSrvIndex = UINT32_MAX;
+
 	MaterialData material;              // 材質データ
 	Node rootNode;                      // ノード
 	Skeleton skeleton;                  // スケルトン
+	uint32_t materialID = 0;            // マテリアルID
+	SkinCluster skinCluster;            // スキンクラスタ(あにめーしょんデータに移行する予定)
 	std::map<std::string, JointWeightData> skinClusterData; // ジョイントのウェイトデータ
-
-    // 頂点バッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-
-	// インデックスバッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
-	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
-
-	SkinCluster skinCluster;
 
     // ファイルパス
 	std::string filePath;

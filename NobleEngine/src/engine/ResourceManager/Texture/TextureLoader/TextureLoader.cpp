@@ -106,14 +106,22 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
 
 // 3,TextureResourceにデータを転送する
 [[nodiscard]]
-Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device2* device, ID3D12GraphicsCommandList6* commandList)
+Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::UploadTextureData(
+    ID3D12Resource* texture, 
+    const DirectX::ScratchImage& mipImages, 
+    ID3D12Device2* device,
+    ID3D12GraphicsCommandList6* commandList)
 {
     std::vector<D3D12_SUBRESOURCE_DATA> subresources;
     DirectX::PrepareUpload(device, mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresources);
+	// Uploadヒープに必要なサイズを取得
     uint64_t intermediateSize = GetRequiredIntermediateSize(texture, 0, UINT(subresources.size()));
-    Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = Dx12ResourceFactory::CreateBufferResource(device, intermediateSize);
+	// Uploadヒープの作成
+    Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = 
+        Dx12ResourceFactory::CreateBufferResource(device, intermediateSize);
+    // コマンドリストにコピー処理を記録
     UpdateSubresources(commandList, texture, intermediateResource.Get(), 0, 0, UINT(subresources.size()), subresources.data());
-    // Tetureへの転送後は利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READ ResourceStateを変更する
+    // ResourceStateをD3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READに変更する
     D3D12_RESOURCE_BARRIER barrier{};
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;

@@ -55,8 +55,6 @@ static const float2 baseUVs[4] =
 
 // メモ：メッシュレットは32頂点～256頂点で構成される
 
-
-
 // 1つのグループに3スレッド（三角形の頂点数分）を割り当てる
 // 3次元配列のノリ
 // [numthreads(スレッドグループ数, x軸, y軸)]最終的なスレッド数はグループ数 * x軸 * y軸
@@ -81,10 +79,8 @@ void main(
         uint triID = gtid % 2;      // 面内のどの三角形か (0 または 1)
         uint vBase = faceID * 4;    // その面の開始頂点番号 (0, 4, 8, 12, 16, 20)
 
-        if (triID == 0)
-            tris[gtid] = uint3(vBase, vBase + 1, vBase + 2);
-        else
-            tris[gtid] = uint3(vBase, vBase + 2, vBase + 3);
+        if (triID == 0) tris[gtid] = uint3(vBase, vBase + 1, vBase + 2);
+        else tris[gtid] = uint3(vBase, vBase + 2, vBase + 3);
     }
 
     MSOutput output;
