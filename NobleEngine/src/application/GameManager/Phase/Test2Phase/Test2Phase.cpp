@@ -10,10 +10,12 @@ Test2Phase::Test2Phase()
 	t_dissolveMaskTexture_ = Game::Resource::Texture::Load("resources/prototypes/texture/noise0.png");
 
 	rt_main_ = Game::Resource::CreateRenderTexture(1280, 720, "main");
+	rt_noise_ = Game::Resource::CreateRenderTexture(1280, 720, "noise");
 
 	render_ = std::make_unique<RenderObject>();
 	//render_->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
-	render_->psoConfig_.ps = "resources/shaders/FullScreen/Dissolve.PS.hlsl";
+	//render_->psoConfig_.ps = "resources/shaders/FullScreen/Dissolve.PS.hlsl";
+	render_->psoConfig_.ps = "resources/shaders/FullScreen/RandomNoise.PS.hlsl";
 	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
 	render_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
 	render_->SetupFromShaders();
@@ -46,11 +48,15 @@ void Test2Phase::Update()
 
 	frame_ += 1.0f;
 
-	render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
-	render_->SetCBufferData(1, ShaderType::PixelShader, &t_dissolveMaskTexture_);
-	render_->SetCBufferData(2, ShaderType::PixelShader, &threshold);
-	Vector3 edgeColor = Vector3(1.0f, 0.0f, 0.0f);
-	render_->SetCBufferData(3, ShaderType::PixelShader, &edgeColor);
+	// Dissolveの時
+	//render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
+	//render_->SetCBufferData(1, ShaderType::PixelShader, &t_dissolveMaskTexture_);
+	//render_->SetCBufferData(2, ShaderType::PixelShader, &threshold);
+	//Vector3 edgeColor = Vector3(1.0f, 0.0f, 0.0f);
+	//render_->SetCBufferData(3, ShaderType::PixelShader, &edgeColor);
+
+	// RandomNoiseの時
+	render_->SetCBufferData(0, ShaderType::PixelShader, &frame_);
 }
 
 void Test2Phase::Draw()

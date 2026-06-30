@@ -26,6 +26,7 @@ private:
 	float frame_ = 0.0f;
 
 	int32_t rt_main_;
+	int32_t rt_noise_;
 	int32_t c_main_;
 
 	int32_t t_dissolveMaskTexture_ = -1;
