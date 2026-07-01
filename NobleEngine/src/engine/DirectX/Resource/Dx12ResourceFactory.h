@@ -3,6 +3,13 @@
 #include <definition/definition.h>
 #include <d3d12.h>
 #include <wrl.h>
+#include <Utilities/Logger/Logger.h>
+#include <DirectX/Resource/Dx12ResourceFactory.h>
+#include <DirectX/DirectXManager.h>
+#include <ResourceManager/Model/ModelBank/ModelBank.h>
+#include <filesystem>
+#include <fstream>
+#include <externals/meshoptimizer-1.1/meshoptimizer.h>
 
 namespace Dx12ResourceFactory
 {
@@ -23,6 +30,47 @@ namespace Dx12ResourceFactory
     /// <returns>作成された定数バッファリソース</returns>
     Microsoft::WRL::ComPtr<ID3D12Resource> CreateConstantBufferResource(
         ID3D12Device2* device, size_t sizeInBytes);
+
+    /// <summary>
+	/// GPUリソースを作成する関数
+    /// </summary>
+    /// <param name="device">DirectX 12 デバイス</param>
+    /// <param name="sizeInBytes">バッファのサイズ (バイト単位)</param>
+    /// <returns>作成された定数バッファリソース</returns>
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBufferResource(
+        ID3D12Device2* device, size_t sizeInBytes);
+
+    template <typename T>
+    [[nodiscard]]
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateUploadResource(
+        ID3D12Resource* buffer,
+        const std::vector<T>& data,
+        ID3D12Device2* device,
+        ID3D12GraphicsCommandList6* commandList)
+    {
+        D3D12_SUBRESOURCE_DATA subresourceData{};
+        subresourceData.pData = data.data();                         // データの先頭ポインタ
+        subresourceData.RowPitch = data.size() * sizeof(T);          // 全体のバイトサイズ
+        subresourceData.SlicePitch = subresourceData.RowPitch;       // バッファなのでRowPitchと同じ
+        // 中間リソース(Uploadヒープ)に必要なサイズを取得
+        uint64_t intermediateSize = GetRequiredIntermediateSize(buffer, 0, 1);
+        // 既存のFactoryを利用して中間リソースを作成
+        Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =
+            Dx12ResourceFactory::CreateBufferResource(device, intermediateSize);
+        // コマンドリストにコピー処理を記録
+        UpdateSubresources(commandList, buffer, intermediateResource.Get(), 0, 0, 1, &subresourceData);
+        // ResourceStateをCOPY_DESTからGENERIC_READに変更
+        D3D12_RESOURCE_BARRIER barrier{};
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barrier.Transition.pResource = buffer;
+        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+        commandList->ResourceBarrier(1, &barrier);
+
+        return intermediateResource;
+    }
 
 	/// <summary>
 	/// テクスチャのメタデータを基に DirectX 12 のテクスチャリソースを作成する関数

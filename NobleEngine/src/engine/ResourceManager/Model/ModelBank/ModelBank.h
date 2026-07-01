@@ -7,11 +7,9 @@ class ModelBank
 {
 public:
 	// モデルデータを追加
-	void AddModelData(const std::string& filePath, const int32_t ID, std::unique_ptr<ModelData> modelData);
+	int32_t AddModelData(const std::string& filePath, std::unique_ptr<ModelData> modelData);
 	// filePathが同じモデルデータが存在するか
 	int32_t IsModelDataExist(const std::string filePath) const;
-	// 次のモデルIDを取得
-	int32_t AllocateModelID() const { return static_cast<int32_t>(objects_.size()); }
 	// modelIDからモデルデータを取得
 	ModelData* GetModelData(int32_t modelID);
 	// モデルリストを取得

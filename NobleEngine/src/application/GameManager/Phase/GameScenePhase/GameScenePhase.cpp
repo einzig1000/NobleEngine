@@ -29,7 +29,6 @@ GameScenePhase::GameScenePhase()
 
 	// マップ名とパスのマップ読み込み
 	map_->LoadNameAndPathMap("resources/Minecraft/Maps/MapNameAndPath.csv");
-	map_->SetCameraID(c_main_);
 
 	// カメラコントローラーにプレイヤーとマップマネージャーをセット
 	//cameraController_->SetPlayer(player_.get());
@@ -93,7 +92,7 @@ void GameScenePhase::Update()
 	// 敵マネージャー更新
 	//enemyManager_->Update();
 	// マップ更新
-	map_->Update();
+	map_->Update(c_main_);
 	// UI更新
 	//uiManager_->Update();
 	// カメラ更新
@@ -130,15 +129,15 @@ void GameScenePhase::DrawImGui()
 	// UIImGui描画
 	//uiManager_->DrawImGui();
 
-	ImGui::Begin("------debug info------");
-	ImGui::Text("ESC : Quit Application");
-	ImGui::Text("F1  : Hide Debug Info");
-	ImGui::Text("F3  : Toggle Camera Release or Debug");
-	ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
-	ImGui::Text("F12 : Toggle Fullscreen");
-	ImGui::Text("DeltaTime: %.3f ms", Game::Time::GetDeltaTime() * 1000.0f);
-	ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
-	ImGui::End();
+	//ImGui::Begin("------debug info------");
+	//ImGui::Text("ESC : Quit Application");
+	//ImGui::Text("F1  : Hide Debug Info");
+	//ImGui::Text("F3  : Toggle Camera Release or Debug");
+	//ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
+	//ImGui::Text("F12 : Toggle Fullscreen");
+	//ImGui::Text("DeltaTime: %.3f ms", Game::Time::GetDeltaTime() * 1000.0f);
+	//ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
+	//ImGui::End();
 }
 
 

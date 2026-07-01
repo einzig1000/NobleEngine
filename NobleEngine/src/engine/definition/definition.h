@@ -1113,8 +1113,8 @@ struct JointWeightData
 struct ResMeshlet
 {
     uint32_t vertexOffset = 0;		// 頂点番号オフセット
-    uint32_t vertexCount = 0;		// 頂点数
     uint32_t primitiveOffset = 0;	// プリミティブ番号オフセット
+    uint32_t vertexCount = 0;		// 頂点数
     uint32_t primitiveCount = 0;	// プリミティブ数
 };
 

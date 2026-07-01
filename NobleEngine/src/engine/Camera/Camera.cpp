@@ -119,9 +119,6 @@ void Camera::Resize()
 
 void Camera::Draw()
 {
-#ifdef DEBUG
-    Game::DebugDraw::AddSphere({ center_, 0.5f }, 0xFF0000FF);
-#endif // DEBUG
 }
 
 void Camera::DrawImGui()
@@ -223,7 +220,7 @@ void Camera::DrawImGui()
 
 	std::string screenSizeTag = "##screenSize";
 	tag = "screenSize" + screenSizeTag + cameraTag;
-    if (ImGui::DragFloat2(tag.c_str(), &screenSize_.x, 0.01f))
+    if (ImGui::DragFloat2(tag.c_str(), &screenSize_.x, 1.0f))
     {
 		Resize();
     }

@@ -455,9 +455,9 @@ void TestPhase::Update()
 	//postEffects_[3]->SetCBufferData(2, ShaderType::PixelShader, &projectionMatrix_miniMap2_);
 
 
-	testAnimation_->Update(Game::Time::GetDeltaTime());
+	testAnimation_->Update(0);
 	testParticle_->Update(0);
-	testMeshShader_->Update();
+	testMeshShader_->Update(0);
 
 	if (Game::IO::Key::IsJustPressed(DIK_F12))
 	{

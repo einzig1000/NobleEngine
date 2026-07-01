@@ -23,12 +23,12 @@ SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     HRESULT hr = device->CreateDescriptorHeap(&DescriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap_));
     assert(SUCCEEDED(hr));
 
-    Log("コンストラクタ実行成功 : DescriptorHeapManager");
+    Log("コンストラクタ実行成功 : SRV_UAVManager");
 }
 
 SRV_UAVManager::~SRV_UAVManager()
 {
-    Log("デストラクタ実行成功 : DescriptorHeapManager");
+    Log("デストラクタ実行成功 : SRV_UAVManager");
 }
 
 uint32_t SRV_UAVManager::Allocate(ResourceType type)

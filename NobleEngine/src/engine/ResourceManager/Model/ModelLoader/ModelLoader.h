@@ -31,15 +31,11 @@ private:
 	Node ReadNode(const aiNode* node);
 
 	// SkinClusterを作成する
-	SkinCluster CreateSkinCluster(const Skeleton& skeleton, const ModelData& modelData);
+	SkinCluster CreateSkinCluster(const ModelData* modelData);
 
 	// NodeからSkeletonを作成
 	Skeleton CreateSkeleton(const Node& node);
 	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parentIndex, std::vector<Joint>& joints);
-
-	// モデルデータからメッシュレットを作成
-	//void CreateMeshlets(ResMesh& mesh, const aiMesh* aiMeshPtr);
-
 
 	// １，AABB読み込み
 	std::vector<AABB> LoadAABB(const std::string& filePath, const std::vector<VertexData>& vertices);

@@ -19,12 +19,12 @@ RTVManager::RTVManager(ID3D12Device2* device)
 	HRESULT hr = device_->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap_));
 	assert(SUCCEEDED(hr));
 
-	Log("コンストラクタ実行成功 : DescriptorHeapManager");
+	Log("コンストラクタ実行成功 : RTVManager");
 }
 
 RTVManager::~RTVManager()
 {
-	Log("デストラクタ実行成功 : DescriptorHeapManager");
+	Log("デストラクタ実行成功 : RTVManager");
 }
 
 uint32_t RTVManager::Allocate()

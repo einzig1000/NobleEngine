@@ -9,37 +9,6 @@
 
 namespace
 {
-    template <typename T>
-    [[nodiscard]]
-    Microsoft::WRL::ComPtr<ID3D12Resource> UploadBufferData(
-        ID3D12Resource* buffer,
-        const std::vector<T>& data,
-        ID3D12Device2* device,
-        ID3D12GraphicsCommandList6* commandList)
-    {
-        D3D12_SUBRESOURCE_DATA subresourceData{};
-        subresourceData.pData = data.data();                         // データの先頭ポインタ
-        subresourceData.RowPitch = data.size() * sizeof(T);          // 全体のバイトサイズ
-        subresourceData.SlicePitch = subresourceData.RowPitch;       // バッファなのでRowPitchと同じ
-        // 中間リソース(Uploadヒープ)に必要なサイズを取得
-        uint64_t intermediateSize = GetRequiredIntermediateSize(buffer, 0, 1);
-        // 既存のFactoryを利用して中間リソースを作成
-        Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =
-            Dx12ResourceFactory::CreateBufferResource(device, intermediateSize);
-        // コマンドリストにコピー処理を記録
-        UpdateSubresources(commandList, buffer, intermediateResource.Get(), 0, 0, 1, &subresourceData);
-        // ResourceStateをCOPY_DESTからGENERIC_READに変更
-        D3D12_RESOURCE_BARRIER barrier{};
-        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-        barrier.Transition.pResource = buffer;
-        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-        commandList->ResourceBarrier(1, &barrier);
-
-        return intermediateResource;
-    }
 }
 
 ModelLoader::ModelLoader(DirectXManager* dxManager, ModelBank* bank)
@@ -47,7 +16,9 @@ ModelLoader::ModelLoader(DirectXManager* dxManager, ModelBank* bank)
 {}
 
 ModelLoader::~ModelLoader()
-{}
+{
+	intermediateUploadResources_.clear();
+}
 
 int32_t ModelLoader::LoadModel(const std::string & filePath)
 {
@@ -63,8 +34,7 @@ int32_t ModelLoader::LoadModel(const std::string & filePath)
     LoadModelFile(filePath, obj.get());
 
 	// モデルバンクに登録
-	int32_t modelID = bank_->AllocateModelID();
-    bank_->AddModelData(filePath, modelID, std::move(obj));
+	int32_t modelID = bank_->AddModelData(filePath, std::move(obj));
 
     Log("成功 ID:%d", modelID);
 
@@ -81,7 +51,6 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     uint32_t backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
     auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
     auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-
 
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(filePath.c_str(),
@@ -102,6 +71,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     const bool hasTexCoords = mesh->HasTextureCoords(0);
     Log("テクスチャ座標データが存在しません。(0.0f,0.0f)で初期化されます");
 
+    // 頂点データ & インデックスデータの読み込み
     modelData->vertices.resize(mesh->mNumVertices);
     for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex)
     {
@@ -298,55 +268,81 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     modelData->filePath = filePath;
 
     /// 頂点バッファ作成
-    size_t vertexBufferSize = sizeof(VertexData) * modelData->vertices.size();
-    modelData->vertexBuffer = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), vertexBufferSize);
+    {
+        size_t bufferSize = sizeof(VertexData) * modelData->vertices.size();
+        modelData->vertexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexBufferUpload = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), vertexBufferSize);
-        UploadBufferData(
-            modelData->meshletBuffer.Get(),
-            modelData->meshlets,
-            dxManager_->GetDevice(),
-            cmdList);
-    intermediateUploadResources_.push_back(vertexBufferUpload);
+        Microsoft::WRL::ComPtr<ID3D12Resource> uploadBuffer = Dx12ResourceFactory::CreateUploadResource(modelData->vertexBuffer.Get(), modelData->vertices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(uploadBuffer);
 
-    VertexData* vData = nullptr;
-    modelData->vertexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vData));
-    std::memcpy(vData, modelData->vertices.data(), vertexBufferSize);
-    modelData->vertexBuffer->Unmap(0, nullptr);
-    modelData->vertexBufferView.BufferLocation = modelData->vertexBuffer->GetGPUVirtualAddress();
-    modelData->vertexBufferView.SizeInBytes = static_cast<UINT>(vertexBufferSize);
-    modelData->vertexBufferView.StrideInBytes = sizeof(VertexData);
+        modelData->vertexBufferView.BufferLocation = modelData->vertexBuffer->GetGPUVirtualAddress();
+        modelData->vertexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
+        modelData->vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-    //modelData->verte
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->vertexBuffer.Get(),
+            modelData->vertices.size(),
+            sizeof(VertexData));
+        modelData->vertexSrvindex = srvAllocation.index;
+    }
 
     /// インデックスバッファ作成
-    size_t indexBufferSize = sizeof(uint32_t) * UINT(modelData->indices.size());
-    modelData->indexBuffer = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), indexBufferSize);
-    uint32_t* iData = nullptr;
-    modelData->indexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&iData));
-    std::memcpy(iData, modelData->indices.data(), indexBufferSize);
-    modelData->indexBuffer->Unmap(0, nullptr);
-    modelData->indexBufferView.BufferLocation = modelData->indexBuffer->GetGPUVirtualAddress();
-    modelData->indexBufferView.SizeInBytes = static_cast<UINT>(indexBufferSize);
-    modelData->indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+    {
+        size_t bufferSize = sizeof(uint32_t) * UINT(modelData->indices.size());
+        modelData->indexBuffer = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), bufferSize);
+        uint32_t* iData = nullptr;
+        modelData->indexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&iData));
+        std::memcpy(iData, modelData->indices.data(), bufferSize);
+        modelData->indexBuffer->Unmap(0, nullptr);
+        modelData->indexBufferView.BufferLocation = modelData->indexBuffer->GetGPUVirtualAddress();
+        modelData->indexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
+        modelData->indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+    }
 
 	/// メッシュレットバッファ作成
-	size_t meshletBufferSize = sizeof(ResMeshlet) * modelData->meshlets.size();
-	modelData->meshletBuffer = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), meshletBufferSize);
-	Microsoft::WRL::ComPtr<ID3D12Resource> meshletBufferUpload = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), meshletBufferSize);
-        UploadBufferData(
-            modelData->meshletBuffer.Get(),
-            modelData->meshlets,
-            dxManager_->GetDevice(),
-            cmdList);
-    intermediateUploadResources_.push_back(meshletBufferUpload);
+    {
+        size_t bufferSize = sizeof(ResMeshlet) * modelData->meshlets.size();
+        modelData->meshletBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+        
+        Microsoft::WRL::ComPtr<ID3D12Resource> meshletBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->meshletBuffer.Get(), modelData->meshlets, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(meshletBufferUpload);
 
-    SRV_UAVManager::Allocation srvAllocation =
-        dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
             modelData->meshletBuffer.Get(),
             modelData->meshlets.size(),
             sizeof(ResMeshlet));
-	modelData->meshletSrvIndex = srvAllocation.index;
+        modelData->meshletSrvIndex = srvAllocation.index;
+    }
+
+	/// ユニーク頂点インデックスバッファ作成
+    {
+        size_t bufferSize = sizeof(uint32_t) * modelData->uniqueVertexIndices.size();
+        modelData->uniqueVertexIndexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+        
+        Microsoft::WRL::ComPtr<ID3D12Resource> uniqueVertexIndexBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->uniqueVertexIndexBuffer.Get(), modelData->uniqueVertexIndices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(uniqueVertexIndexBufferUpload);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->uniqueVertexIndexBuffer.Get(),
+            modelData->uniqueVertexIndices.size(),
+            sizeof(uint32_t));
+        modelData->uniqueVertexIndexSrvIndex = srvAllocation.index;
+    }
+
+	/// プリミティブインデックスバッファ作成
+    {
+        size_t bufferSize = sizeof(uint32_t) * modelData->primitiveIndices.size();
+        modelData->primitiveIndexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+        
+        Microsoft::WRL::ComPtr<ID3D12Resource> primitiveIndexBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->primitiveIndexBuffer.Get(), modelData->primitiveIndices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(primitiveIndexBufferUpload);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->primitiveIndexBuffer.Get(),
+            modelData->primitiveIndices.size(),
+            sizeof(uint32_t));
+        modelData->primitiveIndexSrvIndex = srvAllocation.index;
+    }
 
 	// modelData->skinClusterDataを作成する
     for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
@@ -372,7 +368,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     }
 
     /// スキンクラスタ作成
-    modelData->skinCluster = CreateSkinCluster(modelData->skeleton, *modelData);
+    modelData->skinCluster = CreateSkinCluster(modelData);
 }
 
 Node ModelLoader::ReadNode(const aiNode* node)
@@ -395,37 +391,37 @@ Node ModelLoader::ReadNode(const aiNode* node)
     return result;
 }
 
-SkinCluster ModelLoader::CreateSkinCluster(const Skeleton& skeleton, const ModelData& modelData)
+SkinCluster ModelLoader::CreateSkinCluster(const ModelData* modelData)
 {
 	SkinCluster skinCluster;
 
 	// palette用のResourceを作成
-	skinCluster.paletteResource = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), sizeof(WellForGPU) * skeleton.joints.size());
+	skinCluster.paletteResource = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), sizeof(WellForGPU) * modelData->skeleton.joints.size());
 	WellForGPU* wData = nullptr;
 	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&wData));
-	skinCluster.mappedPalette = { wData, skeleton.joints.size() };
-	SRV_UAVManager::Allocation allocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(skinCluster.paletteResource.Get(), static_cast<UINT>(skeleton.joints.size()), sizeof(WellForGPU));
+	skinCluster.mappedPalette = { wData, modelData->skeleton.joints.size() };
+	SRV_UAVManager::Allocation allocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(skinCluster.paletteResource.Get(), static_cast<UINT>(modelData->skeleton.joints.size()), sizeof(WellForGPU));
     skinCluster.paletteSrvHandle.first = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetCPUHandleAt(allocation.index);
    	skinCluster.paletteSrvHandle.second = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(allocation.index);
 
 	// influence用のResourceを作成
-	skinCluster.influenceResource = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), sizeof(VertexInfluence) * modelData.vertices.size());
+	skinCluster.influenceResource = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), sizeof(VertexInfluence) * modelData->vertices.size());
 	VertexInfluence* iData = nullptr;
 	skinCluster.influenceResource->Map(0, nullptr, reinterpret_cast<void**>(&iData));
-	std::memset(iData, 0, sizeof(VertexInfluence) * modelData.vertices.size());
-	skinCluster.mappedInfluences = { iData, modelData.vertices.size() };
+	std::memset(iData, 0, sizeof(VertexInfluence) * modelData->vertices.size());
+	skinCluster.mappedInfluences = { iData, modelData->vertices.size() };
 	skinCluster.influenceBufferView.BufferLocation = skinCluster.influenceResource->GetGPUVirtualAddress();
-	skinCluster.influenceBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexInfluence) * modelData.vertices.size());
+	skinCluster.influenceBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexInfluence) * modelData->vertices.size());
 	skinCluster.influenceBufferView.StrideInBytes = sizeof(VertexInfluence);
 
-	skinCluster.inverseBindPoseMatrices.resize(skeleton.joints.size());
+	skinCluster.inverseBindPoseMatrices.resize(modelData->skeleton.joints.size());
 	std::generate(skinCluster.inverseBindPoseMatrices.begin(), skinCluster.inverseBindPoseMatrices.end(), Matrix4x4::MakeIdentity4x4 );
 
 	// modelDataのskinClusterDataからJointWeightDataを取得し、各JointのInverseBindPoseMatrixを保存する
-	for (const auto& [jointName, jointWeightData] : modelData.skinClusterData)
+	for (const auto& [jointName, jointWeightData] : modelData->skinClusterData)
 	{
-		auto jointIt = skeleton.jointIndexByName.find(jointName);
-		if (jointIt != skeleton.jointIndexByName.end())
+		auto jointIt = modelData->skeleton.jointIndexByName.find(jointName);
+		if (jointIt != modelData->skeleton.jointIndexByName.end())
 		{
 			size_t jointIndex = jointIt->second;
 			skinCluster.inverseBindPoseMatrices[jointIndex] = jointWeightData.inverseBindPoseMatrix;

@@ -420,7 +420,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
     desc.pParameters = rootParams.empty() ? nullptr : rootParams.data();
     desc.NumStaticSamplers = _countof(staticSamplers);
     desc.pStaticSamplers = staticSamplers;
-    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
 
     Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;
     Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
@@ -458,7 +458,7 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
 
 	stream.pRootSignature = rs.Get();
     std::wstring psPath = StringConverter::Convert(cfg.ps);
-    auto psBlob = GetOrCompileShader(psPath.c_str(), L"ps_6_5");
+    auto psBlob = GetOrCompileShader(psPath.c_str(), L"ps_6_6");
 	stream.pPS = CD3DX12_SHADER_BYTECODE(psBlob->GetBufferPointer(), psBlob->GetBufferSize());
 	stream.pBlend = CD3DX12_BLEND_DESC(MakeBlendDesc(cfg.blendID));
 	stream.pDepthStencil = CD3DX12_DEPTH_STENCIL_DESC(MakeDepthStencilDesc(cfg.depthStencilID));
@@ -475,13 +475,13 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
 	if (isMeshShader)
 	{
 		std::wstring msPath = StringConverter::Convert(cfg.ms);
-		auto msBlob = GetOrCompileShader(msPath.c_str(), L"ms_6_5");
+		auto msBlob = GetOrCompileShader(msPath.c_str(), L"ms_6_6");
 		stream.pMS = CD3DX12_SHADER_BYTECODE(msBlob->GetBufferPointer(), msBlob->GetBufferSize());
 	}
 	else
 	{
         std::wstring vsPath = StringConverter::Convert(cfg.vs);
-		auto vsBlob = GetOrCompileShader(vsPath.c_str(), L"vs_6_5");
+		auto vsBlob = GetOrCompileShader(vsPath.c_str(), L"vs_6_6");
 		stream.VS = CD3DX12_SHADER_BYTECODE(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize());
         stream.PrimitiveTopologyType = ToTopologyType(cfg.topology);
 

@@ -76,12 +76,12 @@ TestAnimation::~TestAnimation()
 void TestAnimation::Initialize()
 {}
 
-void TestAnimation::Update(float deltaTime)
+void TestAnimation::Update(int32_t cameraID)
 {
-	animationTime_ += deltaTime;
+	animationTime_ += Game::Time::GetDeltaTime();
 	animationTime_ = fmod(animationTime_, animation.duration);
 
-	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(0);
+	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 
 	Vector4 color = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 
