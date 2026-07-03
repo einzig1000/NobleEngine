@@ -2,6 +2,7 @@
 #include "ModelPreview/ModelPreview.h"
 #include "TexturePreview/TexturePreview.h"
 #include "RenderTexturePreview/RenderTexturePreview.h"
+#include "TimeEditor/TimeEditor.h"
 
 #include <IO/IOManager.h>
 #include <Window/WindowManager.h>
@@ -17,19 +18,23 @@ EngineEditor::EngineEditor(
 	DrawSystem* drawSystem, 
 	IOManager* ioManager, 
 	CameraManager* cameraManager, 
-	ResourceManager* resourceManager)
+	ResourceManager* resourceManager,
+	FixFPS* fixFPS)
 	:
 	windowManager_(windowManager), 
 	dxManager_(dxManager),
 	drawSystem_(drawSystem), 
 	ioManager_(ioManager), 
 	cameraManager_(cameraManager),
-	resourceManager_(resourceManager)
+	resourceManager_(resourceManager),
+	fixFPS_(fixFPS)
 {
 	modelEditor_ = std::make_unique<ModelPreview>(dxManager, cameraManager, resourceManager->GetModelManager()->GetModelBank());
 	textureEditor_ = std::make_unique<TexturePreview>(dxManager, resourceManager->GetTextureManager()->GetTextureBank());
 
 	renderTexturePreview_ = std::make_unique<RenderTexturePreview>(dxManager);
+
+	timeEditor_ = std::make_unique<TimeEditor>(fixFPS_);
 }
 
 EngineEditor::~EngineEditor()
@@ -53,4 +58,5 @@ void EngineEditor::DrawImGui()
 	modelEditor_->DrawImGui();
 	textureEditor_->DrawImGui();
 	renderTexturePreview_->DrawImGui();
+	timeEditor_->DrawImGui();
 }

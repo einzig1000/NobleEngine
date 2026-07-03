@@ -16,6 +16,9 @@ class ResourceManager;
 class ModelPreview;
 class TexturePreview;
 
+class FixFPS;
+class TimeEditor;
+
 class EngineEditor
 {
 public:
@@ -25,7 +28,8 @@ public:
 		DrawSystem* drawSystem, 
 		IOManager* ioManager, 
 		CameraManager* cameraManager, 
-		ResourceManager* resourceManager);
+		ResourceManager* resourceManager,
+		FixFPS* fixFPS);
 	~EngineEditor();
 
 	void Initialize();
@@ -49,5 +53,7 @@ private:
 	std::unique_ptr<ModelPreview> modelEditor_;
 	std::unique_ptr<TexturePreview> textureEditor_;
 
+	FixFPS* fixFPS_ = nullptr;
+	std::unique_ptr<TimeEditor> timeEditor_;
 };
 

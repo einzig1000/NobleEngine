@@ -1,24 +1,24 @@
 
 struct MSOutput
 {
-    float4 position : SV_Position;
-    float3 normal : NORMAL;
-    float4 color : COLOR0;
+    float4 position : SV_POSITION;
+    float2 texCoord : TEXCOORD0;
+    float3 normal : NORMAL0;
 };
 
 struct VertexData
 {
     float4 position;
     float3 normal;
-    float2 uv;
+    float2 texCoord;
 };
 
 struct Meshlet
 {
-    uint vertexOffset; // uniqueVertexIndices の開始位置
-    uint primitiveOffset; // primitiveIndices の開始位置
-    uint vertexCount; // このメッシュレットが持つ頂点数 (最大64)
-    uint primitiveCount; // このメッシュレットが持つポリゴン数 (最大126)
+    uint vertexOffset;      // uniqueVertexIndices の開始位置
+    uint primitiveOffset;   // primitiveIndices の開始位置
+    uint vertexCount;       // このメッシュレットが持つ頂点数 (最大64)
+    uint primitiveCount;    // このメッシュレットが持つポリゴン数 (最大126)
 };
 
 cbuffer ModelInfo : register(b0)
@@ -70,7 +70,7 @@ void main(
         MSOutput vOut;
         vOut.position = mul(v.position, wvp);
         vOut.normal = v.normal;
-        vOut.color = float4(1.0, 1.0, 1.0, 1.0);
+        vOut.texCoord = v.texCoord;
 
         // 頂点配列に出力
         verts[gtid] = vOut;

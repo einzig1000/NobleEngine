@@ -47,7 +47,8 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 		drawSystem_.get(),
 		ioManager_.get(),
 		cameraManager_.get(),
-		resourceManager_.get());
+		resourceManager_.get(),
+		fixFPS_.get());
 #endif
 }
 

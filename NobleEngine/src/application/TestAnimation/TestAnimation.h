@@ -10,7 +10,7 @@ public:
 	TestAnimation();
 	~TestAnimation();
 	void Initialize();
-	void Update(float deltaTime);
+	void Update(int32_t cameraID);
 	void Draw(int32_t renderTextureID);
 
 private:

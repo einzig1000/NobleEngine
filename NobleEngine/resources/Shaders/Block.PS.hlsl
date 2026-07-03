@@ -1,8 +1,7 @@
 struct PSInput
 {
     float4 position : SV_Position;
-    nointerpolation uint instancedID : TEXCOORD0;
-    float3 normal : TEXCOORD1;
+    float3 normal : NORMAL;
     float4 color : COLOR0;
 };
 

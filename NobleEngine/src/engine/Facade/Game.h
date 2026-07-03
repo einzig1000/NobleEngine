@@ -605,11 +605,6 @@ namespace Game
 		/// <returns>フレームレート取得</returns>
 		float GetFrameRate();
 
-		/// <summary>
-		/// 時間の速さを調整する。1.0が通常速度、0.5が半分の速度、2.0が2倍の速度になる。
-		/// </summary>
-		/// <param name="scale">タイムスケール</param>
-		void SetTimeScale(float scale);
 	};
 
 	namespace Physics

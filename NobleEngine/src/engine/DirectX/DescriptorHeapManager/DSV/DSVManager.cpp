@@ -19,12 +19,12 @@ DSVManager::DSVManager(ID3D12Device2* device)
 	HRESULT hr = device_->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap_));
 	assert(SUCCEEDED(hr));
 
-	Log("コンストラクタ実行成功 : DescriptorHeapManager");
+	Log("コンストラクタ実行成功 : DSVManager");
 }
 
 DSVManager::~DSVManager()
 {
-	Log("デストラクタ実行成功 : DescriptorHeapManager");
+	Log("デストラクタ実行成功 : DSVManager");
 }
 
 uint32_t DSVManager::Allocate()

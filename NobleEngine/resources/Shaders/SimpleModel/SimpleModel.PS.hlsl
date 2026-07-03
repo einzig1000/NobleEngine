@@ -21,13 +21,15 @@ cbuffer TextureIndex : register(b1)
     int textureIndex;
 };
 
-Texture2D<float4> textures[] : register(t0);
 SamplerState gSampler : register(s0);
 
 PSOutput main(PSInput input)
 {
+    Texture2D<float4> targetTexture = ResourceDescriptorHeap[textureIndex];
+    
+    
     PSOutput output;
-    float4 texColor = textures[textureIndex].Sample(gSampler, input.texCoord);
+    float4 texColor = targetTexture.Sample(gSampler, input.texCoord);
     output.color = color * texColor;
     if (output.color.a < 0.1f)
     {

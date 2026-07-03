@@ -526,10 +526,6 @@ namespace Game
 		{
 			return Engine::Instance().GetFixFPS()->GetAverageFPS();
 		}
-		void SetTimeScale(float scale)
-		{
-			Engine::Instance().GetFixFPS()->SetTimeScale(scale);
-		}
 	}
 
 	namespace Physics

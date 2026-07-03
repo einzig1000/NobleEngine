@@ -19,8 +19,6 @@ public:
 	MapManager();
 	~MapManager();
 
-	void SetCameraID(int32_t cameraID) { cameraID_ = cameraID; }
-
 	void LoadNameAndPathMap(const std::string& filePath);
 	void SaveNameAndPathMap(const std::string& filePath);
 	void LoadMap(const std::string& mapName);
@@ -28,7 +26,7 @@ public:
 	void CreateNewMap(const std::string& mapName, uint32_t seed);
 
 	void Initialize();
-	void Update();
+	void Update(int32_t cameraID);
 	void Draw(int32_t renderTargetID);
 	void DrawImGui();
 
@@ -119,7 +117,7 @@ private:
 	int updateRadius_ = 2;   // 更新半径（チャンク単位）
 	NoiseParameter noiseParam_;
 
-
-	int32_t cameraID_ = -1;	// カメラID
+	// カメラ座標
+	Vector3int cameraChunkPos_;
 };
 

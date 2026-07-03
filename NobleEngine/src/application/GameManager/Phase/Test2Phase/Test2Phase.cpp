@@ -26,20 +26,22 @@ Test2Phase::~Test2Phase()
 
 void Test2Phase::Initialize()
 {
-	TestParticle.Initialize();
-	TestAnimation.Initialize();
+	testParticle.Initialize();
+	testAnimation.Initialize();
+	testMeshShader.Initialize();
 }
 
 void Test2Phase::Update()
 {
 	Game::Camera::Update(c_main_);
 
-	cameraRotate_.x = std::sinf(frame_ * 0.001f);
-	cameraRotate_.y = std::cosf(frame_ * 0.001f) * 0.5f;
-	Game::Camera::Setter::SetRotate(cameraRotate_, 0, EaseType::IN_BACK, c_main_);
+	//cameraRotate_.x = std::sinf(frame_ * 0.001f);
+	//cameraRotate_.y = std::cosf(frame_ * 0.001f) * 0.5f;
+	//Game::Camera::Setter::SetRotate(cameraRotate_, 0, EaseType::IN_BACK, c_main_);
 
-	TestParticle.Update(c_main_);
-	TestAnimation.Update(0.016f); // Assuming a fixed timestep of 16ms
+	testParticle.Update(c_main_);
+	testAnimation.Update(c_main_);
+	testMeshShader.Update(c_main_);
 
 	if (Game::IO::Key::IsJustPressed(DIK_F11))
 	{
@@ -61,8 +63,9 @@ void Test2Phase::Update()
 
 void Test2Phase::Draw()
 {
-	//TestParticle.Draw(rt_main_);
-	TestAnimation.Draw(rt_main_);
+	testParticle.Draw(rt_main_);
+	//testAnimation.Draw(rt_main_);
+	testMeshShader.Draw(rt_main_);
 
 	render_->ScreenDraw();
 }

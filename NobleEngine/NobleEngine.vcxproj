@@ -107,6 +107,7 @@
     <ClCompile Include="src\application\TestMeshShader\TestMeshShader.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.cpp" />
     <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp" />
+    <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h" />
@@ -190,6 +191,7 @@
     <ClInclude Include="src\application\TestMeshShader\TestMeshShader.h" />
     <ClInclude Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.h" />
     <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h" />
+    <ClInclude Include="src\engine\Editor\TimeEditor\TimeEditor.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
@@ -263,6 +265,9 @@
 copy "$(ProjectDir)externals\dxc\dxil.dll" "$(TargetDir)dxil.dll"
 xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
     </PostBuildEvent>
+    <FxCompile>
+      <ShaderModel>6.6</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -295,6 +300,9 @@ xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
 copy "$(ProjectDir)externals\dxc\dxil.dll" "$(TargetDir)dxil.dll"
 xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
     </PostBuildEvent>
+    <FxCompile>
+      <ShaderModel>6.6</ShaderModel>
+    </FxCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

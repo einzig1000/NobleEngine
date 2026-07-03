@@ -13,10 +13,6 @@ struct InstanceData
 	Matrix4x4 World;
 	// 色
 	Vector4 Color;
-	//// ベーステクスチャID
-	//int32_t BaseTextureID = 0;
-	//// 破壊テクスチャID
-	//int32_t BreakTextureID = 0;
 };
 
 class Chunk
@@ -27,16 +23,27 @@ public:
 	void Update(int32_t cameraID);
 	void Draw(int32_t renderTargetID);
 
-	// チャンクデータ生成
+	// 地形生成
 	void CreateChunkData(const NoiseParameter& param, const Vector3int& chunkIndex);
 	void CreateChunkDataFromJson();		// Jsonからチャンクデータを読み込み
 	void CreateChunkDataNewly(const NoiseParameter& param);	// 新規生成チャンクデータ作成
 	void GenerateOres(const NoiseParameter& param);	// 鉱石を生成
 	void GenerateTrees(const NoiseParameter& param);// 木を生成
 
-	// 隣接チャンクの設定
+	// 隣接チャンク管理
 	void SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor);
 	bool IsNeighborExist(DirectionXYZ direction);
+
+	// 露出状態計算
+	void RefreshExposeAt(const Vector3int& localIndex);	// [localIndexのブロック]の露出状態を更新
+	int32_t ComputeExposed(const Vector3int& localIndex);	// [localIndexのブロック]の露出状態を判定
+	void SetExposedAllBlocks();									// [チャンク内の全ブロック]     の露出状態を更新
+	void SetExposedAroundBlocks(const Vector3int& localIndex);	// [localIndexの周り６ブロック] の露出状態を更新
+	void SetExposedNeighborBlocks(const DirectionXYZ direction);// [隣接チャンクの境界ブロック] の露出状態を更新
+
+	// メッシュ生成
+	void RefreshMeshData();	// メッシュデータを更新
+	void Pushvertex(const Block* block);
 
 	// ブロック取得
 	Block* GetBlock(const Vector3int& index);
@@ -52,23 +59,7 @@ public:
 	void RebuildBlockPositions();
 
 
-	// [localIndexのブロック]の露出状態を更新
-	void RefreshExposeAt(const Vector3int& localIndex);
-	// [localIndexのブロック]が露出状態を判定
-	bool ComputeExposed(const Vector3int& localIndex);
 
-
-	/// [チャンク内の全ブロック]     の露出状態を更新
-	/// ↳ チャンク生成時
-	void SetExposedAllBlocks();
-
-	/// [localIndexの周り６ブロック] の露出状態を更新
-	/// ↳ ブロック設置・破壊時
-	void SetExposedAroundBlocks(const Vector3int& localIndex);
-
-	/// [隣接チャンクの境界ブロック] の露出状態を更新
-	/// ↳ 隣接チャンク生成時
-	void SetExposedNeighborBlocks(const DirectionXYZ direction);
 	
 private:
 	// 隣接チャンク
@@ -78,6 +69,9 @@ private:
 	// true : 既にマップのセーブデータに存在していたチャンク
 	// false : 新規生成されたチャンク
 	bool loadResult = false;
+
+	std::vector<VertexData> vertices_;
+	Vector4int modelInfo;
 
 	// チャンク座標
 	Vector3int chunkIndex_;

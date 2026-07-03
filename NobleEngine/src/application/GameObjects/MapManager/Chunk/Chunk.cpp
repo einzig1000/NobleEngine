@@ -48,9 +48,10 @@ Chunk::Chunk()
 	// ブロックデータの初期化
 	renderData_ = std::make_unique<RenderObject>();
 	//renderData_->psoConfig_.vs = "resources/shaders/Block.VS.hlsl";
-	renderData_->psoConfig_.ms = "resources/shaders/Block.MS.hlsl";
-	renderData_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
-	renderData_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
+	//renderData_->psoConfig_.ms = "resources/shaders/Block.MS.hlsl";
+	//renderData_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
+	renderData_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	renderData_->psoConfig_.ms = "resources/shaders/SimpleModel/SimpleModel.MS.hlsl";
 	renderData_->SetupFromShaders();
 
 	size_t blockCount = Constexprs::kChunkX * Constexprs::kChunkZ * Constexprs::kChunkY;
@@ -61,6 +62,8 @@ Chunk::Chunk()
 Chunk::~Chunk()
 {
 }
+
+#pragma region 地形生成
 
 // チャンクデータ生成
 void Chunk::CreateChunkData(const NoiseParameter& param, const Vector3int & chunkIndex)
@@ -320,6 +323,9 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 	}
 }
 
+#pragma endregion
+
+#pragma region 隣接チャンク
 
 // 隣接チャンクを設定
 void Chunk::SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor)
@@ -331,12 +337,42 @@ void Chunk::SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor)
 		SetExposedNeighborBlocks(direction);
 	}
 }
-
 // 隣接チャンクが存在するか(生成済か)
 bool Chunk::IsNeighborExist(DirectionXYZ direction)
 {
 	return neighbors_[direction] != nullptr;
 }
+
+#pragma endregion
+
+#pragma region 露出状態計算
+
+// localIndexのブロックの露出状態を更新
+//void Chunk::RefreshExposeAt(const Vector3int& localIndex)
+//{
+//	Block* targetBlock = GetBlock(localIndex);
+//	if (!targetBlock) return;
+//
+//	const bool preExposed = targetBlock->isExposed_;
+//	targetBlock->isExposed_ = ComputeExposed(localIndex);
+//
+//	// 変化なしなら何もしない
+//	if (targetBlock->isExposed_ == preExposed) return;
+//
+//	// (前フレーム露出なし && 今フレーム露出あり)なら描画リストに追加
+//	if (targetBlock->isExposed_)
+//	{
+//		InstanceData data;
+//		data.World = Matrix4x4::MakeTranslateMatrix(targetBlock->position_);
+//		data.Color = Vector4(1, 1, 1, 1);
+//		int32_t slot = AllocateInstanceSlot(targetBlock, data);
+//	}
+//	// (前フレーム露出あり && 今フレーム露出なし)なら描画リストから削除(前フレーム露出ありの時点でdataSlot_には有効なスロット番号が入っているはず)
+//	else
+//	{
+//		FreeInstanceSlot(targetBlock);
+//	}
+//}
 
 // localIndexのブロックの露出状態を更新
 void Chunk::RefreshExposeAt(const Vector3int& localIndex)
@@ -344,40 +380,40 @@ void Chunk::RefreshExposeAt(const Vector3int& localIndex)
 	Block* targetBlock = GetBlock(localIndex);
 	if (!targetBlock) return;
 
-	const bool preExposed = targetBlock->isExposed_;
-	targetBlock->isExposed_ = ComputeExposed(localIndex);
+	const int32_t preExposed = targetBlock->GetExposedFace();
+	ComputeExposed(localIndex);
+	const int32_t postExposed = targetBlock->GetExposedFace();
 
 	// 変化なしなら何もしない
-	if (targetBlock->isExposed_ == preExposed) return;
+	if (preExposed == postExposed) return;
 
-	// (前フレーム露出なし && 今フレーム露出あり)なら描画リストに追加
-	if (targetBlock->isExposed_)
-	{
-		InstanceData data;
-		data.World = Matrix4x4::MakeTranslateMatrix(targetBlock->position_);
-		//data.BaseTextureID = ResourceID::Get3DTextureID(targetBlock->GetBlockID());
-		//data.BreakTextureID = 0;
-		data.Color = Vector4(1, 1, 1, 1);
-		int32_t slot = AllocateInstanceSlot(targetBlock, data);
-	}
-	// (前フレーム露出あり && 今フレーム露出なし)なら描画リストから削除(前フレーム露出ありの時点でdataSlot_には有効なスロット番号が入っているはず)
-	else
-	{
-		FreeInstanceSlot(targetBlock);
-	}
+	instanceBufferDirty_ = true;
 
+	//// (前フレーム露出なし && 今フレーム露出あり)なら描画リストに追加
+	//if (!wasExposed && targetBlock->isExpose())
+	//{
+	//	InstanceData data;
+	//	data.World = Matrix4x4::MakeTranslateMatrix(targetBlock->position_);
+	//	data.Color = Vector4(1, 1, 1, 1);
+	//	int32_t slot = AllocateInstanceSlot(targetBlock, data);
+	//}
+	//// (前フレーム露出あり && 今フレーム露出なし)なら描画リストから削除(前フレーム露出ありの時点でdataSlot_には有効なスロット番号が入っているはず)
+	//else if (wasExposed && !targetBlock->isExpose())
+	//{
+	//	FreeInstanceSlot(targetBlock);
+	//}
 }
 // localIndexのブロックの露出状態を判定
-bool Chunk::ComputeExposed(const Vector3int& localIndex)
+int32_t Chunk::ComputeExposed(const Vector3int& localIndex)
 {
 	Block* self = GetBlock(localIndex);
 	if (!self) return false;
 	if (self->GetBlockID() == BlockID::Air) return false;
 
-	// 6方向のオフセット
-	static const int dx[6] = { -1, 1, 0, 0, 0, 0 };
-	static const int dz[6] = { 0, 0, 0, 0, -1, 1 };
-	static const int dy[6] = { 0, 0, -1, 1, 0, 0 };
+	// 6方向のオフセット 前,後,左,右,上,下
+	static const int32_t dx[6] = { 0,  0, 1, -1, 0,  0 };
+	static const int32_t dz[6] = { 1, -1, 0,  0, 0,  0 };
+	static const int32_t dy[6] = { 0,  0, 0,  0, 1, -1 };
 
 	for (int i = 0; i < 6; i++)
 	{
@@ -388,14 +424,16 @@ bool Chunk::ComputeExposed(const Vector3int& localIndex)
 		if (!neighborBlock) continue;
 		
 		// 隣接ブロックがAirか透明ブロック(葉、ガラス)なら露出している
+		bool exposed = false;
 		if (neighborBlock->GetBlockID() == BlockID::Air ||
 			neighborBlock->blockInfo_.isTransparent)
 		{
-			return true;
+			exposed = true;
 		}
+		self->SetExposedFace(static_cast<AABBFace>(i), exposed);
 	}
 
-	return false;
+	return self->GetExposedFace();
 }
 
 // チャンク内の全てのブロックの露出状態を更新
@@ -411,6 +449,9 @@ void Chunk::SetExposedAllBlocks()
 			}
 		}
 	}
+
+	// メッシュ再構築
+	RefreshMeshData();
 }
 // localIndexの隣接６ブロックの露出状態を更新
 void Chunk::SetExposedAroundBlocks(const Vector3int& localIndex)
@@ -555,41 +596,182 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 	}
 }
 
-void Chunk::Update(int32_t cameraID)
+#pragma endregion
+
+#pragma region メッシュ
+
+void Chunk::RefreshMeshData()
 {
+	vertices_.clear();
+
+	// 全ブロック走査して露出しているブロックの頂点を追加していく
 	for (int x = 0; x < Constexprs::kChunkX; x++)
 	{
 		for (int y = 0; y < Constexprs::kChunkY; y++)
 		{
 			for (int z = 0; z < Constexprs::kChunkZ; z++)
 			{
-				if (blocks_[x][y][z].GetBlockID() != BlockID::Air)
+				Block* block = GetBlock(Vector3int(x, y, z));
+				// ブロックが存在している かつ露出している
+				if (block && block->IsExposed())
 				{
-					blocks_[x][y][z].Update();
-
-					if (blocks_[x][y][z].isExposed_)
-					{
-						// 色と破壊段階を描画データに反映(ほんとは変化があった時のみ呼ぶようにしたい)
-					}
+					Pushvertex(block);
 				}
 			}
 		}
 	}
+}
 
-	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-	renderData_->SetCBufferData(0, ShaderType::MeshShader, &viewPro);
-	renderData_->SetSBufferData(0, ShaderType::MeshShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
-	instanceBufferDirty_ = false;
+// チャンククラスのメンバ関数、あるいはヘルパー関数としての実装例
+void Chunk::Pushvertex(const Block* block)// , const bool facesVisible[6])
+{
+	// AABBFace の並びを定義
+	static const AABBFace kFaces[6] = {
+		AABBFace::FRONT,
+		AABBFace::BACK,
+		AABBFace::LEFT,
+		AABBFace::RIGHT,
+		AABBFace::TOP,
+		AABBFace::BOTTOM
+	};
 
-	//Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(0);
-	//renderData_->SetCBufferData(0, ShaderType::VertexShader, &viewPro);
-	//if (instanceBufferDirty_)
+	// 立方体各頂点の中心からのオフセット
+	static const Vector3 kCubeOffset[8] = {
+		{-0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize}, // 0
+		{ 0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize}, // 1
+		{ 0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize}, // 2
+		{-0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize}, // 3
+		{-0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize}, // 4
+		{ 0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize}, // 5
+		{ 0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize}, // 6
+		{-0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize}  // 7
+	};
+
+	// 立方体各面の法線ベクトル
+	static const Vector3 kFaceNormals[6] = {
+		{ 0.0f,  0.0f,  1.0f}, // +Z (前)
+		{ 0.0f,  0.0f, -1.0f}, // -Z (後)
+		{ 1.0f,  0.0f,  0.0f}, // +X (右)
+		{-1.0f,  0.0f,  0.0f}, // -X (左)
+		{ 0.0f,  1.0f,  0.0f}, // +Y (上)
+		{ 0.0f, -1.0f,  0.0f}  // -Y (下)
+	};
+
+	// 立方体各面を構成する4つの頂点番号
+	static const int32_t kFaceQuadVertices[6][4] = {
+		{ 5, 4, 7, 6 }, // +Z
+		{ 2, 3, 0, 1 }, // -Z
+		{ 1, 5, 6, 2 }, // +X
+		{ 4, 0, 3, 7 }, // -X
+		{ 6, 7, 3, 2 }, // +Y
+		{ 1, 0, 4, 5 }  // -Y
+	};
+	//static const int32_t kFaceQuadVertices[6][4] = {
+	//	{ 6, 7, 4, 5 }, // 0: +Z 面
+	//	{ 3, 2, 1, 0 }, // 1: -Z 面
+	//	{ 2, 6, 5, 1 }, // 2: +X 面
+	//	{ 7, 3, 0, 4 }, // 3: -X 面
+	//	{ 3, 2, 6, 7 }, // 4: +Y 面
+	//	{ 4, 5, 1, 0 }  // 5: -Y 面
+	//};
+
+	// 適当なUV
+	static const Vector2 kQuadUVs[4] = {
+		{0.0f, 0.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+		{0.0f, 1.0f}
+	};
+
+	// 5. 四角形の4頂点 [0, 1, 2, 3] から、三角形2つ（6頂点）を展開するためのインデックス順
+	static const int kTrianglePattern[6] = { 0, 1, 2, 0, 2, 3 };
+
+	// 前z+、後z-、左x+、右x-、上y+、下y-
+	for (int face = 0; face < 6; ++face)
+	{
+		// 見えない面はスキップ
+		if (!block->IsExposed(static_cast<AABBFace>(face))) continue;
+
+		// この面を構成する「4つの頂点データ」をテーブルから計算
+		VertexData quadVertices[4]{};
+		for (int v = 0; v < 4; ++v)
+		{
+			int vertexIndex = kFaceQuadVertices[face][v];
+
+			// 位置の計算: ブロックの中心座標 + (ローカル相対座標 * ブロックサイズ)
+			Vector3 position = block->position_ + kCubeOffset[vertexIndex];
+			quadVertices[v].position = Vector4(position.x, position.y, position.z, 1.0f);
+			quadVertices[v].normal = kFaceNormals[face];
+			quadVertices[v].texcoord = kQuadUVs[v];
+		}
+
+		// 4つの頂点から Triangle List（6頂点分）を生成してメイン配列に push_back
+		for (int i = 0; i < 6; ++i)
+		{
+			vertices_.push_back(quadVertices[kTrianglePattern[i]]);
+		}
+	}
+}
+
+#pragma endregion
+
+void Chunk::Update(int32_t cameraID)
+{
+	//// ブロック単位の更新
+	//for (int x = 0; x < Constexprs::kChunkX; x++)
 	//{
-	//renderData_->SetSBufferData(0, ShaderType::VertexShader, instanceDataList_.data(), sizeof(InstanceData), instanceDataList_.size());
-	//instanceBufferDirty_ = false;
+	//	for (int y = 0; y < Constexprs::kChunkY; y++)
+	//	{
+	//		for (int z = 0; z < Constexprs::kChunkZ; z++)
+	//		{
+	//			if (blocks_[x][y][z].GetBlockID() != BlockID::Air)
+	//			{
+	//				blocks_[x][y][z].Update();
+	//
+	//				if (blocks_[x][y][z].IsExposed())
+	//				{
+	//					// 色と破壊段階を描画データに反映(ほんとは変化があった時のみ呼ぶようにしたい)
+	//				}
+	//			}
+	//		}
+	//	}
 	//}
 
-	renderData_->instanceNum_ = uint32_t(instanceDataList_.size());
+	// チャンクに更新が来ていたら
+	if (instanceBufferDirty_)
+	{
+		// メッシュレットを再構築
+		std::string name = "Chunk(" + std::to_string(chunkIndex_.x) + "," + std::to_string(chunkIndex_.y) + "," + std::to_string(chunkIndex_.z) + ")";
+		int32_t modelID = Game::Resource::Model::Create(vertices_, name);
+
+		// モデルIDを再設定
+		renderData_->modelID_ = modelID;
+
+		// 作成したデータを取得
+		ModelData* modelData = Game::Resource::Model::GetData(renderData_->modelID_);
+
+		// メッシュレット数を更新
+		renderData_->instanceNum_ = modelData->meshlets.size();
+		// SRV配置インデックスを更新
+		modelInfo.x = modelData->vertexSrvindex;
+		modelInfo.y = modelData->meshletSrvIndex;
+		modelInfo.z = modelData->uniqueVertexIndexSrvIndex;
+		modelInfo.w = modelData->primitiveIndexSrvIndex;
+
+		// フラグリセット
+		instanceBufferDirty_ = false;
+
+		// データ更新
+		renderData_->SetCBufferData(0, ShaderType::MeshShader, &modelInfo);
+
+		Vector4 color1 = { 1.0f, 0.0f, 0.0f, 1.0f };
+		int32_t t_uvChecker = Game::Resource::Texture::Load("resources/Prototypes/texture/uvChecker.png");
+		renderData_->SetCBufferData(0, ShaderType::PixelShader, &color1);
+		renderData_->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
+	}
+
+	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	renderData_->SetCBufferData(1, ShaderType::MeshShader, &viewPro);
 }
 
 void Chunk::Draw(int32_t renderTargetID)
@@ -598,7 +780,8 @@ void Chunk::Draw(int32_t renderTargetID)
 	//renderData_->ScreenDraw();
 }
 
-// チャンクを跨いだブロックも取得できる
+
+
 Block* Chunk::GetBlock(const Vector3int& index)
 {
 	// チャンク内
@@ -692,7 +875,8 @@ void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id)
 	if (!targetBlock) return;
 
 	targetBlock->SetBlockType(blockConfig_->GetBlockInfo(id));
-	targetBlock->SetBlockPosition(LocalCenter(localIndex));
+	Vector3 worldPos = LocalCenter(localIndex);
+	targetBlock->SetBlockPosition(worldPos);
 }
 
 //void Chunk::DestroyBlock(const Vector3int& localIndex)

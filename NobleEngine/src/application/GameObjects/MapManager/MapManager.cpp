@@ -525,35 +525,29 @@ void MapManager::ProcessChunkGeneration()
 }
 
 
-void MapManager::Update()
+void MapManager::Update(int32_t cameraID)
 {
 	// 1Fに1つのチャンクを作成する
 	ProcessChunkGeneration();
 
 	// プレイヤー周囲更新
-	//Vector2int playerIndex = ChunkIndexByPosition(player_->data_.translate.value);
-	//Vector3int updateCenter = ChunkIndexByPosition(Vector3(0.0f, 0.0f, 0.0f));
-	Vector3int updateCenter = ChunkIndexByPosition(Game::Camera::Getter::GetCenter(cameraID_));
+	cameraChunkPos_ = ChunkIndexByPosition(Game::Camera::Getter::GetCenter(cameraID));
 	for (int32_t dx = -drawRadius_; dx <= drawRadius_; ++dx)
 	{
 		for (int32_t dy = -drawRadius_; dy <= drawRadius_; ++dy)
 		{
 			for (int32_t dz = -drawRadius_; dz <= drawRadius_; ++dz)
 			{
-				Vector3int pos(updateCenter.x + dx, updateCenter.y + dy, updateCenter.z + dz);
+				Vector3int pos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
 				Chunk* chunk = TryGetChunk(pos);
-				if (chunk) { chunk->Update(cameraID_); }
+				if (chunk) { chunk->Update(cameraID); }
 			}
 		}
 	}
 }
 
 void MapManager::Draw(int32_t renderTargetID)
-{
-	//Vector2int drawCenter = ChunkIndexByPosition(player_->data_.translate.value);
-	//Vector3int drawCenter = ChunkIndexByPosition(Vector3(0.0f, 0.0f, 0.0f));
-	Vector3int drawCenter = ChunkIndexByPosition(Game::Camera::Getter::GetCenter(cameraID_));
-
+{	
 	// プレイヤー周囲描画
 	for (int32_t dx = -drawRadius_; dx <= drawRadius_; ++dx)
 	{
@@ -561,7 +555,7 @@ void MapManager::Draw(int32_t renderTargetID)
 		{
 			for (int32_t dz = -drawRadius_; dz <= drawRadius_; ++dz)
 			{
-				Vector3int chunkPos = Vector3int(drawCenter.x + dx, drawCenter.y + dy, drawCenter.z + dz);
+				Vector3int chunkPos = Vector3int(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
 				Chunk* chunk = TryGetChunk(chunkPos);
 				if (chunk) { chunk->Draw(renderTargetID); }
 				else EnsureChunkScheduled(chunkPos);

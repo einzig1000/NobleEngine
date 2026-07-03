@@ -1,5 +1,6 @@
 #include "Dx12ResourceFactory.h"
 #include <Utilities/Logger/Logger.h>
+#include <DirectX/DirectXManager.h>
 
 namespace Dx12ResourceFactory
 {
@@ -26,7 +27,7 @@ namespace Dx12ResourceFactory
             &heapProperties,        // ヒープのプロパティ
             D3D12_HEAP_FLAG_NONE,   // ヒープフラグ
             &resourceDesc,          // リソースの記述子
-            D3D12_RESOURCE_STATE_GENERIC_READ,           // 初期状態
+            D3D12_RESOURCE_STATE_GENERIC_READ,   // 初期状態
             nullptr,                // Clear値 (バッファの場合はnullptr)
             IID_PPV_ARGS(resource.ReleaseAndGetAddressOf()) // ID3D12Resourceポインタを取得
         );
@@ -52,6 +53,49 @@ namespace Dx12ResourceFactory
         ConstantSize = (sizeInBytes + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1);
 
         return CreateBufferResource(device, ConstantSize);
+    }
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBufferResource(
+        ID3D12Device2* device, size_t sizeInBytes)
+    {
+        // リソース記述子を作成
+        D3D12_RESOURCE_DESC resourceDesc{};
+        resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+        resourceDesc.Width = sizeInBytes;
+        resourceDesc.Height = 1;
+        resourceDesc.DepthOrArraySize = 1;
+        resourceDesc.MipLevels = 1;
+        resourceDesc.SampleDesc.Count = 1;
+        resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+        resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+        D3D12_HEAP_PROPERTIES heapProperties{};
+        heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+        // リソースを作成
+        Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+        HRESULT hr = device->CreateCommittedResource(
+            &heapProperties,
+            D3D12_HEAP_FLAG_NONE,
+            &resourceDesc,
+            D3D12_RESOURCE_STATE_COMMON,
+            nullptr,
+            IID_PPV_ARGS(resource.ReleaseAndGetAddressOf())
+        );
+
+        // 失敗した場合はエラーをログに出力してnullptrを返す
+        if (FAILED(hr) || !resource)
+        {
+            const HRESULT removed = device->GetDeviceRemovedReason();
+            Log("CreateDefaultBufferResource()に失敗しました。hr=%s removedReason=%s",
+                HrToString(hr),
+                HrToString(removed));
+            return nullptr;
+        }
+
+        resource->SetName(L"CreateDefaultBufferResource()");
+
+        return resource;
     }
 
     Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device2* device, const DirectX::TexMetadata& metadata)

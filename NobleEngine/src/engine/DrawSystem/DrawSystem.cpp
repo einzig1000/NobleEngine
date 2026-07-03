@@ -24,7 +24,6 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManag
 	screenRenderObject_->psoConfig_.blendID = BlendStateID::Normal2;
 	screenRenderObject_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
 	screenRenderObject_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	screenRenderObject_->modelID_ = resourceManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
 	screenRenderObject_->SetupFromShaders();
 }
 
@@ -178,6 +177,7 @@ void DrawSystem::PreScreenDraw()
 
 void DrawSystem::ScreenDraw()
 {
+	screenRenderObject_->modelID_ = resourceManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
 	DrawObject(screenRenderObject_.get());
 

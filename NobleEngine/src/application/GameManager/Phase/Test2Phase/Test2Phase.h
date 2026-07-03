@@ -2,6 +2,7 @@
 #include <GameManager/Phase/IPhase.h>
 #include <TestParticle/TestParticle.h>
 #include <TestAnimation/TestAnimation.h>
+#include <TestMeshShader/TestMeshShader.h>
 
 class Test2Phase : public IPhase
 {
@@ -16,8 +17,9 @@ public:
 	void ChangePhase(PHASE phase) override { nextPhase_ = phase; }
 
 private:
-	TestParticle TestParticle;
-	TestAnimation TestAnimation;
+	TestParticle testParticle;
+	TestAnimation testAnimation;
+	TestMeshShader testMeshShader;
 
 	std::unique_ptr<RenderObject> render_;
 

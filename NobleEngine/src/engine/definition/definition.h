@@ -261,8 +261,8 @@ constexpr T my_max(std::initializer_list<T> list)
 
 struct Vector2int
 {
-    int x = 0;
-    int y = 0;
+    int32_t x = 0;
+    int32_t y = 0;
     Vector2int operator+(const Vector2int& rhs) const
     {
         return Vector2int{ x + rhs.x, y + rhs.y };
@@ -358,9 +358,9 @@ struct Vector2
 
 struct Vector3int
 {
-    int x = 0;
-    int y = 0;
-    int z = 0;
+    int32_t x = 0;
+    int32_t y = 0;
+    int32_t z = 0;
     Vector3int operator+(const Vector3int& rhs) const
     {
         return Vector3int{ x + rhs.x, y + rhs.y, z + rhs.z };
@@ -488,7 +488,7 @@ struct Vector3
 
 struct Vector4int
 {
-    int x = 0, y = 0, z = 0, w = 0;
+    int32_t x = 0, y = 0, z = 0, w = 0;
     Vector4int operator+(const Vector4int& rhs) const
     {
         return Vector4int{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
@@ -1108,25 +1108,47 @@ struct JointWeightData
 	std::vector<VertexWeightData> vertexWeights;
 };
 
+
+
+struct ResMeshlet
+{
+    uint32_t vertexOffset = 0;		// 頂点番号オフセット
+    uint32_t primitiveOffset = 0;	// プリミティブ番号オフセット
+    uint32_t vertexCount = 0;		// 頂点数
+    uint32_t primitiveCount = 0;	// プリミティブ数
+};
+
 // モデルデータ
 struct ModelData
 {
-	std::vector<VertexData> vertices;   // 頂点データ
-	std::vector<uint32_t> indices;      // インデックスデータ
+    // 頂点データ
+    std::vector<VertexData> vertices;
+    Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+    uint32_t vertexSrvindex = UINT32_MAX;
+    // インデックスデータ
+    std::vector<uint32_t> indices;
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+    // メッシュレットデータ
+    std::vector<ResMeshlet> meshlets;
+    Microsoft::WRL::ComPtr<ID3D12Resource> meshletBuffer;
+    uint32_t meshletSrvIndex = UINT32_MAX;
+    // メッシュレットの頂点インデックスのユニーク化された配列
+    std::vector<uint32_t> uniqueVertexIndices;
+    Microsoft::WRL::ComPtr<ID3D12Resource> uniqueVertexIndexBuffer;
+    uint32_t uniqueVertexIndexSrvIndex = UINT32_MAX;
+    // メッシュレットのプリミティブインデックスの配列
+    std::vector<uint32_t> primitiveIndices;         // 10bit * 3 = 30bit, 残り2bitは予約領域
+    Microsoft::WRL::ComPtr<ID3D12Resource> primitiveIndexBuffer;
+    uint32_t primitiveIndexSrvIndex = UINT32_MAX;
+
 	MaterialData material;              // 材質データ
 	Node rootNode;                      // ノード
 	Skeleton skeleton;                  // スケルトン
+	uint32_t materialID = 0;            // マテリアルID
+	SkinCluster skinCluster;            // スキンクラスタ(あにめーしょんデータに移行する予定)
 	std::map<std::string, JointWeightData> skinClusterData; // ジョイントのウェイトデータ
-
-    // 頂点バッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
-    D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-
-	// インデックスバッファ
-	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
-	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
-
-	SkinCluster skinCluster;
 
     // ファイルパス
 	std::string filePath;
@@ -1342,12 +1364,12 @@ struct CollisionFlags
 enum class AABBFace
 {
     NONE = -1,
-    LEFT = 0,
-    RIGHT = 1,
-    BOTTOM = 2,
-    TOP = 3,
-    BACK = 4,
-    FRONT = 5,
+    FRONT = 0,  // z+
+    BACK = 1,   // z-
+    LEFT = 2,   // x+
+    RIGHT = 3,  // x-
+    TOP = 4,    // y+
+    BOTTOM = 5, // y-
 };
 std::string EnumToString(AABBFace e);
 
