@@ -1,16 +1,16 @@
 
 struct MSOutput
 {
-    float4 position : SV_Position;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD;
+    float4 position : SV_POSITION;
+    float2 texCoord : TEXCOORD0;
+    float3 normal : NORMAL0;
 };
 
 struct VertexData
 {
     float4 position;
     float3 normal;
-    float2 uv;
+    float2 texCoord;
 };
 
 struct Meshlet
@@ -70,7 +70,7 @@ void main(
         MSOutput vOut;
         vOut.position = mul(v.position, wvp);
         vOut.normal = v.normal;
-        vOut.uv = v.uv;
+        vOut.texCoord = v.texCoord;
 
         // 頂点配列に出力
         verts[gtid] = vOut;

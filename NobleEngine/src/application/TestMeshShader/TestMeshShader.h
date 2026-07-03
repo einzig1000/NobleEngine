@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <DrawSystem/RenderData/RenderObject.h>
-
+#include <definition/definition.h>
 
 struct ModelInfo
 {
@@ -10,7 +10,6 @@ struct ModelInfo
 	int32_t uniqueIndexSrvIndex;
 	int32_t primIndexSrvIndex;
 };
-
 
 class TestMeshShader
 {
@@ -25,5 +24,6 @@ public:
 private:
 	std::unique_ptr<RenderObject> render_;
 	ModelInfo modelInfo_;
+	Vector4int modelInfo_int4;
 };
 

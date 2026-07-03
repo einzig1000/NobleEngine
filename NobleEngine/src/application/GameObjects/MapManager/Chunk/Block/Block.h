@@ -33,11 +33,18 @@ public:
 	// 輝度
 	int32_t lightEmission_ = 14;
 
-	// 耐久値
-	std::unique_ptr<BlockDurability> durability_;
+	int32_t GetExposedFace() const { return exposedFace_; }
+	bool IsExposed();
+	bool IsExposed(AABBFace face) const;
 
-	// 表面に露出しているか
-	bool isExposed_ = false;
+	void SetExposedFace(AABBFace face, bool isExposed);
 
 	Blockinfo blockInfo_;
+
+private:
+	// どの面が露出しているか
+	// ビットフラグを使用
+	// 0,0,前+z,後-z,左+x,右-x,上+y,下-y
+	// 0b00000000(全て非露出), 0b00111111(全て露出)
+	int32_t exposedFace_ = 0;
 };

@@ -261,8 +261,8 @@ constexpr T my_max(std::initializer_list<T> list)
 
 struct Vector2int
 {
-    int x = 0;
-    int y = 0;
+    int32_t x = 0;
+    int32_t y = 0;
     Vector2int operator+(const Vector2int& rhs) const
     {
         return Vector2int{ x + rhs.x, y + rhs.y };
@@ -358,9 +358,9 @@ struct Vector2
 
 struct Vector3int
 {
-    int x = 0;
-    int y = 0;
-    int z = 0;
+    int32_t x = 0;
+    int32_t y = 0;
+    int32_t z = 0;
     Vector3int operator+(const Vector3int& rhs) const
     {
         return Vector3int{ x + rhs.x, y + rhs.y, z + rhs.z };
@@ -488,7 +488,7 @@ struct Vector3
 
 struct Vector4int
 {
-    int x = 0, y = 0, z = 0, w = 0;
+    int32_t x = 0, y = 0, z = 0, w = 0;
     Vector4int operator+(const Vector4int& rhs) const
     {
         return Vector4int{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
@@ -1364,12 +1364,12 @@ struct CollisionFlags
 enum class AABBFace
 {
     NONE = -1,
-    LEFT = 0,
-    RIGHT = 1,
-    BOTTOM = 2,
-    TOP = 3,
-    BACK = 4,
-    FRONT = 5,
+    FRONT = 0,  // z+
+    BACK = 1,   // z-
+    LEFT = 2,   // x+
+    RIGHT = 3,  // x-
+    TOP = 4,    // y+
+    BOTTOM = 5, // y-
 };
 std::string EnumToString(AABBFace e);
 

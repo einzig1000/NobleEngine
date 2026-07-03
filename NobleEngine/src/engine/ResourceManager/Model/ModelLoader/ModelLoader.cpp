@@ -7,9 +7,6 @@
 #include <fstream>
 #include <externals/meshoptimizer-1.1/meshoptimizer.h>
 
-namespace
-{
-}
 
 ModelLoader::ModelLoader(DirectXManager* dxManager, ModelBank* bank)
     : dxManager_(dxManager), bank_(bank)
@@ -580,51 +577,3 @@ void ModelLoader::SaveAABBToCSV(const std::string& filePath, const std::vector<A
             << aabb.max.x << "," << aabb.max.y << "," << aabb.max.z << "\n";
     }
 }
-
-
-//
-//// 使用例：特定の構造体データをGPUバッファ化してSRVを割り当てる関数（イメージ）
-//template <typename T>
-//int32_t CreateStructuredBufferSRV(const std::vector<T>& data)
-//{
-//    auto* device = dxManager_->GetDevice();
-//    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-//    auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
-//    auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-//
-//    // 全体のバイトサイズを計算
-//    uint64_t bufferSize = data.size() * sizeof(T);
-//
-//    // ① GPU側のデフォルトリソースを作成 (※FactoryにBuffer用があると仮定)
-//    // もし既存のFactoryがフラグ等を弄れない場合は、内部で以下のようにD3D12_RESOURCE_STATE_COPY_DESTで作成します。
-//    /*
-//    auto desc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
-//    auto heapProps = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-//    device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &desc,
-//        D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&gpuResource));
-//    */
-//    Microsoft::WRL::ComPtr<ID3D12Resource> gpuResource = Dx12ResourceFactory::CreateBufferResource(device, bufferSize);
-//
-//    // ② データのアップロード（上記で作った関数を呼び出し、中間リソースを保持）
-//    Microsoft::WRL::ComPtr<ID3D12Resource> intermediate = UploadBufferData(gpuResource.Get(), data, device, cmdList);
-//    intermediateUploadResources_.push_back(intermediate); // 既存システム同様、フレーム終了まで維持
-//
-//    // ③ StructuredBuffer用のSRVを作成
-//    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-//    srvDesc.Format = DXGI_FORMAT_UNKNOWN;               // StructuredBufferの時は必ずUNKNOWNにする
-//    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER; // バッファを指定
-//    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-//    srvDesc.Buffer.FirstElement = 0;
-//    srvDesc.Buffer.NumElements = static_cast<UINT>(data.size());       // 要素数（配列の長さ）
-//    srvDesc.Buffer.StructureByteStride = static_cast<UINT>(sizeof(T)); // 1要素のバイトサイズ
-//    srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-//
-//    // 既存のマネージャーからディスクリプタを割り当てて作成
-//    SRV_UAVManager::Allocation srvAllocation = srvManager->Allocate(); // ※既存の仕組みに合わせて調整してください
-//    device->CreateShaderResourceView(gpuResource.Get(), &srvDesc, srvAllocation.cpuHandle);
-//
-//    // ④ バンク等に保存してインデックスを返す
-//    // bank_->AddBufferData(..., srvAllocation.index, ...);
-//
-//    return srvAllocation.index;
-//}
