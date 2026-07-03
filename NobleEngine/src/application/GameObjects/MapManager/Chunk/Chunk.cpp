@@ -717,25 +717,25 @@ void Chunk::Pushvertex(const Block* block)// , const bool facesVisible[6])
 
 void Chunk::Update(int32_t cameraID)
 {
-	// ブロック単位の更新
-	for (int x = 0; x < Constexprs::kChunkX; x++)
-	{
-		for (int y = 0; y < Constexprs::kChunkY; y++)
-		{
-			for (int z = 0; z < Constexprs::kChunkZ; z++)
-			{
-				if (blocks_[x][y][z].GetBlockID() != BlockID::Air)
-				{
-					blocks_[x][y][z].Update();
-
-					if (blocks_[x][y][z].IsExposed())
-					{
-						// 色と破壊段階を描画データに反映(ほんとは変化があった時のみ呼ぶようにしたい)
-					}
-				}
-			}
-		}
-	}
+	//// ブロック単位の更新
+	//for (int x = 0; x < Constexprs::kChunkX; x++)
+	//{
+	//	for (int y = 0; y < Constexprs::kChunkY; y++)
+	//	{
+	//		for (int z = 0; z < Constexprs::kChunkZ; z++)
+	//		{
+	//			if (blocks_[x][y][z].GetBlockID() != BlockID::Air)
+	//			{
+	//				blocks_[x][y][z].Update();
+	//
+	//				if (blocks_[x][y][z].IsExposed())
+	//				{
+	//					// 色と破壊段階を描画データに反映(ほんとは変化があった時のみ呼ぶようにしたい)
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
 	// チャンクに更新が来ていたら
 	if (instanceBufferDirty_)
@@ -763,16 +763,15 @@ void Chunk::Update(int32_t cameraID)
 
 		// データ更新
 		renderData_->SetCBufferData(0, ShaderType::MeshShader, &modelInfo);
+
+		Vector4 color1 = { 1.0f, 0.0f, 0.0f, 1.0f };
+		int32_t t_uvChecker = Game::Resource::Texture::Load("resources/Prototypes/texture/uvChecker.png");
+		renderData_->SetCBufferData(0, ShaderType::PixelShader, &color1);
+		renderData_->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
 	}
 
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-
 	renderData_->SetCBufferData(1, ShaderType::MeshShader, &viewPro);
-
-	Vector4 color1 = { 1.0f, 0.0f, 0.0f, 1.0f };
-	int32_t t_uvChecker = Game::Resource::Texture::Load("resources/Prototypes/texture/uvChecker.png");
-	renderData_->SetCBufferData(0, ShaderType::PixelShader, &color1);
-	renderData_->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
 }
 
 void Chunk::Draw(int32_t renderTargetID)
