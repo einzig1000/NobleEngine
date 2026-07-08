@@ -10,8 +10,14 @@ public:
 	ModelCreater(DirectXManager* dxManager, ModelBank* bank);
 	~ModelCreater();
 
-	// モデル作成
-	int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name);
+	/// <summary>
+	/// モデルを作成する
+	/// </summary>
+	/// <param name="vertices">トライアングルリストの頂点配列</param>
+	/// <param name="name">モデルのユニークな名前</param>
+	/// <param name="optimize">頂点の最適化を行うかどうか</param>
+	/// <returns></returns>
+	int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize);
 
 private:
 	DirectXManager* dxManager_;

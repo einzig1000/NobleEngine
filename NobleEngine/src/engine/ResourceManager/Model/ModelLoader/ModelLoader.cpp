@@ -64,9 +64,9 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
 
     // 各情報が存在するか
     const bool hasNormals = mesh->HasNormals();
-    Log("法線データが存在しません。自動生成された数値が使用されます");
+    if (!hasNormals) Log("法線データが存在しません。自動生成された数値が使用されます");
     const bool hasTexCoords = mesh->HasTextureCoords(0);
-    Log("テクスチャ座標データが存在しません。(0.0f,0.0f)で初期化されます");
+    if (!hasTexCoords) Log("テクスチャ座標データが存在しません。(0.0f,0.0f)で初期化されます");
 
     // 頂点データ & インデックスデータの読み込み
     modelData->vertices.resize(mesh->mNumVertices);

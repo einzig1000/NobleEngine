@@ -34,10 +34,49 @@ cbuffer WVP : register(b1)
     float4x4 wvp;
 }
 
+StructuredBuffer<uint> vertexColor : register(t0);
 
-// ==========================================
-// メッシュシェーダー本体
-// ==========================================
+float rand1dTo1d(float value)
+{
+    float smallValue = sin(value);
+    float random = smallValue * 12.9898;
+    random = frac(sin(random) * 143758.5453);
+    return random;
+}
+
+float rand1dto1d(uint value)
+{
+    float smallValue = sin(value);
+    float random = smallValue * 12.9898;
+    random = frac(sin(random) * 143758.5453);
+    return random;
+}
+
+float rand2dTo1d(float2 value)
+{
+    float2 smallValue = sin(value);
+    float random = dot(smallValue, float2(12.9898, 78.233));
+    random = frac(sin(random) * 143758.5453);
+    return random;
+}
+
+float rand3dTo1d(float3 value)
+{
+    float3 smallValue = sin(value);
+    float random = dot(smallValue, float3(12.9898, 78.233, 37.719));
+    random = frac(sin(random) * 143758.5453);
+    return random;
+}
+
+float rand4dTo1d(float4 value)
+{
+    float4 smallValue = sin(value);
+    float random = dot(smallValue, float4(12.9898, 78.233, 37.719, 24.123));
+    random = frac(sin(random) * 143758.5453);
+    return random;
+}
+
+
 // 出力トポロジは三角形。スレッド数は最大128(頂点最大64, プリミティブ最大126をカバー)
 [outputtopology("triangle")]
 [numthreads(128, 1, 1)]
@@ -65,12 +104,17 @@ void main(
         // ユニークインデックスを経由して、大元の頂点バッファから実際のインデックスを取得
         uint vertexIndex = myUniqueVertexIndices[m.vertexOffset + gtid];
         VertexData v = myVertices[vertexIndex];
+        uint color = vertexColor[vertexIndex];
 
         // 座標変換などの処理
         MSOutput vOut;
         vOut.position = mul(v.position, wvp);
         vOut.normal = v.normal;
-        vOut.color = float4(1.0, 1.0, 1.0, 1.0);
+        float r = ((color >> 24) & 0xFF) / 255.0f + (rand4dTo1d(v.position) * 0.1);
+        float g = ((color >> 16) & 0xFF) / 255.0f + (rand4dTo1d(v.position) * 0.1);
+        float b = ((color >> 8) & 0xFF) / 255.0f + (rand4dTo1d(v.position) * 0.1);
+        float a = (color & 0xFF) / 255.0f;
+        vOut.color = float4(r, g, b, a);
 
         // 頂点配列に出力
         verts[gtid] = vOut;

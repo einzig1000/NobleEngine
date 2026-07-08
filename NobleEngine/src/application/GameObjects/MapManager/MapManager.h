@@ -30,8 +30,8 @@ public:
 	void Draw(int32_t renderTargetID);
 	void DrawImGui();
 
-	void SetDrawRadius(int r) { drawRadius_ = r; }
-	void SetUpdateRadius(int r) { updateRadius_ = r; }
+	void SetDrawRadius(Vector3int r) { drawRadius_ = r; }
+	void SetUpdateRadius(Vector3int r) { updateRadius_ = r; }
 
 	// ブロック破壊
 	void DestroyBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex);
@@ -113,8 +113,8 @@ private:
 	std::unordered_set<Vector3int, Vector3intHash> chunkCreated_;
 
 	// パラメータ
-	int drawRadius_ = 3;    // 描画半径（チャンク単位）
-	int updateRadius_ = 2;   // 更新半径（チャンク単位）
+	Vector3int drawRadius_;    // 描画半径（チャンク単位）
+	Vector3int updateRadius_;   // 更新半径（チャンク単位）
 	NoiseParameter noiseParam_;
 
 	// カメラ座標

@@ -30,9 +30,9 @@ namespace Game
 				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelLoader()->LoadModel(filePath);
 			}
 
-			int32_t Create(const std::vector<VertexData>& vertices, const std::string& name)
+			int32_t Create(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize)
 			{
-				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelCreater()->CreateModel(vertices, name);
+				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelCreater()->CreateModel(vertices, name, optimize);
 			}
 
 			ModelData* GetData(int32_t modelID)

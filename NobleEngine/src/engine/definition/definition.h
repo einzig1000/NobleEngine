@@ -172,7 +172,10 @@ struct Blockinfo
     // アイテムジャンル
 	ItemGenre genre = ItemGenre::None;
     // 右クリックされたとき特殊な動作をするかどうか(作業台は右クリックでUIを開く)
-	bool isExtraAction = false;
+	//bool isExtraAction = false;
+    
+    // 色
+	uint32_t color = 0xFFFFFFFF;
 	// 耐久値
 	float durability = 1.0f;
 	// 透過ブロックかどうか

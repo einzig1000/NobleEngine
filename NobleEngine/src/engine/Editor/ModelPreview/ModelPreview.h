@@ -26,7 +26,8 @@ private:
 	int32_t cameraID_ = -1;
 	int32_t renderTarget_ = -1;
 	int32_t textureID = -1;
-	QuaternionTransform objectTransform_;
+	//QuaternionTransform objectTransform_;
+	EulerTransform objectTransform_;
 
 	bool fullscreen_ = false;
 };

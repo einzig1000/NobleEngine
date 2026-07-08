@@ -42,7 +42,7 @@ void Block::UpdateColor()
 	float emission = 1.0f * (float(lightEmission_) / 9.0f);
 
 	// 輝度に応じて色を変更
-	color_ = Vector4(emission, emission, emission, 1.0f);
+	//color_ = Vector4(emission, emission, emission, 1.0f);
 }
 
 bool Block::IsExposed()

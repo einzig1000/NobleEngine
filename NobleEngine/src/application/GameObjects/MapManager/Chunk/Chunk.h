@@ -35,8 +35,8 @@ public:
 	bool IsNeighborExist(DirectionXYZ direction);
 
 	// 露出状態計算
-	void RefreshExposeAt(const Vector3int& localIndex);	// [localIndexのブロック]の露出状態を更新
-	int32_t ComputeExposed(const Vector3int& localIndex);	// [localIndexのブロック]の露出状態を判定
+	void RefreshExposeAt(const Vector3int& localIndex);			// [localIndexのブロック]の露出状態を更新
+	int32_t ComputeExposed(const Vector3int& localIndex);		// [localIndexのブロック]の露出状態を判定
 	void SetExposedAllBlocks();									// [チャンク内の全ブロック]     の露出状態を更新
 	void SetExposedAroundBlocks(const Vector3int& localIndex);	// [localIndexの周り６ブロック] の露出状態を更新
 	void SetExposedNeighborBlocks(const DirectionXYZ direction);// [隣接チャンクの境界ブロック] の露出状態を更新
@@ -58,9 +58,6 @@ public:
 	// blockPositionsの再構築
 	void RebuildBlockPositions();
 
-
-
-	
 private:
 	// 隣接チャンク
 	std::unordered_map<DirectionXYZ, Chunk*> neighbors_;
@@ -70,7 +67,10 @@ private:
 	// false : 新規生成されたチャンク
 	bool loadResult = false;
 
+	// 頂点配列(トライアングルリスト)
 	std::vector<VertexData> vertices_;
+	// color配列(vertices_と対応)
+	std::vector<uint32_t> vertexColors_;
 	Vector4int modelInfo;
 
 	// チャンク座標
@@ -79,17 +79,8 @@ private:
 	Block blocks_[Constexprs::kChunkX][Constexprs::kChunkY][Constexprs::kChunkZ];
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> renderData_;
-	// GPUインスタンスデータ配列
-	std::vector<InstanceData> instanceDataList_;
-	std::vector<Block*> instanceBlockMap_; // instanceDataList_ と同じ長さで、各スロットがどの Block* に対応するか
-	std::vector<int> freeSlots_;           // 空きスロットのインデックス（再利用用）
 	bool instanceBufferDirty_ = false;
-	int32_t AllocateInstanceSlot(Block* b, const InstanceData& data);
-	void FreeInstanceSlot(Block* b);
 
-	std::unique_ptr<BlockConfig> blockConfig_;
-
-	// ブロックごとの位置リスト Jsonから読み込んだデータを入れる箱　 いらなそう
-	std::unordered_map<BlockID, std::vector<Vector3int>> blockPositions_;
+	static const BlockConfig blockConfig_;
 };
 

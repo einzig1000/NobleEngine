@@ -15,7 +15,7 @@ ModelCreater::~ModelCreater()
 	intermediateUploadResources_.clear();
 }
 
-int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const std::string& name)
+int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize)
 {
     Log("モデル作成開始:%s", name.c_str());
 
@@ -37,6 +37,7 @@ int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const
     modelData->indices = indices;
 
     // 頂点データ & インデックスデータの最適化
+	if (optimize)
     {
         std::vector<uint32_t> remap(modelData->vertices.size());
     

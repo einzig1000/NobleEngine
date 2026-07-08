@@ -26,7 +26,6 @@ public:
 	// プレイヤーに見られている時、輝度に応じて色を更新
 	void UpdateColor();
 
-	Vector4 color_ = { 1.0f,1.0f,1.0f,1.0f };
 	Vector3 position_;
 	AABB aabb_;
 
