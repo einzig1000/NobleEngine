@@ -110,6 +110,173 @@
     <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Base.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Base\Cast.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Base\DobutsuShogi.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Base\RogueLike.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Base\Shogi.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Base\Struct.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Board.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Board\WriteNumber.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Camera.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Camera\MatrixView.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Chrono.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Chrono\Time.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Color\RGBA.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Console.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Console\OutputNumber.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Console\OutputString.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Console\OutputStringBool.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Console\OutputView.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Cuboid.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Cuboid\MazeDig3D.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Cuboid\Rectangular.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\DTL.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Entity.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Entity\MobManager.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find\AroundSum.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find\GetLargestRectArea.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find\GetLargestRectAreaSize.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find\GetLargestSquareArea.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find\GetLargestSquareAreaSize.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find\Highest.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find\Highest4Way.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Find\Is1Bit.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Font.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Font\Alphabet.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\ImageWrite.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Intelligence.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Intelligence\ReversiSimple.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Macros\constexpr.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Macros\nodiscard.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Random.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Random\RandomEngine.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\BasicRect.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\BasicRectangular.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectangularBase.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectangularBaseWithValue.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBase.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseDobutsuShogi.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseFractal.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseMaze.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBasePerlin.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBasePerlinSolitary.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseRogueLike.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseShogi.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseSimpleRogueLike.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithBattle.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithBlackWhite.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithLoopNum.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithMaxMin.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithMaxMinValue.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithValue.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithValueMaxMin.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithValuePos.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithValueXYRA.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Range\RectBaseWithVector.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\Addition.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\Angular.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\Average.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\Bucket.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\BuryPoint.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\CellularAutomaton.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\Division.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\Modulo.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\Multiplication.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\RemovePoint.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Retouch\Subtraction.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\AscendingOrder.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\AscendingOrder2.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\Border.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\BorderOdd.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\CellularAutomatonIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\CellularAutomatonMixIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\ClusteringMaze.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\DiamondSquareAverage.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\DiamondSquareAverageCornerIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\DiamondSquareAverageIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\DobutsuShogi.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\FractalIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\FractalLoopIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\HalfMixRect.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\MazeBar.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\MazeDig.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\MixRect.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\PerlinIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\PerlinLoopIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\PerlinSolitaryIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\Point.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\PointGrid.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\PointGridAndSomeBlocksWithBorder.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\PointGridWithBorder.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\RandomRect.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\RandomVoronoi.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\Rect.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\Reversi.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\RogueLike.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\Shogi.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\SimplePyramid.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\SimpleRogueLike.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\SimpleTruncatedSquarePyramid.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\SimpleVoronoiIsland.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\StarLine.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Shape\WhiteNoise.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileBase.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileBaseBin.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileBaseTxt.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileBMP.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileHDR.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileJPG.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileMD.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FilePBM.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FilePNG.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileSandboxOBJ_3D.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileTerrainOBJ.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileTGA.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Storage\FileTXT_0_9.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\ThirdParty.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\ThirdParty\STB\stb_image_write.h" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\ThirdParty\STB\wrapper_stb_image_write.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Cos.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Cout.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\EnableIf.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Forward.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\IntX.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Max.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Min.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\New.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\NumericLimits.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Pair.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Sin.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\SizeT.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Sort.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\SSizeT.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\ThreadLocal.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\UniquePtr.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Type\Vector.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\UnrealEngine\BlueprintFunctionLibraryDTL.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\Assign.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\Binarization.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\Camera.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\Copy.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\DrawJagged.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\DrawJaggedRandom.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\Init.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\IsOutputCast.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\MatrixWrapper.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\PerlinNoise.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\ReplaceAll.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\ReplaceSome.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Utility\VoronoiDiagram.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Version\Version.hpp" />
+    <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Workaround\cstdioGets.hpp" />
+    <ClInclude Include="externals\FastNoiseLite\FastNoiseLite.h" />
     <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h" />
     <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h" />
     <ClInclude Include="src\engine\Editor\EngineEditor.h" />
@@ -246,7 +413,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
     </ClCompile>
@@ -281,7 +448,7 @@ xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
     </ClCompile>

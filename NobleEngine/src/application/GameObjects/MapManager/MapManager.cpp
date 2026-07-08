@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <limits>
 
-int LocalMod(int a, int n)
+int32_t LocalMod(int32_t a, int32_t n)
 {
 	return (a % n + n) % n;
 }
@@ -206,10 +206,10 @@ namespace
 	};
 
 	// 負数対応の床除算
-	static int FloorDivInt(int a, int n)
+	static int32_t FloorDivInt(int32_t a, int32_t n)
 	{
-		int q = a / n;
-		int r = a % n;
+		int32_t q = a / n;
+		int32_t r = a % n;
 		if (r != 0 && ((a < 0) ^ (n < 0))) --q;
 		return q;
 	}
@@ -224,20 +224,20 @@ namespace
 	//	const Vector3int minWB = self->WorldBlockIndexByPosition(test.min);
 	//	const Vector3int maxWB = self->WorldBlockIndexByPosition(test.max - Vector3{ 1e-6f, 1e-6f, 1e-6f });
 
-	//	for (int by = minWB.y; by <= maxWB.y; ++by)
+	//	for (int32_t by = minWB.y; by <= maxWB.y; ++by)
 	//	{
 	//		if (by < 0 || by >= Constexprs::kChunkY) continue;
-	//		const int localY = by;
+	//		const int32_t localY = by;
 
-	//		for (int bz = minWB.z; bz <= maxWB.z; ++bz)
+	//		for (int32_t bz = minWB.z; bz <= maxWB.z; ++bz)
 	//		{
-	//			const int chunkZ = FloorDivInt(bz, Constexprs::kChunkZ);
-	//			const int localZ = LocalMod(bz, Constexprs::kChunkZ);
+	//			const int32_t chunkZ = FloorDivInt(bz, Constexprs::kChunkZ);
+	//			const int32_t localZ = LocalMod(bz, Constexprs::kChunkZ);
 
-	//			for (int bx = minWB.x; bx <= maxWB.x; ++bx)
+	//			for (int32_t bx = minWB.x; bx <= maxWB.x; ++bx)
 	//			{
-	//				const int chunkX = FloorDivInt(bx, Constexprs::kChunkX);
-	//				const int localX = LocalMod(bx, Constexprs::kChunkX);
+	//				const int32_t chunkX = FloorDivInt(bx, Constexprs::kChunkX);
+	//				const int32_t localX = LocalMod(bx, Constexprs::kChunkX);
 
 	//				const Vector3int chunkPos{ chunkX, localY, chunkZ };
 	//				Chunk* c = self->TryGetChunk(chunkPos);
@@ -272,6 +272,12 @@ namespace
 
 MapManager::MapManager()
 {
+	drawRadius_.x = 3;
+	drawRadius_.y = 1;
+	drawRadius_.z = 3;
+	updateRadius_.x = 1;
+	updateRadius_.y = 1;
+	updateRadius_.z = 1;
 }
 
 //void MapManager::SetPlayer(Player* player)
@@ -338,13 +344,14 @@ void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
 	//noiseParam_.height = Constexprs::kChunkY;		// マップの高さ
-	noiseParam_.height = std::numeric_limits<int>::max();		// マップの高さ
+	noiseParam_.height = std::numeric_limits<int32_t>::max();		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 
 	// mapNameToFilePath_ に新規マップ登録
 	mapNameToFilePath_[mapName] = "resources/Minecraft/Maps/" + mapName + ".json";
 	currentMapFilePath_ = "resources/Minecraft/Maps/" + mapName + ".json";
 }
+
 void MapManager::SetSeed(uint32_t seed)
 {
 	// ノイズパラメータ設定
@@ -363,7 +370,7 @@ void MapManager::LoadMap(const std::string& mapName)
 	for (auto& [pos, chunk] : chunks)
 	{
 		if (!chunk) continue;
-		for (int dir = 0; dir < 4; ++dir)
+		for (int32_t dir = 0; dir < 4; ++dir)
 		{
 			chunk->SetNeighborChunk(static_cast<DirectionXYZ>(dir), nullptr);
 		}
@@ -448,8 +455,8 @@ void MapManager::EnsureChunkScheduled(const Vector3int& chunkPos)
 	//std::sort(tempQueue.begin(), tempQueue.end(),
 	//	[playerIndex](const Vector2int& a, const Vector2int& b)
 	//	{
-	//		int distA = (a.x - playerIndex.x) * (a.x - playerIndex.x) + (a.y - playerIndex.y) * (a.y - playerIndex.y);
-	//		int distB = (b.x - playerIndex.x) * (b.x - playerIndex.x) + (b.y - playerIndex.y) * (b.y - playerIndex.y);
+	//		int32_t distA = (a.x - playerIndex.x) * (a.x - playerIndex.x) + (a.y - playerIndex.y) * (a.y - playerIndex.y);
+	//		int32_t distB = (b.x - playerIndex.x) * (b.x - playerIndex.x) + (b.y - playerIndex.y) * (b.y - playerIndex.y);
 	//		return distA < distB;
 	//	});
 	//for (const auto& pos : tempQueue)
@@ -483,13 +490,23 @@ void MapManager::ProcessChunkGeneration()
 
 		// 隣接チャンク設定
 		static constexpr Vector3int dirOffsets[6] =
-			{
+		{
 			Vector3int(-1, 0, 0),	// Left
 			Vector3int(1, 0, 0),	// Right
 			Vector3int(0, 0, -1),	// Back
 			Vector3int(0, 0, 1),	// Front
 			Vector3int(0, -1, 0),	// Down
 			Vector3int(0, 1, 0)		// Up
+		};
+
+		static constexpr DirectionXYZ dirArr[6] =
+		{
+			DirectionXYZ::Left,
+			DirectionXYZ::Right,
+			DirectionXYZ::Down,
+			DirectionXYZ::Up,
+			DirectionXYZ::Back,
+			DirectionXYZ::Front
 		};
 
 		static constexpr DirectionXYZ opposite[6] =
@@ -502,12 +519,12 @@ void MapManager::ProcessChunkGeneration()
 			DirectionXYZ::Back	// Front の反対
 		};
 
-		for (int dir = 0; dir < 6; ++dir)
+		for (int32_t dir = 0; dir < 6; ++dir)
 		{
 			Chunk* neighbor = TryGetChunk(pos + dirOffsets[dir]);
 
 			// 自分→隣（隣が無ければnullptrでOK）
-			chunk->SetNeighborChunk(static_cast<DirectionXYZ>(dir), neighbor);
+			chunk->SetNeighborChunk(dirArr[dir], neighbor);
 
 			// 隣→自分（隣がある時だけ）
 			if (neighbor)
@@ -532,11 +549,11 @@ void MapManager::Update(int32_t cameraID)
 
 	// プレイヤー周囲更新
 	cameraChunkPos_ = ChunkIndexByPosition(Game::Camera::Getter::GetCenter(cameraID));
-	for (int32_t dx = -drawRadius_; dx <= drawRadius_; ++dx)
+	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
 	{
-		for (int32_t dy = -drawRadius_; dy <= drawRadius_; ++dy)
+		for (int32_t dy = -drawRadius_.y; dy <= drawRadius_.y; ++dy)
 		{
-			for (int32_t dz = -drawRadius_; dz <= drawRadius_; ++dz)
+			for (int32_t dz = -drawRadius_.z; dz <= drawRadius_.z; ++dz)
 			{
 				Vector3int pos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
 				Chunk* chunk = TryGetChunk(pos);
@@ -549,12 +566,17 @@ void MapManager::Update(int32_t cameraID)
 void MapManager::Draw(int32_t renderTargetID)
 {	
 	// プレイヤー周囲描画
-	for (int32_t dx = -drawRadius_; dx <= drawRadius_; ++dx)
+	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
 	{
-		for (int32_t dy = -drawRadius_; dy <= drawRadius_; ++dy)
+		for (int32_t dy = -drawRadius_.y; dy <= drawRadius_.y; ++dy)
 		{
-			for (int32_t dz = -drawRadius_; dz <= drawRadius_; ++dz)
+			for (int32_t dz = -drawRadius_.z; dz <= drawRadius_.z; ++dz)
 			{
+				if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+				{
+					continue;
+				}
+
 				Vector3int chunkPos = Vector3int(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
 				Chunk* chunk = TryGetChunk(chunkPos);
 				if (chunk) { chunk->Draw(renderTargetID); }
@@ -567,8 +589,8 @@ void MapManager::Draw(int32_t renderTargetID)
 void MapManager::DrawImGui()
 {
 	ImGui::Begin("MapManager");
-	ImGui::Text("Chunks count: %zu", chunks.size());
-	ImGui::Text("Chunk Generation Queue size: %zu", chunkScheduled_.size());
+	ImGui::Text("Chunks count : %zu", chunks.size());
+	ImGui::Text("GenerateQueue: %zu", chunkScheduled_.size());
 	ImGui::End();
 }
 
@@ -728,32 +750,32 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //			const Vector3int maxBlockIndex = WorldBlockIndexByPosition(test.max - Vector3{ 1e-6f, 1e-6f, 1e-6f });
 //
 //			// floor_div（負数対応の床除算）
-//			auto FloorDiv = [](int a, int n) -> int
+//			auto FloorDiv = [](int32_t a, int32_t n) -> int32_t
 //				{
 //					// n > 0 前提
-//					int q = a / n;
-//					int r = a % n;
+//					int32_t q = a / n;
+//					int32_t r = a % n;
 //					if (r != 0 && ((r > 0) != (n > 0)) != (a > 0)) {} // unused guard
 //					// C++の / は0方向丸めなので、負数で割り切れないときだけ1引く
 //					if (r != 0 && ((a < 0) ^ (n < 0))) --q;
 //					return q;
 //				};
 //
-//			for (int by = minBlockIndex.y; by <= maxBlockIndex.y; ++by)
+//			for (int32_t by = minBlockIndex.y; by <= maxBlockIndex.y; ++by)
 //			{
 //				// Y軸はワールド境界でクリップ
 //				if (by < 0 || by >= Constexprs::kChunkY) continue;
-//				const int localY = by;
+//				const int32_t localY = by;
 //
-//				for (int bz = minBlockIndex.z; bz <= maxBlockIndex.z; ++bz)
+//				for (int32_t bz = minBlockIndex.z; bz <= maxBlockIndex.z; ++bz)
 //				{
-//					const int chunkZ = FloorDiv(bz, Constexprs::kChunkZ);
-//					const int localZ = LocalMod(bz, Constexprs::kChunkZ);
+//					const int32_t chunkZ = FloorDiv(bz, Constexprs::kChunkZ);
+//					const int32_t localZ = LocalMod(bz, Constexprs::kChunkZ);
 //
-//					for (int bx = minBlockIndex.x; bx <= maxBlockIndex.x; ++bx)
+//					for (int32_t bx = minBlockIndex.x; bx <= maxBlockIndex.x; ++bx)
 //					{
-//						const int chunkX = FloorDiv(bx, Constexprs::kChunkX);
-//						const int localX = LocalMod(bx, Constexprs::kChunkX);
+//						const int32_t chunkX = FloorDiv(bx, Constexprs::kChunkX);
+//						const int32_t localX = LocalMod(bx, Constexprs::kChunkX);
 //
 //						const Vector2int chunkPos{ chunkX, chunkZ };
 //						Chunk* c = TryGetChunk(chunkPos);
@@ -775,7 +797,7 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //		};
 //
 //	// 「指定軸だけ」動かして、めり込むならその軸の移動量を詰める
-//	auto ResolveAxis = [&](float& dAxis, int axis) -> bool
+//	auto ResolveAxis = [&](float& dAxis, int32_t axis) -> bool
 //		{
 //			if (std::abs(dAxis) < 1e-6f) return false;
 //
@@ -806,7 +828,7 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //			}
 //
 //			// 当たるので探索
-//			for (int i = 0; i < 16; ++i)
+//			for (int32_t i = 0; i < 16; ++i)
 //			{
 //				const float mid = (lo + hi) * 0.5f;
 //				const Vector3 move = MakeMove(sign * mid);
@@ -868,10 +890,10 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //	//    ※ここでは「最小押し戻しベクトル」を厳密に求めず、接触してるブロックの深度を足し合わせて小さく押し戻す。
 //	{
 //		AABB cur = aabb;
-//		const int iters = 4;            // 少なすぎると残る / 多すぎると重い
+//		const int32_t iters = 4;            // 少なすぎると残る / 多すぎると重い
 //		const float maxPush = 0.05f;    // 1フレで押し戻し過ぎない安全弁
 //
-//		for (int iter = 0; iter < iters; ++iter)
+//		for (int32_t iter = 0; iter < iters; ++iter)
 //		{
 //			Vector3 push(0, 0, 0);
 //			bool overlapped = false;
@@ -890,7 +912,7 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //
 //					// 最浅軸を選んでその軸だけ押す（順番依存を減らす）
 //					float pen = depth.x;
-//					int axis = 0;
+//					int32_t axis = 0;
 //					if (depth.y < pen) { pen = depth.y; axis = 1; }
 //					if (depth.z < pen) { pen = depth.z; axis = 2; }
 //
@@ -921,7 +943,7 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //	}
 //
 //	// 1) あなたの既存方式（軸ごとの二分探索）をそのまま呼ぶ形で書く
-//	auto ResolveAxis = [&](float& dAxis, int axis) -> bool
+//	auto ResolveAxis = [&](float& dAxis, int32_t axis) -> bool
 //		{
 //			if (std::abs(dAxis) < 1e-6f) return false;
 //
@@ -947,7 +969,7 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //			}
 //
 //			// 当たるので探索
-//			for (int i = 0; i < 16; ++i)
+//			for (int32_t i = 0; i < 16; ++i)
 //			{
 //				const float mid = (lo + hi) * 0.5f;
 //				const AABB test = aabb + (outCorrectedDelta + MakeMove(sign * mid));
@@ -1040,8 +1062,8 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //	// ② めり込むので「終点での押し戻し」で corrected delta を作る（押し戻した分だけdeltaを短く）
 //	Vector3 totalPush(0, 0, 0);
 //
-//	const int iters = 8;
-//	for (int iter = 0; iter < iters; ++iter)
+//	const int32_t iters = 8;
+//	for (int32_t iter = 0; iter < iters; ++iter)
 //	{
 //		bool overlapped = false;
 //
@@ -1057,7 +1079,7 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //
 //				// 最浅軸を選ぶ
 //				float pen = depth.x;
-//				int axis = 0;
+//				int32_t axis = 0;
 //				if (depth.y < pen) { pen = depth.y; axis = 1; }
 //				if (depth.z < pen) { pen = depth.z; axis = 2; }
 //
@@ -1106,10 +1128,10 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //			const Vector3int wb = WorldBlockIndexByPosition(p);
 //			if (wb.y < 0 || wb.y >= Constexprs::kChunkY) return false;
 //
-//			const int cx = FloorDivInt(wb.x, Constexprs::kChunkX);
-//			const int cz = FloorDivInt(wb.z, Constexprs::kChunkZ);
-//			const int lx = LocalMod(wb.x, Constexprs::kChunkX);
-//			const int lz = LocalMod(wb.z, Constexprs::kChunkZ);
+//			const int32_t cx = FloorDivInt(wb.x, Constexprs::kChunkX);
+//			const int32_t cz = FloorDivInt(wb.z, Constexprs::kChunkZ);
+//			const int32_t lx = LocalMod(wb.x, Constexprs::kChunkX);
+//			const int32_t lz = LocalMod(wb.z, Constexprs::kChunkZ);
 //
 //			Chunk* c = TryGetChunk(Vector2int{ cx, cz });
 //			if (!c) return false;
@@ -1129,13 +1151,13 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //	// ここでは簡易に「X/Zの押し戻しを優先して、最後にY」を試す
 //	Vector3 corrected = delta;
 //
-//	auto TryPushAxis = [&](int axis, float sign) -> bool
+//	auto TryPushAxis = [&](int32_t axis, float sign) -> bool
 //		{
 //			// sign: +1 なら +軸へ押す
 //			const float step = 0.01f;      // 押し戻し刻み（粗いほど軽いが貫通しやすい）
-//			const int maxSteps = 20;
+//			const int32_t maxSteps = 20;
 //
-//			for (int i = 0; i < maxSteps; ++i)
+//			for (int32_t i = 0; i < maxSteps; ++i)
 //			{
 //				Vector3 push(0, 0, 0);
 //				if (axis == 0) push.x = sign * step;
@@ -1162,8 +1184,8 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //					MakeFaceSamplePoints_Z(test, faceZ, pts);
 //				}
 //
-//				int insideCount = 0;
-//				for (int k = 0; k < 9; ++k)
+//				int32_t insideCount = 0;
+//				for (int32_t k = 0; k < 9; ++k)
 //				{
 //					if (PointInsideAnySolid(pts[k])) insideCount++;
 //				}
@@ -1271,14 +1293,14 @@ bool MapManager::GetIsActive(const Vector3& position) const
 // position が今どのチャンクに属しているか  例：position=(34, 0, 50) -> chunkIndex=(1, 2)
 Vector3int MapManager::ChunkIndexByPosition(const Vector3& position) const
 {
-	int bx = static_cast<int>(std::floor(position.x / Constexprs::kBlockSize));
-	int by = static_cast<int>(std::floor(position.y / Constexprs::kBlockSize));
-	int bz = static_cast<int>(std::floor(position.z / Constexprs::kBlockSize));
+	int32_t bx = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
+	int32_t by = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize));
+	int32_t bz = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize));
 
 	Vector3int chunk;
-	chunk.x = static_cast<int>(std::floor((float)bx / Constexprs::kChunkX));
-	chunk.y = static_cast<int>(std::floor((float)by / Constexprs::kChunkY));
-	chunk.z = static_cast<int>(std::floor((float)bz / Constexprs::kChunkZ));
+	chunk.x = static_cast<int32_t>(std::floor((float)bx / Constexprs::kChunkX));
+	chunk.y = static_cast<int32_t>(std::floor((float)by / Constexprs::kChunkY));
+	chunk.z = static_cast<int32_t>(std::floor((float)bz / Constexprs::kChunkZ));
 	return chunk;
 }
 
@@ -1301,9 +1323,9 @@ Vector3int MapManager::BlockIndexByPosition(const Vector3& position) const
 
 Vector3int MapManager::WorldBlockIndexByPosition(const Vector3& position) const
 {
-	int bx = static_cast<int>(std::floor(position.x / Constexprs::kBlockSize));
-	int by = static_cast<int>(std::floor(position.y / Constexprs::kBlockSize));
-	int bz = static_cast<int>(std::floor(position.z / Constexprs::kBlockSize));
+	int32_t bx = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
+	int32_t by = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize));
+	int32_t bz = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize));
 	return Vector3int(bx, by, bz);
 }
 
@@ -1321,24 +1343,24 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	auto WorldBlockIndexByPosition = [](const Vector3& p) -> Vector3int
 		{
 			return Vector3int(
-				int(std::floor(p.x / Constexprs::kBlockSize)),
-				int(std::floor(p.y / Constexprs::kBlockSize)),
-				int(std::floor(p.z / Constexprs::kBlockSize))
+				int32_t(std::floor(p.x / Constexprs::kBlockSize)),
+				int32_t(std::floor(p.y / Constexprs::kBlockSize)),
+				int32_t(std::floor(p.z / Constexprs::kBlockSize))
 			);
 		};
 
 	auto WorldChunkIndexFromWorldBlock = [](const Vector3int& wb) -> Vector3int
 		{
 			Vector3int cp;
-			cp.x = int(std::floor(float(wb.x) / float(Constexprs::kChunkX)));
-			cp.y = int(std::floor(float(wb.y) / float(Constexprs::kChunkY)));
-			cp.z = int(std::floor(float(wb.z) / float(Constexprs::kChunkZ)));
+			cp.x = int32_t(std::floor(float(wb.x) / float(Constexprs::kChunkX)));
+			cp.y = int32_t(std::floor(float(wb.y) / float(Constexprs::kChunkY)));
+			cp.z = int32_t(std::floor(float(wb.z) / float(Constexprs::kChunkZ)));
 			return cp;
 		};
 
-	auto Sign = [](float v) -> int { return (v > 0.0f) - (v < 0.0f); };
+	auto Sign = [](float v) -> int32_t { return (v > 0.0f) - (v < 0.0f); };
 
-	auto LocalMod = [](int a, int n) -> int { return (a % n + n) % n; };
+	auto LocalMod = [](int32_t a, int32_t n) -> int32_t { return (a % n + n) % n; };
 
 	auto LocalIndexFromWorldBlock = [&](const Vector3int& wb) -> Vector3int
 		{
@@ -1350,7 +1372,7 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 		};
 
 	// sideDist（次の境界までの距離 t）
-	auto NextBoundaryT = [](float origin, float dir, int cell, int step) -> float
+	auto NextBoundaryT = [](float origin, float dir, int32_t cell, int32_t step) -> float
 		{
 			// cell = floor(origin/Constexprs::kBlockSize) のブロック座標
 			if (step > 0)
@@ -1370,9 +1392,9 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	const Vector3int endWB = WorldBlockIndexByPosition(rayEnd);
 
 	// step（dir==0 の軸は 0）
-	const int stepX = Sign(dir.x);
-	const int stepY = Sign(dir.y);
-	const int stepZ = Sign(dir.z);
+	const int32_t stepX = Sign(dir.x);
+	const int32_t stepY = Sign(dir.y);
+	const int32_t stepZ = Sign(dir.z);
 
 	// deltaDist（dir==0 は INF 扱い）
 	const float INF = std::numeric_limits<float>::infinity();
@@ -1385,13 +1407,13 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	float sideDistZ = (stepZ == 0) ? INF : NextBoundaryT(rayStart.z, dir.z, currentWB.z, stepZ);
 
 	// 最大ステップ
-	const int maxSteps = 2048;
+	const int32_t maxSteps = 2048;
 
 	// 直前に跨いだ面（＝ currentWB に入った面）
 	AABBFace enterFace = AABBFace::NONE;
 
 
-	for (int i = 0; i < maxSteps; ++i)
+	for (int32_t i = 0; i < maxSteps; ++i)
 	{
 		// currentWB -> chunk/local
 		const Vector3int chunkPos = WorldChunkIndexFromWorldBlock(currentWB);

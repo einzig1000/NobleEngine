@@ -4,6 +4,7 @@
 #include <DirectX/DirectXManager.h>
 #include <ImGuiManager/ImGuiManager.h>
 #include <ResourceManager/Model/ModelBank/ModelBank.h>
+#include <numbers>
 
 ModelPreview::ModelPreview(DirectXManager* dxManager, CameraManager* cameraManager, ModelBank* bank)
 	: dxManager_(dxManager), cameraManager_(cameraManager), bank_(bank)
@@ -58,15 +59,10 @@ void ModelPreview::DrawImGui()
 	Matrix4x4 projectionMatrix = cameraManager_->GetCamera(cameraID_)->GetProjectionMatrix();
 	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(objectTransform_.scale, objectTransform_.rotate, objectTransform_.translate);
 
-	DirectX::XMMATRIX viewXM = DirectX::XMLoadFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&viewMatrix));
-	DirectX::XMMATRIX projectionXM = DirectX::XMLoadFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&projectionMatrix));
-	DirectX::XMMATRIX worldXM = DirectX::XMLoadFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&worldMatrix));
-
-	DirectX::XMFLOAT4X4 viewF, projF, worldF;
-	DirectX::XMStoreFloat4x4(&viewF, viewXM);
-	DirectX::XMStoreFloat4x4(&projF, projectionXM);
-	DirectX::XMStoreFloat4x4(&worldF, worldXM);
-
+	float viewM[16], projM[16], worldM[16];
+	std::memcpy(viewM, viewMatrix.m, sizeof(float) * 16);
+	std::memcpy(projM, projectionMatrix.m, sizeof(float) * 16);
+	std::memcpy(worldM, worldMatrix.m, sizeof(float) * 16);
 
 	// モデル選択、ミニプレビュー表示
 	ImGui::Begin("Model Editor");
@@ -137,28 +133,24 @@ void ModelPreview::DrawImGui()
 		ImGuizmo::SetRect(imagePos.x, imagePos.y, imageSize.x, imageSize.y);
 
 		bool manipulated = ImGuizmo::Manipulate(
-			reinterpret_cast<const float*>(&viewF),
-			reinterpret_cast<const float*>(&projF),
+			viewM,
+			projM,
 			currentOperation,
 			currentMode,
-			reinterpret_cast<float*>(&worldF)
+			worldM
 		);
 
 		if (manipulated)
 		{
-			DirectX::XMMATRIX newWorldXM = DirectX::XMLoadFloat4x4(&worldF);
+			float imScale[3], imRotate[3], imTranslate[3];
+			ImGuizmo::DecomposeMatrixToComponents(worldM, imTranslate, imRotate, imScale);
+			imRotate[0] *= std::numbers::pi_v<float> / 180.0f;
+			imRotate[1] *= std::numbers::pi_v<float> / 180.0f;
+			imRotate[2] *= std::numbers::pi_v<float> / 180.0f;
 
-			DirectX::XMVECTOR scaleV, rotQuatV, transV;
-			DirectX::XMMatrixDecompose(&scaleV, &rotQuatV, &transV, newWorldXM);
-
-			DirectX::XMFLOAT3 newScale; DirectX::XMFLOAT4 newRotQuat; DirectX::XMFLOAT3 newTrans;
-			DirectX::XMStoreFloat3(&newScale, scaleV);
-			DirectX::XMStoreFloat4(&newRotQuat, rotQuatV);
-			DirectX::XMStoreFloat3(&newTrans, transV);
-
-			objectTransform_.scale = { newScale.x, newScale.y, newScale.z };
-			objectTransform_.rotate = { newRotQuat.x, newRotQuat.y, newRotQuat.z, newRotQuat.w };
-			objectTransform_.translate = { newTrans.x, newTrans.y, newTrans.z };
+			objectTransform_.scale = { imScale[0], imScale[1], imScale[2] };
+			objectTransform_.rotate = { imRotate[0], imRotate[1], imRotate[2] };
+			objectTransform_.translate = { imTranslate[0], imTranslate[1], imTranslate[2]};
 		}
 
 		ImGui::End();

@@ -22,12 +22,13 @@ namespace Game
 			int32_t Load(const std::string& filePath);
 
 			/// <summary>
-			/// モデル作成
+			/// モデルを作成する
 			/// </summary>
-			/// <param name="vertices"></param>
-			/// <param name="name">モデル名</param>
-			/// <returns></returns>
-			int32_t Create(const std::vector<VertexData>& vertices, const std::string& name);
+			/// <param name="vertices">トライアングルリストの頂点配列</param>
+			/// <param name="name">モデルのユニークな名前</param>
+			/// <param name="optimize">頂点の最適化を行うかどうか</param>
+			/// <returns>モデルID</returns>
+			int32_t Create(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize = false);
 
 			/// <summary>
 			/// モデルデータ取得

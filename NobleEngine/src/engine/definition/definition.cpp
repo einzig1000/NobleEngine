@@ -277,7 +277,7 @@ Matrix4x4 Matrix4x4::MakeAffineMatrix(const Vector3& scale, const Vector3& rotat
     Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
     Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
     Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
-    Matrix4x4 rotateXYZMatrix = rotateZMatrix * rotateXMatrix * rotateYMatrix;
+    Matrix4x4 rotateXYZMatrix = rotateXMatrix * rotateYMatrix * rotateZMatrix;
     Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
     Matrix4x4 resultMatrix = scaleMatrix * rotateXYZMatrix * translateMatrix;
 
