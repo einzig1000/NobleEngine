@@ -43,7 +43,7 @@ enum class ItemGenre
 };
 
 
-// 全てのアイテムID
+// 全てのアイテムID　// いずれ廃止。Jsonに名前もstring型で保存する
 enum class ItemID
 {
 	None,

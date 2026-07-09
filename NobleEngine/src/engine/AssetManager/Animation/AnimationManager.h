@@ -1,23 +1,22 @@
 #pragma once
-#include <definition/definition.h>
+#include <EngineDefinition/EngineDefinition.h>
+#include "AnimationBank/AnimationBank.h"
+#include "AnimationLoader/AnimationLoader.h"
+#include <memory>
+
+class DirectXManager;
 
 class AnimationManager
 {
 public:
-	AnimationManager();
+	AnimationManager(DirectXManager* dxManager);
 	~AnimationManager();
-
-	// アニメーション読み込み
-	Animation LoadAnimation(const std::string& filePath);
 	
-	// データ取得
-	Animation* GetAnimationData(int32_t animationID);
-	
-	// アニメーション数を取得
-	size_t GetAnimationCount() const { return animations.size(); }
+	AnimationBank* GetAnimationBank() const { return bank_.get(); }
+	AnimationLoader* GetAnimationLoader() const { return loader_.get(); }
 
 	// 1,骨ごとのlocal情報を更新し
-	void TestApplyAnimation(Skeleton& skeleton, const Animation& animation, float time);
+	void TestApplyAnimation(Skeleton& skeleton, const AnimationData& animation, float time);
 
 	// 2,骨ごとのlocal情報からSkeltonSpaceの情報を更新する
 	void TestUpdateSkeleton(Skeleton& skeleton);
@@ -26,10 +25,8 @@ public:
 	void TestUpdateSkinCluster(const Skeleton& skeleton, SkinCluster& skinCluster);
 
 private:
+	std::unique_ptr<AnimationBank> bank_;
+	std::unique_ptr<AnimationLoader> loader_;
 
-	std::unordered_map<std::string, Animation> animations;
-
-	// アニメーションを読み込む関数
-	Animation LoadAnimationFile(const std::string& filePath);
 };
 

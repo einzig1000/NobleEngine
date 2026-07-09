@@ -781,7 +781,7 @@ struct NodeAnimation
     AnimationCurve<Vector3> scale;
 };
 
-struct Animation
+struct AnimationData
 {
     float duration = 0.0f;  // アニメーション全体の長さ(秒)
     std::map<std::string, NodeAnimation> nodeAnimations;

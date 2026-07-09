@@ -6,6 +6,8 @@ ItemConfig::ItemConfig()
 	//JsonManager::Load("resources/ItemConfig.json");
 	//JsonManager::Load("resources/BlockConfig.json");
 
+// 全てのアイテムID　// いずれ廃止。Jsonに名前もstring型で保存する
+
 	int32_t BlockMax = 0;
 	JsonManager::Load("resources/BlockConfig.json", "MAX", BlockMax);
 

@@ -20,8 +20,8 @@ ModelLoader::~ModelLoader()
 int32_t ModelLoader::LoadModel(const std::string & filePath)
 {
 	// すでに読み込まれていたらそのモデルIDを返す
-	int32_t existingModelID = bank_->IsModelDataExist(filePath);
-	if (existingModelID != -1) return existingModelID;
+	int32_t modelID = bank_->IsModelDataExist(filePath);
+	if (modelID != -1) return modelID;
 
     Log("モデル読み込み開始:%s", filePath.c_str());
 
@@ -31,7 +31,7 @@ int32_t ModelLoader::LoadModel(const std::string & filePath)
     LoadModelFile(filePath, obj.get());
 
 	// モデルバンクに登録
-	int32_t modelID = bank_->AddModelData(filePath, std::move(obj));
+	modelID = bank_->AddModelData(filePath, std::move(obj));
 
     Log("成功 ID:%d", modelID);
 

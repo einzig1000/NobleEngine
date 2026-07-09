@@ -40,6 +40,18 @@ namespace Game
 			}
 		}
 
+		namespace Animation
+		{
+			int32_t Load(const std::string& filePath, const std::string& animationName)
+			{
+				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationLoader()->LoadAnimation(filePath, animationName);
+			}
+			AnimationData* GetData(int32_t animationID)
+			{
+				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationBank()->GetAnimationData(animationID);
+			}
+		}
+
 		namespace Texture
 		{
 			int32_t Load(const std::string& filePath)

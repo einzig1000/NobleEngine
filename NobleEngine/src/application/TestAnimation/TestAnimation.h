@@ -18,12 +18,15 @@ private:
 
 	float animationTime_ = 0.0f;
 
-	AnimationManager animationManager_;
-	Animation animation;
-	NodeAnimation* nodeAnimation = nullptr;
+	int32_t animationID_ = -1;
+
 	ModelData* modelData_ = nullptr;
+
+
+	AnimationData animation;
+	NodeAnimation* nodeAnimation = nullptr;
 	SkinCluster skinCluster_;
 	Skeleton skeleton;
-	uint32_t tex;
+	uint32_t texID_ = -1;
 
 };

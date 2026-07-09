@@ -1,5 +1,5 @@
 #pragma once
-#include <definition/definition.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <array>
 
 // カメラは常にcenter_を見る

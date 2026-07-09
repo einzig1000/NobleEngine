@@ -39,6 +39,24 @@ namespace Game
 			ModelData* GetData(int32_t modelID);
 		}
 
+		namespace Animation
+		{
+			/// <summary>
+			/// アニメーション読み込み
+			/// </summary>
+			/// <param name="filePath">例:"Resources/prototypes/animation/animation.fbx"</param>
+			/// <param name="animationName">アニメーション名</param>
+			/// <returns>アニメーションID</returns>
+			int32_t Load(const std::string& filePath, const std::string& animationName);
+		
+			/// <summary>
+			/// アニメーションデータ取得
+			/// </summary>
+			/// <param name="animationID">アニメーションID</param>
+			/// <returns>アニメーションデータ</returns>
+			AnimationData* GetData(int32_t animationID);
+		}
+
 		namespace Texture
 		{
 			/// <summary>

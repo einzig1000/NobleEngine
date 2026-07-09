@@ -7,17 +7,15 @@ TestAnimation::TestAnimation()
 	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/human/sneakWalk.gltf");
 	render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_->psoConfig_.vs = "resources/shaders/Skinning/Skinning.VS.hlsl";
-	//render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_->SetupFromShaders();
 
 	// 頂点データ
 	modelData_ = Game::Asset::Model::GetData(render_->modelID_);
 	// アニメーションデータ
-	animation = animationManager_.LoadAnimation("resources/prototypes/model/human/sneakWalk.gltf");
+	animationID_ = Game::Asset::Animation::Load("resources/prototypes/model/human/sneakWalk.gltf", "sneakWalk");
 	// テクスチャデータ
-	tex = Game::Asset::Texture::Load("resources/prototypes/texture/AnimatedCube_BaseColor.png");
+	texID_ = Game::Asset::Texture::Load("resources/prototypes/texture/AnimatedCube_BaseColor.png");
 
-	//nodeAnimation = &animation.nodeAnimations["AnimatedCube"];
 	skeleton = modelData_->skeleton;
 	skinCluster_ = modelData_->skinCluster;
 }
@@ -45,12 +43,10 @@ void TestAnimation::Update(int32_t cameraID)
 	Matrix4x4 worldViewProjection = animationMatrix * viewProjection;
 
 	render_->SetCBufferData(0, ShaderType::PixelShader, &color);
-	render_->SetCBufferData(1, ShaderType::PixelShader, &tex);
+	render_->SetCBufferData(1, ShaderType::PixelShader, &texID_);
 	render_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 	render_->SetCBufferData(1, ShaderType::VertexShader, &animationMatrix);
 	render_->SetSBufferData(0, ShaderType::VertexShader, skinCluster_.mappedPalette.data(), sizeof(WellForGPU), skinCluster_.mappedPalette.size());
-
-	//render_->SetCBufferData(1, ShaderType::VertexShader, &animationMatrix);
 }
 
 void TestAnimation::Draw(int32_t renderTextureID)

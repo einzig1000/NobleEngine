@@ -1,5 +1,5 @@
 #pragma once
-#include <definition/definition.h>
+#include <EngineDefinition/EngineDefinition.h>
 
 class ModelBank;
 class DirectXManager;

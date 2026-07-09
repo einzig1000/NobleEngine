@@ -5,7 +5,7 @@
 #include <Windows.h>
 #include <dxgiformat.h>
 #include <unordered_map>
-#include <definition/definition.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <DirectX/RenderTarget/RenderTargetStruct.h>
 
 class DescriptorHeapManager;

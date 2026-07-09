@@ -1,6 +1,6 @@
 #pragma once
 #include <externals/DirectXTex/DirectXTex.H>
-#include <definition/definition.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <d3d12.h>
 #include <wrl.h>
 #include <Utilities/Logger/Logger.h>

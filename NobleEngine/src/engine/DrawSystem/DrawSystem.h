@@ -1,5 +1,5 @@
 #pragma once
-#include <definition/definition.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <definition/constexprs.h>
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <DirectX/FrameCbAllocator/FrameCbAllocator.h>

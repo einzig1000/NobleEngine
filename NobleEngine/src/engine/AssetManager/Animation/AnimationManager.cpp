@@ -51,34 +51,14 @@ namespace
 	}
 }
 
-AnimationManager::AnimationManager()
-{}
+AnimationManager::AnimationManager(DirectXManager* dxManager)
+{
+	bank_ = std::make_unique<AnimationBank>();
+	loader_ = std::make_unique<AnimationLoader>(dxManager, bank_.get());
+}
 
 AnimationManager::~AnimationManager()
 {}
-
-Animation AnimationManager::LoadAnimation(const std::string & filePath)
-{
-	Log("アニメーション読み込み開始:%s", filePath.c_str());
-	Animation animation = LoadAnimationFile(filePath);
-	animations[filePath] = animation;
-	return animation;
-}
-
-Animation* AnimationManager::GetAnimationData(int32_t animationID)
-{
-	auto it = animations.begin();
-	std::advance(it, animationID);
-	if (it != animations.end())
-	{
-		return &(it->second);
-	}
-	else
-	{
-		Log("アニメーションID %d は存在しません", animationID);
-		return nullptr;
-	}
-}
 
 void AnimationManager::TestUpdateSkeleton(Skeleton& skeleton)
 {
@@ -93,7 +73,6 @@ void AnimationManager::TestUpdateSkeleton(Skeleton& skeleton)
 		{
 			joint.skeletonSpaceMatrix = joint.localMatrix;
 		}
-
 	}
 }
 
@@ -109,7 +88,7 @@ void AnimationManager::TestUpdateSkinCluster(const Skeleton& skeleton, SkinClust
 	}
 }
 
-void AnimationManager::TestApplyAnimation(Skeleton& skeleton, const Animation& animation, float time)
+void AnimationManager::TestApplyAnimation(Skeleton& skeleton, const AnimationData& animation, float time)
 {
 	for (Joint& joint : skeleton.joints)
 	{
@@ -121,50 +100,6 @@ void AnimationManager::TestApplyAnimation(Skeleton& skeleton, const Animation& a
 			joint.transform.scale = CalculateValue(time, nodeAnimation.scale);
 		}
 	}
-}
-
-Animation AnimationManager::LoadAnimationFile(const std::string& filePath)
-{
-	Animation animation;
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_ConvertToLeftHanded | aiProcess_Triangulate);
-	//const aiScene* scene = importer.ReadFile(filePath.c_str(), 0);
-	assert(scene->HasAnimations());
-	aiAnimation* animationAssimp = scene->mAnimations[0];
-	animation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);
-
-	for (uint32_t channelIndex = 0; channelIndex < animationAssimp->mNumChannels; ++channelIndex)
-	{
-		aiNodeAnim* nodeAnimationAssimp = animationAssimp->mChannels[channelIndex];
-		NodeAnimation& nodeAnimation = animation.nodeAnimations[nodeAnimationAssimp->mNodeName.C_Str()];
-
-		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumPositionKeys; ++keyIndex)
-		{
-			aiVectorKey& keyAssimp = nodeAnimationAssimp->mPositionKeys[keyIndex];
-			Keyframe<Vector3> keyframe;
-			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);
-			keyframe.value = { keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z };
-			nodeAnimation.translate.keyFrames.push_back(keyframe);
-		}
-		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumRotationKeys; ++keyIndex)
-		{
-			const aiQuatKey& keyAssimp = nodeAnimationAssimp->mRotationKeys[keyIndex];
-			Keyframe<Quaternion> keyframe;
-			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);
-			keyframe.value = { keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z, keyAssimp.mValue.w };
-			nodeAnimation.rotate.keyFrames.push_back(keyframe);
-		}
-		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumScalingKeys; ++keyIndex)
-		{
-			const aiVectorKey& keyAssimp = nodeAnimationAssimp->mScalingKeys[keyIndex];
-			Keyframe<Vector3> keyframe;
-			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);
-			keyframe.value = { keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z };
-			nodeAnimation.scale.keyFrames.push_back(keyframe);
-		}
-	}
-
-	return animation;
 }
 
 
