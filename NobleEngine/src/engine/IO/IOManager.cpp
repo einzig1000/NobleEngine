@@ -1,7 +1,7 @@
 #include "IO/IOManager.h"
-#include "IO/KeyboardController.h"
-#include "IO/PadController.h"
-#include "IO/MouseController.h"
+#include "IO/Keyboard/KeyboardController.h"
+#include "IO/Pad/PadController.h"
+#include "IO/Mouse/MouseController.h"
 
 IOManager::IOManager(HWND hwnd, CameraManager* cameraManager)
 {

@@ -1,7 +1,7 @@
 #pragma once
 #include <Game.h>
 #include <map>
-#include <Utilities/PerlinNoise.h>
+#include <PerlinNoise.h>
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <GameObjects/MapManager/Chunk/Block/Block.h>
 

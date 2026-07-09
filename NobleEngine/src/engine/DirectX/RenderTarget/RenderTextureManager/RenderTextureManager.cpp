@@ -11,19 +11,19 @@ RenderTextureManager::RenderTextureManager(ID3D12Device2* device, ID3D12CommandQ
 RenderTextureManager::~RenderTextureManager()
 {}
 
-int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string textureName, float clearColorA)
+int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string label, float clearColorA)
 {
 	// 既に作成されていたらそのIDを返す
-	RenderTarget* renderTarget = Get(textureName);
+	RenderTarget* renderTarget = Get(label);
 	if (renderTarget != nullptr)
 	{
         return renderTarget->colorsrvAlloc.index;
 	}
 
-    Log("レンダーテクスチャ作成開始:%s", textureName.c_str());
-
+    Log("レンダーテクスチャ作成開始:%s", label.c_str());
+    
     auto rt = std::make_unique<RenderTarget>();
-	rt->name = textureName;
+	rt->name = label;
     rt->width = width;
     rt->height = height;
     rt->format = format;
@@ -64,7 +64,7 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
     rt->dsvState = D3D12_RESOURCE_STATE_COMMON;
 
 	int32_t id = static_cast<int32_t>(renderTargets_.size());
-	nameToIndexMap_[textureName] = id;
+	nameToIndexMap_[label] = id;
     idToIndexMap_[rt->colorsrvAlloc.index] = id;
 	idToIndexMap_[rt->depthsrvAlloc.index] = id;
 	renderTargets_.push_back(std::move(rt));

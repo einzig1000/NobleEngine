@@ -21,7 +21,7 @@
     <ClCompile Include="src\engine\Camera\CameraManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\definition\definition.cpp">
+    <ClCompile Include="src\engine\EngineDefinition\EngineDefinition.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DSV\DSVManager.cpp">
@@ -51,10 +51,10 @@
     <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceFactory.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DirectX\CommandContextManager.cpp">
+    <ClCompile Include="src\engine\DirectX\CommandContextManager\CommandContextManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DirectX\DeviceManager.cpp">
+    <ClCompile Include="src\engine\DirectX\DeviceManager\DeviceManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\DirectXManager.cpp">
@@ -63,10 +63,10 @@
     <ClCompile Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DirectX\SynchronizationManager.cpp">
+    <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DirectX\ViewportScissorManager.cpp">
+    <ClCompile Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DrawSystem\RenderData\RenderData.cpp">
@@ -90,25 +90,25 @@
     <ClCompile Include="src\engine\IO\IOManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\IO\KeyboardController.cpp">
+    <ClCompile Include="src\engine\IO\Keyboard\KeyboardController.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\IO\MouseController.cpp">
+    <ClCompile Include="src\engine\IO\Mouse\MouseController.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\IO\PadController.cpp">
+    <ClCompile Include="src\engine\IO\Pad\PadController.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Audio\AudioManager.cpp">
+    <ClCompile Include="src\engine\AssetManager\Audio\AudioManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Model\ModelManager.cpp">
+    <ClCompile Include="src\engine\AssetManager\Model\ModelManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Texture\TextureManager.cpp">
+    <ClCompile Include="src\engine\AssetManager\Texture\TextureManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\ResourceManager.cpp">
+    <ClCompile Include="src\engine\AssetManager\AssetManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.cpp">
@@ -138,10 +138,7 @@
     <ClCompile Include="src\engine\Utilities\functions.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Utilities\PerlinNoise.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\Utilities\SimpleModelBody.cpp">
+    <ClCompile Include="src\application\PerlinNoise.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Window\WindowManager.cpp">
@@ -168,7 +165,7 @@
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Animation\AnimationManager.cpp">
+    <ClCompile Include="src\engine\AssetManager\Animation\AnimationManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\TestAnimation\TestAnimation.cpp">
@@ -180,31 +177,28 @@
     <ClCompile Include="src\application\TestLine\LineDrawer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Model\ModelLoader\ModelLoader.cpp">
+    <ClCompile Include="src\engine\AssetManager\Model\ModelLoader\ModelLoader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Model\ModelCreater\ModelCreater.cpp">
+    <ClCompile Include="src\engine\AssetManager\Model\ModelCreater\ModelCreater.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Model\ModelBank\ModelBank.cpp">
+    <ClCompile Include="src\engine\AssetManager\Model\ModelBank\ModelBank.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Texture\TextureBank\TextureBank.cpp">
+    <ClCompile Include="src\engine\AssetManager\Texture\TextureBank\TextureBank.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.cpp">
+    <ClCompile Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Audio\AudioBank\AudioBank.cpp">
+    <ClCompile Include="src\engine\AssetManager\Audio\AudioBank\AudioBank.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Audio\AudioLoader\AudioLoader.cpp">
+    <ClCompile Include="src\engine\AssetManager\Audio\AudioLoader\AudioLoader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="src\application\TestMeshShader\TestMeshShader.cpp">
+    <ClCompile Include="src\engine\AssetManager\Audio\AudioPlayer\AudioPlayer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp">
@@ -306,6 +300,27 @@
     <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="src\application\definition\definition.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\definition\ItemConfig\ItemConfig.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\AssetManager\Animation\AnimationBank\AnimationBank.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\AssetManager\Animation\AnimationLoader\AnimationLoader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\AssetManager\Animation\AnimationComputer\AnimationComputer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\ComputeSystem\ComputeObject\ComputeObject.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\ComputeSystem\ComputeSystem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Camera\Camera.h">
@@ -314,7 +329,7 @@
     <ClInclude Include="src\engine\Camera\CameraManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\definition\definition.h">
+    <ClInclude Include="src\engine\EngineDefinition\EngineDefinition.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DSV\DSVManager.h">
@@ -347,10 +362,10 @@
     <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceFactory.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\CommandContextManager.h">
+    <ClInclude Include="src\engine\DirectX\CommandContextManager\CommandContextManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\DeviceManager.h">
+    <ClInclude Include="src\engine\DirectX\DeviceManager\DeviceManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\DirectXManager.h">
@@ -359,10 +374,10 @@
     <ClInclude Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\SynchronizationManager.h">
+    <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\ViewportScissorManager.h">
+    <ClInclude Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DrawSystem\RenderData\RenderData.h">
@@ -386,25 +401,25 @@
     <ClInclude Include="src\engine\IO\IOManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\IO\KeyboardController.h">
+    <ClInclude Include="src\engine\IO\Keyboard\KeyboardController.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\IO\MouseController.h">
+    <ClInclude Include="src\engine\IO\Mouse\MouseController.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\IO\PadController.h">
+    <ClInclude Include="src\engine\IO\Pad\PadController.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Audio\AudioManager.h">
+    <ClInclude Include="src\engine\AssetManager\Audio\AudioManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Model\ModelManager.h">
+    <ClInclude Include="src\engine\AssetManager\Model\ModelManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Texture\TextureManager.h">
+    <ClInclude Include="src\engine\AssetManager\Texture\TextureManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\ResourceManager.h">
+    <ClInclude Include="src\engine\AssetManager\AssetManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.h">
@@ -434,10 +449,7 @@
     <ClInclude Include="src\engine\Utilities\functions.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Utilities\PerlinNoise.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\Utilities\SimpleModelBody.h">
+    <ClInclude Include="src\application\PerlinNoise.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Window\WindowManager.h">
@@ -461,13 +473,10 @@
     <ClInclude Include="src\application\GameManager\GameManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureID.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTargetStruct.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Animation\AnimationManager.h">
+    <ClInclude Include="src\engine\AssetManager\Animation\AnimationManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\TestAnimation\TestAnimation.h">
@@ -476,37 +485,34 @@
     <ClInclude Include="src\application\TestParticle\TestParticle.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\definition\constexprs.h">
+    <ClInclude Include="src\engine\EngineDefinition\EngineConstexprs.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\TestLine\LineDrawer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Model\ModelLoader\ModelLoader.h">
+    <ClInclude Include="src\engine\AssetManager\Model\ModelLoader\ModelLoader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Model\ModelCreater\ModelCreater.h">
+    <ClInclude Include="src\engine\AssetManager\Model\ModelCreater\ModelCreater.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Model\ModelBank\ModelBank.h">
+    <ClInclude Include="src\engine\AssetManager\Model\ModelBank\ModelBank.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Texture\TextureBank\TextureBank.h">
+    <ClInclude Include="src\engine\AssetManager\Texture\TextureBank\TextureBank.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Texture\TextureLoader\TextureLoader.h">
+    <ClInclude Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Audio\AudioBank\AudioBank.h">
+    <ClInclude Include="src\engine\AssetManager\Audio\AudioBank\AudioBank.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Audio\AudioLoader\AudioLoader.h">
+    <ClInclude Include="src\engine\AssetManager\Audio\AudioLoader\AudioLoader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\ResourceManager\Audio\AudioPlayer\AudioPlayer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\TestMeshShader\TestMeshShader.h">
+    <ClInclude Include="src\engine\AssetManager\Audio\AudioPlayer\AudioPlayer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h">
@@ -1053,6 +1059,30 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="externals\FastNoiseLite\FastNoiseLite.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\definition\constexprs.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\definition\definition.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\definition\ItemConfig\ItemConfig.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\AssetManager\Animation\AnimationBank\AnimationBank.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\AssetManager\Animation\AnimationLoader\AnimationLoader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\AssetManager\Animation\AnimationComputer\AnimationComputer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\ComputeSystem\ComputeObject\ComputeObject.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

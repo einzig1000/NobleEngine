@@ -344,9 +344,9 @@ bool IsOverLap(const AABB& aabb1, const AABB& aabb2)
 bool IsLooseCollision(const AABB& aabb1, const AABB& aabb2, float threshold)
 {
     // 各軸の重なり量（侵入量）を計算
-    float dx = my_min(aabb1.max.x, aabb2.max.x) - my_max(aabb1.min.x, aabb2.min.x);
-    float dy = my_min(aabb1.max.y, aabb2.max.y) - my_max(aabb1.min.y, aabb2.min.y);
-    float dz = my_min(aabb1.max.z, aabb2.max.z) - my_max(aabb1.min.z, aabb2.min.z);
+    float dx = std::min(aabb1.max.x, aabb2.max.x) - std::max(aabb1.min.x, aabb2.min.x);
+    float dy = std::min(aabb1.max.y, aabb2.max.y) - std::max(aabb1.min.y, aabb2.min.y);
+    float dz = std::min(aabb1.max.z, aabb2.max.z) - std::max(aabb1.min.z, aabb2.min.z);
 
     // どれかの軸で分離している（侵入量が負）なら衝突していない
     if (dx <= 0.0f || dy <= 0.0f || dz <= 0.0f) return false;
@@ -360,9 +360,9 @@ bool IsCollision(const AABB& aabb, const Sphere& s)
     // 最近接点を求めるf
     Vector3 closest{};
     // 各軸ごとにAABBの範囲内にクランプ
-    closest.x = my_max(aabb.min.x, my_min(s.center.x, aabb.max.x));
-    closest.y = my_max(aabb.min.y, my_min(s.center.y, aabb.max.y));
-    closest.z = my_max(aabb.min.z, my_min(s.center.z, aabb.max.z));
+    closest.x = std::max(aabb.min.x, std::min(s.center.x, aabb.max.x));
+    closest.y = std::max(aabb.min.y, std::min(s.center.y, aabb.max.y));
+    closest.z = std::max(aabb.min.z, std::min(s.center.z, aabb.max.z));
 
     // 最近接点と球の中心の距離を計算
     Vector3 diff = s.center - closest;
@@ -412,8 +412,8 @@ bool IsCollision(const AABB& aabb, const Segment& s)
             // tは線分の割合なので、tが小さい方がtNear,tが大きい方がtFarになる
             // 貫通している場合「Near.XorY → Near.XorY → Far.XorY → Far.XorY」の順になるはずなので
             // tNearの大きい方 < tFarの小さい方になっていれば貫通している
-            tmin = my_max(tmin, t1);
-            tmax = my_min(tmax, t2);
+            tmin = std::max(tmin, t1);
+            tmax = std::min(tmax, t2);
             if (tmin > tmax) return false;
         }
     }
@@ -591,8 +591,8 @@ std::optional<Vector3> IntersectRayAABB(const Ray& ray, const AABB& box)
             float t2 = (bmax - origin) * invD;
             // 
             if (t1 > t2) std::swap(t1, t2);
-            tmin = my_max(tmin, t1);
-            tmax = my_min(tmax, t2);
+            tmin = std::max(tmin, t1);
+            tmax = std::min(tmax, t2);
             return (tmax >= tmin);
         };
 
@@ -669,12 +669,12 @@ LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception)
 //	//	for (int i = 1; i < 8; ++i)
 //	//	{
 //	//		Vector3 v = Transform(corners[i], worldMatrix);
-//	//		worldMin.x = my_min(worldMin.x, v.x);
-//	//		worldMin.y = my_min(worldMin.y, v.y);
-//	//		worldMin.z = my_min(worldMin.z, v.z);
-//	//		worldMax.x = my_max(worldMax.x, v.x);
-//	//		worldMax.y = my_max(worldMax.y, v.y);
-//	//		worldMax.z = my_max(worldMax.z, v.z);
+//	//		worldMin.x = std::min(worldMin.x, v.x);
+//	//		worldMin.y = std::min(worldMin.y, v.y);
+//	//		worldMin.z = std::min(worldMin.z, v.z);
+//	//		worldMax.x = std::max(worldMax.x, v.x);
+//	//		worldMax.y = std::max(worldMax.y, v.y);
+//	//		worldMax.z = std::max(worldMax.z, v.z);
 //	//	}
 //	//	result.push_back({ worldMin, worldMax });
 //	//}

@@ -52,7 +52,7 @@ void Camera::Update_Orbit()
 		// マウス中クリック
 		bool isMiddleHeld = Game::IO::Mouse::IsHeld(2);
 		// Shiftキー
-		bool isShiftHeld = Game::IO::Key::IsHeld(DIK_LSHIFT);
+		bool isShiftHeld = Game::IO::Key::IsHeld(VK_LSHIFT);
 
 		// パン
 		if (isMiddleHeld && isShiftHeld)

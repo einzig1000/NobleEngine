@@ -3,14 +3,13 @@
 
 #include <Camera/CameraManager.h>
 #include <Camera/Camera.h>
-#include <ResourceManager/ResourceManager.h>
+#include <AssetManager/AssetManager.h>
 #include <DrawSystem/DrawSystem.h>
 #include <IO/IOManager.h>
-#include <IO/KeyboardController.h>
-#include <IO/PadController.h>
-#include <IO/MouseController.h>
+#include <IO/Keyboard/KeyboardController.h>
+#include <IO/Pad/PadController.h>
+#include <IO/Mouse/MouseController.h>
 #include <FixFPS/FixFPS.h>
-#include <Physics/PhysicsSystem.h>
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
 #include <Utilities/Easing/Easing.h>
@@ -21,23 +20,41 @@
 
 namespace Game
 {
-	namespace Resource
+	namespace Asset
 	{
 		namespace Model
 		{
 			int32_t Load(const std::string& filePath)
 			{
-				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelLoader()->LoadModel(filePath);
+				return Engine::Instance().GetAssetManager()->GetModelManager()->GetModelLoader()->LoadModel(filePath);
 			}
 
 			int32_t Create(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize)
 			{
-				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelCreater()->CreateModel(vertices, name, optimize);
+				return Engine::Instance().GetAssetManager()->GetModelManager()->GetModelCreater()->CreateModel(vertices, name, optimize);
 			}
 
 			ModelData* GetData(int32_t modelID)
 			{
-				return Engine::Instance().GetResourceManager()->GetModelManager()->GetModelBank()->GetModelData(modelID);
+				return Engine::Instance().GetAssetManager()->GetModelManager()->GetModelBank()->GetModelData(modelID);
+			}
+		}
+
+		namespace Animation
+		{
+			int32_t Load(const std::string& filePath, const std::string& animationName)
+			{
+				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationLoader()->LoadAnimation(filePath, animationName);
+			}
+
+			AnimationData* GetData(int32_t animationID)
+			{
+				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationBank()->GetAnimationData(animationID);
+			}
+
+			void ComputeAnimationData(int32_t animationID, Skeleton& skeleton, SkinCluster& skinCluster, float& time)
+			{
+				Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationComputer()->UpdateAnimation(animationID, skeleton, skinCluster, time);
 			}
 		}
 
@@ -45,12 +62,12 @@ namespace Game
 		{
 			int32_t Load(const std::string& filePath)
 			{
-				return Engine::Instance().GetResourceManager()->GetTextureManager()->GetTextureLoader()->LoadTexture(filePath);
+				return Engine::Instance().GetAssetManager()->GetTextureManager()->GetTextureLoader()->LoadTexture(filePath);
 			}
 
 			TextureData* GetData(int32_t textureID)
 			{
-				return Engine::Instance().GetResourceManager()->GetTextureManager()->GetTextureBank()->GetTextureData(textureID);
+				return Engine::Instance().GetAssetManager()->GetTextureManager()->GetTextureBank()->GetTextureData(textureID);
 			}
 		}
 
@@ -58,117 +75,97 @@ namespace Game
 		{
 			int32_t Load(const std::string& filePath)
 			{
-				return Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioLoader()->LoadAudio(filePath);
+				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioLoader()->LoadAudio(filePath);
 			}
 
 			AudioData* GetData(int32_t audioID)
 			{
-				return Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioBank()->GetAudioData(audioID);
+				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioBank()->GetAudioData(audioID);
 			}
 		}
 
-		int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName)
+		namespace RenderTexture
 		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
-		}
-
-		bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color)
-		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveTexture(filePath, textureName, color);
-		}
-
-		bool SaveAllRenderTextureToFile(const std::string& filePath, bool color)
-		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveAllRenderTextures(filePath, color);
-		}
-
-		int32_t GetRenderTextureID(const std::string textureName)
-		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.index;
-		}
-		int32_t GetRenderTextureDepthID(const std::string textureName)
-		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->depthsrvAlloc.index;
-		}
-		UINT64 GetRenderTexture(const std::string textureName)
-		{
-			return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.gpu.ptr;
+			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName)
+			{
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
+			}
+			bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color)
+			{
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveTexture(filePath, textureName, color);
+			}
+			bool SaveAllRenderTextureToFile(const std::string& filePath, bool color)
+			{
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveAllRenderTextures(filePath, color);
+			}
+			int32_t GetRenderTextureID(const std::string textureName)
+			{
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.index;
+			}
+			int32_t GetRenderTextureDepthID(const std::string textureName)
+			{
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->depthsrvAlloc.index;
+			}
+			UINT64 GetRenderTexture(const std::string textureName)
+			{
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.gpu.ptr;
+			}
 		}
 	}
 
 	namespace DebugDraw
 	{
-		void AddSphere(const Sphere& sphere, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddSphere(sphere, color);
-		}
-		void AddSphereXYZ(const SphereXYZ& sphere, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddSphereXYZ(sphere, color);
-		}
-		void AddCylinder(const Cylinder& cylinder, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddCylinder(cylinder, color);
-		}
-		void AddAABB(const AABB& aabb, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddAABB(aabb, color);
-		}
-		void AddLine(Vector3 start, Vector3 end, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddDebugLineList(start, end, color);
-		}
+		//void AddSphere(const Sphere& sphere, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddSphere(sphere, color);
+		//}
+		//void AddSphereXYZ(const SphereXYZ& sphere, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddSphereXYZ(sphere, color);
+		//}
+		//void AddCylinder(const Cylinder& cylinder, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddCylinder(cylinder, color);
+		//}
+		//void AddAABB(const AABB& aabb, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddAABB(aabb, color);
+		//}
+		//void AddLine(Vector3 start, Vector3 end, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddDebugLineList(start, end, color);
+		//}
 	}
 
 	namespace Audio
 	{
 		void PlayAudio(const int32_t& audioId, bool loop)
 		{
-			Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioPlayer()->PlayAudio(audioId, loop);
+			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->PlayAudio(audioId, loop);
 		}
 		void StopAudio(const int32_t& audioId)
 		{
-			Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioPlayer()->StopAudio(audioId);
+			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->StopAudio(audioId);
 		}
 		void SetAudioVolume(const int32_t& audioId, float volume)
 		{
-			Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioPlayer()->SetVolume(audioId, volume);
+			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetVolume(audioId, volume);
 		}
 		void SetMasterVolume(float volume)
 		{
-			Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioPlayer()->SetMasterVolume(volume);
+			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetMasterVolume(volume);
 		}
 		float GetVolume(const int32_t& audioId)
 		{
-			return Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioPlayer()->GetVolume(audioId);
+			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetVolume(audioId);
 		}
 		float GetMasterVolume()
 		{
-			return Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioPlayer()->GetMasterVolume();
+			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetMasterVolume();
 		}
 		bool IsAudioPlaying(const int32_t& audioId)
 		{
-			return Engine::Instance().GetResourceManager()->GetAudioManager()->GetAudioPlayer()->IsAudioPlaying(audioId);
-		}
-	}
-
-	namespace Light
-	{
-		void SetLightColor(const Vector4 color)
-		{
-			//Engine::Instance().SetLightColor(color);
-		}
-		void SetLightDirection(const Vector3 direction)
-		{
-			//Engine::Instance().SetLightDirection(direction);
-		}
-		void SetLightIntensity(float intensity)
-		{
-			//Engine::Instance().SetLightIntensity(intensity);
-		}
-		void ToggleLightMode(const LightMode mode)
-		{
-			//Engine::Instance().ToggleLightMode(mode);
+			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->IsAudioPlaying(audioId);
 		}
 	}
 
@@ -526,43 +523,6 @@ namespace Game
 		{
 			return Engine::Instance().GetFixFPS()->GetAverageFPS();
 		}
-	}
-
-	namespace Physics
-	{
-		// マップ設定
-		void AddWorldCollider(IWorldCollider* worldCollider)
-		{
-			//Engine::Instance().GetPhysicsSystem()->AddWorldCollider(worldCollider);
-		}
-
-		// マップと衝突する動的オブジェクトの登録
-		void RegisterDynamic(IPhysicsBody* b)
-		{
-			//Engine::Instance().GetPhysicsSystem()->RegisterDynamic(b);
-		}
-
-		// マップと衝突する動的オブジェクトの登録解除
-		void UnregisterDynamic(IPhysicsBody* b)
-		{
-			//Engine::Instance().GetPhysicsSystem()->UnregisterDynamic(b);
-		}
-
-		// 全ての動的オブジェクトの登録解除
-		void ClearDynamicAll()
-		{
-			//Engine::Instance().GetPhysicsSystem()->ClearDynamics();
-		}
-
-		//void SetGravity(Vector3 gravity)
-		//{
-		//	Engine::Instance().SetGravity(gravity);
-		//}
-		//
-		//Vector3 GetGravity()
-		//{
-		//	return Engine::Instance().GetGravity();
-		//}
 	}
 
 	namespace Window

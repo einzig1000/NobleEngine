@@ -12,7 +12,7 @@ class IOManager;
 
 class CameraManager;
 
-class ResourceManager;
+class AssetManager;
 class ModelPreview;
 class TexturePreview;
 
@@ -28,7 +28,7 @@ public:
 		DrawSystem* drawSystem, 
 		IOManager* ioManager, 
 		CameraManager* cameraManager, 
-		ResourceManager* resourceManager,
+		AssetManager* assetManager,
 		FixFPS* fixFPS);
 	~EngineEditor();
 
@@ -38,22 +38,11 @@ public:
 	void DrawImGui();
 
 private:
-	DirectXManager* dxManager_ = nullptr;
 	std::unique_ptr<RenderTexturePreview> renderTexturePreview_;
 	
-	WindowManager* windowManager_ = nullptr;
-	
-	DrawSystem* drawSystem_ = nullptr;
-	
-	IOManager* ioManager_ = nullptr;
-	
-	CameraManager* cameraManager_ = nullptr;
-
-	ResourceManager* resourceManager_ = nullptr;
 	std::unique_ptr<ModelPreview> modelEditor_;
 	std::unique_ptr<TexturePreview> textureEditor_;
 
-	FixFPS* fixFPS_ = nullptr;
 	std::unique_ptr<TimeEditor> timeEditor_;
 };
 

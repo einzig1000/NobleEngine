@@ -30,7 +30,6 @@ DirectXManager::DirectXManager(HWND hwnd)
     swapChainManager = std::make_unique<SwapChainManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), hwnd, descriptorHeapManager.get());
 	renderTextureManager = std::make_unique<RenderTextureManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), descriptorHeapManager.get());
     synchronizationManager = std::make_unique<SynchronizationManager>(deviceManager->GetDevice());
-    viewportScissorManager = std::make_unique<ViewportScissorManager>();
 
     Log("コンストラクタ実行成功 : DirectXManager");
 }
@@ -133,7 +132,4 @@ void DirectXManager::Resize()
 	swapChainManager->Resize(
 		GetDevice(),
 		GetCommandContextManager()->GetCommandQueue());
-
-	// ビューポートとシザー矩形の更新
-	viewportScissorManager->Resize();
 }

@@ -252,7 +252,7 @@ void PipelineStateManager::InitializeDxc()
     assert(SUCCEEDED(hr));
 }
 
-Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::GetOrCreateRootSignature(const std::vector<RootParam>& params)
+Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::GetRootSignature(const std::vector<RootParam>& params)
 {
 	// ハッシュキーを生成
 	const size_t key = HashRootLayout(params);
@@ -274,7 +274,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::GetOrCreateRoo
 	return rs;
 }
 
-Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::GetOrCreatePipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params)
+Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::GetPipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params)
 {
     // ハッシュキーを生成
     const size_t rootKey = HashRootLayout(params);
@@ -297,7 +297,7 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::GetOrCreatePip
     return pso;
 }
 
-Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::GetOrCompileShader(const wchar_t* path, const wchar_t* target)
+Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::GetShaderBlob(const wchar_t* path, const wchar_t* target)
 {
     // キーを生成
     std::wstring key = std::wstring(path) + L"|" + target;
@@ -454,11 +454,11 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
 	CD3DX12PipelineStateStream stream{};
 
     // ルートシグネチャ取得（なければ生成）
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = GetOrCreateRootSignature(params);
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = GetRootSignature(params);
 
 	stream.pRootSignature = rs.Get();
     std::wstring psPath = StringConverter::Convert(cfg.ps);
-    auto psBlob = GetOrCompileShader(psPath.c_str(), L"ps_6_6");
+    auto psBlob = GetShaderBlob(psPath.c_str(), L"ps_6_6");
 	stream.pPS = CD3DX12_SHADER_BYTECODE(psBlob->GetBufferPointer(), psBlob->GetBufferSize());
 	stream.pBlend = CD3DX12_BLEND_DESC(MakeBlendDesc(cfg.blendID));
 	stream.pDepthStencil = CD3DX12_DEPTH_STENCIL_DESC(MakeDepthStencilDesc(cfg.depthStencilID));
@@ -475,13 +475,13 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
 	if (isMeshShader)
 	{
 		std::wstring msPath = StringConverter::Convert(cfg.ms);
-		auto msBlob = GetOrCompileShader(msPath.c_str(), L"ms_6_6");
+		auto msBlob = GetShaderBlob(msPath.c_str(), L"ms_6_6");
 		stream.pMS = CD3DX12_SHADER_BYTECODE(msBlob->GetBufferPointer(), msBlob->GetBufferSize());
 	}
 	else
 	{
         std::wstring vsPath = StringConverter::Convert(cfg.vs);
-		auto vsBlob = GetOrCompileShader(vsPath.c_str(), L"vs_6_6");
+		auto vsBlob = GetShaderBlob(vsPath.c_str(), L"vs_6_6");
 		stream.VS = CD3DX12_SHADER_BYTECODE(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize());
         stream.PrimitiveTopologyType = ToTopologyType(cfg.topology);
 

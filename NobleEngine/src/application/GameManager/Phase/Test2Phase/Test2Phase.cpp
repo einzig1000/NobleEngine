@@ -7,17 +7,17 @@ Test2Phase::Test2Phase()
 	Game::Camera::Setter::SetDistance(5.0f, 0, EaseType::IN_BACK, c_main_);
 	Game::Camera::Setter::SetEnableControl(true, c_main_);
 
-	t_dissolveMaskTexture_ = Game::Resource::Texture::Load("resources/prototypes/texture/noise0.png");
+	t_dissolveMaskTexture_ = Game::Asset::Texture::Load("resources/prototypes/texture/noise0.png");
 
-	rt_main_ = Game::Resource::CreateRenderTexture(1280, 720, "main");
-	rt_noise_ = Game::Resource::CreateRenderTexture(1280, 720, "noise");
+	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(1280, 720, "main");
+	rt_noise_ = Game::Asset::RenderTexture::CreateRenderTexture(1280, 720, "noise");
 
 	render_ = std::make_unique<RenderObject>();
 	//render_->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
-	//render_->psoConfig_.ps = "resources/shaders/FullScreen/Dissolve.PS.hlsl";
-	render_->psoConfig_.ps = "resources/shaders/FullScreen/RandomNoise.PS.hlsl";
+	render_->psoConfig_.ps = "resources/shaders/FullScreen/Dissolve.PS.hlsl";
+	//render_->psoConfig_.ps = "resources/shaders/FullScreen/RandomNoise.PS.hlsl";
 	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	render_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
+	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
 	render_->SetupFromShaders();
 }
 
@@ -28,44 +28,37 @@ void Test2Phase::Initialize()
 {
 	testParticle.Initialize();
 	testAnimation.Initialize();
-	testMeshShader.Initialize();
 }
 
 void Test2Phase::Update()
 {
 	Game::Camera::Update(c_main_);
 
-	//cameraRotate_.x = std::sinf(frame_ * 0.001f);
-	//cameraRotate_.y = std::cosf(frame_ * 0.001f) * 0.5f;
-	//Game::Camera::Setter::SetRotate(cameraRotate_, 0, EaseType::IN_BACK, c_main_);
-
 	testParticle.Update(c_main_);
 	testAnimation.Update(c_main_);
-	testMeshShader.Update(c_main_);
 
-	if (Game::IO::Key::IsJustPressed(DIK_F11))
+	if (Game::IO::Key::IsJustPressed(VK_F11))
 	{
-		Game::Resource::SaveAllRenderTextureToFile("screenshots");
+		Game::Asset::RenderTexture::SaveAllRenderTextureToFile("screenshots");
 	}
 
 	frame_ += 1.0f;
 
 	// Dissolveの時
-	//render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
-	//render_->SetCBufferData(1, ShaderType::PixelShader, &t_dissolveMaskTexture_);
-	//render_->SetCBufferData(2, ShaderType::PixelShader, &threshold);
-	//Vector3 edgeColor = Vector3(1.0f, 0.0f, 0.0f);
-	//render_->SetCBufferData(3, ShaderType::PixelShader, &edgeColor);
+	render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
+	render_->SetCBufferData(1, ShaderType::PixelShader, &t_dissolveMaskTexture_);
+	render_->SetCBufferData(2, ShaderType::PixelShader, &threshold);
+	Vector3 edgeColor = Vector3(1.0f, 0.0f, 0.0f);
+	render_->SetCBufferData(3, ShaderType::PixelShader, &edgeColor);
 
 	// RandomNoiseの時
-	render_->SetCBufferData(0, ShaderType::PixelShader, &frame_);
+	//render_->SetCBufferData(0, ShaderType::PixelShader, &frame_);
 }
 
 void Test2Phase::Draw()
 {
-	testParticle.Draw(rt_main_);
-	//testAnimation.Draw(rt_main_);
-	testMeshShader.Draw(rt_main_);
+	//testParticle.Draw(rt_main_);
+	testAnimation.Draw(rt_main_);
 
 	render_->ScreenDraw();
 }

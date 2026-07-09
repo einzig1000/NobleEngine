@@ -1,6 +1,6 @@
 #include "TexturePreview.h"
 #include <ImGuiManager/ImGuiManager.h>
-#include <ResourceManager/Texture/TextureBank/TextureBank.h>
+#include <AssetManager/Texture/TextureBank/TextureBank.h>
 #include <DirectX/DirectXManager.h>
 
 TexturePreview::TexturePreview(DirectXManager* dxManager, TextureBank* bank)

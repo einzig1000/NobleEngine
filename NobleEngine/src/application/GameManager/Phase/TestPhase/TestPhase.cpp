@@ -1,6 +1,5 @@
 #include "GameManager/Phase/TestPhase/TestPhase.h"
 #include <Utilities/Json/JsonManager.h>
-#include <externals/imgui/imgui_stdlib.h>
 
 TestPhase::TestPhase()
 {
@@ -24,44 +23,44 @@ TestPhase::TestPhase()
 
 	//// 加工前レンダーテクスチャ
 	//renderTargetSizes_["main1"] = Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight()));
-	//renderTargetNames_["main1"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["main1"].x), uint32_t(renderTargetSizes_["main1"].y), "Main1_");
-	//rt_main1_depth_ = Game::Resource::GetRenderTextureDepthID("Main1_");
+	//renderTargetNames_["main1"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["main1"].x), uint32_t(renderTargetSizes_["main1"].y), "Main1_");
+	//rt_main1_depth_ = Game::Asset::GetRenderTextureDepthID("Main1_");
 	//renderTargetSizes_["main2"] = Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight()));
-	//renderTargetNames_["main2"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["main2"].x), uint32_t(renderTargetSizes_["main2"].y), "Main2_");
-	//rt_main2_depth_ = Game::Resource::GetRenderTextureDepthID("Main2_");
+	//renderTargetNames_["main2"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["main2"].x), uint32_t(renderTargetSizes_["main2"].y), "Main2_");
+	//rt_main2_depth_ = Game::Asset::GetRenderTextureDepthID("Main2_");
 	//renderTargetSizes_["miniMap1"] = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
-	//renderTargetNames_["miniMap1"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["miniMap1"].x), uint32_t(renderTargetSizes_["miniMap1"].y), "MiniMap1_");
-	//rt_miniMap1_depth_ = Game::Resource::GetRenderTextureDepthID("MiniMap1_");
+	//renderTargetNames_["miniMap1"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["miniMap1"].x), uint32_t(renderTargetSizes_["miniMap1"].y), "MiniMap1_");
+	//rt_miniMap1_depth_ = Game::Asset::GetRenderTextureDepthID("MiniMap1_");
 	//renderTargetSizes_["miniMap2"] = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
-	//renderTargetNames_["miniMap2"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["miniMap2"].x), uint32_t(renderTargetSizes_["miniMap2"].y), "MiniMap2_");
-	//rt_miniMap2_depth_ = Game::Resource::GetRenderTextureDepthID("MiniMap2_");
+	//renderTargetNames_["miniMap2"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["miniMap2"].x), uint32_t(renderTargetSizes_["miniMap2"].y), "MiniMap2_");
+	//rt_miniMap2_depth_ = Game::Asset::GetRenderTextureDepthID("MiniMap2_");
 
 	//// 加工後レンダーテクスチャ
 	//renderTargetSizes_["postEffect1"] = Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight()));
-	//renderTargetNames_["postEffect1"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect1"].x), uint32_t(renderTargetSizes_["postEffect1"].y), "postEffect1");
+	//renderTargetNames_["postEffect1"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect1"].x), uint32_t(renderTargetSizes_["postEffect1"].y), "postEffect1");
 	//
 	//renderTargetSizes_["postEffect2"] = Vector2(float(Game::Window::GetWidth() / 2.0f), float(Game::Window::GetHeight()));
-	//renderTargetNames_["postEffect2"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect2"].x), uint32_t(renderTargetSizes_["postEffect2"].y), "postEffect2");
+	//renderTargetNames_["postEffect2"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect2"].x), uint32_t(renderTargetSizes_["postEffect2"].y), "postEffect2");
 	//
 	//renderTargetSizes_["postEffect3"] = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
-	//renderTargetNames_["postEffect3"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect3"].x), uint32_t(renderTargetSizes_["postEffect3"].y), "postEffect3");
+	//renderTargetNames_["postEffect3"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect3"].x), uint32_t(renderTargetSizes_["postEffect3"].y), "postEffect3");
 	//renderTargetSizes_["postEffect4"] = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
-	//renderTargetNames_["postEffect4"] = Game::Resource::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect4"].x), uint32_t(renderTargetSizes_["postEffect4"].y), "postEffect4");
+	//renderTargetNames_["postEffect4"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect4"].x), uint32_t(renderTargetSizes_["postEffect4"].y), "postEffect4");
 
 	// テクスチャ読み込み
-	t_uvChecker = Game::Resource::Texture::Load("resources/prototypes/texture/uvChecker.png");
-	t_monsterBall_ = Game::Resource::Texture::Load("resources/prototypes/texture/monsterBall.png");
-	t_white1x1_ = Game::Resource::Texture::Load("resources/prototypes/texture/white1x1.png");
-	t_dds_ = Game::Resource::Texture::Load("resources/prototypes/texture/rostock_laage_airport_4k.dds");
+	t_uvChecker = Game::Asset::Texture::Load("resources/prototypes/texture/uvChecker.png");
+	t_monsterBall_ = Game::Asset::Texture::Load("resources/prototypes/texture/monsterBall.png");
+	t_white1x1_ = Game::Asset::Texture::Load("resources/prototypes/texture/white1x1.png");
+	t_dds_ = Game::Asset::Texture::Load("resources/prototypes/texture/rostock_laage_airport_4k.dds");
 
 	// モデル読み込み
-	int32_t model1 = Game::Resource::Model::Load("resources/prototypes/model/cube/cube.obj");
-	int32_t model2 = Game::Resource::Model::Load("resources/prototypes/model/sphere/sphere.obj");
-	int32_t model3 = Game::Resource::Model::Load("resources/prototypes/model/plane/plane.obj");
+	int32_t model1 = Game::Asset::Model::Load("resources/prototypes/model/cube/cube.obj");
+	int32_t model2 = Game::Asset::Model::Load("resources/prototypes/model/sphere/sphere.obj");
+	int32_t model3 = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
 
 	// オーディオ読み込み
-	audio1 = Game::Resource::Audio::Load("resources/prototypes/audio/BGM/InGame.mp3");
-	audio2 = Game::Resource::Audio::Load("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
+	audio1 = Game::Asset::Audio::Load("resources/prototypes/audio/BGM/InGame.mp3");
+	audio2 = Game::Asset::Audio::Load("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
 
 
 	//RenderObjectData data1;
@@ -307,8 +306,6 @@ TestPhase::TestPhase()
 	testAnimation_->Initialize();
 	testParticle_ = std::make_unique<TestParticle>();
 	testParticle_->Initialize();
-	testMeshShader_ = std::make_unique<TestMeshShader>();
-	testMeshShader_->Initialize();
 }
 
 TestPhase::~TestPhase()
@@ -457,17 +454,16 @@ void TestPhase::Update()
 
 	testAnimation_->Update(0);
 	testParticle_->Update(0);
-	testMeshShader_->Update(0);
 
-	if (Game::IO::Key::IsJustPressed(DIK_F12))
+	if (Game::IO::Key::IsJustPressed(VK_F12))
 	{
 		//Game::Window::ToggleFullscreen();
 	}
-	if (Game::IO::Key::IsJustPressed(DIK_F11))
+	if (Game::IO::Key::IsJustPressed(VK_F11))
 	{
-		Game::Resource::SaveAllRenderTextureToFile("screenshots");
+		Game::Asset::RenderTexture::SaveAllRenderTextureToFile("screenshots");
 	}
-	if (Game::IO::Key::IsJustPressed(DIK_ESCAPE))
+	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
 	{
 		Game::quit();
 	}
@@ -528,7 +524,7 @@ void TestPhase::DrawImGui()
 	{
 		if (!renderTargetData.name.empty())
 		{
-			int32_t renderTargetID = Game::Resource::CreateRenderTexture(renderTargetData.width, renderTargetData.height, renderTargetData.name);
+			int32_t renderTargetID = Game::Asset::RenderTexture::CreateRenderTexture(renderTargetData.width, renderTargetData.height, renderTargetData.name);
 			renderTargetData_[renderTargetID] = renderTargetData;
 		}
 	}
@@ -541,7 +537,7 @@ void TestPhase::DrawImGui()
 	{
 		if (ImGui::TreeNode(data.name.c_str()))
 		{
-			ImGui::Image((ImTextureID)Game::Resource::GetRenderTexture(data.name), ImVec2(data.width / 10, data.height / 10));
+			ImGui::Image((ImTextureID)Game::Asset::RenderTexture::GetRenderTexture(data.name), ImVec2(data.width / 10, data.height / 10));
 
 			ImGui::TreePop();
 		}
@@ -561,7 +557,7 @@ void TestPhase::DrawImGui()
 	{
 		if (!renderTargetData.name.empty())
 		{
-			int32_t renderTargetID = Game::Resource::CreateRenderTexture(renderTargetData.width, renderTargetData.height, renderTargetData.name);
+			int32_t renderTargetID = Game::Asset::RenderTexture::CreateRenderTexture(renderTargetData.width, renderTargetData.height, renderTargetData.name);
 			renderTargetData_[renderTargetID] = renderTargetData;
 		}
 	}
@@ -723,50 +719,6 @@ void TestPhase::DrawImGui()
 
 #pragma endregion
 
-#pragma region light test
-
-		if (ImGui::BeginTabItem("Light Test"))
-		{
-			static Vector4 lightColor = { 1.0f,1.0f,1.0f,1.0f };
-			ImGui::ColorEdit4("light color", &lightColor.x, 1);
-			Game::Light::SetLightColor(lightColor);
-
-			static Vector3 lightDirection = { 0.0f,-1.0f,0.0f };
-			lightDirection.Normalize();
-			ImGui::DragFloat3("light direction", &lightDirection.x, 0.1f);
-			Game::Light::SetLightDirection(lightDirection);
-
-			static float lightIntensity = 1.0f;
-			ImGui::SliderFloat("light intensity", &lightIntensity, 0.0f, 10.0f);
-			Game::Light::SetLightIntensity(lightIntensity);
-
-			static int current_item = 0;
-			static const char* items[] = { "None", "Lambert", "HalfLambert" };
-			if (ImGui::Combo("dirLight.shadingType", &current_item, items, IM_ARRAYSIZE(items)))
-			{
-				LightMode mode = LightMode::None;
-				if (current_item == 0)
-				{
-					mode = LightMode::None;
-				}
-				else if (current_item == 1)
-				{
-					mode = LightMode::Lambert;
-				}
-				else if (current_item == 2)
-				{
-					mode = LightMode::HalfLambert;
-				}
-				Game::Light::ToggleLightMode(mode);
-			}
-
-
-
-			ImGui::EndTabItem();
-		}
-
-#pragma endregion
-
 #pragma region camera test
 
 		if (ImGui::BeginTabItem("Camera Test"))
@@ -855,52 +807,52 @@ void TestPhase::DrawImGui()
 
 		if (ImGui::BeginTabItem("keyboard Test"))
 		{
-			struct KeyInfo
-			{
-				const char* name;
-				int dik;
-			};
+			//struct KeyInfo
+			//{
+			//	const char* name;
+			//	int dik;
+			//};
 
-			static const KeyInfo kKeys[] = {
-				{"A", DIK_A}, {"B", DIK_B}, {"C", DIK_C}, {"D", DIK_D},
-				{"E", DIK_E}, {"F", DIK_F}, {"G", DIK_G}, {"H", DIK_H},
-				{"I", DIK_I}, {"J", DIK_J}, {"K", DIK_K}, {"L", DIK_L},
-				{"M", DIK_M}, {"N", DIK_N}, {"O", DIK_O}, {"P", DIK_P},
-				{"Q", DIK_Q}, {"R", DIK_R}, {"S", DIK_S}, {"T", DIK_T},
-				{"U", DIK_U}, {"V", DIK_V}, {"W", DIK_W}, {"X", DIK_X},
-				{"Y", DIK_Y}, {"Z", DIK_Z},
+			//static const KeyInfo kKeys[] = {
+			//	{"A", DIK_A}, {"B", DIK_B}, {"C", DIK_C}, {"D", DIK_D},
+			//	{"E", DIK_E}, {"F", DIK_F}, {"G", DIK_G}, {"H", DIK_H},
+			//	{"I", DIK_I}, {"J", DIK_J}, {"K", DIK_K}, {"L", DIK_L},
+			//	{"M", DIK_M}, {"N", DIK_N}, {"O", DIK_O}, {"P", DIK_P},
+			//	{"Q", DIK_Q}, {"R", DIK_R}, {"S", DIK_S}, {"T", DIK_T},
+			//	{"U", DIK_U}, {"V", DIK_V}, {"W", DIK_W}, {"X", DIK_X},
+			//	{"Y", DIK_Y}, {"Z", DIK_Z},
 
-				{"Space", DIK_SPACE},
+			//	{"Space", DIK_SPACE},
 
-				{"F1", DIK_F1}, {"F2", DIK_F2}, {"F3", DIK_F3}, {"F4", DIK_F4},
-				{"F5", DIK_F5}, {"F6", DIK_F6}, {"F7", DIK_F7}, {"F8", DIK_F8},
-				{"F9", DIK_F9}, {"F10", DIK_F10}, {"F11", DIK_F11}, {"F12", DIK_F12},
+			//	{"F1", DIK_F1}, {"F2", DIK_F2}, {"F3", DIK_F3}, {"F4", DIK_F4},
+			//	{"F5", DIK_F5}, {"F6", DIK_F6}, {"F7", DIK_F7}, {"F8", DIK_F8},
+			//	{"F9", DIK_F9}, {"F10", DIK_F10}, {"F11", DIK_F11}, {"F12", DIK_F12},
 
-				{"Enter", DIK_RETURN}, {"Escape", DIK_ESCAPE},
+			//	{"Enter", DIK_RETURN}, {"Escape", DIK_ESCAPE},
 
-				{"Up", DIK_UP}, {"Down", DIK_DOWN}, {"Left", DIK_LEFT}, {"Right", DIK_RIGHT},
+			//	{"Up", DIK_UP}, {"Down", DIK_DOWN}, {"Left", DIK_LEFT}, {"Right", DIK_RIGHT},
 
-				{"LShift", DIK_LSHIFT}, {"RShift", DIK_RSHIFT},
+			//	{"LShift", DIK_LSHIFT}, {"RShift", DIK_RSHIFT},
 
-				{"0", DIK_0}, {"1", DIK_1}, {"2", DIK_2}, {"3", DIK_3}, {"4", DIK_4},
-				{"5", DIK_5}, {"6", DIK_6}, {"7", DIK_7}, {"8", DIK_8}, {"9", DIK_9}
-			};
+			//	{"0", DIK_0}, {"1", DIK_1}, {"2", DIK_2}, {"3", DIK_3}, {"4", DIK_4},
+			//	{"5", DIK_5}, {"6", DIK_6}, {"7", DIK_7}, {"8", DIK_8}, {"9", DIK_9}
+			//};
 
-			for (const auto& k : kKeys)
-			{
-				if (Game::IO::Key::IsHeld(k.dik) ||
-					Game::IO::Key::IsJustPressed(k.dik) ||
-					Game::IO::Key::IsJustReleased(k.dik))
-				{
-					ImGui::Text("%s : %d:%d:%d _ %d",
-						k.name,
-						Game::IO::Key::IsJustPressed(k.dik),
-						Game::IO::Key::IsHeld(k.dik),
-						Game::IO::Key::IsJustReleased(k.dik),
-						Game::IO::Key::HoldFrames(k.dik)
-					);
-				}
-			}
+			//for (const auto& k : kKeys)
+			//{
+			//	if (Game::IO::Key::IsHeld(k.dik) ||
+			//		Game::IO::Key::IsJustPressed(k.dik) ||
+			//		Game::IO::Key::IsJustReleased(k.dik))
+			//	{
+			//		ImGui::Text("%s : %d:%d:%d _ %d",
+			//			k.name,
+			//			Game::IO::Key::IsJustPressed(k.dik),
+			//			Game::IO::Key::IsHeld(k.dik),
+			//			Game::IO::Key::IsJustReleased(k.dik),
+			//			Game::IO::Key::HoldFrames(k.dik)
+			//		);
+			//	}
+			//}
 			ImGui::EndTabItem();
 		}
 
@@ -1069,30 +1021,30 @@ void TestPhase::Load_renderTarget()
 
 	const std::string fileName = "renderTargets.json";
 
-	if (JsonManager::Load(filePath + fileName))
-	{
-		renderTargetData_.clear();
+	//if (JsonManager::Load(filePath + fileName))
+	//{
+	//	renderTargetData_.clear();
 
-		int32_t i = 0;
-		while (true)
-		{
-			std::string basePath = "/render_targets/" + std::to_string(i);
+	//	int32_t i = 0;
+	//	while (true)
+	//	{
+	//		std::string basePath = "/render_targets/" + std::to_string(i);
 
-			RenderTargetData data;
+	//		RenderTargetData data;
 
-			if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
-			JsonManager::Load(filePath + fileName, basePath + "/width", data.width);
-			JsonManager::Load(filePath + fileName, basePath + "/height", data.height);
-			JsonManager::Load(filePath + fileName, basePath + "/in", data.in);
-			JsonManager::Load(filePath + fileName, basePath + "/out", data.out);
+	//		if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
+	//		JsonManager::Load(filePath + fileName, basePath + "/width", data.width);
+	//		JsonManager::Load(filePath + fileName, basePath + "/height", data.height);
+	//		JsonManager::Load(filePath + fileName, basePath + "/in", data.in);
+	//		JsonManager::Load(filePath + fileName, basePath + "/out", data.out);
 
-			int32_t id = Game::Resource::CreateRenderTexture(data.width, data.height, data.name);
+	//		int32_t id = Game::Asset::RenderTexture::CreateRenderTexture(data.width, data.height, data.name);
 
-			renderTargetData_[id] = data;
+	//		renderTargetData_[id] = data;
 
-			i++;
-		}
-	}
+	//		i++;
+	//	}
+	//}
 
 }
 
@@ -1124,36 +1076,36 @@ void TestPhase::Load_camera()
 
 	const std::string fileName = "cameras.json";
 
-	if (JsonManager::Load(filePath + fileName))
-	{
-		cameraData_.clear();
+	//if (JsonManager::Load(filePath + fileName))
+	//{
+	//	cameraData_.clear();
 
-		int32_t i = 0;
-		while (true)
-		{
-			std::string basePath = "/cameras/" + std::to_string(i);
+	//	int32_t i = 0;
+	//	while (true)
+	//	{
+	//		std::string basePath = "/cameras/" + std::to_string(i);
 
-			CameraData data;
+	//		CameraData data;
 
-			if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
-			JsonManager::Load(filePath + fileName, basePath + "/size", data.size);
-			JsonManager::Load(filePath + fileName, basePath + "/center", data.center);
-			JsonManager::Load(filePath + fileName, basePath + "/rotation", data.rotation);
-			JsonManager::Load(filePath + fileName, basePath + "/distance", data.distance);
-			JsonManager::Load(filePath + fileName, basePath + "/fov", data.fov);
+	//		if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
+	//		JsonManager::Load(filePath + fileName, basePath + "/size", data.size);
+	//		JsonManager::Load(filePath + fileName, basePath + "/center", data.center);
+	//		JsonManager::Load(filePath + fileName, basePath + "/rotation", data.rotation);
+	//		JsonManager::Load(filePath + fileName, basePath + "/distance", data.distance);
+	//		JsonManager::Load(filePath + fileName, basePath + "/fov", data.fov);
 
-			int32_t id = Game::Camera::AddCamera();
-			Game::Camera::Setter::SetCenter(data.center, 0, EaseType::IN_BACK, id);
-			Game::Camera::Setter::SetDistance(data.distance, 0, EaseType::IN_BACK, id);
-			Game::Camera::Setter::SetFovTarget(data.fov, 0, EaseType::IN_BACK, id);
-			Game::Camera::Setter::SetRotate(data.rotation, 0, EaseType::IN_BACK, id);
-			Game::Camera::Setter::SetScreenSize(data.size, 0, EaseType::IN_BACK, id);
+	//		int32_t id = Game::Camera::AddCamera();
+	//		Game::Camera::Setter::SetCenter(data.center, 0, EaseType::IN_BACK, id);
+	//		Game::Camera::Setter::SetDistance(data.distance, 0, EaseType::IN_BACK, id);
+	//		Game::Camera::Setter::SetFovTarget(data.fov, 0, EaseType::IN_BACK, id);
+	//		Game::Camera::Setter::SetRotate(data.rotation, 0, EaseType::IN_BACK, id);
+	//		Game::Camera::Setter::SetScreenSize(data.size, 0, EaseType::IN_BACK, id);
 
-			cameraData_[id] = data;
+	//		cameraData_[id] = data;
 
-			i++;
-		}
-	}
+	//		i++;
+	//	}
+	//}
 }
 
 void TestPhase::Save_camera()
@@ -1185,30 +1137,30 @@ void TestPhase::Load_renderObject()
 
 	const std::string fileName = "renderObjects.json";
 
-	if (JsonManager::Load(filePath + fileName))
-	{
-		renderObjectData_.clear();
+	//if (JsonManager::Load(filePath + fileName))
+	//{
+	//	renderObjectData_.clear();
 
-		int32_t i = 0;
-		while (true)
-		{
-			std::string basePath = "/render_objects/" + std::to_string(i);
+	//	int32_t i = 0;
+	//	while (true)
+	//	{
+	//		std::string basePath = "/render_objects/" + std::to_string(i);
 
-			RenderObjectData data;
+	//		RenderObjectData data;
 
-			if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
-			JsonManager::Load(filePath + fileName, basePath + "/modelPath", data.modelPath);
-			JsonManager::Load(filePath + fileName, basePath + "/out", data.out);
-			JsonManager::Load(filePath + fileName, basePath + "/config.vs", data.config.vs);
-			JsonManager::Load(filePath + fileName, basePath + "/config.ps", data.config.ps);
-			JsonManager::Load(filePath + fileName, basePath + "/config.ms", data.config.ms);
-			JsonManager::Load(filePath + fileName, basePath + "/config.dsvFormatID", data.config.dsvFormatID);
+	//		if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
+	//		JsonManager::Load(filePath + fileName, basePath + "/modelPath", data.modelPath);
+	//		JsonManager::Load(filePath + fileName, basePath + "/out", data.out);
+	//		JsonManager::Load(filePath + fileName, basePath + "/config.vs", data.config.vs);
+	//		JsonManager::Load(filePath + fileName, basePath + "/config.ps", data.config.ps);
+	//		JsonManager::Load(filePath + fileName, basePath + "/config.ms", data.config.ms);
+	//		JsonManager::Load(filePath + fileName, basePath + "/config.dsvFormatID", data.config.dsvFormatID);
 
-			renderObjectData_.push_back(data);
+	//		renderObjectData_.push_back(data);
 
-			i++;
-		}
-	}
+	//		i++;
+	//	}
+	//}
 }
 
 void TestPhase::Save_renderObject()

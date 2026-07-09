@@ -2,11 +2,9 @@
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
 
-void ImGuiManager::Initialize(DirectXManager* dxManager, WindowManager* windowManager)
+ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManager)
+	: dxManager_(dxManager), windowManager_(windowManager)
 {
-	dxManager_ = dxManager;
-	windowManager_ = windowManager;
-
 	// imguiのコンテキストを作成
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -32,6 +30,9 @@ void ImGuiManager::Initialize(DirectXManager* dxManager, WindowManager* windowMa
 		dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(slot)                     // ImGuiフォントSRV用のGPUハンドル
 	);
 }
+
+ImGuiManager::~ImGuiManager()
+{}
 
 void ImGuiManager::BeginFrame()
 {

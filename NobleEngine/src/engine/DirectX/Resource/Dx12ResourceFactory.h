@@ -1,12 +1,11 @@
 #pragma once
 #include <externals/DirectXTex/DirectXTex.H>
-#include <definition/definition.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <d3d12.h>
 #include <wrl.h>
 #include <Utilities/Logger/Logger.h>
 #include <DirectX/Resource/Dx12ResourceFactory.h>
 #include <DirectX/DirectXManager.h>
-#include <ResourceManager/Model/ModelBank/ModelBank.h>
 #include <filesystem>
 #include <fstream>
 #include <externals/meshoptimizer-1.1/meshoptimizer.h>

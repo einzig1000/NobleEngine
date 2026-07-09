@@ -23,7 +23,7 @@ void RenderObject::SetupFromShaders()
 	if (psoConfig_.vs != "unknown")
 	{
 		std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
-		auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(vsPath.c_str(), L"vs_6_6");
+		auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(vsPath.c_str(), L"vs_6_6");
 
 		// VS の CBV / SRV を反映
 		ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_, cbvSizeOffset, srvIndexOffset);
@@ -31,7 +31,7 @@ void RenderObject::SetupFromShaders()
 	else if (psoConfig_.ms != "unknown")
 	{
 		std::wstring msPath = StringConverter::Convert(psoConfig_.ms);
-		auto msBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(msPath.c_str(), L"ms_6_6");
+		auto msBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(msPath.c_str(), L"ms_6_6");
 
 		// MS の CBV / SRV を反映
 		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_, cbvSizeOffset, srvIndexOffset);
@@ -39,7 +39,7 @@ void RenderObject::SetupFromShaders()
 
 	{
 		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
-		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetOrCompileShader(psPath.c_str(), L"ps_6_6");
+		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(psPath.c_str(), L"ps_6_6");
 
 		// PS の CBV / SRV を反映
 		ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_, cbvSizeOffset, srvIndexOffset);

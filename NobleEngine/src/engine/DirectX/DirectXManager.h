@@ -2,14 +2,13 @@
 #include <d3d12.h>
 #include <memory>
 
-#include <DirectX/DeviceManager.h>
-#include <DirectX/CommandContextManager.h>
+#include <DirectX/DeviceManager/DeviceManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
 #include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
 #include <DirectX/RenderTarget/RenderTextureManager/RenderTextureManager.h>
 #include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
 #include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
-#include <DirectX/SynchronizationManager.h>
-#include <DirectX/ViewportScissorManager.h>
+#include <DirectX/SynchronizationManager/SynchronizationManager.h>
 
 /// <summary>
 /// DirectX管理クラス
@@ -46,6 +45,5 @@ private:
     std::unique_ptr<PipelineStateManager> pipelineStateManager;
     std::unique_ptr<DescriptorHeapManager> descriptorHeapManager;
     std::unique_ptr<SynchronizationManager> synchronizationManager;
-    std::unique_ptr<ViewportScissorManager> viewportScissorManager;
 	std::unique_ptr<RenderTextureManager> renderTextureManager;
 };

@@ -2,7 +2,6 @@
 #include <GameManager/Phase/IPhase.h>
 #include <TestAnimation/TestAnimation.h>
 #include <TestParticle/TestParticle.h>
-#include <TestMeshShader/TestMeshShader.h>
 #include <memory>
 
 struct RenderTargetData
@@ -100,7 +99,6 @@ private:
 
 	std::unique_ptr<TestAnimation> testAnimation_;
 	std::unique_ptr<TestParticle> testParticle_;
-	std::unique_ptr<TestMeshShader> testMeshShader_;
 
 	std::unordered_map<int32_t, RenderTargetData> renderTargetData_;
 	std::unordered_map<int32_t, CameraData> cameraData_;
