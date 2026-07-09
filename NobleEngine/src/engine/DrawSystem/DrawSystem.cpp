@@ -1,12 +1,12 @@
 #include "DrawSystem.h"
-#include <ResourceManager/ResourceManager.h>
+#include <AssetManager/AssetManager.h>
 #include <ImGuiManager/ImGuiManager.h>
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
 #include <Engine.h>
 #include <numbers>
 
-DrawSystem::DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager)
+DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* resourceManager)
 	:dxManager_(dxManager), resourceManager_(resourceManager)
 {
 	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
@@ -1052,7 +1052,7 @@ void DrawSystem::AddAABB(const AABB& aabb, uint32_t color)
 //		std::vector<Vector3> points;
 //
 //		// 補完の分割数
-//		const int subdivision = my_max(uint32_t(1), renderData->kSubdivision);
+//		const int subdivision = std::max(uint32_t(1), renderData->kSubdivision);
 //
 //		switch (renderData->lineType)
 //		{

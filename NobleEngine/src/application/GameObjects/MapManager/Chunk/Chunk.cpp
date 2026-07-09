@@ -133,8 +133,8 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 			if (height - dirtThickness < 0) dirtThickness = height;
 
 			// 境界を計算（yの区間でブロックIDが決まる）
-			const int32_t stoneEnd = my_max(0, height - dirtThickness); // [0, stoneEnd)
-			const int32_t dirtEnd = my_max(0, height - 1);              // [stoneEnd, dirtEnd)
+			const int32_t stoneEnd = std::max(0, height - dirtThickness); // [0, stoneEnd)
+			const int32_t dirtEnd = std::max(0, height - 1);              // [stoneEnd, dirtEnd)
 			const int32_t lawnY = height - 1;                           // y==lawnY が Lawn（height>0のとき）
 
 			for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
@@ -148,7 +148,7 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 				if (globalY == 0)							id = BlockID::Bedrock;
 				else if (globalY < height - dirtThickness)	id = BlockID::Stone;
 				else if (globalY < height - 1)				id = BlockID::Dirt;
-				else if (globalY < height)					id = BlockID::Lawn;
+				else if (globalY < height)					id = BlockID::Grass;
 				else										id = BlockID::Air;
 				SetBlock(Vector3int(x, y, z), id);
 			}
@@ -166,8 +166,8 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 
 	auto ClampY = [&](int32_t& minY, int32_t& maxY)
 		{
-			minY = my_max(0, minY);
-			maxY = my_min(Constexprs::kChunkY - 1, maxY);
+			minY = std::max(0, minY);
+			maxY = std::min(Constexprs::kChunkY - 1, maxY);
 			if (minY > maxY) std::swap(minY, maxY);
 		};
 
@@ -202,9 +202,9 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 
 					// 次へ（ランダムウォーク）
 					const int32_t dir = RandRange(rng, 0, 5);
-					x = my_min(Constexprs::kChunkX - 1, my_max(0, x + dx[dir]));
-					y = my_min(Constexprs::kChunkY - 1, my_max(0, y + dy[dir]));
-					z = my_min(Constexprs::kChunkZ - 1, my_max(0, z + dz[dir]));
+					x = std::min(Constexprs::kChunkX - 1, std::max(0, x + dx[dir]));
+					y = std::min(Constexprs::kChunkY - 1, std::max(0, y + dy[dir]));
+					z = std::min(Constexprs::kChunkZ - 1, std::max(0, z + dz[dir]));
 
 					// 高さ帯から外れたら戻す（分布を安定させる）
 					if (y < minY) y = minY;
@@ -237,7 +237,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 		{
 			for (int32_t y = Constexprs::kChunkY - 1; y >= 0; --y)
 			{
-				if (blocks_[x][y][z].GetBlockID() == BlockID::Lawn) return y;
+				if (blocks_[x][y][z].GetBlockID() == BlockID::Grass) return y;
 			}
 			return -1;
 		};
@@ -289,7 +289,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 			// 幹
 			for (int32_t y = trunkY0; y < trunkY0 + trunkH; ++y)
 			{
-				SetBlock(Vector3int(x, y, z), BlockID::Log);
+				SetBlock(Vector3int(x, y, z), BlockID::wood);
 			}
 
 			// 葉（幹先端に球っぽく）
@@ -371,7 +371,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 //				if (globalY == 0)							id = BlockID::Bedrock;
 //				else if (globalY < height - dirtThickness)	id = BlockID::Stone;
 //				else if (globalY < height - 1)				id = BlockID::Dirt;
-//				else if (globalY < height)					id = BlockID::Lawn;
+//				else if (globalY < height)					id = BlockID::Grass;
 //				else										id = BlockID::Air;
 //				SetBlock(Vector3int(x, y, z), id);
 //			}
@@ -797,16 +797,16 @@ void Chunk::Update(int32_t cameraID)
 	{
 		// メッシュレットを再構築
 		std::string name = "Chunk(" + std::to_string(chunkIndex_.x) + "," + std::to_string(chunkIndex_.y) + "," + std::to_string(chunkIndex_.z) + ")";
-		int32_t modelID = Game::Resource::Model::Create(vertices_, name);
+		int32_t modelID = Game::Asset::Model::Create(vertices_, name);
 
 		// モデルIDを再設定
 		renderData_->modelID_ = modelID;
 
 		// 作成したデータを取得
-		ModelData* modelData = Game::Resource::Model::GetData(renderData_->modelID_);
+		ModelData* modelData = Game::Asset::Model::GetData(renderData_->modelID_);
 
 		// メッシュレット数を更新
-		renderData_->instanceNum_ = modelData->meshlets.size();
+		renderData_->instanceNum_ = uint32_t(modelData->meshlets.size());
 		// SRV配置インデックスを更新
 		modelInfo.x = modelData->vertexSrvindex;
 		modelInfo.y = modelData->meshletSrvIndex;

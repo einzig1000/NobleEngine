@@ -2,7 +2,7 @@
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <memory>
 
-#include <ResourceManager/Animation/AnimationManager.h>
+#include <AssetManager/Animation/AnimationManager.h>
 
 class TestAnimation
 {

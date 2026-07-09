@@ -6,7 +6,6 @@
 #include <Utilities/Logger/Logger.h>
 #include <DirectX/Resource/Dx12ResourceFactory.h>
 #include <DirectX/DirectXManager.h>
-#include <ResourceManager/Model/ModelBank/ModelBank.h>
 #include <filesystem>
 #include <fstream>
 #include <externals/meshoptimizer-1.1/meshoptimizer.h>

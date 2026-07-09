@@ -3,7 +3,7 @@
 #include <Camera/Camera.h>
 #include <DirectX/DirectXManager.h>
 #include <ImGuiManager/ImGuiManager.h>
-#include <ResourceManager/Model/ModelBank/ModelBank.h>
+#include <AssetManager/Model/ModelBank/ModelBank.h>
 #include <numbers>
 
 ModelPreview::ModelPreview(DirectXManager* dxManager, CameraManager* cameraManager, ModelBank* bank)

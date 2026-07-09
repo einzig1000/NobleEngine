@@ -4,10 +4,9 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <unordered_map>
-#include <DirectX/RenderTarget/RenderTextureID.h>
 #include <DirectX/PipeLine/RenderPipelineTypes.h>
 #include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
-#include <definition/constexprs.h>
+#include <EngineDefinition/EngineConstexprs.h>
 
 /// <summary>
 // ・PSO 設定（どのシェーダ・どのブレンド・どのラスタライザか）

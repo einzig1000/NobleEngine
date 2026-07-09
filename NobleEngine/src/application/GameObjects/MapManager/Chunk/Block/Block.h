@@ -17,8 +17,8 @@ public:
 	int32_t dataSlot_ = -1;
 
 	// ブロックの種類設定
-	void SetBlockType(Blockinfo info);
-	BlockID GetBlockID() const { return blockInfo_.type; };
+	void SetBlockType(BlockInfo info);
+	BlockID GetBlockID() const { return blockInfo_.ID; };
 
 	// ブロックの位置設定
 	void SetBlockPosition(const Vector3& position);
@@ -38,7 +38,7 @@ public:
 
 	void SetExposedFace(AABBFace face, bool isExposed);
 
-	Blockinfo blockInfo_;
+	BlockInfo blockInfo_;
 
 private:
 	// どの面が露出しているか

@@ -3,7 +3,7 @@
 #include <GameObjects/MapManager/Chunk/Block/Block.h>
 #include <fstream>
 #include <sstream>
-#include <Utilities/PerlinNoise.h>
+#include <PerlinNoise.h>
 #include <Utilities/functions.h>
 #include <filesystem>
 #include <algorithm>
@@ -16,7 +16,7 @@ int32_t LocalMod(int32_t a, int32_t n)
 
 namespace
 {
-	static float ClampFloat(float v, float a, float b) { return my_max(a, my_min(v, b)); }
+	static float ClampFloat(float v, float a, float b) { return std::max(a, std::min(v, b)); }
 
 	static float GetAABBSizeX(const AABB& a) { return a.max.x - a.min.x; }
 	static float GetAABBSizeY(const AABB& a) { return a.max.y - a.min.y; }
@@ -112,8 +112,8 @@ namespace
 				float t2 = (maxB - origin) * inv;
 				if (t1 > t2) std::swap(t1, t2);
 
-				tmin = my_max(tmin, t1);
-				tmax = my_min(tmax, t2);
+				tmin = std::max(tmin, t1);
+				tmax = std::min(tmax, t2);
 				return tmin <= tmax;
 			};
 
@@ -176,8 +176,8 @@ namespace
 		Axis(moving.min.y, moving.max.y, block.min.y, block.max.y, delta.y, tEnterY, tExitY, ny);
 		Axis(moving.min.z, moving.max.z, block.min.z, block.max.z, delta.z, tEnterZ, tExitZ, nz);
 
-		float tEnter = my_max(tEnterX, my_max(tEnterY, tEnterZ));
-		float tExit = my_min(tExitX, my_min(tExitY, tExitZ));
+		float tEnter = std::max(tEnterX, std::max(tEnterY, tEnterZ));
+		float tExit = std::min(tExitX, std::min(tExitY, tExitZ));
 
 		SweepHit out;
 
@@ -343,7 +343,6 @@ void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 	noiseParam_.scale = 32.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	//noiseParam_.height = Constexprs::kChunkY;		// マップの高さ
 	noiseParam_.height = std::numeric_limits<int32_t>::max();		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 
@@ -1040,7 +1039,7 @@ bool MapManager::SetBlockAt(const Vector3& position, const BlockID id)
 //	if (!best.hit) return false;
 //
 //	// 当たる直前まで移動（skin分引く）
-//	const float tMove = my_max(0.0f, best.t - (skin / (delta.Length() + 1e-6f)));
+//	const float tMove = std::max(0.0f, best.t - (skin / (delta.Length() + 1e-6f)));
 //	outCorrectedDelta = delta * tMove;
 //	return true;
 //}
@@ -1276,7 +1275,7 @@ bool MapManager::GetIsActive(const Vector3int& chunkPos, const Vector3int& index
 	Chunk* chunk = TryGetChunk(chunkPos);
 	if (chunk)
 	{
-		if (chunk->GetBlock(index)->blockInfo_.type != BlockID::Air)
+		if (chunk->GetBlock(index)->blockInfo_.ID != BlockID::Air)
 		{
 			return true;
 		}
@@ -1513,7 +1512,7 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 		}
 
 		// 伸びすぎ防止：レイ長を超えたら終了（tの近似として最小sideDistを使う）
-		const float tApprox = my_min(sideDistX, my_min(sideDistY, sideDistZ));
+		const float tApprox = std::min(sideDistX, std::min(sideDistY, sideDistZ));
 		if (tApprox > rayLen) return std::nullopt;
 	}
 

@@ -9,6 +9,12 @@
 /// </summary>
 class JsonManager
 {
+private:
+	static std::unordered_map<std::string, nlohmann::json> dataMap;
+
+	// ファイルを読み込んで dataMap[path] に保存
+	static bool Load(const std::string& path);
+
 public:
 	/// <summary>
 	/// dataMapにパラメータを追加する
@@ -36,7 +42,12 @@ public:
 	static bool Load(const std::string& path, const std::string& key, T& outValue)
 	{
 		auto it = dataMap.find(path);
-		if (it == dataMap.end()) return false;
+		if (it == dataMap.end())
+		{
+			Load(path);
+			it = dataMap.find(path);
+			if (it == dataMap.end()) return false;
+		}
 
 		auto ptr = nlohmann::json::json_pointer(key);
 		if (!it->second.contains(ptr)) return false;
@@ -45,17 +56,12 @@ public:
 		return true;
 	}
 
-	// ファイルを読み込んで dataMap[path] に保存
-	static bool Load(const std::string& path);
 	// そのディレクトリの全てのファイルを読み込んで dataMap に保存
 	static void LoadAll(const std::string& directoryPath);
 	// dataMap[path] の内容をファイルに保存
 	static bool Save(const std::string& path);
 	// dataMap の全ての内容を対応するファイルに保存
 	static void SaveAll();
-
-private:
-	static std::unordered_map<std::string, nlohmann::json> dataMap;
 };
 
 inline void to_json(nlohmann::json& j, const Vector2& v)

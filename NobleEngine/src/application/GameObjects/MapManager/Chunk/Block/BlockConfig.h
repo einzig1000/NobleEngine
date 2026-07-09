@@ -1,5 +1,6 @@
 #pragma once
 #include <Game.h>
+#include <definition/definition.h>
 
 class BlockConfig
 {
@@ -7,10 +8,10 @@ public:
 	BlockConfig();
 	~BlockConfig();
 
-	Blockinfo GetBlockInfo(BlockID id) const;
+	BlockInfo GetBlockInfo(BlockID id) const;
 
 private:
-	std::map<BlockID, Blockinfo> blockInfoMap_;
+	std::map<BlockID, BlockInfo> blockInfoMap_;
 
 };
 

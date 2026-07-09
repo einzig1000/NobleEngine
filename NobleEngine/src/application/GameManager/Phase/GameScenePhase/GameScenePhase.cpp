@@ -13,7 +13,7 @@ GameScenePhase::GameScenePhase()
 {
 	Game::Camera::AddCamera();
 
-	rt_main_ = Game::Resource::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
+	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
 	c_main_ = Game::Camera::AddCamera();
 
 	// プレイヤー生成
@@ -56,12 +56,12 @@ GameScenePhase::GameScenePhase()
 	//Game::Physics::RegisterDynamic(&player_->data_);
 
 	//CraftRecipeList::InitializeRecipes();
-	ResourceID::reload();
+	//ResourceID::reload();
 
 	render_ = std::make_unique<RenderObject>();
 	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
 	render_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	render_->modelID_ = ResourceID::GetModelID(ModelID::Plane);
+	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
 	render_->SetupFromShaders();
 
 }

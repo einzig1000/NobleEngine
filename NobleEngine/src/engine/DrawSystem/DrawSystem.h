@@ -6,7 +6,7 @@
 #include <memory>
 
 class DirectXManager;
-class ResourceManager;
+class AssetManager;
 
 
 /// <summary>
@@ -18,7 +18,7 @@ private:
 	FrameCbAllocator cbAllocators_[Constexprs::kFrameCount]{};
 
 public:
-	DrawSystem(DirectXManager* dxManager, ResourceManager* resourceManager);
+	DrawSystem(DirectXManager* dxManager, AssetManager* resourceManager);
 	~DrawSystem();
 	void Reset();
 	// 指定したレンダーテクスチャに書き込むフェーズ
@@ -61,6 +61,6 @@ private:
 
 	// DirectXマネージャー
 	DirectXManager* dxManager_ = nullptr;
-	ResourceManager* resourceManager_ = nullptr;
+	AssetManager* resourceManager_ = nullptr;
 };
 

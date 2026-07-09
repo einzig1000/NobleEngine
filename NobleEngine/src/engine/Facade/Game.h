@@ -1,5 +1,6 @@
 #pragma once
-#include <definition/definition.h>
+#include <EngineDefinition/EngineConstexprs.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <ImGuiManager/ImGuiManager.h>
 
 class IWorldCollider;
@@ -10,7 +11,7 @@ class IPhysicsBody;
 /// </summary>
 namespace Game
 {
-	namespace Resource
+	namespace Asset
 	{
 		namespace Model
 		{
@@ -72,28 +73,55 @@ namespace Game
 			AudioData* GetData(int32_t audioID);
 		}
 
+		namespace RenderTexture
+		{
+			/// <summary>
+			/// レンダーテクスチャ作成
+			/// </summary>
+			/// <param name="width">横幅</param>
+			/// <param name="height">縦幅</param>
+			/// <param name="label">識別用のラベル</param>
+			/// <returns>テクスチャID</returns>
+			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string label);
 
+			/// <summary>
+			/// レンダーテクスチャをファイルに保存する
+			/// </summary>
+			/// <param name="filePath">保存先のパス</param>
+			/// <param name="textureName">保存するレンダーテクスチャの名前</param>
+			/// <param name="color">カラーかどうか</param>
+			/// <returns>保存に成功したかどうか</returns>
+			bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color = true);
 
-		int32_t GetRenderTextureID(const std::string textureName);
+			/// <summary>
+			/// 全てのレンダーテクスチャをファイルに保存する
+			/// </summary>
+			/// <param name="filePath">保存先のパス</param>
+			/// <param name="color">カラーかどうか</param>
+			/// <returns>保存に成功したかどうか</returns>
+			bool SaveAllRenderTextureToFile(const std::string& filePath, bool color = true);
 
-		int32_t GetRenderTextureDepthID(const std::string textureName);
+			/// <summary>
+			/// レンダーテクスチャID取得
+			/// </summary>
+			/// <param name="textureName">テクスチャ名</param>
+			/// <returns>テクスチャID</returns>
+			int32_t GetRenderTextureID(const std::string textureName);
 
-		UINT64 GetRenderTexture(const std::string textureName);
+			/// <summary>
+			/// 深度レンダーテクスチャID取得
+			/// </summary>
+			/// <param name="textureName">テクスチャ名</param>
+			/// <returns>深度テクスチャID</returns>
+			int32_t GetRenderTextureDepthID(const std::string textureName);
 
-		/// <summary>
-		/// レンダーテクスチャ作成
-		/// </summary>
-		/// <param name="label">識別用ラベル</param>
-		/// <param name="width">横幅</param>
-		/// <param name="height">縦幅</param>
-		/// <returns>テクスチャID</returns>
-		int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName);
-
-		bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color = true);
-
-		bool SaveAllRenderTextureToFile(const std::string& filePath, bool color = true);
-
-
+			/// <summary>
+			/// レンダーテクスチャgpuポインタ取得
+			/// </summary>
+			/// <param name="textureName">テクスチャ名</param>
+			/// <returns>GPUポインタ</returns>
+			UINT64 GetRenderTexture(const std::string textureName);
+		}
 	};
 
 	namespace DebugDraw
@@ -184,23 +212,6 @@ namespace Game
 		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
 		/// <returns>bool </returns>
 		bool IsAudioPlaying(const int32_t& audioId);
-	};
-
-	namespace Light
-	{
-		/// <summary>
-		/// 共通ライトカラー設定
-		/// </summary>
-		/// <param name="color">Vector4のcolor</param>
-		void SetLightColor(const Vector4 color);
-
-		/// <summary>
-		/// 共通ライト方向設定
-		/// </summary>
-		/// <param name="direction">Vector3の方向ベクトル</param>
-		void SetLightDirection(const Vector3 direction);
-		void ToggleLightMode(const LightMode mode);
-		void SetLightIntensity(float intensity);
 	};
 
 	namespace IO
@@ -544,7 +555,6 @@ namespace Game
 			int RandInt(int min, int max);
 		}
 
-
 		namespace Converter
 		{
 			/// <summary>
@@ -605,30 +615,6 @@ namespace Game
 
 		/// <returns>フレームレート取得</returns>
 		float GetFrameRate();
-
-	};
-
-	namespace Physics
-	{
-		/// <summary>
-		/// WorldColliderの設定
-		/// </summary>
-		void AddWorldCollider(IWorldCollider* worldCollider);
-
-		/// <summary>
-		/// RenderData_Modelの物理演算有効化
-		/// </summary>
-		void RegisterDynamic(IPhysicsBody* b);
-
-		/// <summary>
-		/// RenderData_Modelの物理演算無効化
-		/// </summary>
-		void UnregisterDynamic(IPhysicsBody* b);
-
-		/// <summary>
-		/// 登録されている全てのRenderData_Modelの物理演算無効化
-		/// </summary>
-		void ClearDynamicAll();
 	};
 
 	namespace Window

@@ -14,7 +14,7 @@ void Block::Initialize()
 {
 }
 
-void Block::SetBlockType(Blockinfo info)
+void Block::SetBlockType(BlockInfo info)
 {
 	blockInfo_ = info;
 }

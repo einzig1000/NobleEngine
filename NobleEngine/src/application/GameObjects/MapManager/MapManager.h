@@ -4,7 +4,8 @@
 #include <queue>
 #include <unordered_set>
 #include <memory>
-#include <Utilities/PerlinNoise.h>
+#include <PerlinNoise.h>
+#include <definition/definition.h>
 
 class Block;
 class Chunk;
@@ -36,6 +37,7 @@ public:
 	// ブロック破壊
 	void DestroyBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex);
 	void AddDropItemAt(const Vector3& position, ItemID id);
+
 	// ブロック設置
 	bool SetBlockAt(const lookAtBlock& lab, const BlockID id);
 	bool SetBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex, const BlockID id);

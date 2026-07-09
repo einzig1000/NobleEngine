@@ -3,7 +3,7 @@
 #include <IO/IOManager.h>
 #include <Window/WindowManager.h>
 #include <DirectX/DirectXManager.h>
-#include <ResourceManager/ResourceManager.h>
+#include <AssetManager/AssetManager.h>
 #include <DrawSystem/DrawSystem.h>
 #include <Camera/CameraManager.h>
 #include <imGuiManager/ImGuiManager.h>
@@ -30,12 +30,10 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 	windowManager_ = std::make_unique<WindowManager>(width, height, title);
 	dxManager_ = std::make_unique<DirectXManager>(windowManager_->GetHwnd());
 	cameraManager_ = std::make_unique<CameraManager>();
-	imguiManager_ = std::make_unique<ImGuiManager>();
-	resourceManager_ = std::make_unique<ResourceManager>(dxManager_.get());
+	imguiManager_ = std::make_unique<ImGuiManager>(dxManager_.get(), windowManager_.get());
+	assetManager_ = std::make_unique<AssetManager>(dxManager_.get());
 	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd(), cameraManager_.get());
-	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), resourceManager_.get());
-	imguiManager_->Initialize(dxManager_.get(), windowManager_.get());
-	//physicsSystem_ = std::make_unique<PhysicsSystem>();
+	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), assetManager_.get());
 	fixFPS_ = std::make_unique<FixFPS>();
 
 	windowManager_->AttachMouseController(ioManager_->GetMouseController());
@@ -47,7 +45,7 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 		drawSystem_.get(),
 		ioManager_.get(),
 		cameraManager_.get(),
-		resourceManager_.get(),
+		assetManager_.get(),
 		fixFPS_.get());
 #endif
 }
@@ -132,20 +130,20 @@ void Engine::Finalize()
 	// ImGuiの終了処理
 	imguiManager_->Finalize();
 
+	// エディタ
+	engineEditor_.reset();
 	// フレームレート制御
 	fixFPS_.reset();
-	// 物理演算
-	//physicsSystem_.reset();
-	// ImGui
-	imguiManager_.reset();
-	// 入力関連
-	ioManager_.reset();
-	// カメラ
-	cameraManager_.reset();
 	// 描画関連
 	drawSystem_.reset();
-	// リソース管理
-	resourceManager_.reset();
+	// 入力関連
+	ioManager_.reset();
+	// アセット管理
+	assetManager_.reset();
+	// ImGui
+	imguiManager_.reset();
+	// カメラ
+	cameraManager_.reset();
 	// DirectX関連
 	dxManager_.reset();
 	// ウィンドウ関連

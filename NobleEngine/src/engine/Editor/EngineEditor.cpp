@@ -7,7 +7,7 @@
 #include <IO/IOManager.h>
 #include <Window/WindowManager.h>
 #include <DirectX/DirectXManager.h>
-#include <ResourceManager/ResourceManager.h>
+#include <AssetManager/AssetManager.h>
 #include <DrawSystem/DrawSystem.h>
 #include <Camera/CameraManager.h>
 
@@ -18,23 +18,15 @@ EngineEditor::EngineEditor(
 	DrawSystem* drawSystem, 
 	IOManager* ioManager, 
 	CameraManager* cameraManager, 
-	ResourceManager* resourceManager,
+	AssetManager* assetManager,
 	FixFPS* fixFPS)
-	:
-	windowManager_(windowManager), 
-	dxManager_(dxManager),
-	drawSystem_(drawSystem), 
-	ioManager_(ioManager), 
-	cameraManager_(cameraManager),
-	resourceManager_(resourceManager),
-	fixFPS_(fixFPS)
 {
-	modelEditor_ = std::make_unique<ModelPreview>(dxManager, cameraManager, resourceManager->GetModelManager()->GetModelBank());
-	textureEditor_ = std::make_unique<TexturePreview>(dxManager, resourceManager->GetTextureManager()->GetTextureBank());
+	modelEditor_ = std::make_unique<ModelPreview>(dxManager, cameraManager, assetManager->GetModelManager()->GetModelBank());
+	textureEditor_ = std::make_unique<TexturePreview>(dxManager, assetManager->GetTextureManager()->GetTextureBank());
 
 	renderTexturePreview_ = std::make_unique<RenderTexturePreview>(dxManager);
 
-	timeEditor_ = std::make_unique<TimeEditor>(fixFPS_);
+	timeEditor_ = std::make_unique<TimeEditor>(fixFPS);
 }
 
 EngineEditor::~EngineEditor()

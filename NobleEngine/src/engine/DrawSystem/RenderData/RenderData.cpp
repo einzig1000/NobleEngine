@@ -162,7 +162,7 @@
 //	}
 //	if (ImGui::TreeNode("----------texture--------------"))
 //	{
-//		size_t textureCount = Game::Resource::GetTextureCount();
+//		size_t textureCount = Game::Asset::GetTextureCount();
 //	
 //		//static const char* items[] = { "default", "additional" };
 //		//int current_item = static_cast<int>();
@@ -173,7 +173,7 @@
 //
 //		for (size_t i = 0; i < textureCount; ++i)
 //		{
-//			TextureData* texData = Game::Resource::GetTextureData(static_cast<uint32_t>(i));
+//			TextureData* texData = Game::Asset::GetTextureData(static_cast<uint32_t>(i));
 //			if (texData)
 //			{
 //				ImGui::Image((ImTextureID)texData->textureSrvHandleGPU.ptr, ImVec2(32, 32));
@@ -209,7 +209,7 @@
 //
 //		// クランプ
 //		if (this->model < 0) this->model = 0;
-//		if (this->model > int(Game::Resource::GetModelCount() - 1)) this->model = int(Game::Resource::GetModelCount() - 1);
+//		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
 //
 //		ImGui::TreePop();
 //	}
@@ -807,11 +807,11 @@
 //	}
 //	if (ImGui::TreeNode("----------texture--------------"))
 //	{
-//		size_t textureCount = Game::Resource::GetTextureCount();
+//		size_t textureCount = Game::Asset::GetTextureCount();
 //
 //		for (size_t i = 0; i < textureCount; ++i)
 //		{
-//			TextureData* texData = Game::Resource::GetTextureData(static_cast<uint32_t>(i));
+//			TextureData* texData = Game::Asset::GetTextureData(static_cast<uint32_t>(i));
 //			if (texData)
 //			{
 //				ImGui::Image((ImTextureID)texData->textureSrvHandleGPU.ptr, ImVec2(32, 32));
@@ -915,15 +915,15 @@
 //	}
 //	if (ImGui::TreeNode("----------texture--------------"))
 //	{
-//		for (size_t i = 0; i < Game::Resource::GetTextureCount(); ++i)
+//		for (size_t i = 0; i < Game::Asset::GetTextureCount(); ++i)
 //		{
-//			TextureData* texData = Game::Resource::GetTextureData(static_cast<uint32_t>(i));
+//			TextureData* texData = Game::Asset::GetTextureData(static_cast<uint32_t>(i));
 //			if (texData)
 //			{
 //				ImGui::Image((ImTextureID)texData->textureSrvHandleGPU.ptr, ImVec2(32, 32));
 //
 //				// 6個並べたら改行
-//				if ((i + 1) % 6 != 0 && i < Game::Resource::GetTextureCount() - 1)
+//				if ((i + 1) % 6 != 0 && i < Game::Asset::GetTextureCount() - 1)
 //				{
 //					ImGui::SameLine();
 //				}
@@ -1811,11 +1811,11 @@
 //	}
 //	if (ImGui::TreeNode("----------texture--------------"))
 //	{
-//		size_t textureCount = Game::Resource::GetTextureCount();
+//		size_t textureCount = Game::Asset::GetTextureCount();
 //
 //		for (size_t i = 0; i < textureCount; ++i)
 //		{
-//			TextureData* texData = Game::Resource::GetTextureData(static_cast<uint32_t>(i));
+//			TextureData* texData = Game::Asset::GetTextureData(static_cast<uint32_t>(i));
 //			if (texData)
 //			{
 //				ImGui::Image((ImTextureID)texData->textureSrvHandleGPU.ptr, ImVec2(32, 32));
@@ -1849,7 +1849,7 @@
 //
 //		// クランプ
 //		if (this->model < 0) this->model = 0;
-//		if (this->model > int(Game::Resource::GetModelCount() - 1)) this->model = int(Game::Resource::GetModelCount() - 1);
+//		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
 //
 //		ImGui::TreePop();
 //	}
@@ -1970,11 +1970,11 @@
 //	}
 //	if (ImGui::TreeNode("----------texture--------------"))
 //	{
-//		size_t textureCount = Game::Resource::GetTextureCount();
+//		size_t textureCount = Game::Asset::GetTextureCount();
 //		for (size_t i =
 //			0; i < textureCount; ++i)
 //		{
-//			TextureData* texData = Game::Resource::GetTextureData(static_cast<uint32_t>(i));
+//			TextureData* texData = Game::Asset::GetTextureData(static_cast<uint32_t>(i));
 //			if (texData)
 //			{
 //				ImGui::Image((ImTextureID)texData->textureSrvHandleGPU.ptr, ImVec2(32, 32));
@@ -2165,11 +2165,11 @@
 ////
 ////	if (ImGui::TreeNode("----------texture--------------"))
 ////	{
-////		size_t textureCount = Game::Resource::GetTextureCount();
+////		size_t textureCount = Game::Asset::GetTextureCount();
 ////
 ////		for (size_t i = 0; i < textureCount; ++i)
 ////		{
-////			TextureData* texData = Game::Resource::GetTextureData(static_cast<uint32_t>(i));
+////			TextureData* texData = Game::Asset::GetTextureData(static_cast<uint32_t>(i));
 ////			if (texData)
 ////			{
 ////				ImGui::Image((ImTextureID)texData->textureSrvHandleGPU.ptr, ImVec2(32, 32));
@@ -2203,7 +2203,7 @@
 ////
 ////		// クランプ
 ////		if (this->model < 0) this->model = 0;
-////		if (this->model > int(Game::Resource::GetModelCount() - 1)) this->model = int(Game::Resource::GetModelCount() - 1);
+////		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
 ////
 ////		ImGui::TreePop();
 ////	}

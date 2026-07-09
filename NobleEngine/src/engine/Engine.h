@@ -12,10 +12,7 @@ class DrawSystem;
 class IOManager;
 class CameraManager;
 class ImGuiManager;
-class PhysicsSystem;
-class IWorldCollider;
-//class IPhysicsBody;
-class ResourceManager;
+class AssetManager;
 class FixFPS;
 class RenderObject;
 class EngineEditor;
@@ -43,11 +40,10 @@ public:
 public:
 
 	DirectXManager* GetDirectXManager() { return dxManager_.get(); }
-	//PhysicsSystem* GetPhysicsSystem() { return physicsSystem_.get(); }
 	WindowManager* GetWindowManager() { return windowManager_.get(); }
 	DrawSystem* GetDrawSystem() { return drawSystem_.get(); }
 	IOManager* GetIOManager() { return ioManager_.get(); }
-	ResourceManager* GetResourceManager() { return resourceManager_.get(); }
+	AssetManager* GetAssetManager() { return assetManager_.get(); }
 	CameraManager* GetCameraManager() { return cameraManager_.get(); }
 	FixFPS* GetFixFPS() { return fixFPS_.get(); }
 
@@ -67,13 +63,11 @@ private:
 	std::unique_ptr<CameraManager> cameraManager_;
 	// ImGui
 	std::unique_ptr<ImGuiManager> imguiManager_;
-	// 物理演算
-	//std::unique_ptr<PhysicsSystem> physicsSystem_;
 	// リソース管理
-	std::unique_ptr<ResourceManager> resourceManager_;
+	std::unique_ptr<AssetManager> assetManager_;
 	// フレームレート制御
 	std::unique_ptr<FixFPS> fixFPS_;
+
 	// エディタ
 	std::unique_ptr<EngineEditor> engineEditor_;
-
 };

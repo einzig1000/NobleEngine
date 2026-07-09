@@ -15,7 +15,8 @@ class WindowManager;
 class ImGuiManager
 {
 public:
-	void Initialize(DirectXManager* dxManager, WindowManager* windowManager);
+	ImGuiManager(DirectXManager* dxManager, WindowManager* windowManager);
+	~ImGuiManager();
 	void BeginFrame();
 	void EndFrame();
 	void Draw();

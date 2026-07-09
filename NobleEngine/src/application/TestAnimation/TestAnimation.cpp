@@ -1,69 +1,21 @@
 #include "TestAnimation.h"
 #include <Game.h>
 
-namespace
-{
-	Vector3 CalculateValue(float time, const AnimationCurve<Vector3>& curve)
-	{
-		assert(!curve.keyFrames.empty());
-
-		if (curve.keyFrames.size() == 1 || time <= curve.keyFrames[0].time)
-			return curve.keyFrames[0].value;
-
-		for (size_t i = 0; i < curve.keyFrames.size() - 1; ++i)
-		{
-			const auto& k0 = curve.keyFrames[i];
-			const auto& k1 = curve.keyFrames[i + 1];
-
-			if (k0.time <= time && time <= k1.time)
-			{
-				float t = (time - k0.time) / (k1.time - k0.time);
-				return k0.value * (1.0f - t) + k1.value * t;
-			}
-		}
-
-		return curve.keyFrames.back().value;
-	}
-
-	Quaternion CalculateValue(float time, const AnimationCurve<Quaternion>& curve)
-	{
-		assert(!curve.keyFrames.empty());
-
-		if (curve.keyFrames.size() == 1 || time <= curve.keyFrames[0].time)
-			return curve.keyFrames[0].value;
-
-		for (size_t i = 0; i < curve.keyFrames.size() - 1; ++i)
-		{
-			const auto& k0 = curve.keyFrames[i];
-			const auto& k1 = curve.keyFrames[i + 1];
-
-			if (k0.time <= time && time <= k1.time)
-			{
-				float t = (time - k0.time) / (k1.time - k0.time);
-				return Quaternion::Slerp(k0.value, k1.value, t);
-			}
-		}
-
-		return curve.keyFrames.back().value;
-	}
-}
-
-
 TestAnimation::TestAnimation()
 {
 	render_ = std::make_unique<RenderObject>();
-	render_->modelID_ = Game::Resource::Model::Load("resources/prototypes/model/human/sneakWalk.gltf");
+	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/human/sneakWalk.gltf");
 	render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_->psoConfig_.vs = "resources/shaders/Skinning/Skinning.VS.hlsl";
 	//render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_->SetupFromShaders();
 
 	// 頂点データ
-	modelData_ = Game::Resource::Model::GetData(render_->modelID_);
+	modelData_ = Game::Asset::Model::GetData(render_->modelID_);
 	// アニメーションデータ
 	animation = animationManager_.LoadAnimation("resources/prototypes/model/human/sneakWalk.gltf");
 	// テクスチャデータ
-	tex = Game::Resource::Texture::Load("resources/prototypes/texture/AnimatedCube_BaseColor.png");
+	tex = Game::Asset::Texture::Load("resources/prototypes/texture/AnimatedCube_BaseColor.png");
 
 	//nodeAnimation = &animation.nodeAnimations["AnimatedCube"];
 	skeleton = modelData_->skeleton;

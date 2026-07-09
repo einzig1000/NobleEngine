@@ -1,6 +1,6 @@
-#include "Window/WindowManager.h"
-#include "ImGuiManager/ImGuiManager.h"
-#include "IO/MouseController.h"
+#include "WindowManager.h"
+#include <IO/Mouse/MouseController.h>
+#include <ImGuiManager/ImGuiManager.h>
 #include <vector>
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib, "winmm.lib")
