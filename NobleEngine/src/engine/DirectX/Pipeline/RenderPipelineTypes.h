@@ -129,3 +129,6 @@ struct PSOConfig
 	DSVFormatID dsvFormatID = DSVFormatID::D24;
 };
 
+struct ComputePSOConfig
+{
+};

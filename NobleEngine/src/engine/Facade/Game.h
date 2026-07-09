@@ -55,6 +55,15 @@ namespace Game
 			/// <param name="animationID">アニメーションID</param>
 			/// <returns>アニメーションデータ</returns>
 			AnimationData* GetData(int32_t animationID);
+
+			/// <summary>
+			/// アニメーションの再生
+			/// </summary>
+			/// <param name="animationID">アニメーションID</param>
+			/// <param name="skeleton">スケルトン</param>
+			/// <param name="skinCluster">スキンクラスター</param>
+			/// <param name="time">時間</param>
+			void ComputeAnimationData(int32_t animationID, Skeleton& skeleton, SkinCluster& skinCluster, float& time);
 		}
 
 		namespace Texture
@@ -179,8 +188,6 @@ namespace Game
 		/// <param name="end">線分終了座標</param>
 		/// <param name="color">色</param>
 		void AddLine(Vector3 start, Vector3 end, uint32_t color);
-
-
 	};
 
 	namespace Audio

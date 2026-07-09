@@ -1,6 +1,6 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
-#include <definition/constexprs.h>
+#include <EngineDefinition/EngineConstexprs.h>
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <DirectX/FrameCbAllocator/FrameCbAllocator.h>
 #include <memory>
@@ -35,11 +35,11 @@ public:
 	void AddScreenDrawList(const RenderObject* renderObject);
 
 
-	void AddDebugLineList(const Vector3& start, const Vector3& end, uint32_t color);
-	void AddSphere(const Sphere& sphere, uint32_t color);
-	void AddSphereXYZ(const SphereXYZ& sphere, uint32_t color);
-	void AddCylinder(const Cylinder& cylinder, uint32_t color);
-	void AddAABB(const AABB& aabb, uint32_t color);
+	//void AddDebugLineList(const Vector3& start, const Vector3& end, uint32_t color);
+	//void AddSphere(const Sphere& sphere, uint32_t color);
+	//void AddSphereXYZ(const SphereXYZ& sphere, uint32_t color);
+	//void AddCylinder(const Cylinder& cylinder, uint32_t color);
+	//void AddAABB(const AABB& aabb, uint32_t color);
 
 private:
 	// 描画オブジェクトをRenderTextureに描画する。
@@ -50,14 +50,9 @@ private:
 	std::unordered_map<int32_t, std::vector<const RenderObject*>> postEffectRenderObjects_{};
 	std::vector<const RenderObject*> screenRenderObjects_{};
 
-	std::unordered_map<uint32_t, std::vector<Vector3>> debugLineList_{};
-
-	int32_t rt_nobleScreenID_ = -1;
-
+	// NobleScreen用のRenderObject
 	std::unique_ptr<RenderObject> screenRenderObject_ = nullptr;
-
-	PSOConfig ScreenDrawPSOConfig_;
-	std::vector<RootParam> ScreenDrawRootParams_;
+	int32_t rt_nobleScreenID_ = -1;
 
 	// DirectXマネージャー
 	DirectXManager* dxManager_ = nullptr;

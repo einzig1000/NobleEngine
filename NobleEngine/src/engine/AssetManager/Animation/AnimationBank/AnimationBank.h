@@ -9,7 +9,7 @@ public:
 	// アニメーションデータを追加
 	int32_t AddAnimationData(const std::string& filePath, std::unique_ptr<AnimationData> animationData);
 	// filePathが同じアニメーションデータが存在するか
-	int32_t IsAnimationDataExist(const std::string filePath, std::string animationName) const;
+	int32_t IsAnimationDataExist(const std::string filePath) const;
 	// animationIDからアニメーションデータを取得
 	AnimationData* GetAnimationData(int32_t animationID);
 	// アニメーションリストを取得

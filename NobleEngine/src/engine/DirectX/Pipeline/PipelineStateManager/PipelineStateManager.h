@@ -29,12 +29,12 @@ public:
     PipelineStateManager(ID3D12Device2* device);
     ~PipelineStateManager();
 
-	// ルートシグネチャの取得（なければ生成）
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> GetOrCreateRootSignature(const std::vector<RootParam>& params);
-	// PSO取得(なければ生成)
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetOrCreatePipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params);
-	// シェーダーBlobの取得（なければコンパイル）
-    Microsoft::WRL::ComPtr<IDxcBlob> GetOrCompileShader(const wchar_t* path, const wchar_t* target);
+	// ルートシグネチャの取得
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> GetRootSignature(const std::vector<RootParam>& params);
+	// PSO取得
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetPipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params);
+	// シェーダーBlobの取得
+    Microsoft::WRL::ComPtr<IDxcBlob> GetShaderBlob(const wchar_t* path, const wchar_t* target);
 
 private:
 	// ルートシグネチャ生成

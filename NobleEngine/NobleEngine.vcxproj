@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\ComputeSystem\ComputeSystem.cpp" />
+    <ClCompile Include="src\engine\ComputeSystem\ComputeObject\ComputeObject.cpp" />
+    <ClCompile Include="src\engine\AssetManager\Animation\AnimationComputer\AnimationComputer.cpp" />
     <ClCompile Include="src\engine\AssetManager\Animation\AnimationLoader\AnimationLoader.cpp" />
     <ClCompile Include="src\engine\AssetManager\Animation\AnimationBank\AnimationBank.cpp" />
     <ClCompile Include="externals\meshoptimizer-1.1\allocator.cpp" />
@@ -112,6 +115,9 @@
     <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h" />
+    <ClInclude Include="src\engine\ComputeSystem\ComputeObject\ComputeObject.h" />
+    <ClInclude Include="src\engine\AssetManager\Animation\AnimationComputer\AnimationComputer.h" />
     <ClInclude Include="src\engine\AssetManager\Animation\AnimationLoader\AnimationLoader.h" />
     <ClInclude Include="src\engine\AssetManager\Animation\AnimationBank\AnimationBank.h" />
     <ClInclude Include="externals\DungeonTemplateLibrary\DTL.hpp" />

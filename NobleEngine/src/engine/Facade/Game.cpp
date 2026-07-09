@@ -46,9 +46,15 @@ namespace Game
 			{
 				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationLoader()->LoadAnimation(filePath, animationName);
 			}
+
 			AnimationData* GetData(int32_t animationID)
 			{
 				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationBank()->GetAnimationData(animationID);
+			}
+
+			void ComputeAnimationData(int32_t animationID, Skeleton& skeleton, SkinCluster& skinCluster, float& time)
+			{
+				Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationComputer()->UpdateAnimation(animationID, skeleton, skinCluster, time);
 			}
 		}
 
@@ -109,26 +115,26 @@ namespace Game
 
 	namespace DebugDraw
 	{
-		void AddSphere(const Sphere& sphere, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddSphere(sphere, color);
-		}
-		void AddSphereXYZ(const SphereXYZ& sphere, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddSphereXYZ(sphere, color);
-		}
-		void AddCylinder(const Cylinder& cylinder, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddCylinder(cylinder, color);
-		}
-		void AddAABB(const AABB& aabb, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddAABB(aabb, color);
-		}
-		void AddLine(Vector3 start, Vector3 end, uint32_t color)
-		{
-			Engine::Instance().GetDrawSystem()->AddDebugLineList(start, end, color);
-		}
+		//void AddSphere(const Sphere& sphere, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddSphere(sphere, color);
+		//}
+		//void AddSphereXYZ(const SphereXYZ& sphere, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddSphereXYZ(sphere, color);
+		//}
+		//void AddCylinder(const Cylinder& cylinder, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddCylinder(cylinder, color);
+		//}
+		//void AddAABB(const AABB& aabb, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddAABB(aabb, color);
+		//}
+		//void AddLine(Vector3 start, Vector3 end, uint32_t color)
+		//{
+		//	Engine::Instance().GetDrawSystem()->AddDebugLineList(start, end, color);
+		//}
 	}
 
 	namespace Audio

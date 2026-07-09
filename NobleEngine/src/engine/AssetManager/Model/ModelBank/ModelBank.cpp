@@ -2,16 +2,7 @@
 
 int32_t ModelBank::AddModelData(const std::string& filePath, std::unique_ptr<ModelData> modelData)
 {
-	int32_t ID = IsModelDataExist(filePath);
-
-	if (ID != -1)
-	{
-		ID = static_cast<int32_t>(objects_.size());
-	}
-	else
-	{
-		ID = static_cast<int32_t>(objects_.size());
-	}
+	int32_t ID = static_cast<int32_t>(objects_.size());
 
 	pathToIDMap_[filePath] = ID;
     objects_.push_back(std::move(modelData));

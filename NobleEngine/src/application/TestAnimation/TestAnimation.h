@@ -1,8 +1,7 @@
 #pragma once
 #include <DrawSystem/RenderData/RenderObject.h>
+#include <definition/definition.h>
 #include <memory>
-
-#include <AssetManager/Animation/AnimationManager.h>
 
 class TestAnimation
 {
@@ -19,14 +18,8 @@ private:
 	float animationTime_ = 0.0f;
 
 	int32_t animationID_ = -1;
-
-	ModelData* modelData_ = nullptr;
-
-
-	AnimationData animation;
-	NodeAnimation* nodeAnimation = nullptr;
+	uint32_t texID_ = -1;
 	SkinCluster skinCluster_;
 	Skeleton skeleton;
-	uint32_t texID_ = -1;
-
 };
+
