@@ -38,7 +38,7 @@ struct RenderObjectData
 	// 名前
 	std::string name;
 	// psoConfig
-	PSOConfig config;
+	GraphicsPSOConfig config;
 	// 書きだすレンダーテクスチャ
 	std::vector<std::string> out;
 	// モデルパス

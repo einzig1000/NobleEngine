@@ -1,4 +1,5 @@
 #pragma once
+#include <EngineDefinition/EngineConstexprs.h>
 #include <vector>
 #include <array>
 #include <span>

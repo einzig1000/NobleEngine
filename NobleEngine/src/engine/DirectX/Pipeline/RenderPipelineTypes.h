@@ -17,6 +17,7 @@ enum class ParamType
 	None,
 	CBV,
 	SRV,
+	UAV,
 };
 
 struct InputElement
@@ -43,6 +44,9 @@ struct RootParam
 	// SRV用
 	uint32_t srvStorageIndex = 0;   // そのSRVがdynamicSrvStorage_のどこにあるか。
 	uint32_t srvAllocIndex = UINT32_MAX;    // SRVのスロットインデックス(0であればBindlessテクスチャ配列、1以上UINT32_MAX未満であればリソース確保済みのSRV)
+
+	// UAV用
+	uint32_t uavStorageIndex = 0;   // そのUAVがdynamicUavStorage_のどこにあるか。
 
     void ComputeHash()
     {
@@ -107,7 +111,7 @@ enum class DSVFormatID : uint8_t
 	Unknown,
 };
 
-struct PSOConfig
+struct GraphicsPSOConfig
 {
     /// 頂点シェーダーファイル名
     std::string vs = "unknown";
@@ -131,4 +135,6 @@ struct PSOConfig
 
 struct ComputePSOConfig
 {
+	/// コンピュートシェーダーファイル名
+    std::string cs = "unknown";
 };

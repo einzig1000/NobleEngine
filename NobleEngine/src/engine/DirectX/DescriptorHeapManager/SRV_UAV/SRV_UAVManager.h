@@ -12,8 +12,7 @@ public:
     enum class ViewType
     {
         SRV,
-        UAV,
-        CBV
+        UAV
     };
 
     struct Allocation
@@ -44,6 +43,8 @@ public:
     // Allocate()で取得したスロットインデックスのCPU/GPUハンドルを取得
     D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandleAt(uint32_t index) const;
     D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandleAt(uint32_t index) const;
+   
+    Allocation CreateUAVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride);
 
     Allocation CreateSRVforTexture(ID3D12Resource* resource, const DirectX::TexMetadata& metadata);
     Allocation CreateSRVforDDS(ID3D12Resource* resource, const DirectX::TexMetadata& metadata);
@@ -53,8 +54,9 @@ public:
     void RewriteSRVforStructuredBuffer(Allocation& allocation, ID3D12Resource* resource, UINT numElements, UINT structureByteStride);
 
 private:
-    // SRVの作成とスロットの割り当て
+    // SRV・UAVの作成とスロットの割り当て
     Allocation CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc, ResourceType type);
+    Allocation CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc, ResourceType type);
 
     // デバイス
     ID3D12Device2* device_ = nullptr;

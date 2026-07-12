@@ -1,7 +1,7 @@
 #include "RenderObject.h"
-#include "Engine.h"
-#include "DirectX/DirectXManager.h"
-#include "DirectX/Resource/Dx12ResourceFactory.h"
+#include <Engine.h>
+#include <DirectX/DirectXManager.h>
+#include <DirectX/Resource/Dx12ResourceFactory.h>
 #include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
 #include <Utilities/Converter/StringConverter/StringConverter.h>
 #include <DrawSystem/DrawSystem.h>
@@ -19,35 +19,51 @@ void RenderObject::SetupFromShaders()
 
 	uint32_t cbvSizeOffset = 0;
 	uint32_t srvIndexOffset = 0;
+	uint32_t slab = 0;
 
 	if (psoConfig_.vs != "unknown")
 	{
 		std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
 		auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(vsPath.c_str(), L"vs_6_6");
 
-		// VS の CBV / SRV を反映
-		ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_, cbvSizeOffset, srvIndexOffset);
+		// VS の CBV / SBV を反映
+		ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_, cbvSizeOffset, srvIndexOffset, slab);
 	}
 	else if (psoConfig_.ms != "unknown")
 	{
 		std::wstring msPath = StringConverter::Convert(psoConfig_.ms);
 		auto msBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(msPath.c_str(), L"ms_6_6");
 
-		// MS の CBV / SRV を反映
-		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_, cbvSizeOffset, srvIndexOffset);
+		// MS の CBV / SBV を反映
+		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_, cbvSizeOffset, srvIndexOffset, slab);
 	}
 
 	{
 		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
 		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(psPath.c_str(), L"ps_6_6");
 
-		// PS の CBV / SRV を反映
-		ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_, cbvSizeOffset, srvIndexOffset);
+		// PS の CBV / SBV を反映
+		ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_, cbvSizeOffset, srvIndexOffset, slab);
 	}
 
+	//// CPU側のストレージを確保
+	//for (size_t i = 0; i < rootParams_.size(); ++i)
+	//{
+	//	rootParamHashToIndexMap_[rootParams_[i].hash] = i;
+	//}
+	
+	// ハッシュの精度を確認するためしばらくこっちを使う。確信がもてたら下記コ―ドは削除し上記のコメントを解除する
 	for (size_t i = 0; i < rootParams_.size(); ++i)
 	{
-		rootParamHashToIndexMap_[rootParams_[i].hash] = i;
+		const auto& param = rootParams_[i];
+		if (rootParamHashToIndexMap_.find(param.hash) != rootParamHashToIndexMap_.end())
+		{
+			Log("やっぱりハッシュのみで判断するのは難しい。ComputeHash()を改善するか各パラメータを比較する方式に変更必須");
+		}
+		else
+		{
+			rootParamHashToIndexMap_[param.hash] = i;
+		}
 	}
 
 	cpuStorage_.resize(cbvSizeOffset);
@@ -65,54 +81,78 @@ void RenderObject::SetSBufferData(const uint32_t key, ShaderType shaderType, con
 	tempParam.ComputeHash();
 
 	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
-	if (it == rootParamHashToIndexMap_.end()) return;
+	if (it == rootParamHashToIndexMap_.end())
+	{
+		Log("存在しないRootParamを設定しました");
+		return;
+	}
 
 	const size_t bytes = elementSize * elementCount;
 	auto& param = rootParams_.at(it->second);
-	if (param.paramType == ParamType::SRV && param.shaderType == shaderType && param.key == key)
+
+	auto* dxManager = Engine::Instance().GetDirectXManager();
+	// フレームインデックスを取得
+	const uint32_t frameIndex = dxManager->GetSwapChain()->GetCurrentBackBufferIndex();
+
+	auto& srvData = dynamicSrvStorage_.at(param.srvStorageIndex);
+	auto& alloc = srvData.srvAllocations[frameIndex];
+
+	bool needsNewBuffer = (srvData.buffers[frameIndex] == nullptr) || (bytes > srvData.buffers[frameIndex]->GetDesc().Width);
+
+	// まだSRV用のバッファが確保されていない場合は確保する
+	if (needsNewBuffer)
 	{
-		auto* dxManager = Engine::Instance().GetDirectXManager();
-		// フレームインデックスを取得
-		const uint32_t frameIndex = dxManager->GetSwapChain()->GetCurrentBackBufferIndex();
+		srvData.buffers[frameIndex] = Dx12ResourceFactory::CreateBufferResource(dxManager->GetDevice(), bytes);
+		srvData.buffers[frameIndex]->Map(0, nullptr, &srvData.mappedData[frameIndex]);
+	}
 
-		auto& srvData = dynamicSrvStorage_.at(param.srvStorageIndex);
-		auto& alloc = srvData.srvAllocations[frameIndex];
+	// まだSRVAllocationがない場合は作成する。
+	if (alloc.index == UINT32_MAX)
+	{
+		// SRVを作成
+		alloc = dxManager->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+			srvData.buffers[frameIndex].Get(),
+			static_cast<UINT>(elementCount),
+			static_cast<UINT>(elementSize)
+		);
+	}
+	else
+	{
+		dxManager->GetDescriptorHeapManager()->GetSRV_UAVManager()->RewriteSRVforStructuredBuffer(
+			alloc, srvData.buffers[frameIndex].Get(),
+			static_cast<UINT>(elementCount),
+			static_cast<UINT>(elementSize));
+	}
 
-		bool needsNewBuffer = (srvData.buffers[frameIndex] == nullptr) || (bytes > srvData.buffers[frameIndex]->GetDesc().Width);
+	// CPU->GPU(Upload heap) へ書き込み
+	assert(srvData.mappedData[frameIndex]);
+	std::memcpy(srvData.mappedData[frameIndex], data, bytes);
 
-		// まだSRV用のバッファが確保されていない場合は確保する
-		if (needsNewBuffer)
-		{
-			srvData.buffers[frameIndex] = Dx12ResourceFactory::CreateBufferResource(dxManager->GetDevice(), bytes);
-			srvData.buffers[frameIndex]->Map(0, nullptr, &srvData.mappedData[frameIndex]);
-		}
+	// RootParamにSRVのスロットインデックスを保存
+	param.srvAllocIndex = alloc.index;
+	return;
+}
 
-		// まだSRVAllocationがない場合は作成する。
-		if (alloc.index == UINT32_MAX)
-		{
-			// SRVを作成
-			alloc = dxManager->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
-				srvData.buffers[frameIndex].Get(),
-				static_cast<UINT>(elementCount),
-				static_cast<UINT>(elementSize)
-			);
-		}
-		else
-		{
-			dxManager->GetDescriptorHeapManager()->GetSRV_UAVManager()->RewriteSRVforStructuredBuffer(
-				alloc, srvData.buffers[frameIndex].Get(),
-				static_cast<UINT>(elementCount),
-				static_cast<UINT>(elementSize));
-		}
+void RenderObject::SetExternalSRVData(const uint32_t key, ShaderType shaderType, uint32_t srvAllocIndex, uint32_t space)
+{
+	RootParam tempParam{};
+	tempParam.paramType = ParamType::SRV;
+	tempParam.shaderType = shaderType;
+	tempParam.key = key;
+	tempParam.registerSpace = space;
+	tempParam.ComputeHash();
 
-		// CPU->GPU(Upload heap) へ書き込み
-		assert(srvData.mappedData[frameIndex]);
-		std::memcpy(srvData.mappedData[frameIndex], data, bytes);
-
-		// RootParamにSRVのスロットインデックスを保存
-		param.srvAllocIndex = alloc.index;
+	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
+	if (it == rootParamHashToIndexMap_.end())
+	{
+		Log("存在しないRootParamを設定しました");
 		return;
 	}
+
+	auto& param = rootParams_.at(it->second);
+
+	param.srvAllocIndex = srvAllocIndex;
+	return;
 }
 
 void RenderObject::SetCBufferData(const uint32_t key, ShaderType shaderType, const void* data, uint32_t space)
@@ -125,14 +165,15 @@ void RenderObject::SetCBufferData(const uint32_t key, ShaderType shaderType, con
 	tempParam.ComputeHash();
 
 	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
-	if (it == rootParamHashToIndexMap_.end()) return;
-	const auto& param = rootParams_.at(it->second);
-
-	if (param.paramType == ParamType::CBV && param.shaderType == shaderType && param.key == key)
+	if (it == rootParamHashToIndexMap_.end())
 	{
-		std::memcpy(cpuStorage_.data() + param.offsetBytes, data, param.sizeBytes);
+		Log("存在しないRootParamを設定しました");
 		return;
 	}
+	const auto& param = rootParams_.at(it->second);
+
+	std::memcpy(cpuStorage_.data() + param.offsetBytes, data, param.sizeBytes);
+	return;
 }
 
 void RenderObject::Draw(int32_t renderTextureID) const

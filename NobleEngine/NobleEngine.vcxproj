@@ -113,6 +113,7 @@
     <ClCompile Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.cpp" />
     <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp" />
+    <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h" />
@@ -369,6 +370,7 @@
     <ClInclude Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.h" />
     <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h" />
     <ClInclude Include="src\engine\Editor\TimeEditor\TimeEditor.h" />
+    <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\StructuredBufferManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

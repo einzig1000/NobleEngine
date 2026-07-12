@@ -5,7 +5,6 @@
 #include <Character/Enemy/EnemyManager.h>
 #include <Camera/CameraController.h>
 #include <UIManager/UIManager.h>
-#include <Physics/IWorldCollider.h>
 #include <GameObjects/Item/CraftRecipe/CraftRecipe.h>
 #include <fstream>
 

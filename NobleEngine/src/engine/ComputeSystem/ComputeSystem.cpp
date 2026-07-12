@@ -34,9 +34,9 @@ void ComputeSystem::DispatchComputeObject(const ComputeObject* computeObject)
 	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
 	// 1) RootSignatureセット
-	//cmdList->SetComputeRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature(computeObject->GetRootParams()).Get());
+	cmdList->SetComputeRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature(computeObject->GetRootParams()).Get());
 	// 2) PSOセット
-	//cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetPipelineState(computeObject->psoConfig_, computeObject->GetRootParams()).Get());
+	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetComputePipelineState(computeObject->psoConfig_, computeObject->GetRootParams()).Get());
 	// 3) CBV・SRVセット
 	const auto& cpuStrage = computeObject->GetCpuStorage();
 	const auto& rootParams = computeObject->GetRootParams();

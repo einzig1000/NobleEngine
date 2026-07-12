@@ -82,7 +82,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	// 1) RootSignatureセット
 	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature(renderObject->GetRootParams()).Get());
 	// 2) PSOセット
-	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
+	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
 	// 3) CBV・SRVセット
 	const auto& cpuStrage = renderObject->GetCpuStorage();
 	const auto& rootParams = renderObject->GetRootParams();

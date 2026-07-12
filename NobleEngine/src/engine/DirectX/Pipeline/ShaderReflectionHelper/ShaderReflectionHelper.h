@@ -16,7 +16,8 @@ namespace ShaderReflection
         ShaderType shaderType,
         std::vector<RootParam>& outParams,
         uint32_t& currentCBVOffsetBytes,
-        uint32_t& currentSRVOffsetIndex
+        uint32_t& currentSRVOffsetIndex,
+        uint32_t& currentUAVOffsetIndex
     );
 
 	/// <summary>

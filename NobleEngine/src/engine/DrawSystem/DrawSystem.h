@@ -34,13 +34,6 @@ public:
 	void AddPostEffectDrawList(const RenderObject* renderObject, int32_t renderTextureID);
 	void AddScreenDrawList(const RenderObject* renderObject);
 
-
-	//void AddDebugLineList(const Vector3& start, const Vector3& end, uint32_t color);
-	//void AddSphere(const Sphere& sphere, uint32_t color);
-	//void AddSphereXYZ(const SphereXYZ& sphere, uint32_t color);
-	//void AddCylinder(const Cylinder& cylinder, uint32_t color);
-	//void AddAABB(const AABB& aabb, uint32_t color);
-
 private:
 	// 描画オブジェクトをRenderTextureに描画する。
 	void DrawObject(const RenderObject* renderObject);

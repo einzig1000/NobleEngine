@@ -13,15 +13,17 @@ void ComputeObject::SetupFromShaders()
 	rootParamHashToIndexMap_.clear();
 	cpuStorage_.clear();
 	dynamicSrvStorage_.clear();
+	outputBufferStorage_.clear();
 
 	uint32_t cbvSizeOffset = 0;
 	uint32_t srvIndexOffset = 0;
+	uint32_t uavIndexOffset = 0;
 
-		std::wstring csPath = StringConverter::Convert(cs);
-		auto csBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(csPath.c_str(), L"cs_6_6");
+	std::wstring csPath = StringConverter::Convert(psoConfig_.cs);
+	auto csBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(csPath.c_str(), L"cs_6_6");
 
-		// CS の CBV / SRV を反映
-		ShaderReflection::BuildRootParamsFromShader(csBlob.Get(), ShaderType::ComputeShader, rootParams_, cbvSizeOffset, srvIndexOffset);
+	// CS の CBV / SRV を反映
+	ShaderReflection::BuildRootParamsFromShader(csBlob.Get(), ShaderType::ComputeShader, rootParams_, cbvSizeOffset, srvIndexOffset, uavIndexOffset);
 
 	for (size_t i = 0; i < rootParams_.size(); ++i)
 	{
@@ -30,6 +32,7 @@ void ComputeObject::SetupFromShaders()
 
 	cpuStorage_.resize(cbvSizeOffset);
 	dynamicSrvStorage_.resize(srvIndexOffset);
+	outputBufferStorage_.resize(uavIndexOffset);
 }
 
 void ComputeObject::SetCBufferData(const uint32_t key, ShaderType shaderType, const void* data, uint32_t space)

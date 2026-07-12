@@ -34,13 +34,14 @@ public:
 
 	void SetCBufferData(const uint32_t key, ShaderType shaderType, const void* data, uint32_t space = 0);
 	void SetSBufferData(const uint32_t key, ShaderType shaderType, const void* data, size_t elementSize, size_t elementCount, uint32_t space = 0);
+	void SetExternalSRVData(const uint32_t key, ShaderType shaderType, uint32_t srvAllocIndex, uint32_t space = 0);
 
 	const std::vector<RootParam>& GetRootParams() const { return rootParams_; }
 	const std::vector<uint8_t>& GetCpuStorage() const { return cpuStorage_; }
 
 public:
 	// PSO設定
-	PSOConfig psoConfig_{};
+	GraphicsPSOConfig psoConfig_{};
 	// インスタンス数
 	uint32_t instanceNum_ = 1;
 
@@ -56,7 +57,4 @@ private:
 
 	// 動的SRV用のストレージ。CreateSRV() で確保し、SetBufferData() で直接GPUへ書き込む
 	std::vector<DynamicSRVData> dynamicSrvStorage_{};
-
-	// デバッグ用
-	std::vector<std::string> debugNames_{};
 };

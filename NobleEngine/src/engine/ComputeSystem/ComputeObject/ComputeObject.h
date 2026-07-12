@@ -22,9 +22,9 @@ public:
 
 	struct OutputBufferData
 	{
-		Microsoft::WRL::ComPtr<ID3D12Resource> buffer[Constexprs::kFrameCount];
-		SRV_UAVManager::Allocation uavAllocations[Constexprs::kFrameCount];
-		SRV_UAVManager::Allocation srvAllocations[Constexprs::kFrameCount]; // 描画側が読むためのSRV
+		Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
+		SRV_UAVManager::Allocation uavAllocation;
+		SRV_UAVManager::Allocation srvAllocation; // 描画側が読むためのSRV
 	};
 
 	void SetupFromShaders();
@@ -35,7 +35,7 @@ public:
 	const std::vector<RootParam>& GetRootParams() const { return rootParams_; }
 	const std::vector<uint8_t>& GetCpuStorage() const { return cpuStorage_; }
 
-	std::string cs = "unknown";
+	ComputePSOConfig psoConfig_;
 
 	Vector3int size = { 1, 1, 1 };
 
@@ -50,5 +50,7 @@ private:
 	// 動的SRV用のストレージ。CreateSRV() で確保し、SetBufferData() で直接GPUへ書き込む
 	std::vector<DynamicSRVData> dynamicSrvStorage_{};
 
+	// UAV用のストレージ。
+	std::vector<OutputBufferData> outputBufferStorage_{};
 };
 

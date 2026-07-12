@@ -31,16 +31,20 @@ public:
 
 	// ルートシグネチャの取得
     Microsoft::WRL::ComPtr<ID3D12RootSignature> GetRootSignature(const std::vector<RootParam>& params);
-	// PSO取得
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetPipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params);
+    // GraphicsPSO取得
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetGraphicsPipelineState(const GraphicsPSOConfig& psoConfig, const std::vector<RootParam>& params);
+    // ComputePSO取得
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetComputePipelineState(const ComputePSOConfig& psoConfig, const std::vector<RootParam>& params);
 	// シェーダーBlobの取得
     Microsoft::WRL::ComPtr<IDxcBlob> GetShaderBlob(const wchar_t* path, const wchar_t* target);
 
 private:
 	// ルートシグネチャ生成
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> CreateRootSignature(const std::vector<RootParam>& params);
-	// PSO生成
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
+	// GraphicsPSO生成
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(const GraphicsPSOConfig& cfg, const std::vector<RootParam>& params);
+	// ComputePSO生成
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateComputePipelineState(const ComputePSOConfig& cfg, const std::vector<RootParam>& params);
 	// シェーダーコンパイル
     Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
 
@@ -48,8 +52,10 @@ private:
     std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<IDxcBlob>> shaderCache_;
     // ルートシグネチャキャッシュ
     std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12RootSignature>> rootSignatureCache_;
-    // PSOキャッシュ
-    std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12PipelineState>> psoCache_;
+    // GraphicsPSOキャッシュ
+    std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12PipelineState>> graphicsPsoCache_;
+    // ComputePSOキャッシュ
+    std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12PipelineState>> computePsoCache_;
 
     // シェーダー系
     void InitializeDxc();

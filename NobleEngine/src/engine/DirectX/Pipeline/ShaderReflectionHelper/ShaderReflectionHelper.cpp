@@ -119,7 +119,7 @@ namespace ShaderReflection
 
 
 
-    void BuildRootParamsFromShader(IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams, uint32_t& currentCBVOffsetBytes, uint32_t& currentSRVOffsetIndex)
+    void BuildRootParamsFromShader(IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams, uint32_t& currentCBVOffsetBytes, uint32_t& currentSRVOffsetIndex, uint32_t& currentUAVOffsetIndex)
     {
         Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
         HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
@@ -183,6 +183,21 @@ namespace ShaderReflection
 				p.srvStorageIndex = currentSRVOffsetIndex;
                 currentSRVOffsetIndex++;
 				outParams.push_back(p);
+            }
+			// UAV
+            else if (bind.Type == D3D_SIT_UAV_RWSTRUCTURED || bind.Type == D3D_SIT_UAV_RWBYTEADDRESS)
+            {
+                RootParam p{};
+                p.paramType = ParamType::UAV;
+                p.shaderType = shaderType;
+                p.key = bind.BindPoint;
+                p.registerSpace = bind.Space;
+                p.ComputeHash();
+
+				p.uavStorageIndex = currentUAVOffsetIndex;
+				currentUAVOffsetIndex++;
+
+                outParams.push_back(p);
             }
 			// Bindlessテクスチャ配列 (BindCountが0で、型がテクスチャ)
             else if (bind.Type == D3D_SIT_TEXTURE && bind.BindCount == 0)
