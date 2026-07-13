@@ -71,6 +71,8 @@ private:
 	std::vector<VertexData> vertices_;
 	// color配列(vertices_と対応)
 	std::vector<uint32_t> vertexColors_;
+	// color配列ヒープインデックス
+	int32_t colorHeapIndex_ = -1;
 	Vector4int modelInfo;
 
 	// チャンク座標

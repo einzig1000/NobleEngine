@@ -3,14 +3,14 @@
 #include <EngineDefinition/EngineDefinition.h>
 #include <ImGuiManager/ImGuiManager.h>
 
-class IWorldCollider;
-class IPhysicsBody;
-
 /// <summary>
 /// ファサードクラス
 /// </summary>
 namespace Game
 {
+	/// <summary>
+	/// モデル･テクスチャ･アニメーション･オーディオの読み込み
+	/// </summary>
 	namespace Asset
 	{
 		namespace Model
@@ -190,8 +190,12 @@ namespace Game
 		void AddLine(Vector3 start, Vector3 end, uint32_t color);
 	};
 
+	/// <summary>
+	/// オーディオの再生
+	/// </summary>
 	namespace Audio
 	{
+		//// 返り値をint32_t にして重ね再生
 		/// <summary>
 		/// オーディオ再生
 		/// </summary>
@@ -239,6 +243,9 @@ namespace Game
 		bool IsAudioPlaying(const int32_t& audioId);
 	};
 
+	/// <summary>
+	/// マウス･キーボード･パッドからの入力を取得する
+	/// </summary>
 	namespace IO
 	{
 		namespace Mouse
@@ -526,8 +533,6 @@ namespace Game
 		/// <param name="aabb">検索対象のAABB</param>
 		/// <returns>結果</returns>
 		bool InCamera(const AABB& aabb, int32_t cameraID = 0);
-
-
 	};
 
 	namespace Utilities
@@ -658,6 +663,39 @@ namespace Game
 		/// フルスクリーン切り替え
 		/// </summary>
 		void ToggleFullscreen();
+	}
+
+	namespace Resource
+	{
+		/// <summary>
+		/// 静的リソースの作成(モデルやテクスチャ等)
+		/// </summary>
+		/// <typeparam name="T">データ型</typeparam>
+		/// <param name="data">データ</param>
+		/// <returns>ID</returns>
+		template<typename T>
+		int32_t CreateStatic(const std::vector<T>& data)
+		{
+			return 0;
+		}
+
+		/// <summary>
+		/// 動的リソースの作成(毎フレーム変わるパーティクル配列等)
+		/// </summary>
+		/// <returns>ID</returns>
+		int32_t CreateDynamic();
+
+		/// <summary>
+		/// コンピュートリソースの作成(コンピュートシェーダーで使用するバッファ等)
+		/// </summary>
+		/// <returns>ID</returns>
+		int32_t CreateCompute(size_t elementSize, size_t elementCount);
+
+
+		void UpdateData(int32_t handle, const void* data, size_t elementSize, size_t elementCount);
+
+		uint32_t GetSRV(int32_t handle);
+		uint32_t GetUAV(int32_t handle);
 	}
 
 	void quit();

@@ -2,12 +2,13 @@
 #include <AssetManager/AssetManager.h>
 #include <ImGuiManager/ImGuiManager.h>
 #include <DirectX/DirectXManager.h>
+#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <Window/WindowManager.h>
 #include <Engine.h>
 #include <numbers>
 
-DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* resourceManager)
-	:dxManager_(dxManager), resourceManager_(resourceManager)
+DrawSystem::DrawSystem(DirectXManager* dxManager, StructuredBufferManager* structuredBufferManager, AssetManager* resourceManager)
+	:dxManager_(dxManager), resourceManager_(resourceManager), structuredBufferManager_(structuredBufferManager)
 {
 	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
 	{
@@ -179,17 +180,13 @@ void DrawSystem::ScreenDraw()
 {
 	screenRenderObject_->modelID_ = resourceManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
-	DrawObject(screenRenderObject_.get());
+	//DrawObject(screenRenderObject_.get());
 
 // デバッグモードの時は、PreScreenDrawで描画した内容をImGuiのウィンドウに表示する
 #ifdef _DEBUG
 
 	ImGui::Begin("mainDisplay");
 	ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
-	//if (ImGui::ImageButton("texture##nobleScreen", ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450)))
-	//{
-	//	ImGui::OpenPopup("nobleScreen");
-	//}
 	ImGui::End();
 
 

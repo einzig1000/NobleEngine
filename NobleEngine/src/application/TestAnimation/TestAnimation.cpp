@@ -66,6 +66,8 @@ TestAnimation::TestAnimation()
 	animationID_ = Game::Asset::Animation::Load("resources/prototypes/model/human/sneakWalk.gltf", "sneakWalk");
 	// テクスチャデータ
 	texID_ = Game::Asset::Texture::Load("resources/prototypes/texture/AnimatedCube_BaseColor.png");
+	// 動的SRVの作成
+	heapIndex_ = Game::Resource::CreateDynamic();
 
 	ModelData* modelData = nullptr;
 	modelData = Game::Asset::Model::GetData(render_->modelID_);
@@ -95,7 +97,8 @@ void TestAnimation::Update(int32_t cameraID)
 	render_->SetCBufferData(1, ShaderType::PixelShader, &texID_);
 	render_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 	render_->SetCBufferData(1, ShaderType::VertexShader, &animationMatrix);
-	render_->SetSBufferData(0, ShaderType::VertexShader, skinCluster_.mappedPalette.data(), sizeof(WellForGPU), skinCluster_.mappedPalette.size());
+	Game::Resource::UpdateData(heapIndex_, skinCluster_.mappedPalette.data(), sizeof(WellForGPU), skinCluster_.mappedPalette.size());
+	render_->SetSBufferData(0, ShaderType::VertexShader, Game::Resource::GetSRV(heapIndex_));
 }
 
 void TestAnimation::Draw(int32_t renderTextureID)

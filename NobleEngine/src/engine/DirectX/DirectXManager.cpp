@@ -1,23 +1,19 @@
 #include "DirectXManager.h"
 #include <Utilities/Logger/Logger.h>
+#include <DirectX/Resource/Dx12ResourceUtilities.h>
 
 namespace
 {
-    void Transition(ID3D12GraphicsCommandList6* cmd, RenderTarget* target, bool isDepth, D3D12_RESOURCE_STATES newState)
+    void Transition(ID3D12GraphicsCommandList6* cmd, RenderTarget* target, bool isDepth, D3D12_RESOURCE_STATES afterState)
     {
 		ID3D12Resource* resource = isDepth ? target->depthResource.Get() : target->colorResource.Get();
-		D3D12_RESOURCE_STATES& pre = isDepth ? target->dsvState : target->state;
+		D3D12_RESOURCE_STATES& beforeState = isDepth ? target->dsvState : target->state;
 
-		if (pre == newState) return;
+		if (beforeState == afterState) return;
 
-        D3D12_RESOURCE_BARRIER barrier = {};
-        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Transition.pResource = resource;
-        barrier.Transition.StateBefore = pre;
-        barrier.Transition.StateAfter = newState;
-        cmd->ResourceBarrier(1, &barrier);
+        Dx12ResourceTransition::Transition(cmd, resource, beforeState, afterState);
         
-		pre = newState;
+        beforeState = afterState;
     }
 };
 

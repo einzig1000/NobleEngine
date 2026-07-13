@@ -12,6 +12,7 @@
 #include <FixFPS/FixFPS.h>
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
+#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <Utilities/Easing/Easing.h>
 #include <Utilities/Converter/ColorConverter/ColorConverter.h>
 #include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
@@ -510,15 +511,16 @@ namespace Game
 
 	namespace Time
 	{
-		// 時間関連
 		float GetDeltaTime()
 		{
 			return Engine::Instance().GetFixFPS()->GetDeltaTime();
 		}
+
 		uint32_t GetElapsedTime()
 		{
 			return Engine::Instance().GetFixFPS()->GetFrameCount();
 		}
+
 		float GetFrameRate()
 		{
 			return Engine::Instance().GetFixFPS()->GetAverageFPS();
@@ -550,9 +552,38 @@ namespace Game
 		}
 	}
 
+	namespace Resource
+	{
+		int32_t CreateDynamic()
+		{
+			return Engine::Instance().GetStructuredBufferManager()->CreateDynamic();
+		}
+		int32_t CreateCompute(size_t elementSize, size_t elementCount)
+		{
+			return Engine::Instance().GetStructuredBufferManager()->CreateComputeOutput(elementSize, elementCount);
+		}
+
+		void UpdateData(int32_t handle, const void* data, size_t elementSize, size_t elementCount)
+		{
+			Engine::Instance().GetStructuredBufferManager()->UpdateData(handle, data, elementSize, elementCount);
+		}
+
+		uint32_t GetSRV(int32_t handle)
+		{
+			return Engine::Instance().GetStructuredBufferManager()->GetSRV(handle);	
+		}
+
+		uint32_t GetUAV(int32_t handle)
+		{
+			return Engine::Instance().GetStructuredBufferManager()->GetUAV(handle);
+		}
+
+	}
+
 	void Game::quit()
 	{
 		Engine::Instance().Quit();
 	}
 
 }
+

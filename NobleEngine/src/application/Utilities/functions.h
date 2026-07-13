@@ -92,12 +92,3 @@ std::optional<Vector3> IntersectRayAABB(const Ray& ray, const AABB& box);
 
 
 
-
-
-
-/// <summary>
-/// クラッシュ時にミニダンプを生成する関数
-/// </summary>
-/// <param name="exception">例外情報</param>
-/// <returns>例外ハンドラの実行結果</returns>
-LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception);

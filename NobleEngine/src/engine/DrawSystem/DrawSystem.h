@@ -2,12 +2,12 @@
 #include <EngineDefinition/EngineDefinition.h>
 #include <EngineDefinition/EngineConstexprs.h>
 #include <DrawSystem/RenderData/RenderObject.h>
-#include <DirectX/FrameCbAllocator/FrameCbAllocator.h>
+#include <RootBinding/FrameCbAllocator/FrameCbAllocator.h>
 #include <memory>
 
 class DirectXManager;
 class AssetManager;
-
+class StructuredBufferManager;
 
 /// <summary>
 /// 描画管理クラス
@@ -15,10 +15,9 @@ class AssetManager;
 class DrawSystem
 {
 private:
-	FrameCbAllocator cbAllocators_[Constexprs::kFrameCount]{};
 
 public:
-	DrawSystem(DirectXManager* dxManager, AssetManager* resourceManager);
+	DrawSystem(DirectXManager* dxManager, StructuredBufferManager* structuredBufferManager, AssetManager* resourceManager);
 	~DrawSystem();
 	void Reset();
 	// 指定したレンダーテクスチャに書き込むフェーズ
@@ -35,6 +34,10 @@ public:
 	void AddScreenDrawList(const RenderObject* renderObject);
 
 private:
+	DirectXManager* dxManager_ = nullptr;
+	AssetManager* resourceManager_ = nullptr;
+	StructuredBufferManager* structuredBufferManager_ = nullptr;
+
 	// 描画オブジェクトをRenderTextureに描画する。
 	void DrawObject(const RenderObject* renderObject);
 
@@ -47,8 +50,6 @@ private:
 	std::unique_ptr<RenderObject> screenRenderObject_ = nullptr;
 	int32_t rt_nobleScreenID_ = -1;
 
-	// DirectXマネージャー
-	DirectXManager* dxManager_ = nullptr;
-	AssetManager* resourceManager_ = nullptr;
+	FrameCbAllocator cbAllocators_[Constexprs::kFrameCount]{};
 };
 

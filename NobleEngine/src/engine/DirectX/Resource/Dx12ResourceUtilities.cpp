@@ -1,6 +1,5 @@
-#include "Dx12ResourceFactory.h"
+#include "Dx12ResourceUtilities.h"
 #include <Utilities/Logger/Logger.h>
-#include <DirectX/DirectXManager.h>
 
 namespace Dx12ResourceFactory
 {
@@ -238,5 +237,20 @@ namespace Dx12ResourceFactory
         resource->SetName(L"CreateRenderTargetResource()");
 
         return resource; // 作成したリソースを返す
+    }
+}
+
+namespace Dx12ResourceTransition
+{
+    void Transition(ID3D12GraphicsCommandList6* cmdList, ID3D12Resource* resource,
+        D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
+    {
+        D3D12_RESOURCE_BARRIER barrier{};
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Transition.pResource = resource;
+        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        barrier.Transition.StateBefore = before;
+        barrier.Transition.StateAfter = after;
+        cmdList->ResourceBarrier(1, &barrier);
     }
 }

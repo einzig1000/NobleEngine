@@ -72,11 +72,11 @@
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\SRV_UAVManager.cpp" />
     <ClCompile Include="src\engine\DirectX\DeviceManager\DeviceManager.cpp" />
     <ClCompile Include="src\engine\DirectX\DirectXManager.cpp" />
-    <ClCompile Include="src\engine\DirectX\FrameCbAllocator\FrameCbAllocator.cpp" />
+    <ClCompile Include="src\engine\RootBinding\FrameCbAllocator\FrameCbAllocator.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp" />
     <ClCompile Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.cpp" />
-    <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceFactory.cpp" />
+    <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceUtilities.cpp" />
     <ClCompile Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.cpp" />
     <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp" />
     <ClCompile Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.cpp" />
@@ -95,16 +95,16 @@
     <ClCompile Include="src\engine\AssetManager\Model\ModelManager.cpp" />
     <ClCompile Include="src\engine\AssetManager\AssetManager.cpp" />
     <ClCompile Include="src\engine\AssetManager\Texture\TextureManager.cpp" />
-    <ClCompile Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.cpp" />
-    <ClCompile Include="src\engine\Utilities\Converter\ColorConverter\ColorConverter.cpp" />
-    <ClCompile Include="src\engine\Utilities\Converter\CoordinateConverter\CoordinateConverter.cpp" />
-    <ClCompile Include="src\engine\Utilities\Converter\StringConverter\StringConverter.cpp" />
-    <ClCompile Include="src\engine\Utilities\Easing\Easing.cpp" />
-    <ClCompile Include="src\engine\Utilities\functions.cpp" />
-    <ClCompile Include="src\engine\Utilities\Json\JsonManager.cpp" />
-    <ClCompile Include="src\engine\Utilities\Logger\Logger.cpp" />
+    <ClCompile Include="src\application\Utilities\Converter\AngleConverter\AngleConverter.cpp" />
+    <ClCompile Include="src\application\Utilities\Converter\ColorConverter\ColorConverter.cpp" />
+    <ClCompile Include="src\application\Utilities\Converter\CoordinateConverter\CoordinateConverter.cpp" />
+    <ClCompile Include="src\application\Utilities\Converter\StringConverter\StringConverter.cpp" />
+    <ClCompile Include="src\application\Utilities\Easing\Easing.cpp" />
+    <ClCompile Include="src\application\Utilities\functions.cpp" />
+    <ClCompile Include="src\application\Utilities\Json\JsonManager.cpp" />
+    <ClCompile Include="src\application\Utilities\Logger\Logger.cpp" />
     <ClCompile Include="src\application\PerlinNoise.cpp" />
-    <ClCompile Include="src\engine\Utilities\Random\Random.cpp" />
+    <ClCompile Include="src\application\Utilities\Random\Random.cpp" />
     <ClCompile Include="src\engine\Window\WindowManager.cpp" />
     <ClCompile Include="src\application\TestAnimation\TestAnimation.cpp" />
     <ClCompile Include="src\application\TestParticle\TestParticle.cpp" />
@@ -113,7 +113,7 @@
     <ClCompile Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.cpp" />
     <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp" />
-    <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\StructuredBufferManager.cpp" />
+    <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h" />
@@ -327,13 +327,13 @@
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\SRV_UAVManager.h" />
     <ClInclude Include="src\engine\DirectX\DeviceManager\DeviceManager.h" />
     <ClInclude Include="src\engine\DirectX\DirectXManager.h" />
-    <ClInclude Include="src\engine\DirectX\FrameCbAllocator\FrameCbAllocator.h" />
+    <ClInclude Include="src\engine\RootBinding\FrameCbAllocator\FrameCbAllocator.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\RenderPipelineTypes.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTargetStruct.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.h" />
-    <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceFactory.h" />
+    <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceUtilities.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.h" />
     <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h" />
     <ClInclude Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.h" />
@@ -352,16 +352,16 @@
     <ClInclude Include="src\engine\AssetManager\Model\ModelManager.h" />
     <ClInclude Include="src\engine\AssetManager\AssetManager.h" />
     <ClInclude Include="src\engine\AssetManager\Texture\TextureManager.h" />
-    <ClInclude Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.h" />
-    <ClInclude Include="src\engine\Utilities\Converter\ColorConverter\ColorConverter.h" />
-    <ClInclude Include="src\engine\Utilities\Converter\CoordinateConverter\CoordinateConverter.h" />
-    <ClInclude Include="src\engine\Utilities\Converter\StringConverter\StringConverter.h" />
-    <ClInclude Include="src\engine\Utilities\Easing\Easing.h" />
-    <ClInclude Include="src\engine\Utilities\functions.h" />
-    <ClInclude Include="src\engine\Utilities\Json\JsonManager.h" />
-    <ClInclude Include="src\engine\Utilities\Logger\Logger.h" />
+    <ClInclude Include="src\application\Utilities\Converter\AngleConverter\AngleConverter.h" />
+    <ClInclude Include="src\application\Utilities\Converter\ColorConverter\ColorConverter.h" />
+    <ClInclude Include="src\application\Utilities\Converter\CoordinateConverter\CoordinateConverter.h" />
+    <ClInclude Include="src\application\Utilities\Converter\StringConverter\StringConverter.h" />
+    <ClInclude Include="src\application\Utilities\Easing\Easing.h" />
+    <ClInclude Include="src\application\Utilities\functions.h" />
+    <ClInclude Include="src\application\Utilities\Json\JsonManager.h" />
+    <ClInclude Include="src\application\Utilities\Logger\Logger.h" />
     <ClInclude Include="src\application\PerlinNoise.h" />
-    <ClInclude Include="src\engine\Utilities\Random\Random.h" />
+    <ClInclude Include="src\application\Utilities\Random\Random.h" />
     <ClInclude Include="src\engine\Window\WindowManager.h" />
     <ClInclude Include="src\application\TestAnimation\TestAnimation.h" />
     <ClInclude Include="src\application\TestParticle\TestParticle.h" />
@@ -370,7 +370,7 @@
     <ClInclude Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.h" />
     <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h" />
     <ClInclude Include="src\engine\Editor\TimeEditor\TimeEditor.h" />
-    <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\StructuredBufferManager.h" />
+    <ClInclude Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

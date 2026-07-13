@@ -4,7 +4,6 @@
 #include <d3d12.h>
 #include <wrl.h>
 #include <Utilities/Logger/Logger.h>
-#include <DirectX/Resource/Dx12ResourceFactory.h>
 #include <DirectX/DirectXManager.h>
 #include <filesystem>
 #include <fstream>
@@ -100,4 +99,20 @@ namespace Dx12ResourceFactory
 	/// <returns>作成されたレンダーターゲット用のテクスチャリソース</returns>
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateRenderTargetResource(
 		ID3D12Device2* device, UINT width, UINT height, DXGI_FORMAT format, float clearColor[4]);
+}
+
+namespace Dx12ResourceTransition
+{
+	/// <summary>
+	/// リソースの状態を遷移させる関数
+	/// </summary>
+	/// <param name="commandList">DirectX 12 コマンドリスト</param>
+	/// <param name="resource">遷移させるリソース</param>
+	/// <param name="beforeState">遷移前のリソース状態</param>
+	/// <param name="afterState">遷移後のリソース状態</param>
+	void Transition(
+		ID3D12GraphicsCommandList6* commandList,
+		ID3D12Resource* resource,
+		D3D12_RESOURCE_STATES beforeState,
+		D3D12_RESOURCE_STATES afterState);
 }

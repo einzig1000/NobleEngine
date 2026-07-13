@@ -51,6 +51,8 @@ Chunk::Chunk()
 	renderData_->psoConfig_.ms = "resources/shaders/Block.MS.hlsl";
 	renderData_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
 	renderData_->SetupFromShaders();
+
+	colorHeapIndex_ = Game::Resource::CreateDynamic();
 }
 
 Chunk::~Chunk()
@@ -822,7 +824,9 @@ void Chunk::Update(int32_t cameraID)
 
 	if (vertexColors_.size() > 0)
 	{
-		renderData_->SetSBufferData(0, ShaderType::MeshShader, vertexColors_.data(), sizeof(uint32_t), vertexColors_.size());
+		Game::Resource::UpdateData(colorHeapIndex_, vertexColors_.data(), sizeof(uint32_t), vertexColors_.size());
+		renderData_->SetSBufferData(0, ShaderType::MeshShader, Game::Resource::GetSRV(colorHeapIndex_));
+		//renderData_->SetSBufferData(0, ShaderType::MeshShader, vertexColors_.data(), sizeof(uint32_t), vertexColors_.size());
 	}
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	renderData_->SetCBufferData(1, ShaderType::MeshShader, &viewPro);

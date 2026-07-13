@@ -1,16 +1,47 @@
 #include "Engine.h"
-#include <Utilities/functions.h>
-#include <IO/IOManager.h>
+//#include <Utilities/functions.h>
 #include <Window/WindowManager.h>
 #include <DirectX/DirectXManager.h>
-#include <AssetManager/AssetManager.h>
 #include <DrawSystem/DrawSystem.h>
+#include <ComputeSystem/ComputeSystem.h>
+#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
+#include <IO/IOManager.h>
 #include <Camera/CameraManager.h>
 #include <imGuiManager/ImGuiManager.h>
+#include <AssetManager/AssetManager.h>
 #include <FixFPS/FixFPS.h>
 #include <Editor/EngineEditor.h>
 
-using namespace DirectX;
+#include <windows.h>
+#include <DbgHelp.h>
+#include <strsafe.h>
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "Dbghelp.lib")
+
+
+LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception)
+{
+	//時刻を取得して、時刻を名前に入れたファイルを作成。Dumpsディレクトリ以下に出力
+	SYSTEMTIME time;
+	GetLocalTime(&time);
+	wchar_t filePath[MAX_PATH] = { 0 };
+	CreateDirectory(L"./Dumps", nullptr);
+	StringCchPrintfW(filePath, MAX_PATH, L"./Dumps/%04d-%02d%02d-%02d%02d.dmp", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute);
+	HANDLE dumpFileHandle = CreateFile(filePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+	// processId (このexeのId) とクラッシュ (例外)の発生したthreadIdを取得
+	DWORD processId = GetCurrentProcessId();
+	DWORD threadId = GetCurrentThreadId();
+	// 設定情報を入力
+	MINIDUMP_EXCEPTION_INFORMATION minidumpInformation{ 0 };
+	minidumpInformation.ThreadId = threadId;
+	minidumpInformation.ExceptionPointers = exception;
+	minidumpInformation.ClientPointers = TRUE;
+	// Dumpを出力。MiniDumpNormalは最低限の情報を出力するフラグ
+	MiniDumpWriteDump(GetCurrentProcess(), processId, dumpFileHandle, MiniDumpNormal, &minidumpInformation, nullptr, nullptr);
+	// 他に関連づけられているSEH例外ハンドラがあれば実行。通常はプロセスを終了する
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
 
 Engine& Engine::Instance()
 {
@@ -29,11 +60,13 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 
 	windowManager_ = std::make_unique<WindowManager>(width, height, title);
 	dxManager_ = std::make_unique<DirectXManager>(windowManager_->GetHwnd());
-	cameraManager_ = std::make_unique<CameraManager>();
+	structuredBufferManager_ = std::make_unique<StructuredBufferManager>(dxManager_.get());
 	imguiManager_ = std::make_unique<ImGuiManager>(dxManager_.get(), windowManager_.get());
 	assetManager_ = std::make_unique<AssetManager>(dxManager_.get());
+	cameraManager_ = std::make_unique<CameraManager>();
 	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd(), cameraManager_.get());
-	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), assetManager_.get());
+	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), structuredBufferManager_.get(), assetManager_.get());
+	computeSystem_ = std::make_unique<ComputeSystem>(dxManager_.get(), structuredBufferManager_.get());
 	fixFPS_ = std::make_unique<FixFPS>();
 
 	windowManager_->AttachMouseController(ioManager_->GetMouseController());

@@ -17,6 +17,7 @@ private:
 
 	float animationTime_ = 0.0f;
 
+	int32_t heapIndex_ = -1;
 	int32_t animationID_ = -1;
 	uint32_t texID_ = -1;
 	SkinCluster skinCluster_;
