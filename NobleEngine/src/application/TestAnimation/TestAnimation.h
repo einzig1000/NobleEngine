@@ -1,5 +1,6 @@
 #pragma once
 #include <DrawSystem/RenderData/RenderObject.h>
+#include <ComputeSystem/ComputeObject/ComputeObject.h>
 #include <definition/definition.h>
 #include <memory>
 
@@ -14,13 +15,18 @@ public:
 
 private:
 	std::unique_ptr<RenderObject> render_;
+	std::unique_ptr<ComputeObject> compute_;
 
 	float animationTime_ = 0.0f;
 
-	int32_t heapIndex_ = -1;
+	int32_t WellSRVID_ = -1;
+	int32_t vertexSRVID_ = -1;
+	int32_t vertexInflenceSRVID_ = -1;
+
 	int32_t animationID_ = -1;
 	uint32_t texID_ = -1;
 	SkinCluster skinCluster_;
-	Skeleton skeleton;
+	Skeleton skeleton_;
+	ModelData* modelData_ = nullptr;
 };
 

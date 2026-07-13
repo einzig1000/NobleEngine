@@ -7,17 +7,14 @@
 
 class DirectXManager;
 class AssetManager;
-class StructuredBufferManager;
 
 /// <summary>
 /// 描画管理クラス
 /// </summary>
 class DrawSystem
 {
-private:
-
 public:
-	DrawSystem(DirectXManager* dxManager, StructuredBufferManager* structuredBufferManager, AssetManager* resourceManager);
+	DrawSystem(DirectXManager* dxManager, AssetManager* assetManager);
 	~DrawSystem();
 	void Reset();
 	// 指定したレンダーテクスチャに書き込むフェーズ
@@ -35,8 +32,7 @@ public:
 
 private:
 	DirectXManager* dxManager_ = nullptr;
-	AssetManager* resourceManager_ = nullptr;
-	StructuredBufferManager* structuredBufferManager_ = nullptr;
+	AssetManager* assetManager_ = nullptr;
 
 	// 描画オブジェクトをRenderTextureに描画する。
 	void DrawObject(const RenderObject* renderObject);

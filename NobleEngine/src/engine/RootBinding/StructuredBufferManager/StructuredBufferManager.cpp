@@ -89,13 +89,14 @@ void StructuredBufferManager::Destroy(int32_t handle)
 
 uint32_t StructuredBufferManager::GetSRV(int32_t handle) const
 {
-	if (kindMap_.find(handle) == kindMap_.end())
+	auto it = kindMap_.find(handle);
+	if (it == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferのSRVを取得しようとしました。");
 		return UINT32_MAX;
 	}
 
-	switch (kindMap_.at(handle))
+	switch (it->second)
 	{
 	case BufferKind::Static:        return staticBuffers_.at(handle).srv.index;
 	case BufferKind::Dynamic:       return dynamicBuffers_.at(handle).srvAllocations[dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()].index;
@@ -107,13 +108,14 @@ uint32_t StructuredBufferManager::GetSRV(int32_t handle) const
 
 uint32_t StructuredBufferManager::GetUAV(int32_t handle) const
 {
-	if (kindMap_.find(handle) == kindMap_.end())
+	auto it = kindMap_.find(handle);
+	if (it == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferのUAVを取得しようとしました。");
 		return UINT32_MAX;
 	}
 
-	if (kindMap_.at(handle) != BufferKind::ComputeOutput)
+	if (it->second != BufferKind::ComputeOutput)
 	{
 		Log("ComputeOutputのバッファ以外はUAVを取得できません");
 		return UINT32_MAX;
@@ -150,6 +152,12 @@ void StructuredBufferManager::TransitionToUAV(int32_t handle, ID3D12GraphicsComm
 		return;
 	}
 
+	if (kindMap_.at(handle) != BufferKind::ComputeOutput)
+	{
+		Log("ComputeOutputのバッファ以外はUAVに遷移できません");
+		return;
+	}
+
 	auto& entry = computeOutBuffers_.at(handle);
 
 	// 既にUAV状態ならreturn
@@ -164,6 +172,12 @@ void StructuredBufferManager::TransitionToSRV(int32_t handle, ID3D12GraphicsComm
 	if (kindMap_.find(handle) == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferをSRVに遷移しようとしました。");
+		return;
+	}
+
+	if (kindMap_.at(handle) != BufferKind::ComputeOutput)
+	{
+		Log("ComputeOutputのバッファ以外はSRVに遷移できません");
 		return;
 	}
 

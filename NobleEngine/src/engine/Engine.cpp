@@ -65,7 +65,7 @@ void Engine::Initialize(int width, int height, const std::wstring& title)
 	assetManager_ = std::make_unique<AssetManager>(dxManager_.get());
 	cameraManager_ = std::make_unique<CameraManager>();
 	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd(), cameraManager_.get());
-	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), structuredBufferManager_.get(), assetManager_.get());
+	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), assetManager_.get());
 	computeSystem_ = std::make_unique<ComputeSystem>(dxManager_.get(), structuredBufferManager_.get());
 	fixFPS_ = std::make_unique<FixFPS>();
 
@@ -104,7 +104,10 @@ void Engine::BeginFrame()
 	// imguiを更新
 	imguiManager_->BeginFrame();
 
-	// 描画関数初期化
+	// GPU計算システム初期化
+	computeSystem_->Reset();
+
+	// 描画システム初期化
 	drawSystem_->Reset();
 
 	// DirectXを更新
@@ -132,6 +135,9 @@ void Engine::EndFrame()
 
 	// カメラのImGui描画
 	cameraManager_->DrawImGui();
+
+	// gpu計算処理
+	computeSystem_->DispatchComputeObjects();
 
 	// 描画処理
 	drawSystem_->SceneDraw();

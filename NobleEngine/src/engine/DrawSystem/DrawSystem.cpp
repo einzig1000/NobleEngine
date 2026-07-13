@@ -7,8 +7,8 @@
 #include <Engine.h>
 #include <numbers>
 
-DrawSystem::DrawSystem(DirectXManager* dxManager, StructuredBufferManager* structuredBufferManager, AssetManager* resourceManager)
-	:dxManager_(dxManager), resourceManager_(resourceManager), structuredBufferManager_(structuredBufferManager)
+DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager)
+	:dxManager_(dxManager), assetManager_(assetManager)
 {
 	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
 	{
@@ -115,7 +115,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
 
 		// モデルの検索
-		const ModelData* obj = resourceManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
+		const ModelData* obj = assetManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
 		//cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
 		if (!obj) return;
 		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
@@ -178,7 +178,7 @@ void DrawSystem::PreScreenDraw()
 
 void DrawSystem::ScreenDraw()
 {
-	screenRenderObject_->modelID_ = resourceManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
+	screenRenderObject_->modelID_ = assetManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
 	//DrawObject(screenRenderObject_.get());
 

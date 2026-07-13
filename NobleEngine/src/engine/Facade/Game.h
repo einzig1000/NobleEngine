@@ -2,6 +2,8 @@
 #include <EngineDefinition/EngineConstexprs.h>
 #include <EngineDefinition/EngineDefinition.h>
 #include <ImGuiManager/ImGuiManager.h>
+#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
+#include <Engine.h>
 
 /// <summary>
 /// ファサードクラス
@@ -676,7 +678,7 @@ namespace Game
 		template<typename T>
 		int32_t CreateStatic(const std::vector<T>& data)
 		{
-			return 0;
+			return Engine::Instance().GetStructuredBufferManager()->CreateStatic(data);
 		}
 
 		/// <summary>

@@ -9,9 +9,9 @@ class ComputeObject
 public:
 	void SetupFromShaders();
 
-	void SetCBufferData(const uint32_t key, ShaderType shaderType, const void* data, uint32_t space = 0);
-	void SetSBufferData(const uint32_t key, ShaderType shaderType, const uint32_t srvAllocIndex, uint32_t space = 0);
-	void SetUAVData(const uint32_t key, ShaderType shaderType, const uint32_t uavAllocIndex, uint32_t space = 0);
+	void SetCBufferData(const uint32_t key, const void* data, uint32_t space = 0);
+	void SetSBufferData(const uint32_t key, const uint32_t srvAllocIndex, uint32_t space = 0);
+	void SetUAVData(const uint32_t key, const uint32_t uavAllocIndex, uint32_t space = 0);
 
 	// このComputeObjectが書き込む出力バッファをバリア管理のために登録しておく
 	void RegisterOutput(int32_t handle) { outputHandles_.push_back(handle); }
