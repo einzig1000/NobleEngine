@@ -204,19 +204,16 @@
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\MapManager\MapManager.cpp">
+    <ClCompile Include="src\application\GameObjects\Map\MapManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Chunk.cpp">
+    <ClCompile Include="src\application\GameObjects\Map\Chunk\Chunk.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\Block.cpp">
+    <ClCompile Include="src\application\GameObjects\Map\Chunk\Block\Block.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\BlockConfig.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\BlockDurability.cpp">
+    <ClCompile Include="src\application\GameObjects\Map\Chunk\Block\BlockConfig.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp">
@@ -322,6 +319,45 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Character\BaseCharacter.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Character\Player\Player.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\UIScreen.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\CraftScreen\CraftScreen.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\InventoryScreen\InventoryScreen.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\PauseScreen\PauseScreen.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\PlayingScreen\PlayingScreen.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\Craft\Craft.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\Hotbar\Hotbar.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\Inventory\Inventory.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\Pause\Pause.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\UIElement.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -521,19 +557,16 @@
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\MapManager\MapManager.h">
+    <ClInclude Include="src\application\GameObjects\Map\MapManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Chunk.h">
+    <ClInclude Include="src\application\GameObjects\Map\Chunk\Chunk.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\Block.h">
+    <ClInclude Include="src\application\GameObjects\Map\Chunk\Block\Block.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\BlockConfig.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\BlockDurability.h">
+    <ClInclude Include="src\application\GameObjects\Map\Chunk\Block\BlockConfig.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\ResourceLoader\ResourceID.h">
@@ -1089,6 +1122,45 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Character\BaseCharacter.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Character\Player\Player.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\UIScreen.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\PlayingScreen\PlayingScreen.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\PauseScreen\PauseScreen.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\InventoryScreen\InventoryScreen.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\CraftScreen\CraftScreen.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\Craft\Craft.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\Hotbar\Hotbar.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\Inventory\Inventory.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\Pause\Pause.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\UIElement.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

@@ -173,16 +173,20 @@ void Engine::Finalize()
 	engineEditor_.reset();
 	// フレームレート制御
 	fixFPS_.reset();
+	// GPU計算関連
+	computeSystem_.reset();
 	// 描画関連
 	drawSystem_.reset();
 	// 入力関連
 	ioManager_.reset();
+	// カメラ
+	cameraManager_.reset();
 	// アセット管理
 	assetManager_.reset();
 	// ImGui
 	imguiManager_.reset();
-	// カメラ
-	cameraManager_.reset();
+	// 
+	structuredBufferManager_.reset();
 	// DirectX関連
 	dxManager_.reset();
 	// ウィンドウ関連

@@ -734,13 +734,13 @@ struct EasingSet
 
 
 // 変換情報
-struct EulerTransform
+struct EulerTransforms
 {
     Vector3 scale = { 1,1,1 };
     Vector3 rotate = { 0,0,0 };
     Vector3 translate = { 0,0,0 };
 };
-struct QuaternionTransform
+struct QuaternionTransforms
 {
 	Vector3 scale = { 1,1,1 };
 	Quaternion rotate;
@@ -791,7 +791,7 @@ struct AnimationData
 
 struct Node
 {
-	QuaternionTransform transform;
+	QuaternionTransforms transform;
 	Matrix4x4 localMatrix;
 	std::string name;
 	std::vector<Node> children;
@@ -799,7 +799,7 @@ struct Node
 
 struct Joint
 {
-	QuaternionTransform transform;      // ローカル座標系での変換情報
+	QuaternionTransforms transform;      // ローカル座標系での変換情報
 	Matrix4x4 localMatrix;              // ローカル座標系での変換行列
 	Matrix4x4 skeletonSpaceMatrix;      // スケルトン空間での変換行列(スキニングのときに使う)
 	std::string name;                   // 名前
@@ -1057,12 +1057,12 @@ struct CollisionFlags
 enum class AABBFace
 {
     NONE = -1,
-    FRONT = 0,  // z+
-    BACK = 1,   // z-
-    LEFT = 2,   // x+
-    RIGHT = 3,  // x-
-    TOP = 4,    // y+
-    BOTTOM = 5, // y-
+    ZPlus = 0,  // z+
+    ZMinus = 1,   // z-
+    XPlus = 2,   // x+
+    XMinus = 3,  // x-
+    YPlus = 4,    // y+
+    YMinus = 5, // y-
 };
 std::string EnumToString(AABBFace e);
 

@@ -297,9 +297,9 @@ namespace Game
 
 	namespace Camera
 	{
-		int32_t AddCamera()
+		int32_t AddCamera(const std::string& name)
 		{
-			return Engine::Instance().GetCameraManager()->AddCamera();
+			return Engine::Instance().GetCameraManager()->AddCamera(name);
 		}
 
 		void Update(int32_t cameraID)

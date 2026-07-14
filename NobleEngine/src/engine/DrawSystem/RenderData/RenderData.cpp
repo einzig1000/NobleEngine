@@ -1,5 +1,5 @@
 #include "RenderData.h"
-#include "Game.h"
+#include <Game.h>
 #include "Engine.h"
 #include "DirectX/DirectXManager.h"
 //
@@ -395,58 +395,58 @@
 //		if (collisionInf.IDpair.light == this->ID)
 //		{
 //			/// 衝突したAABB面のペア・深度がわかっているので、それに基づいて移動
-//			if (collisionInf.face.light == AABBFace::LEFT)
+//			if (collisionInf.face.light == AABBFace::XPlus)
 //			{
 //				this->translate.value.x += collisionInf.depth.x;
 //			}
-//			else if (collisionInf.face.light == AABBFace::RIGHT)
+//			else if (collisionInf.face.light == AABBFace::XMinus)
 //			{
 //				this->translate.value.x -= collisionInf.depth.x;
 //			}
-//			else if (collisionInf.face.light == AABBFace::BOTTOM)
+//			else if (collisionInf.face.light == AABBFace::YMinus)
 //			{
 //				this->translate.value.y += collisionInf.depth.y;
 //			}
-//			else if (collisionInf.face.light == AABBFace::TOP)
+//			else if (collisionInf.face.light == AABBFace::YPlus)
 //			{
 //				this->translate.value.y -= collisionInf.depth.y;
 //			}
-//			else if (collisionInf.face.light == AABBFace::BACK)
+//			else if (collisionInf.face.light == AABBFace::ZMinus)
 //			{
 //				this->translate.value.z += collisionInf.depth.z;
 //			}
-//			else if (collisionInf.face.light == AABBFace::FRONT)
+//			else if (collisionInf.face.light == AABBFace::ZPlus)
 //			{
 //				this->translate.value.z -= collisionInf.depth.z;
 //			}
 //
 //			// 衝突しているのにその方向に加速度がかかっている場合はこのフレームで加速した分を打ち消す
-//			if (collisionInf.face.light == AABBFace::LEFT && this->translate.acceleration.x < 0.0f)
+//			if (collisionInf.face.light == AABBFace::XPlus && this->translate.acceleration.x < 0.0f)
 //			{
 //				this->translate.velocity.x -= this->translate.acceleration.x;
 //				//this->translate.acceleration.x = 0.0f;
 //			}
-//			else if (collisionInf.face.light == AABBFace::RIGHT && this->translate.acceleration.x > 0.0f)
+//			else if (collisionInf.face.light == AABBFace::XMinus && this->translate.acceleration.x > 0.0f)
 //			{
 //				this->translate.velocity.x -= this->translate.acceleration.x;
 //				//this->translate.acceleration.x = 0.0f;
 //			}
-//			else if (collisionInf.face.light == AABBFace::BOTTOM && this->translate.acceleration.y < 0.0f)
+//			else if (collisionInf.face.light == AABBFace::YMinus && this->translate.acceleration.y < 0.0f)
 //			{
 //				this->translate.velocity.y -= this->translate.acceleration.y;
 //				//this->translate.acceleration.y = 0.0f;
 //			}
-//			else if (collisionInf.face.light == AABBFace::TOP && this->translate.acceleration.y > 0.0f)
+//			else if (collisionInf.face.light == AABBFace::YPlus && this->translate.acceleration.y > 0.0f)
 //			{
 //				this->translate.velocity.y -= this->translate.acceleration.y;
 //				//this->translate.acceleration.y = 0.0f;
 //			}
-//			else if (collisionInf.face.light == AABBFace::BACK && this->translate.acceleration.z < 0.0f)
+//			else if (collisionInf.face.light == AABBFace::ZMinus && this->translate.acceleration.z < 0.0f)
 //			{
 //				this->translate.velocity.z -= this->translate.acceleration.z;
 //				//this->translate.acceleration.z = 0.0f;
 //			}
-//			else if (collisionInf.face.light == AABBFace::FRONT && this->translate.acceleration.z > 0.0f)
+//			else if (collisionInf.face.light == AABBFace::ZPlus && this->translate.acceleration.z > 0.0f)
 //			{
 //				this->translate.velocity.z -= this->translate.acceleration.z;
 //				//this->translate.acceleration.z = 0.0f;
@@ -696,16 +696,16 @@
 //			CollisionAABBFace faces{ AABBFace::NONE, AABBFace::NONE };
 //
 //			if (axis == 0) { // x
-//				if (centerT.x < centerS.x) { faces.light = AABBFace::RIGHT; faces.heavy = AABBFace::LEFT; }
-//				else { faces.light = AABBFace::LEFT; faces.heavy = AABBFace::RIGHT; }
+//				if (centerT.x < centerS.x) { faces.light = AABBFace::XMinus; faces.heavy = AABBFace::XPlus; }
+//				else { faces.light = AABBFace::XPlus; faces.heavy = AABBFace::XMinus; }
 //			}
 //			else if (axis == 1) { // y
-//				if (centerT.y < centerS.y) { faces.light = AABBFace::TOP; faces.heavy = AABBFace::BOTTOM; }
-//				else { faces.light = AABBFace::BOTTOM; faces.heavy = AABBFace::TOP; }
+//				if (centerT.y < centerS.y) { faces.light = AABBFace::YPlus; faces.heavy = AABBFace::YMinus; }
+//				else { faces.light = AABBFace::YMinus; faces.heavy = AABBFace::YPlus; }
 //			}
 //			else { // z
-//				if (centerT.z < centerS.z) { faces.light = AABBFace::FRONT; faces.heavy = AABBFace::BACK; }
-//				else { faces.light = AABBFace::BACK; faces.heavy = AABBFace::FRONT; }
+//				if (centerT.z < centerS.z) { faces.light = AABBFace::ZPlus; faces.heavy = AABBFace::ZMinus; }
+//				else { faces.light = AABBFace::ZMinus; faces.heavy = AABBFace::ZPlus; }
 //			}
 //
 //			// 最小貫通深度の更新

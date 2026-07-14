@@ -1,6 +1,7 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
 #include <EngineDefinition/EngineConstexprs.h>
+#include <definition/constexprs.h>
 #include <string>
 #include <string_view>
 #include <stdexcept>

@@ -1,28 +1,26 @@
 #include "GameScenePhase.h"
-#include <GameObjects/MapManager/MapManager.h>
+#include <GameObjects/Map/MapManager.h>
 #include <ResourceLoader/ResourceID.h>
-#include <Character/Player/Player.h>
-#include <Character/Enemy/EnemyManager.h>
+#include <GameObjects/Character/Player/Player.h>
+#include <GameObjects/Character/Enemy/EnemyManager.h>
 #include <Camera/CameraController.h>
-#include <UIManager/UIManager.h>
+#include <GameObjects/UI/UIManager.h>
 #include <GameObjects/Item/CraftRecipe/CraftRecipe.h>
 #include <fstream>
 
 GameScenePhase::GameScenePhase()
 {
-	Game::Camera::AddCamera();
-
 	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
-	c_main_ = Game::Camera::AddCamera();
+	c_debug_ = Game::Camera::AddCamera("DebugCamera");
 
 	// プレイヤー生成
-	//player_ = std::make_unique<Player>();
+	player_ = std::make_unique<Player>();
 	// カメラコントローラー生成
 	//cameraController_ = std::make_unique<CameraController>();
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
 	// UIマネージャー生成
-	//uiManager_ = std::make_unique<UIManager>();
+	uiManager_ = std::make_unique<UIManager>();
 	// 敵マネージャー生成
 	//enemyManager_ = std::make_unique<EnemyManager>();
 
@@ -35,8 +33,8 @@ GameScenePhase::GameScenePhase()
 	//cameraController_->SetUIManager(uiManager_.get());
 
 	// プレイヤーにマップマネージャーをセット
-	//player_->SetMapManager(map_.get());
-	//player_->SetUIManager(uiManager_.get());
+	player_->SetMapManager(map_.get());
+	player_->SetUIManager(uiManager_.get());
 
 	// 敵マネージャーにプレイヤーをセット
 	//enemyManager_->SetPlayer(player_.get());
@@ -44,15 +42,13 @@ GameScenePhase::GameScenePhase()
 	//enemyManager_->SetUIManager(uiManager_.get());
 
 	// UIマネージャーにプレイヤーとマップマネージャーをセット
-	//uiManager_->SetPlayer(player_.get());
-	//uiManager_->SetMapManager(map_.get());
+	uiManager_->SetPlayer(player_.get());
+	uiManager_->SetMapManager(map_.get());
 
 	// 物理システムにワールドコライダーをセット
 	//Game::Physics::AddWorldCollider(map_.get());
 	//Game::Physics::ClearDynamicAll();
 
-	// プレイヤーの物理演算有効化
-	//Game::Physics::RegisterDynamic(&player_->data_);
 
 	//CraftRecipeList::InitializeRecipes();
 	//ResourceID::reload();
@@ -62,7 +58,6 @@ GameScenePhase::GameScenePhase()
 	render_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
 	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
 	render_->SetupFromShaders();
-
 }
 
 GameScenePhase::~GameScenePhase() {}
@@ -72,8 +67,8 @@ void GameScenePhase::Initialize()
 	nextPhase_ = PHASE::Phase_None;
 
 	map_->Initialize();
-	//player_->Initialize();
-	//uiManager_->Initialize();
+	player_->Initialize();
+	uiManager_->Initialize();
 	//enemyManager_->Initialize();
 
 	if (context_->isNewGame) map_->CreateNewMap(context_->mapName, context_->seed);
@@ -86,18 +81,21 @@ void GameScenePhase::Initialize()
 
 void GameScenePhase::Update()
 {
+	//int32_t targetCameraID = c_debug_;
+	int32_t targetCameraID = player_->GetCameraID();
+	Game::Camera::Update(targetCameraID);
+
 	// プレイヤー更新
-	//player_->Update();
+	player_->Update(targetCameraID);
 	// 敵マネージャー更新
 	//enemyManager_->Update();
 	// マップ更新
-	map_->Update(c_main_);
+	map_->Update(targetCameraID);
 	// UI更新
-	//uiManager_->Update();
+	uiManager_->Update(targetCameraID);
 	// カメラ更新
 	//cameraController_->Update();
 
-	Game::Camera::Update(c_main_);
 
 	render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
 }
@@ -108,11 +106,11 @@ void GameScenePhase::Draw()
 	// マップ描画
 	map_->Draw(rt_main_);
 	// プレイヤー描画
-	//player_->Draw();
+	player_->Draw(rt_main_);
 	// 敵描画
 	//enemyManager_->Draw();
 	// UI描画
-	//uiManager_->Draw();
+	uiManager_->Draw();
 
 	render_->ScreenDraw();
 }
@@ -122,11 +120,11 @@ void GameScenePhase::DrawImGui()
 	// マップImGui描画
 	map_->DrawImGui();
 	// プレイヤーImGui描画
-	//player_->DrawImGui();
+	player_->DrawImGui();
 	// 敵ImGui描画
 	//enemyManager_->DrawImGui();
 	// UIImGui描画
-	//uiManager_->DrawImGui();
+	uiManager_->DrawImGui();
 
 	//ImGui::Begin("------debug info------");
 	//ImGui::Text("ESC : Quit Application");

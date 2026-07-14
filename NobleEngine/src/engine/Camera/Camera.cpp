@@ -81,7 +81,7 @@ void Camera::Update_Orbit()
 	MovingFov();
 
 	// 距離をクランプ
-	if (spherical_.radius < 1.0f) spherical_.radius = 1.0f;
+	if (spherical_.radius < 0.1f) spherical_.radius = 0.1f;
 
     // ピッチのクランプ
     spherical_.phi = std::clamp(
@@ -148,7 +148,7 @@ void Camera::DrawImGui()
 	tag = "target" + radiusTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &distanceEasing_.target, 0.1f);
 	tag = "easeType" + radiusTag + cameraTag;
-	int easeType = static_cast<int>(distanceEasing_.easetype);
+	int32_t easeType = static_cast<int32_t>(distanceEasing_.easetype);
     if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
     {
 		distanceEasing_.easetype = static_cast<EaseType>(easeType);
@@ -167,7 +167,7 @@ void Camera::DrawImGui()
 	tag = "target" + phiTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &rotateEasing_.target.x, 0.01f);
 	tag = "easeType" + phiTag + cameraTag;
-	int easeType2 = static_cast<int>(rotateEasing_.easetype);
+	int32_t easeType2 = static_cast<int32_t>(rotateEasing_.easetype);
 	if (ImGui::Combo(tag.c_str(), &easeType2, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
 		rotateEasing_.easetype = static_cast<EaseType>(easeType2);
@@ -186,7 +186,7 @@ void Camera::DrawImGui()
 	tag = "target" + thetaTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &rotateEasing_.target.y, 0.01f);
 	tag = "easeType" + thetaTag + cameraTag;
-	int easeType3 = static_cast<int>(rotateEasing_.easetype);
+	int32_t easeType3 = static_cast<int32_t>(rotateEasing_.easetype);
 	if (ImGui::Combo(tag.c_str(), &easeType3, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
 		rotateEasing_.easetype = static_cast<EaseType>(easeType3);
@@ -205,7 +205,7 @@ void Camera::DrawImGui()
 	tag = "target" + centerTag + cameraTag;
 	ImGui::DragFloat3(tag.c_str(), &centerEasing_.target.x, 0.1f);
 	tag = "easeType" + centerTag + cameraTag;
-	int easeType4 = static_cast<int>(centerEasing_.easetype);
+	int32_t easeType4 = static_cast<int32_t>(centerEasing_.easetype);
 	if (ImGui::Combo(tag.c_str(), &easeType4, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
 		centerEasing_.easetype = static_cast<EaseType>(easeType4);
@@ -229,7 +229,7 @@ void Camera::DrawImGui()
 	tag = "target" + screenSizeTag + cameraTag;
 	ImGui::DragFloat2(tag.c_str(), &screenSizeEasing_.target.x, 1.0f);
 	tag = "easeType" + screenSizeTag + cameraTag;
-	int easeType6 = static_cast<int>(screenSizeEasing_.easetype);
+	int32_t easeType6 = static_cast<int32_t>(screenSizeEasing_.easetype);
 	if (ImGui::Combo(tag.c_str(), &easeType6, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
 		screenSizeEasing_.easetype = static_cast<EaseType>(easeType6);
@@ -251,7 +251,7 @@ void Camera::DrawImGui()
 	tag = "target" + fovYTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &fovEasing_.target, 0.01f);
 	tag = "easeType" + fovYTag + cameraTag;
-	int easeType5 = static_cast<int>(fovEasing_.easetype);
+	int32_t easeType5 = static_cast<int32_t>(fovEasing_.easetype);
 	if (ImGui::Combo(tag.c_str(), &easeType5, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
 		fovEasing_.easetype = static_cast<EaseType>(easeType5);
@@ -270,7 +270,7 @@ void Camera::DrawImGui()
 	ImGui::Text("enableControl");
 
 	std::string cameraModeTag = tag + ".cameraMode";
-	int currentMode = static_cast<int>(cameraMode_);
+	int32_t currentMode = static_cast<int32_t>(cameraMode_);
 	static const char* items[] = { "ORBIT", "FPS" };
     if (ImGui::Combo(cameraModeTag.c_str(), &currentMode, items, IM_ARRAYSIZE(items)))
     {
@@ -314,7 +314,7 @@ void Camera::CreateFrustumPlanes()
     frustumPlanes_[5].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][2];
 
     // 各平面を正規化
-    for (int i = 0; i < 6; ++i)
+    for (int32_t i = 0; i < 6; ++i)
     {
         float length = sqrt(frustumPlanes_[i].normal.x * frustumPlanes_[i].normal.x +
             frustumPlanes_[i].normal.y * frustumPlanes_[i].normal.y +
@@ -342,9 +342,9 @@ bool Camera::InCamera(const AABB& aabb)
     // 6つの各平面に対してテスト
     for (const auto& plane : frustumPlanes_)
     {
-        int inCount = 0;
+        int32_t inCount = 0;
         // AABBのすべての頂点が平面の裏側にあるかチェック
-        for (int i = 0; i < 8; ++i)
+        for (int32_t i = 0; i < 8; ++i)
         {
             float dist = plane.normal.Dot(points[i]) + plane.distance;
             if (dist >= 0)
@@ -463,7 +463,7 @@ void Camera::MovingFov()
 }
 
 // 動かす先の設定
-void Camera::SetCenterTarget(Vector3 target, int duration, EaseType easetype)
+void Camera::SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype)
 {
 	if (duration <= 0)
 	{
@@ -480,7 +480,7 @@ void Camera::SetCenterTarget(Vector3 target, int duration, EaseType easetype)
 		centerEasing_.easetype = easetype;
 	}
 }
-void Camera::SetRotateTarget(Vector3 target, int duration, EaseType easetype)
+void Camera::SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype)
 {
 	if (duration <= 0)
 	{
@@ -498,7 +498,7 @@ void Camera::SetRotateTarget(Vector3 target, int duration, EaseType easetype)
 		rotateEasing_.easetype = easetype;
 	}
 }
-void Camera::SetDistanceTarget(float target, int duration, EaseType easetype)
+void Camera::SetDistanceTarget(float target, int32_t duration, EaseType easetype)
 {
 	if (duration <= 0)
 	{
@@ -515,7 +515,7 @@ void Camera::SetDistanceTarget(float target, int duration, EaseType easetype)
 		distanceEasing_.easetype = easetype;
 	}
 }
-void Camera::SetScreenSizeTarget(Vector2 target, int duration, EaseType easetype)
+void Camera::SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType easetype)
 {
     if (duration <= 0)
     {
@@ -534,7 +534,7 @@ void Camera::SetScreenSizeTarget(Vector2 target, int duration, EaseType easetype
         screenSizeEasing_.easetype = easetype;
     }
 }
-void Camera::SetFovTarget(float target, int duration, EaseType easetype)
+void Camera::SetFovTarget(float target, int32_t duration, EaseType easetype)
 {
 	if (duration <= 0)
 	{

@@ -1,0 +1,15 @@
+#pragma once
+#include <Game.h>
+#include <GameObjects/UI/ScreenMode/UIScreen.h>
+
+class InventoryScreen : public UIScreen
+{
+public:
+	InventoryScreen();
+	~InventoryScreen() override;
+	void Initialize() override;
+	void Update(int32_t cameraID) override;
+	void Draw() override;
+
+};
+

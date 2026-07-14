@@ -4,6 +4,7 @@
 #include <ImGuiManager/ImGuiManager.h>
 #include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <Engine.h>
+#include <DrawSystem/RenderData/RenderObject.h>
 
 /// <summary>
 /// ファサードクラス
@@ -526,7 +527,7 @@ namespace Game
 			void Stop(int32_t cameraID = 0);
 		}
 
-		int32_t AddCamera();
+		int32_t AddCamera(const std::string& name = "");
 		void Update(int32_t cameraID = 0);
 
 		/// <summary>

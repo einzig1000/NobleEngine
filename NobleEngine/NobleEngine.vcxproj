@@ -11,6 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\Character\BaseCharacter.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\Player\Player.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\CraftScreen\CraftScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\InventoryScreen\InventoryScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\PauseScreen\PauseScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\PlayingScreen\PlayingScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\Craft\Craft.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\Hotbar\Hotbar.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\Inventory\Inventory.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\Pause\Pause.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\UIElement.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\UIScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIManager.cpp" />
     <ClCompile Include="src\engine\ComputeSystem\ComputeSystem.cpp" />
     <ClCompile Include="src\engine\ComputeSystem\ComputeObject\ComputeObject.cpp" />
     <ClCompile Include="src\engine\AssetManager\Animation\AnimationComputer\AnimationComputer.cpp" />
@@ -42,11 +55,10 @@
     <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp" />
-    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\Block.cpp" />
-    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\BlockConfig.cpp" />
-    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Block\BlockDurability.cpp" />
-    <ClCompile Include="src\application\GameObjects\MapManager\Chunk\Chunk.cpp" />
-    <ClCompile Include="src\application\GameObjects\MapManager\MapManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Chunk\Block\Block.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Chunk\Block\BlockConfig.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Chunk\Chunk.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\MapManager.cpp" />
     <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp" />
     <ClCompile Include="src\engine\AssetManager\Audio\AudioPlayer\AudioPlayer.cpp" />
     <ClCompile Include="src\engine\AssetManager\Audio\AudioLoader\AudioLoader.cpp" />
@@ -116,6 +128,19 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\Character\BaseCharacter.h" />
+    <ClInclude Include="src\application\GameObjects\Character\Player\Player.h" />
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\CraftScreen\CraftScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\InventoryScreen\InventoryScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\PauseScreen\PauseScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\PlayingScreen\PlayingScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\Craft\Craft.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\Hotbar\Hotbar.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\Inventory\Inventory.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\Pause\Pause.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\UIElement.h" />
+    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\UIScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIManager.h" />
     <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h" />
     <ClInclude Include="src\engine\ComputeSystem\ComputeObject\ComputeObject.h" />
     <ClInclude Include="src\engine\AssetManager\Animation\AnimationComputer\AnimationComputer.h" />
@@ -297,11 +322,10 @@
     <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h" />
     <ClInclude Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h" />
-    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\Block.h" />
-    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\BlockConfig.h" />
-    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Block\BlockDurability.h" />
-    <ClInclude Include="src\application\GameObjects\MapManager\Chunk\Chunk.h" />
-    <ClInclude Include="src\application\GameObjects\MapManager\MapManager.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Chunk\Block\Block.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Chunk\Block\BlockConfig.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Chunk\Chunk.h" />
+    <ClInclude Include="src\application\GameObjects\Map\MapManager.h" />
     <ClInclude Include="src\application\ResourceLoader\ResourceID.h" />
     <ClInclude Include="src\engine\AssetManager\Audio\AudioPlayer\AudioPlayer.h" />
     <ClInclude Include="src\engine\AssetManager\Audio\AudioLoader\AudioLoader.h" />

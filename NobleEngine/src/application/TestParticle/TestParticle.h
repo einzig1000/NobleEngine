@@ -19,19 +19,19 @@ private:
 
 	std::vector<std::unique_ptr<RenderObject>> renderPlanes_;
 	std::vector<Vector4> planeColors;
-	std::vector<EulerTransform> planeTransforms;
+	std::vector<EulerTransforms> planeTransforms;
 
 	std::vector<std::unique_ptr<RenderObject>> renderRings_;
 	std::vector<Vector4> ringColors;
-	std::vector<EulerTransform> ringTransforms;
+	std::vector<EulerTransforms> ringTransforms;
 
 	std::unique_ptr<RenderObject> renderCylinder_;
 	Vector4 cylinderColor;
-	EulerTransform cylinderTransform;
+	EulerTransforms cylinderTransform;
 
 	std::unique_ptr<RenderObject> renderSphere_;
 	Vector4 sphereColor;
-	EulerTransform sphereTransform;
+	EulerTransforms sphereTransform;
 };
 
 

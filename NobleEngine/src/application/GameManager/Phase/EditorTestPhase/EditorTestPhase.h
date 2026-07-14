@@ -18,13 +18,13 @@ public:
 
 private:
 	std::vector<std::unique_ptr<RenderObject>> renderObjects_;
-	std::vector<EulerTransform> transforms_;
+	std::vector<EulerTransforms> transforms_;
 	std::vector<Vector4> colors_;
 
 	std::unique_ptr<RenderObject> postEffect1_;
 
 	std::unique_ptr<RenderObject> screenDrawObjectMain1_;
-	EulerTransform main1ScreenTransform_;
+	EulerTransforms main1ScreenTransform_;
 
 	int32_t rt_main1_;
 	int32_t rt_main1_depth_;
