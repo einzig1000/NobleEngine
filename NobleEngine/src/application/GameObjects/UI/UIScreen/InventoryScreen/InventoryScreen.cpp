@@ -5,10 +5,8 @@
 
 InventoryScreen::InventoryScreen()
 {
-	// uiElements_[1] : Inventory
-	uiElements_.emplace_back(std::make_unique<Inventory>());
-
-	renderTargetID_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "InventoryUIScreen");
+	elementTypes_.push_back(UIElementType::Hotbar);
+	elementTypes_.push_back(UIElementType::Inventory);
 }
 
 InventoryScreen::~InventoryScreen()
@@ -44,12 +42,10 @@ void InventoryScreen::Update(int32_t cameraID)
 	}
 }
 
-void InventoryScreen::Draw()
+void InventoryScreen::Draw(int32_t renderTargetID)
 {
 	for (const auto& element : uiElements_)
 	{
-		element->Draw(renderTargetID_);
+		element->Draw(renderTargetID);
 	}
-
-	//player_->DrawInventory();	// Inventoryアイコン描画
 }

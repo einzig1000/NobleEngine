@@ -1,8 +1,8 @@
 #pragma once
 #include <Game.h>
-#include <GameObjects/UI/UIElement/UIElement.h>
+#include <GameObjects/UI/UIElement/IUIElement.h>
 
-class Inventory : public UIElement
+class Inventory : public IUIElement
 {
 public:
 	Inventory();

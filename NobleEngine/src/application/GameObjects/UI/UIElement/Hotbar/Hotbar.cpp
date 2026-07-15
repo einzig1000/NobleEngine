@@ -11,7 +11,7 @@ Hotbar::Hotbar()
 	sprites_[0].render->SetupFromShaders();
 	sprites_[0].textureID = Game::Asset::Texture::Load("resources/Minecraft/UI/Inventory/Hotbar.png");
 	TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
-	sprites_[0].transforms.scale = Vector3(textureData->metadata.width, textureData->metadata.height, 1.0f);
+	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / 2.0f, 1.0f);
 	sprites_[0].transforms.translate = Vector3(640.0f, 670.0f, 1.0f);
 }
 

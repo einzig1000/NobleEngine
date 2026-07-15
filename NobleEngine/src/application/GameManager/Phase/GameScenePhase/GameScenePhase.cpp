@@ -10,8 +10,21 @@
 
 GameScenePhase::GameScenePhase()
 {
-	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
+	rt_3D_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "3D");
+	rt_UI_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "UI");
 	c_debug_ = Game::Camera::AddCamera("DebugCamera");
+
+	draw_3D_ = std::make_unique<RenderObject>();
+	draw_3D_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_3D_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	draw_3D_->SetupFromShaders();
+
+	draw_UI_ = std::make_unique<RenderObject>();
+	draw_UI_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_UI_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_UI_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	draw_UI_->SetupFromShaders();
 
 	// プレイヤー生成
 	player_ = std::make_unique<Player>();
@@ -53,11 +66,6 @@ GameScenePhase::GameScenePhase()
 	//CraftRecipeList::InitializeRecipes();
 	//ResourceID::reload();
 
-	render_ = std::make_unique<RenderObject>();
-	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	render_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
-	render_->SetupFromShaders();
 }
 
 GameScenePhase::~GameScenePhase() {}
@@ -73,11 +81,7 @@ void GameScenePhase::Initialize()
 
 	if (context_->isNewGame) map_->CreateNewMap(context_->mapName, context_->seed);
 	else map_->LoadMap(context_->mapName);
-
-	//Game::Camera::SetCameraMode(CameraMode_ORBIT_FPS::FPS);
-	//Game::IO::Mouse::ShowCursor(false);
 }
-
 
 void GameScenePhase::Update()
 {
@@ -97,22 +101,24 @@ void GameScenePhase::Update()
 	//cameraController_->Update();
 
 
-	render_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
+	draw_3D_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_);
+	draw_UI_->SetCBufferData(0, ShaderType::PixelShader, &rt_UI_);
 }
 
 
 void GameScenePhase::Draw()
 {
 	// マップ描画
-	map_->Draw(rt_main_);
+	map_->Draw(rt_3D_);
 	// プレイヤー描画
-	player_->Draw(rt_main_);
+	player_->Draw(rt_3D_);
 	// 敵描画
 	//enemyManager_->Draw();
 	// UI描画
-	uiManager_->Draw();
+	uiManager_->Draw(rt_UI_);
 
-	render_->ScreenDraw();
+	draw_3D_->ScreenDraw();
+	draw_UI_->ScreenDraw();
 }
 
 void GameScenePhase::DrawImGui()

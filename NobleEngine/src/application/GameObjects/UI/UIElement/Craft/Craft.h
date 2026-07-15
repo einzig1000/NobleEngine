@@ -1,8 +1,8 @@
 #pragma once
 #include <Game.h>
-#include <GameObjects/UI/UIElement/UIElement.h>
+#include <GameObjects/UI/UIElement/IUIElement.h>
 
-class Craft : public UIElement
+class Craft : public IUIElement
 {
 public:
 	Craft();

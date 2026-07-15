@@ -9,9 +9,11 @@ Inventory::Inventory()
 	sprites_[0].render->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	sprites_[0].render->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
-	sprites_[0].textureID = Game::Asset::Texture::Load("resources/Minecraft/UI/Inventory/Hotbar.png");
-	sprites_[0].transforms.scale = Vector3(1.0f, 1.0f, 1.0f);
-	sprites_[0].transforms.translate = Vector3(640.0f, 325.0f, 0.0f);
+	sprites_[0].textureID = Game::Asset::Texture::Load("resources/Minecraft/UI/Inventory/Inventory2x2.png");
+	TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
+	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / 2.0f, 1.0f);
+	sprites_[0].transforms.translate = Vector3(640.0f, 360.0f, 1.0f);
+	sprites_[0].transforms.rotate = Vector3(0.0f, 0.0f, 0.0f);
 }
 
 Inventory::~Inventory()

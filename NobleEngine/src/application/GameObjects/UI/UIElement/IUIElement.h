@@ -1,5 +1,6 @@
 #pragma once
 #include <Game.h>
+#include <GameObjects/UI/UIData.h>
 
 struct ElementData
 {
@@ -11,11 +12,11 @@ struct ElementData
 	EulerTransforms transforms;
 };
 
-class UIElement
+class IUIElement
 {
 public:
-	UIElement() = default;
-	virtual ~UIElement() = default;
+	IUIElement() = default;
+	virtual ~IUIElement() = default;
 	// UI要素の初期化
 	virtual void Initialize() = 0;
 	// UI要素の更新
@@ -25,5 +26,8 @@ public:
 
 protected:
 	std::vector<ElementData> sprites_;
+
+	// このUIが表示されている時プレイヤーは操作可能か
+	bool isPlayerControllable_ = true;
 };
 

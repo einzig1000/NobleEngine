@@ -4,10 +4,7 @@
 
 PlayingScreen::PlayingScreen()
 {
-	// uiElements_[0] : Hotbar
-	uiElements_.emplace_back(std::make_unique<Hotbar>());
-
-	renderTargetID_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "PlayingUIScreen");
+	elementTypes_.push_back(UIElementType::Hotbar);
 }
 
 PlayingScreen::~PlayingScreen()
@@ -35,23 +32,20 @@ void PlayingScreen::Update(int32_t cameraID)
 	}
 
 
-	//if (Game::IO::Key::IsJustPressed('E'))
-	//{
-	//	nextUIMode_ = UIMode::Inventory;
-	//}
-	//if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
-	//{
-	//	nextUIMode_ = UIMode::Pause;
-	//}
+	if (Game::IO::Key::IsJustPressed('E'))
+	{
+		nextUIMode_ = UIMode::Inventory;
+	}
+	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
+	{
+		nextUIMode_ = UIMode::Pause;
+	}
 }
 
-void PlayingScreen::Draw()
+void PlayingScreen::Draw(int32_t renderTargetID)
 {
 	for (const auto& element : uiElements_)
 	{
-		element->Draw(renderTargetID_);
+		element->Draw(renderTargetID);
 	}
-
-	//uiElements_[0]->Draw(renderTargetID_);		// Hotbar
-	//player_->DrawHotbar();		// Hotbarアイコン描画
 }

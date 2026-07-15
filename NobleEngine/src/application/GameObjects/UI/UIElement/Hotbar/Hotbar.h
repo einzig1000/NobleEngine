@@ -1,8 +1,8 @@
 #pragma once
 #include <Game.h>
-#include <GameObjects/UI/UIElement/UIElement.h>
+#include <GameObjects/UI/UIElement/IUIElement.h>
 
-class Hotbar : public UIElement
+class Hotbar : public IUIElement
 {
 public:
 	Hotbar();

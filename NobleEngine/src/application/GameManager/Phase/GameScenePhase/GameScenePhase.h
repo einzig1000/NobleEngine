@@ -24,10 +24,13 @@ public:
 
 private:
 
-	int32_t rt_main_ = -1;
+	int32_t rt_3D_ = -1;	// マップとかプレイヤーが描画されるレンダーターゲット
+	int32_t rt_UI_ = -1;	// UIが描画されるレンダーターゲット
+
 	int32_t c_debug_ = -1;
 
-	std::unique_ptr<RenderObject> render_;
+	std::unique_ptr<RenderObject> draw_3D_;
+	std::unique_ptr<RenderObject> draw_UI_;
 
 	// カメラ
 	//std::unique_ptr<CameraController> cameraController_;

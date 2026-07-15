@@ -1,29 +1,54 @@
 #include "UIManager.h"
-#include "ScreenMode/UIScreen.h"
+#include "UIScreen/PlayingScreen/PlayingScreen.h"
+#include "UIScreen/InventoryScreen/InventoryScreen.h"
+#include "UIScreen/CraftScreen/CraftScreen.h"
+#include "UIScreen/PauseScreen/PauseScreen.h"
+
+#include "UIElement/Craft/Craft.h"
+#include "UIElement/Hotbar/Hotbar.h"
+#include "UIElement/Inventory/Inventory.h"
+#include "UIElement/Pause/Pause.h"
 
 
 UIManager::UIManager()
 {
-	playingScreen_ = std::make_unique<PlayingScreen>();
-	inventoryScreen_ = std::make_unique<InventoryScreen>();
-	craftingScreen_ = std::make_unique<CraftScreen>();
-	pauseScreen_ = std::make_unique<PauseScreen>();
+	elements_[UIElementType::Inventory] = std::make_unique<Inventory>();
+	elements_[UIElementType::Craft] = std::make_unique<Craft>();
+	elements_[UIElementType::Pause] = std::make_unique<Pause>();
+	elements_[UIElementType::Hotbar] = std::make_unique<Hotbar>();
+
+	screens_[UIMode::Playing] = std::make_unique<PlayingScreen>();
+	screens_[UIMode::Inventory] = std::make_unique<InventoryScreen>();
+	screens_[UIMode::Crafting] = std::make_unique<CraftScreen>();
+	screens_[UIMode::Pause] = std::make_unique<PauseScreen>();
+
+	for (auto& screen : screens_)
+	{
+		const auto& requiredElements = screen.second->GetRequiredElements();
+		for (const auto& elementType : requiredElements)
+		{
+			if (elements_.find(elementType) != elements_.end())
+			{
+				screen.second->AddElement(elements_[elementType].get());
+			}
+		}
+	}
 }
 
 void UIManager::SetPlayer(Player* player)
 {
-	playingScreen_->SetPlayer(player);
-	inventoryScreen_->SetPlayer(player);
-	craftingScreen_->SetPlayer(player);
-	pauseScreen_->SetPlayer(player);
+	for (auto& screen : screens_)
+	{
+		screen.second->SetPlayer(player);
+	}
 }
 
 void UIManager::SetMapManager(MapManager * mapManager)
 {
-	playingScreen_->SetMapManager(mapManager);
-	inventoryScreen_->SetMapManager(mapManager);
-	craftingScreen_->SetMapManager(mapManager);
-	pauseScreen_->SetMapManager(mapManager);
+	for (auto& screen : screens_)
+	{
+		screen.second->SetMapManager(mapManager);
+	}
 }
 
 UIManager::~UIManager(){}
@@ -49,11 +74,11 @@ void UIManager::Update(int32_t cameraID)
 	}
 }
 
-void UIManager::Draw()
+void UIManager::Draw(int32_t renderTargetID)
 {
 	if (currentScreen_)
 	{
-		currentScreen_->Draw();
+		currentScreen_->Draw(renderTargetID);
 	}
 }
 
@@ -62,24 +87,8 @@ void UIManager::DrawImGui()
 
 void UIManager::ChangeScreen(UIMode mode)
 {
-	// 新しい画面生成
-	switch (mode)
-	{
-	case UIMode::Playing:
-		currentScreen_ = playingScreen_.get();
-		break;
-	case UIMode::Inventory:
-		currentScreen_ = inventoryScreen_.get();
-		break;
-	case UIMode::Crafting:
-		currentScreen_ = craftingScreen_.get();
-		break;
-	case UIMode::Pause:
-		currentScreen_ = pauseScreen_.get();
-		break;
-	}
-
 	currentUIMode_ = mode;
+	currentScreen_ = screens_[currentUIMode_].get();
 
 	if (currentScreen_)
 	{

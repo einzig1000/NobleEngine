@@ -4,10 +4,7 @@
 
 PauseScreen::PauseScreen()
 {
-	// uiElements_[0] : Pause
-	uiElements_.emplace_back(std::make_unique<Pause>());
-
-	renderTargetID_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "PauseUIScreen");
+	elementTypes_.push_back(UIElementType::Pause);
 }
 
 PauseScreen::~PauseScreen()
@@ -32,15 +29,15 @@ void PauseScreen::Update(int32_t cameraID)
 		element->Update(cameraID);
 	}
 
-	// Pause要素の「セーブ要求」を処理
-	if (auto* pause = dynamic_cast<Pause*>(uiElements_[0].get()))
-	{
-		if (pause->ConsumeSaveRequested())
-		{
-			mapManager_->SaveMap();
-			Game::quit();
-		}
-	}
+	//// Pause要素の「セーブ要求」を処理
+	//if (auto* pause = dynamic_cast<Pause*>(uiElements_[0].get()))
+	//{
+	//	if (pause->ConsumeSaveRequested())
+	//	{
+	//		mapManager_->SaveMap();
+	//		Game::quit();
+	//	}
+	//}
 
 	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
 	{
@@ -48,10 +45,10 @@ void PauseScreen::Update(int32_t cameraID)
 	}
 }
 
-void PauseScreen::Draw()
+void PauseScreen::Draw(int32_t renderTargetID)
 {
 	for (const auto& element : uiElements_)
 	{
-		element->Draw(renderTargetID_);
+		element->Draw(renderTargetID);
 	}
 }

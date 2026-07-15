@@ -330,19 +330,19 @@
     <ClCompile Include="src\application\GameObjects\UI\UIManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\UIScreen.cpp">
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\IUIScreen.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\CraftScreen\CraftScreen.cpp">
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\CraftScreen\CraftScreen.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\InventoryScreen\InventoryScreen.cpp">
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\InventoryScreen\InventoryScreen.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\PauseScreen\PauseScreen.cpp">
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\PauseScreen\PauseScreen.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\PlayingScreen\PlayingScreen.cpp">
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\PlayingScreen\PlayingScreen.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\UI\UIElement\Craft\Craft.cpp">
@@ -357,7 +357,7 @@
     <ClCompile Include="src\application\GameObjects\UI\UIElement\Pause\Pause.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\UI\UIElement\UIElement.cpp">
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\IUIElement.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1133,19 +1133,19 @@
     <ClInclude Include="src\application\GameObjects\UI\UIManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\UIScreen.h">
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\IUIScreen.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\PlayingScreen\PlayingScreen.h">
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\PlayingScreen\PlayingScreen.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\PauseScreen\PauseScreen.h">
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\PauseScreen\PauseScreen.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\InventoryScreen\InventoryScreen.h">
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\InventoryScreen\InventoryScreen.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\CraftScreen\CraftScreen.h">
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\CraftScreen\CraftScreen.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\UI\UIElement\Craft\Craft.h">
@@ -1160,7 +1160,10 @@
     <ClInclude Include="src\application\GameObjects\UI\UIElement\Pause\Pause.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\UI\UIElement\UIElement.h">
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\IUIElement.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIData.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

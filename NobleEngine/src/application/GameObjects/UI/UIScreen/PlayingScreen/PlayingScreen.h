@@ -1,14 +1,14 @@
 #pragma once
 #include <Game.h>
-#include <GameObjects/UI/ScreenMode/UIScreen.h>
+#include <GameObjects/UI/UIScreen/IUIScreen.h>
 
-class PlayingScreen : public UIScreen
+class PlayingScreen : public IUIScreen
 {
-	public:
+public:
 	PlayingScreen();
 	~PlayingScreen() override;
 	void Initialize() override;	
 	void Update(int32_t cameraID) override;
-	void Draw() override;
+	void Draw(int32_t renderTargetID) override;
 };
 

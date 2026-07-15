@@ -185,26 +185,6 @@ struct ItemInfo
 	std::string texturePath{};
 };
 
-// UIモード
-enum class UIMode
-{
-	None,
-    // 非表示
-	Hidden,
-	// プレイ中　(手持ちアイテムのみ表示)
-	Playing,
-	// インベントリ表示中
-	Inventory,
-	// クラフト画面
-	Crafting,
-    // ポーズ画面
-	Pause,
-
-
-    Max
-};
-
-
 
 
 

@@ -4,10 +4,7 @@
 
 CraftScreen::CraftScreen()
 {
-	uiElements_.emplace_back(std::make_unique<Craft>());
-
-
-	renderTargetID_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "CraftUIScreen");
+	elementTypes_.push_back(UIElementType::Craft);
 }
 
 CraftScreen::~CraftScreen()
@@ -41,11 +38,11 @@ void CraftScreen::Update(int32_t cameraID)
 	}
 }
 
-void CraftScreen::Draw()
+void CraftScreen::Draw(int32_t renderTargetID)
 {
 	for (const auto& element : uiElements_)
 	{
-		element->Draw(renderTargetID_);
+		element->Draw(renderTargetID);
 	}
 
 	//player_->DrawInventory();	// Inventoryアイコン描画

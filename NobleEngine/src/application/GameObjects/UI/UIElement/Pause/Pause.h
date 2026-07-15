@@ -1,9 +1,9 @@
 #pragma once
 #include <Game.h>
-#include <GameObjects/UI/UIElement/UIElement.h>
+#include <GameObjects/UI/UIElement/IUIElement.h>
 
 
-class Pause : public UIElement
+class Pause : public IUIElement
 {
 public:
 	Pause();

@@ -1,16 +1,16 @@
 #pragma once
 #include <Game.h>
 #include <memory>
-#include "ScreenMode/PlayingScreen/PlayingScreen.h"
-#include "ScreenMode/InventoryScreen/InventoryScreen.h"
-#include "ScreenMode/CraftScreen/CraftScreen.h"
-#include "ScreenMode/PauseScreen/PauseScreen.h"
+#include "UIScreen/IUIScreen.h"
+#include "UIElement/IUIElement.h"
+#include "UIData.h"
 
 class Player;
 class MapManager;
-class UIScreen;
 
 /////////////// UIManagerが全エレメントを持って、各シーンに渡して共有する方法が綺麗では？
+
+
 
 
 class UIManager
@@ -23,7 +23,7 @@ public:
 
 	void Initialize();
 	void Update(int32_t cameraID);
-	void Draw();
+	void Draw(int32_t renderTargetID);
 	void DrawImGui();
 
 	void ChangeScreen(UIMode mode);
@@ -32,12 +32,9 @@ public:
 
 private:
 	UIMode currentUIMode_ = UIMode::None;
+	IUIScreen* currentScreen_ = nullptr;
 
-	UIScreen* currentScreen_ = nullptr;
-
-	std::unique_ptr<PlayingScreen> playingScreen_;
-	std::unique_ptr<InventoryScreen> inventoryScreen_;
-	std::unique_ptr<CraftScreen> craftingScreen_;
-	std::unique_ptr<PauseScreen> pauseScreen_;
+	std::unordered_map<UIMode, std::unique_ptr<IUIScreen>> screens_;
+	std::unordered_map<UIElementType, std::unique_ptr<IUIElement>> elements_;
 };
 

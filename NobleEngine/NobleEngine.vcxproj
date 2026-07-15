@@ -13,16 +13,16 @@
   <ItemGroup>
     <ClCompile Include="src\application\GameObjects\Character\BaseCharacter.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\Player\Player.cpp" />
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\CraftScreen\CraftScreen.cpp" />
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\InventoryScreen\InventoryScreen.cpp" />
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\PauseScreen\PauseScreen.cpp" />
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\PlayingScreen\PlayingScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\CraftScreen\CraftScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\InventoryScreen\InventoryScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\PauseScreen\PauseScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\PlayingScreen\PlayingScreen.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\Craft\Craft.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\Hotbar\Hotbar.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\Inventory\Inventory.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\Pause\Pause.cpp" />
-    <ClCompile Include="src\application\GameObjects\UI\UIElement\UIElement.cpp" />
-    <ClCompile Include="src\application\GameObjects\UI\ScreenMode\UIScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\IUIElement.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\IUIScreen.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIManager.cpp" />
     <ClCompile Include="src\engine\ComputeSystem\ComputeSystem.cpp" />
     <ClCompile Include="src\engine\ComputeSystem\ComputeObject\ComputeObject.cpp" />
@@ -130,16 +130,17 @@
   <ItemGroup>
     <ClInclude Include="src\application\GameObjects\Character\BaseCharacter.h" />
     <ClInclude Include="src\application\GameObjects\Character\Player\Player.h" />
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\CraftScreen\CraftScreen.h" />
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\InventoryScreen\InventoryScreen.h" />
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\PauseScreen\PauseScreen.h" />
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\PlayingScreen\PlayingScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIData.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\CraftScreen\CraftScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\InventoryScreen\InventoryScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\PauseScreen\PauseScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\PlayingScreen\PlayingScreen.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\Craft\Craft.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\Hotbar\Hotbar.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\Inventory\Inventory.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\Pause\Pause.h" />
-    <ClInclude Include="src\application\GameObjects\UI\UIElement\UIElement.h" />
-    <ClInclude Include="src\application\GameObjects\UI\ScreenMode\UIScreen.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\IUIElement.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\IUIScreen.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIManager.h" />
     <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h" />
     <ClInclude Include="src\engine\ComputeSystem\ComputeObject\ComputeObject.h" />

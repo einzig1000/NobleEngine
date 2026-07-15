@@ -36,9 +36,5 @@ public:
 	int32_t wHeldFrames_ = 0;
 	int32_t dashBufferTimer_ = 0;
 	bool dash_ = false;
-
-
-private:
-	UIMode currentMode_ = UIMode::None;
 };
 
