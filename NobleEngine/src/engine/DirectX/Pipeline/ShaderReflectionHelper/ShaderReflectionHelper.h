@@ -15,16 +15,8 @@ namespace ShaderReflection
         IDxcBlob* shaderBlob,
         ShaderType shaderType,
         std::vector<RootParam>& outParams,
-        uint32_t& currentCBVOffsetBytes,
-        uint32_t& currentSRVOffsetIndex
+        uint32_t& currentCBVOffsetBytes
     );
-
-	/// <summary>
-    /// Texture2D<float4> textures[] があるか確認する
-	/// </summary>
-    bool HasBindlessTextureArray(IDxcBlob* shaderBlob);
-
-
 
     /// <summary>
     /// DXCでコンパイルされたシェーダーからInputLayoutを取得

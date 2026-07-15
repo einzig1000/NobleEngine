@@ -1,6 +1,6 @@
 #include "RenderTextureManager.h"
 #include <Utilities/Logger/Logger.h>
-#include <DirectX/Resource/Dx12ResourceFactory.h>
+#include <DirectX/Resource/Dx12ResourceUtilities.h>
 #include <Utilities/Converter/StringConverter/StringConverter.h>
 #include <filesystem>
 

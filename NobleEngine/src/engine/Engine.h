@@ -8,13 +8,14 @@
 
 class WindowManager;
 class DirectXManager;
+class StructuredBufferManager;
 class DrawSystem;
+class ComputeSystem;
 class IOManager;
 class CameraManager;
 class ImGuiManager;
 class AssetManager;
 class FixFPS;
-class RenderObject;
 class EngineEditor;
 
 class Engine
@@ -45,6 +46,7 @@ public:
 	IOManager* GetIOManager() { return ioManager_.get(); }
 	AssetManager* GetAssetManager() { return assetManager_.get(); }
 	CameraManager* GetCameraManager() { return cameraManager_.get(); }
+	StructuredBufferManager* GetStructuredBufferManager() { return structuredBufferManager_.get(); }
 	FixFPS* GetFixFPS() { return fixFPS_.get(); }
 
 private:
@@ -55,8 +57,12 @@ private:
 	std::unique_ptr<WindowManager> windowManager_;
 	// DirectX関連
 	std::unique_ptr<DirectXManager> dxManager_;
+	// 
+	std::unique_ptr<StructuredBufferManager> structuredBufferManager_;
 	// 描画関連
 	std::unique_ptr<DrawSystem> drawSystem_;
+	// GPU計算関連
+	std::unique_ptr<ComputeSystem> computeSystem_;
 	// 入力関連
 	std::unique_ptr<IOManager> ioManager_;
 	// カメラ
@@ -71,3 +77,11 @@ private:
 	// エディタ
 	std::unique_ptr<EngineEditor> engineEditor_;
 };
+
+
+/// <summary>
+/// クラッシュ時にミニダンプを生成する関数
+/// </summary>
+/// <param name="exception">例外情報</param>
+/// <returns>例外ハンドラの実行結果</returns>
+LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception);

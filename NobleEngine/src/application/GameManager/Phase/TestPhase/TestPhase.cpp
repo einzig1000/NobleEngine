@@ -321,82 +321,82 @@ void TestPhase::Update()
 {
 #pragma region メインカメラ１
 
-	// メインカメラ1
-	//Game::Camera::Update(c_main1_);
-	Game::Camera::Update(0);
-	Matrix4x4 viewProjection_main1 = Game::Camera::Getter::GetViewProjectionMatrix(0);
-	
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform1_.scale, transform1_.rotate, transform1_.translate);
-	Matrix4x4 worldViewProjection = worldMatrix * viewProjection_main1;
-	cbvOnly_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
-	cbvOnly_->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
-	cbvOnly_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
-	cbvOnly_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+	//// メインカメラ1
+	////Game::Camera::Update(c_main1_);
+	//Game::Camera::Update(0);
+	//Matrix4x4 viewProjection_main1 = Game::Camera::Getter::GetViewProjectionMatrix(0);
+	//
+	//Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transform1_.scale, transform1_.rotate, transform1_.translate);
+	//Matrix4x4 worldViewProjection = worldMatrix * viewProjection_main1;
+	//cbvOnly_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	//cbvOnly_->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
+	//cbvOnly_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
+	//cbvOnly_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 
 #pragma endregion
 
 
 #pragma region メインカメラ２
 
-	//Game::Camera::Update(c_main2_);
-	Game::Camera::Update(1);
-	Matrix4x4 viewProjection_main2 = Game::Camera::Getter::GetViewProjectionMatrix(1);
+	////Game::Camera::Update(c_main2_);
+	//Game::Camera::Update(1);
+	//Matrix4x4 viewProjection_main2 = Game::Camera::Getter::GetViewProjectionMatrix(1);
 
-	std::vector<Matrix4x4> worldMatrices2;
-	for (int i = 0; i < 10; ++i)
-	{
-		Matrix4x4 worldMatrix2 = Matrix4x4::MakeAffineMatrix(transform2_[i].scale, transform2_[i].rotate, transform2_[i].translate);
-		worldMatrices2.push_back(worldMatrix2);
-	}
-	cbvAndSrv_->SetSBufferData(0, ShaderType::PixelShader, &color2_, sizeof(Vector4), 10);
-	cbvAndSrv_->SetSBufferData(1, ShaderType::PixelShader, &tex2_, sizeof(int32_t), 10);
-	cbvAndSrv_->SetCBufferData(0, ShaderType::VertexShader, &viewProjection_main2);
-	cbvAndSrv_->SetSBufferData(0, ShaderType::VertexShader, worldMatrices2.data(), sizeof(Matrix4x4), worldMatrices2.size());
+	//std::vector<Matrix4x4> worldMatrices2;
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	Matrix4x4 worldMatrix2 = Matrix4x4::MakeAffineMatrix(transform2_[i].scale, transform2_[i].rotate, transform2_[i].translate);
+	//	worldMatrices2.push_back(worldMatrix2);
+	//}
+	//cbvAndSrv_->SetSBufferData(0, ShaderType::PixelShader, &color2_, sizeof(Vector4), 10);
+	//cbvAndSrv_->SetSBufferData(1, ShaderType::PixelShader, &tex2_, sizeof(int32_t), 10);
+	//cbvAndSrv_->SetCBufferData(0, ShaderType::VertexShader, &viewProjection_main2);
+	//cbvAndSrv_->SetSBufferData(0, ShaderType::VertexShader, worldMatrices2.data(), sizeof(Matrix4x4), worldMatrices2.size());
 
-	line_->SetCBufferData(0, ShaderType::VertexShader, &viewProjection_main2);
-	line_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
+	//line_->SetCBufferData(0, ShaderType::VertexShader, &viewProjection_main2);
+	//line_->SetCBufferData(0, ShaderType::PixelShader, &color1_);
 
 #pragma endregion
 
 
 #pragma region ミニマップカメラ１
 
-	Game::Camera::Update(2);
-	Matrix4x4 viewMatrix_miniMap1 = Game::Camera::Getter::GetViewMatrix(2);
-	Matrix4x4 projectionMatrix_miniMap1 = Game::Camera::Getter::GetProjectionMatrix(2);
+	//Game::Camera::Update(2);
+	//Matrix4x4 viewMatrix_miniMap1 = Game::Camera::Getter::GetViewMatrix(2);
+	//Matrix4x4 projectionMatrix_miniMap1 = Game::Camera::Getter::GetProjectionMatrix(2);
 
-	Matrix4x4 noTranslateView = viewMatrix_miniMap1;
-	noTranslateView.m[3][0] = 0.0f;
-	noTranslateView.m[3][1] = 0.0f;
-	noTranslateView.m[3][2] = 0.0f;
-	Matrix4x4 noTranslateViewProjection = noTranslateView * projectionMatrix_miniMap1;
-	skybox_->SetCBufferData(0, ShaderType::VertexShader, &noTranslateViewProjection);
-	skybox_->SetCBufferData(0, ShaderType::PixelShader, &t_dds_);
+	//Matrix4x4 noTranslateView = viewMatrix_miniMap1;
+	//noTranslateView.m[3][0] = 0.0f;
+	//noTranslateView.m[3][1] = 0.0f;
+	//noTranslateView.m[3][2] = 0.0f;
+	//Matrix4x4 noTranslateViewProjection = noTranslateView * projectionMatrix_miniMap1;
+	//skybox_->SetCBufferData(0, ShaderType::VertexShader, &noTranslateViewProjection);
+	//skybox_->SetCBufferData(0, ShaderType::PixelShader, &t_dds_);
 
 #pragma endregion
 
 
 #pragma region ミニマップカメラ２
 
-	Game::Camera::Update(3);
-	Vector3 cameraPos_miniMap2_ = Game::Camera::Getter::GetTranslate(3);
-	Matrix4x4 projectionMatrix_miniMap2_ = Game::Camera::Getter::GetProjectionMatrix(3);
-	Matrix4x4 projectionInverse_miniMap2_ = projectionMatrix_miniMap2_.Inverse();
+	//Game::Camera::Update(3);
+	//Vector3 cameraPos_miniMap2_ = Game::Camera::Getter::GetTranslate(3);
+	//Matrix4x4 projectionMatrix_miniMap2_ = Game::Camera::Getter::GetProjectionMatrix(3);
+	//Matrix4x4 projectionInverse_miniMap2_ = projectionMatrix_miniMap2_.Inverse();
 
-	PunctualLight_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
-	PunctualLight_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
-	PunctualLight_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos_miniMap2_);
-	PunctualLight_->SetCBufferData(1, ShaderType::PixelShader, &lightData_);
-	PunctualLight_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
-	PunctualLight_->SetCBufferData(3, ShaderType::PixelShader, &t_uvChecker);
+	//PunctualLight_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
+	//PunctualLight_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+	//PunctualLight_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos_miniMap2_);
+	//PunctualLight_->SetCBufferData(1, ShaderType::PixelShader, &lightData_);
+	//PunctualLight_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
+	//PunctualLight_->SetCBufferData(3, ShaderType::PixelShader, &t_uvChecker);
 
-	environmentMap_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
-	environmentMap_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
-	environmentMap_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos_miniMap2_);
-	environmentMap_->SetCBufferData(1, ShaderType::PixelShader, &lightData_);
-	environmentMap_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
-	environmentMap_->SetCBufferData(3, ShaderType::PixelShader, &t_uvChecker);
-	environmentMap_->SetCBufferData(4, ShaderType::PixelShader, &t_dds_);
+	//environmentMap_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
+	//environmentMap_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+	//environmentMap_->SetCBufferData(0, ShaderType::PixelShader, &cameraPos_miniMap2_);
+	//environmentMap_->SetCBufferData(1, ShaderType::PixelShader, &lightData_);
+	//environmentMap_->SetCBufferData(2, ShaderType::PixelShader, &materialData_);
+	//environmentMap_->SetCBufferData(3, ShaderType::PixelShader, &t_uvChecker);
+	//environmentMap_->SetCBufferData(4, ShaderType::PixelShader, &t_dds_);
 
 #pragma endregion
 
@@ -452,21 +452,21 @@ void TestPhase::Update()
 	//postEffects_[3]->SetCBufferData(2, ShaderType::PixelShader, &projectionMatrix_miniMap2_);
 
 
-	testAnimation_->Update(0);
-	testParticle_->Update(0);
+	//testAnimation_->Update(0);
+	//testParticle_->Update(0);
 
-	if (Game::IO::Key::IsJustPressed(VK_F12))
-	{
-		//Game::Window::ToggleFullscreen();
-	}
-	if (Game::IO::Key::IsJustPressed(VK_F11))
-	{
-		Game::Asset::RenderTexture::SaveAllRenderTextureToFile("screenshots");
-	}
-	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
-	{
-		Game::quit();
-	}
+	//if (Game::IO::Key::IsJustPressed(VK_F12))
+	//{
+	//	//Game::Window::ToggleFullscreen();
+	//}
+	//if (Game::IO::Key::IsJustPressed(VK_F11))
+	//{
+	//	Game::Asset::RenderTexture::SaveAllRenderTextureToFile("screenshots");
+	//}
+	//if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
+	//{
+	//	Game::quit();
+	//}
 }
 
 void TestPhase::Draw()
@@ -1140,14 +1140,14 @@ void TestPhase::Load_renderObject()
 	//if (JsonManager::Load(filePath + fileName))
 	//{
 	//	renderObjectData_.clear();
-
+	//
 	//	int32_t i = 0;
 	//	while (true)
 	//	{
 	//		std::string basePath = "/render_objects/" + std::to_string(i);
-
+	//
 	//		RenderObjectData data;
-
+	//
 	//		if (!JsonManager::Load(filePath + fileName, basePath + "/name", data.name)) break;
 	//		JsonManager::Load(filePath + fileName, basePath + "/modelPath", data.modelPath);
 	//		JsonManager::Load(filePath + fileName, basePath + "/out", data.out);
@@ -1155,9 +1155,9 @@ void TestPhase::Load_renderObject()
 	//		JsonManager::Load(filePath + fileName, basePath + "/config.ps", data.config.ps);
 	//		JsonManager::Load(filePath + fileName, basePath + "/config.ms", data.config.ms);
 	//		JsonManager::Load(filePath + fileName, basePath + "/config.dsvFormatID", data.config.dsvFormatID);
-
+	//
 	//		renderObjectData_.push_back(data);
-
+	//
 	//		i++;
 	//	}
 	//}
@@ -1165,35 +1165,35 @@ void TestPhase::Load_renderObject()
 
 void TestPhase::Save_renderObject()
 {
-	const std::string filePath = "resources/json/TestPhase/";
+	//const std::string filePath = "resources/json/TestPhase/";
 
-	const std::string fileName = "renderObjects.json";
+	//const std::string fileName = "renderObjects.json";
 
-	for (size_t i = 0; i < renderObjectData_.size(); ++i)
-	{
-		const auto& value = renderObjectData_[i];
-		std::string basePath = "/render_objects/" + std::to_string(i);
+	//for (size_t i = 0; i < renderObjectData_.size(); ++i)
+	//{
+	//	const auto& value = renderObjectData_[i];
+	//	std::string basePath = "/render_objects/" + std::to_string(i);
 
-		JsonManager::AddParam(filePath + fileName, basePath + "/name", value.name);
-		JsonManager::AddParam(filePath + fileName, basePath + "/modelPath", value.modelPath);
-		JsonManager::AddParam(filePath + fileName, basePath + "/out", value.out);
-		JsonManager::AddParam(filePath + fileName, basePath + "/config.vs", value.config.vs);
-		JsonManager::AddParam(filePath + fileName, basePath + "/config.ps", value.config.ps);
-		JsonManager::AddParam(filePath + fileName, basePath + "/config.ms", value.config.ms);
-		JsonManager::AddParam(filePath + fileName, basePath + "/config.dsvFormatID", value.config.dsvFormatID);
-	}
-	JsonManager::Save(filePath + fileName);
+	//	JsonManager::AddParam(filePath + fileName, basePath + "/name", value.name);
+	//	JsonManager::AddParam(filePath + fileName, basePath + "/modelPath", value.modelPath);
+	//	JsonManager::AddParam(filePath + fileName, basePath + "/out", value.out);
+	//	JsonManager::AddParam(filePath + fileName, basePath + "/config.vs", value.config.vs);
+	//	JsonManager::AddParam(filePath + fileName, basePath + "/config.ps", value.config.ps);
+	//	JsonManager::AddParam(filePath + fileName, basePath + "/config.ms", value.config.ms);
+	//	JsonManager::AddParam(filePath + fileName, basePath + "/config.dsvFormatID", value.config.dsvFormatID);
+	//}
+	//JsonManager::Save(filePath + fileName);
 }
 
 void TestPhase::DrawDebugInfo()
 {
-	ImGui::Begin("------debug info------");
-	ImGui::Text("ESC : Quit Application");
-	ImGui::Text("F1  : Hide Debug Info");
-	ImGui::Text("F3  : Toggle Camera Release or Debug");
-	ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
-	ImGui::Text("F12 : Toggle Fullscreen");
-	ImGui::Text("DeltaTime: %.3f ms", Game::Time::GetDeltaTime() * 1000.0f);
-	ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
-	ImGui::End();
+	//ImGui::Begin("------debug info------");
+	//ImGui::Text("ESC : Quit Application");
+	//ImGui::Text("F1  : Hide Debug Info");
+	//ImGui::Text("F3  : Toggle Camera Release or Debug");
+	//ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
+	//ImGui::Text("F12 : Toggle Fullscreen");
+	//ImGui::Text("DeltaTime: %.3f ms", Game::Time::GetDeltaTime() * 1000.0f);
+	//ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
+	//ImGui::End();
 }

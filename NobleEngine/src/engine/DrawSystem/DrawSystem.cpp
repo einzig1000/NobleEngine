@@ -2,12 +2,13 @@
 #include <AssetManager/AssetManager.h>
 #include <ImGuiManager/ImGuiManager.h>
 #include <DirectX/DirectXManager.h>
+#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <Window/WindowManager.h>
 #include <Engine.h>
 #include <numbers>
 
-DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* resourceManager)
-	:dxManager_(dxManager), resourceManager_(resourceManager)
+DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager)
+	:dxManager_(dxManager), assetManager_(assetManager)
 {
 	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
 	{
@@ -82,7 +83,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	// 1) RootSignatureセット
 	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature(renderObject->GetRootParams()).Get());
 	// 2) PSOセット
-	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
+	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
 	// 3) CBV・SRVセット
 	const auto& cpuStrage = renderObject->GetCpuStorage();
 	const auto& rootParams = renderObject->GetRootParams();
@@ -114,7 +115,7 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
 
 		// モデルの検索
-		const ModelData* obj = resourceManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
+		const ModelData* obj = assetManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
 		//cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
 		if (!obj) return;
 		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
@@ -177,19 +178,15 @@ void DrawSystem::PreScreenDraw()
 
 void DrawSystem::ScreenDraw()
 {
-	screenRenderObject_->modelID_ = resourceManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
+	screenRenderObject_->modelID_ = assetManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
-	DrawObject(screenRenderObject_.get());
+	//DrawObject(screenRenderObject_.get());
 
 // デバッグモードの時は、PreScreenDrawで描画した内容をImGuiのウィンドウに表示する
 #ifdef _DEBUG
 
 	ImGui::Begin("mainDisplay");
 	ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
-	//if (ImGui::ImageButton("texture##nobleScreen", ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450)))
-	//{
-	//	ImGui::OpenPopup("nobleScreen");
-	//}
 	ImGui::End();
 
 

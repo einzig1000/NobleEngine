@@ -1,5 +1,4 @@
 #include "EngineDefinition.h"
-#include "EngineConstexprs.h"
 #include <cmath>
 #include <cstdint>
 #include <numbers>
@@ -756,18 +755,18 @@ std::string EnumToString(AABBFace e)
     {
     case AABBFace::NONE:
         return "NONE";
-    case AABBFace::LEFT:
-        return "LEFT";
-    case AABBFace::RIGHT:
-        return "RIGHT";
-    case AABBFace::BOTTOM:
-        return "BOTTOM";
-    case AABBFace::TOP:
-        return "TOP";
-    case AABBFace::BACK:
-        return "BACK";
-    case AABBFace::FRONT:
-        return "FRONT";
+    case AABBFace::XPlus:
+        return "XPlus";
+    case AABBFace::XMinus:
+        return "XMinus";
+    case AABBFace::YMinus:
+        return "YMinus";
+    case AABBFace::YPlus:
+        return "YPlus";
+    case AABBFace::ZMinus:
+        return "ZMinus";
+    case AABBFace::ZPlus:
+        return "ZPlus";
     default:
         return "Unknown";
     }

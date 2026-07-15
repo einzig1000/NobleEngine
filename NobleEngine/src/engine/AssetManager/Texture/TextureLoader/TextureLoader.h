@@ -3,6 +3,7 @@
 
 class DirectXManager;
 class TextureBank;
+class StructuredBufferManager;
 
 class TextureLoader
 {

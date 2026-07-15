@@ -9,7 +9,7 @@ public:
 	CameraManager();
 	~CameraManager();
 
-	int32_t AddCamera();
+	int32_t AddCamera(const std::string& name);
 
 	void Update(const int32_t cameraID);
 	void DrawImGui();

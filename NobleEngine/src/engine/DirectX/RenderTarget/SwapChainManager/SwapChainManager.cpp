@@ -1,7 +1,7 @@
 #include "SwapChainManager.h"
 #include <Utilities/Logger/Logger.h>
 #include <Window/WindowManager.h>
-#include <DirectX/Resource/Dx12ResourceFactory.h>
+#include <DirectX/Resource/Dx12ResourceUtilities.h>
 #include "DirectX/DescriptorHeapManager/DescriptorHeapManager.h"
 #include <Windows.h> 
 #include <cassert>

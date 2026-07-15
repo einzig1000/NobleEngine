@@ -83,20 +83,49 @@ D3D12_GPU_DESCRIPTOR_HANDLE SRV_UAVManager::GetGPUHandleAt(uint32_t i) const
     return handle;
 }
 
+SRV_UAVManager::Allocation SRV_UAVManager::CreateUAVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride)
+{
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    uavDesc.Buffer.FirstElement = 0;
+    uavDesc.Buffer.NumElements = numElements;
+    uavDesc.Buffer.StructureByteStride = structureByteStride;
+    uavDesc.Buffer.CounterOffsetInBytes = 0;
+    uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+    return CreateUAV(resource, &uavDesc, ResourceType::StructuredBuffer);
+}
+
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc, ResourceType type)
 {
     // 次スロットのインデックス取得
-	uint32_t index = Allocate(type);
+    uint32_t index = Allocate(type);
 
-	// ハンドル取得
+    // ハンドル取得
     D3D12_CPU_DESCRIPTOR_HANDLE cpu = GetCPUHandleAt(index);
     D3D12_GPU_DESCRIPTOR_HANDLE gpu = GetGPUHandleAt(index);
 
     // SRV作成
     device_->CreateShaderResourceView(resource, desc, cpu);
 
-	return Allocation{ index, cpu, gpu };
+    Allocation alloc{ index, cpu, gpu, ViewType::SRV };
+    return alloc;
 }
+SRV_UAVManager::Allocation SRV_UAVManager::CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc, ResourceType type)
+{
+    // 次スロットのインデックス取得
+    uint32_t index = Allocate(type);
+
+    D3D12_CPU_DESCRIPTOR_HANDLE cpu = GetCPUHandleAt(index);
+    D3D12_GPU_DESCRIPTOR_HANDLE gpu = GetGPUHandleAt(index);
+
+    // UAV作成
+    device_->CreateUnorderedAccessView(resource, nullptr, desc, cpu);
+
+    Allocation alloc{ index, cpu, gpu, ViewType::UAV };
+    return alloc;
+}
+
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforTexture(ID3D12Resource* resource, const DirectX::TexMetadata& metadata)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};

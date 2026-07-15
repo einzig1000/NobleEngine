@@ -2,23 +2,19 @@
 #include <EngineDefinition/EngineDefinition.h>
 #include <EngineDefinition/EngineConstexprs.h>
 #include <DrawSystem/RenderData/RenderObject.h>
-#include <DirectX/FrameCbAllocator/FrameCbAllocator.h>
+#include <RootBinding/FrameCbAllocator/FrameCbAllocator.h>
 #include <memory>
 
 class DirectXManager;
 class AssetManager;
-
 
 /// <summary>
 /// 描画管理クラス
 /// </summary>
 class DrawSystem
 {
-private:
-	FrameCbAllocator cbAllocators_[Constexprs::kFrameCount]{};
-
 public:
-	DrawSystem(DirectXManager* dxManager, AssetManager* resourceManager);
+	DrawSystem(DirectXManager* dxManager, AssetManager* assetManager);
 	~DrawSystem();
 	void Reset();
 	// 指定したレンダーテクスチャに書き込むフェーズ
@@ -34,14 +30,10 @@ public:
 	void AddPostEffectDrawList(const RenderObject* renderObject, int32_t renderTextureID);
 	void AddScreenDrawList(const RenderObject* renderObject);
 
-
-	//void AddDebugLineList(const Vector3& start, const Vector3& end, uint32_t color);
-	//void AddSphere(const Sphere& sphere, uint32_t color);
-	//void AddSphereXYZ(const SphereXYZ& sphere, uint32_t color);
-	//void AddCylinder(const Cylinder& cylinder, uint32_t color);
-	//void AddAABB(const AABB& aabb, uint32_t color);
-
 private:
+	DirectXManager* dxManager_ = nullptr;
+	AssetManager* assetManager_ = nullptr;
+
 	// 描画オブジェクトをRenderTextureに描画する。
 	void DrawObject(const RenderObject* renderObject);
 
@@ -54,8 +46,6 @@ private:
 	std::unique_ptr<RenderObject> screenRenderObject_ = nullptr;
 	int32_t rt_nobleScreenID_ = -1;
 
-	// DirectXマネージャー
-	DirectXManager* dxManager_ = nullptr;
-	AssetManager* resourceManager_ = nullptr;
+	FrameCbAllocator cbAllocators_[Constexprs::kFrameCount]{};
 };
 

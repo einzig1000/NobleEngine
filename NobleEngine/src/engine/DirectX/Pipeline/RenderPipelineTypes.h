@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <d3d12.h>
+#include <string>
 
 enum class ShaderType
 {
@@ -17,6 +18,7 @@ enum class ParamType
 	None,
 	CBV,
 	SRV,
+	UAV,
 };
 
 struct InputElement
@@ -40,9 +42,9 @@ struct RootParam
 	uint32_t sizeBytes = 0;     // 自身のサイズ。CBuffer用ストレージ内でどれだけのサイズが必要か。
 	uint32_t offsetBytes = 0;   // cpuStorage_ 内オフセット
 
-	// SRV用
-	uint32_t srvStorageIndex = 0;   // そのSRVがdynamicSrvStorage_のどこにあるか。
-	uint32_t srvAllocIndex = UINT32_MAX;    // SRVのスロットインデックス(0であればBindlessテクスチャ配列、1以上UINT32_MAX未満であればリソース確保済みのSRV)
+    // SRV/UAV用 Allocation.index
+    uint32_t srvAllocIndex = UINT32_MAX;
+    uint32_t uavAllocIndex = UINT32_MAX;
 
     void ComputeHash()
     {
@@ -107,7 +109,7 @@ enum class DSVFormatID : uint8_t
 	Unknown,
 };
 
-struct PSOConfig
+struct GraphicsPSOConfig
 {
     /// 頂点シェーダーファイル名
     std::string vs = "unknown";
@@ -131,4 +133,6 @@ struct PSOConfig
 
 struct ComputePSOConfig
 {
+	/// コンピュートシェーダーファイル名
+    std::string cs = "unknown";
 };

@@ -119,7 +119,7 @@ namespace ShaderReflection
 
 
 
-    void BuildRootParamsFromShader(IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams, uint32_t& currentCBVOffsetBytes, uint32_t& currentSRVOffsetIndex)
+    void BuildRootParamsFromShader(IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams, uint32_t& currentCBVOffsetBytes)
     {
         Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
         HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
@@ -180,9 +180,19 @@ namespace ShaderReflection
                 p.registerSpace = bind.Space;
 				p.ComputeHash();
 
-				p.srvStorageIndex = currentSRVOffsetIndex;
-                currentSRVOffsetIndex++;
 				outParams.push_back(p);
+            }
+			// UAV
+            else if (bind.Type == D3D_SIT_UAV_RWSTRUCTURED || bind.Type == D3D_SIT_UAV_RWBYTEADDRESS)
+            {
+                RootParam p{};
+                p.paramType = ParamType::UAV;
+                p.shaderType = shaderType;
+                p.key = bind.BindPoint;
+                p.registerSpace = bind.Space;
+                p.ComputeHash();
+
+                outParams.push_back(p);
             }
 			// Bindlessテクスチャ配列 (BindCountが0で、型がテクスチャ)
             else if (bind.Type == D3D_SIT_TEXTURE && bind.BindCount == 0)
@@ -221,52 +231,8 @@ namespace ShaderReflection
                 p.registerSpace = bind.Space;
                 p.ComputeHash();
 
-                // BindCountが0でないテクスチャは通常のSRVとして扱う
-                p.srvStorageIndex = currentSRVOffsetIndex;
-                currentSRVOffsetIndex++;
                 outParams.push_back(p);
             }
         }
-    }
-
-    bool HasBindlessTextureArray(IDxcBlob* shaderBlob)
-    {
-        Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
-        HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-        if (FAILED(hr))
-        {
-            Log("IDxcUtilsの生成に失敗しました");
-            return false;
-        }
-
-        DxcBuffer dxcBuffer{};
-        dxcBuffer.Ptr = shaderBlob->GetBufferPointer();
-        dxcBuffer.Size = shaderBlob->GetBufferSize();
-        dxcBuffer.Encoding = DXC_CP_ACP;
-
-        Microsoft::WRL::ComPtr<ID3D12ShaderReflection> reflection;
-        hr = dxcUtils->CreateReflection(&dxcBuffer, __uuidof(ID3D12ShaderReflection), (void**)&reflection);
-        if (FAILED(hr))
-        {
-            Log("シェーダーリフレクションの取得失敗");
-            return false;
-        }
-
-        D3D12_SHADER_DESC shaderDesc;
-        reflection->GetDesc(&shaderDesc);
-
-        for (UINT i = 0; i < shaderDesc.BoundResources; i++)
-        {
-            D3D12_SHADER_INPUT_BIND_DESC bind{};
-            reflection->GetResourceBindingDesc(i, &bind);
-
-            if (bind.Type == D3D_SIT_TEXTURE &&
-                bind.BindCount == 0 &&
-                std::string(bind.Name) == "textures")
-            {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -16,7 +16,7 @@ ModelPreview::ModelPreview(DirectXManager* dxManager, CameraManager* cameraManag
 
 	Vector2 renderTargetSize = Vector2(512, 512);
 
-	cameraID_ = cameraManager_->AddCamera();
+	cameraID_ = cameraManager_->AddCamera("ModelPreview");
 	cameraManager_->GetCamera(cameraID_)->SetScreenSizeTarget(renderTargetSize, 0, EaseType::IN_BACK);
 
 	renderTarget_ = dxManager_->GetRenderTextureManager()->CreateRenderTarget(

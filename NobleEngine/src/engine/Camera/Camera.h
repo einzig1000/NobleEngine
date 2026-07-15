@@ -16,12 +16,15 @@ public:
     void DrawImGui();
     void Resize();
 
+	void SetName(const std::string& name) { name_ = name; }
+	std::string GetName() const { return name_; }
+
     // 動かす先の設定
-    void SetCenterTarget(Vector3 target, int duration, EaseType easetype);
-    void SetRotateTarget(Vector3 target, int duration, EaseType easetype);
-    void SetDistanceTarget(float target, int duration, EaseType easetype);
-	void SetScreenSizeTarget(Vector2 target, int duration, EaseType easetype);
-	void SetFovTarget(float target, int duration, EaseType easetype);
+    void SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype);
+    void SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype);
+    void SetDistanceTarget(float target, int32_t duration, EaseType easetype);
+	void SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType easetype);
+	void SetFovTarget(float target, int32_t duration, EaseType easetype);
 
     // シェイク
     void StartShake(float intensity, float duration, float frequency = 25.0f);
@@ -58,6 +61,9 @@ private:
 
     CameraMode_ORBIT_FPS cameraMode_ = CameraMode_ORBIT_FPS::ORBIT;
 
+    // 名前
+	std::string name_ = "Camera";
+
     // 操作可能か
     bool enableControl_;
 
@@ -67,7 +73,7 @@ private:
 	// 注視点
 	Vector3 center_ = { 0.0f, 0.0f, 0.0f };
     // カメラの最終的な変換
-	EulerTransform transform_;
+	EulerTransforms transform_;
 	// スクリーンサイズ
     Vector2 screenSize_;
 

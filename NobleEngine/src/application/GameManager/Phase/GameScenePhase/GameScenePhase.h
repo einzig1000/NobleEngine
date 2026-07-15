@@ -24,16 +24,19 @@ public:
 
 private:
 
-	int32_t rt_main_ = -1;
-	int32_t c_main_ = -1;
+	int32_t rt_3D_ = -1;	// マップとかプレイヤーが描画されるレンダーターゲット
+	int32_t rt_UI_ = -1;	// UIが描画されるレンダーターゲット
 
-	std::unique_ptr<RenderObject> render_;
+	int32_t c_debug_ = -1;
+
+	std::unique_ptr<RenderObject> draw_3D_;
+	std::unique_ptr<RenderObject> draw_UI_;
 
 	// カメラ
 	//std::unique_ptr<CameraController> cameraController_;
 
 	// プレイヤー
-	//std::unique_ptr<Player> player_;
+	std::unique_ptr<Player> player_;
 
 	// 敵マネージャー
 	//std::unique_ptr<EnemyManager> enemyManager_;
@@ -42,6 +45,6 @@ private:
 	std::unique_ptr<MapManager> map_;
 
 	// UIマネージャー
-	//std::unique_ptr<UIManager> uiManager_;
+	std::unique_ptr<UIManager> uiManager_;
 
 };
