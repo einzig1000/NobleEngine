@@ -2,6 +2,17 @@
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <definition/definition.h>
 #include <memory>
+#include <Game.h>
+
+struct Particle
+{
+	Vector3 translate;
+	Vector3  scale;
+	float lifeTime;
+	Vector3 velocity;
+	float currentTime;
+	Vector4 color;
+};
 
 class TestParticle
 {
@@ -32,6 +43,20 @@ private:
 	std::unique_ptr<RenderObject> renderSphere_;
 	Vector4 sphereColor;
 	EulerTransforms sphereTransform;
+
+	
+	EmitterSphere emitterSphere;
+
+
+	std::vector<Particle> particles;
+	std::unique_ptr<RenderObject> particle_;
+	std::unique_ptr<ComputeObject> Compute_;
+	std::unique_ptr<ComputeObject> initializeCompute_;
+	int32_t particleSRVID_ = -1;
+	int32_t freeCounterSRVID_ = -1;
+
+
+
 };
 
 

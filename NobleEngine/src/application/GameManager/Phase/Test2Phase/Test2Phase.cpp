@@ -57,8 +57,8 @@ void Test2Phase::Update()
 
 void Test2Phase::Draw()
 {
-	//testParticle.Draw(rt_main_);
-	testAnimation.Draw(rt_main_);
+	testParticle.Draw(rt_main_);
+	//testAnimation.Draw(rt_main_);
 
 	render_->ScreenDraw();
 }

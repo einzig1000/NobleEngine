@@ -435,6 +435,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
 
 			range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 			const UINT reg = static_cast<UINT>(param.key);
+            range.BaseShaderRegister = reg;
             range.NumDescriptors = 1;
             range.RegisterSpace = param.registerSpace;
             range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;

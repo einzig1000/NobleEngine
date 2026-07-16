@@ -1104,6 +1104,18 @@ struct CollisionInf
 
 // パーティクル情報
 
+struct EmitterSphere
+{
+    Vector3 translate;  // 座標
+    float radius;       // 射出半径
+    uint32_t count;     // 射出数
+	float frequency;    // 射出頻度
+	float frequencyTime; // 射出頻度タイマ
+	uint32_t emit;      // 射出するかどうか
+};
+
+
+
 struct ParticleResource
 {
     uint32_t model = 0;

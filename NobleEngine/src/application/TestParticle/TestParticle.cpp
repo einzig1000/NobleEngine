@@ -1,5 +1,4 @@
 #include "TestParticle.h"
-#include <Game.h>
 #include <numbers>
 
 TestParticle::TestParticle()
@@ -213,6 +212,40 @@ TestParticle::TestParticle()
 		sphereTransform.translate = { 0.0f, 0.0f, 0.0f };
 		sphereTransform.rotate = { Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1) };
 	}
+
+	emitterSphere.count = 10;
+	emitterSphere.frequency = 0.5f;
+	emitterSphere.frequencyTime = 0.0f;
+	emitterSphere.translate = { 0.0f, 0.0f, 0.0f };
+	emitterSphere.radius = 1.0f;
+	emitterSphere.emit = 0;
+
+	particleSRVID_ = Game::Resource::CreateCompute(sizeof(Particle), 1024);
+	freeCounterSRVID_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1);
+
+	particle_ = std::make_unique<RenderObject>();
+	particle_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	particle_->psoConfig_.ps = "resources/shaders/Particle/Particle.PS.hlsl";
+	particle_->psoConfig_.vs = "resources/shaders/Particle/Particle.VS.hlsl";
+	particle_->SetupFromShaders();
+	//particle_->psoConfig_.blendID = BlendStateID::Add;
+	//particle_->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
+	particle_->instanceNum_ = 1024;
+
+	initializeCompute_ = std::make_unique<ComputeObject>();
+	initializeCompute_->psoConfig_.cs = "resources/shaders/Particle/Particle.Initialize.CS.hlsl";
+	initializeCompute_->SetupFromShaders();
+	initializeCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
+	initializeCompute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
+	initializeCompute_->RegisterOutput(particleSRVID_);
+	initializeCompute_->RegisterOutput(freeCounterSRVID_);
+	initializeCompute_->Dispatch();
+
+	Compute_ = std::make_unique<ComputeObject>();
+	Compute_->psoConfig_.cs = "resources/shaders/Particle/EmitParticle.CS.hlsl";
+	Compute_->SetupFromShaders();
+	Compute_->RegisterOutput(particleSRVID_);
+	Compute_->RegisterOutput(freeCounterSRVID_);
 }
 
 TestParticle::~TestParticle()
@@ -274,18 +307,48 @@ void TestParticle::Update(int32_t cameraID)
 		renderSphere_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 		renderSphere_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 	}
+
+	
+	TransformationMatrix perView;
+	perView.WVP = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	perView.World = Game::Camera::Getter::GetBillboardMatrix(cameraID);
+	particle_->SetCBufferData(0, ShaderType::VertexShader, &perView);
+	particle_->SetSBufferData(0, ShaderType::VertexShader, Game::Resource::GetSRV(particleSRVID_));
+
+
+	emitterSphere.frequencyTime += Game::Time::GetDeltaTime();
+	if (emitterSphere.frequency <= emitterSphere.frequencyTime)
+	{
+		emitterSphere.frequencyTime -= emitterSphere.frequency;
+		emitterSphere.emit = 1;
+	}
+	else
+	{
+		emitterSphere.emit = 0;
+	}
+
+
+	Compute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
+	Compute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
+	Compute_->SetCBufferData(0, &emitterSphere);
+	Vector3 rand = { Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1) };
+	Compute_->SetCBufferData(1, &rand);
 }
 
 void TestParticle::Draw(int32_t renderTextureID)
 {
-	for (int i = 0; i < 10; ++i)
-	{
-		renderPlanes_[i]->Draw(renderTextureID);
-	}
-	for (int i = 0; i < 10; ++i)
-	{
-		renderRings_[i]->Draw(renderTextureID);
-	}
-	renderCylinder_->Draw(renderTextureID);
-	renderSphere_->Draw(renderTextureID);
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderPlanes_[i]->Draw(renderTextureID);
+	//}
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderRings_[i]->Draw(renderTextureID);
+	//}
+	//renderCylinder_->Draw(renderTextureID);
+	//renderSphere_->Draw(renderTextureID);
+
+	Compute_->Dispatch();
+	particle_->Draw(renderTextureID);
+	//Compute_->Dispatch();
 }

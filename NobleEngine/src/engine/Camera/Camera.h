@@ -46,6 +46,7 @@ public:
     Matrix4x4 GetViewportMatrix() const { return viewportMatrix; }
     Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }
     Matrix4x4 GetOrthoProjectionMatrix() const { return orthoProjectionMatrix_; }
+	Matrix4x4 GetBillboardMatrix() const { return billboardMatrix_; }
     Vector3 GetCenter() const { return center_; }
     Vector3 GetTranslate() const { return eye_; }
     Vector3 GetRotate() const { return transform_.rotate; }
@@ -117,4 +118,7 @@ private:
 
 	// ビュープロジェクション行列
     Matrix4x4 viewProjectionMatrix;
+
+	// ビルボード行列
+    Matrix4x4 billboardMatrix_;
 };

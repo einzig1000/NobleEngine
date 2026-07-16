@@ -5,6 +5,7 @@
 #include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <Engine.h>
 #include <DrawSystem/RenderData/RenderObject.h>
+#include <ComputeSystem/ComputeObject/ComputeObject.h>
 
 /// <summary>
 /// ファサードクラス
@@ -447,6 +448,8 @@ namespace Game
 			Matrix4x4 GetViewMatrix(int32_t cameraID = 0);
 			/// <returns>カメラのプロジェクション行列</returns>
 			Matrix4x4 GetProjectionMatrix(int32_t cameraID = 0);
+			/// <returns>カメラのビルボード行列</returns>
+			Matrix4x4 GetBillboardMatrix(int32_t cameraID = 0);
 		};
 
 		namespace Setter

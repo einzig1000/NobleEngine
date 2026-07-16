@@ -347,6 +347,10 @@ namespace Game
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetProjectionMatrix();
 			}
+			Matrix4x4 GetBillboardMatrix(int32_t cameraID)
+			{
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetBillboardMatrix();
+			}
 		}
 
 		namespace Setter

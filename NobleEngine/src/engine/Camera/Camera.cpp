@@ -1,5 +1,5 @@
 #include "Camera.h"
-#include <Facade/Game.h>
+#include <Game.h>
 #include <Window/WindowManager.h>
 #include <algorithm>
 #include <numbers>
@@ -99,6 +99,32 @@ void Camera::Update_Orbit()
 
 	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
     viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
+	Matrix4x4 backToFrontMatrix;// = Matrix4x4::MakeRotateYMatrix(3.14159265358979323846f);
+
+	backToFrontMatrix.m[0][0] = -1.00000000f;
+	backToFrontMatrix.m[0][1] = 0.00000000f;
+	backToFrontMatrix.m[0][2] = 8.74227766e-08;
+	backToFrontMatrix.m[0][3] = 0.00000000f;
+
+	backToFrontMatrix.m[1][0] = 0.00000000f;
+	backToFrontMatrix.m[1][1] = 1.00000000f;
+	backToFrontMatrix.m[1][2] = 0.00000000f;
+	backToFrontMatrix.m[1][3] = 0.00000000f;
+
+	backToFrontMatrix.m[2][0] = -8.74227766e-08;
+	backToFrontMatrix.m[2][1] = 0.00000000f;
+	backToFrontMatrix.m[2][2] = -1.00000000f;
+	backToFrontMatrix.m[2][3] = 0.00000000f;
+
+	backToFrontMatrix.m[2][0] = 0.00000000f;
+	backToFrontMatrix.m[2][1] = 0.00000000f;
+	backToFrontMatrix.m[2][2] = 0.00000000f;
+	backToFrontMatrix.m[2][3] = 0.00000000f;
+
+	billboardMatrix_ = backToFrontMatrix * viewMatrix_.Inverse();
+	billboardMatrix_.m[3][0] = 0.0f; // 平行移動成分のリセット
+	billboardMatrix_.m[3][1] = 0.0f;
+	billboardMatrix_.m[3][2] = 0.0f;
 
     CreateFrustumPlanes();
 }
