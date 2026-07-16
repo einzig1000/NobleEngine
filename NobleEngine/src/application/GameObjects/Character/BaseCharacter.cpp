@@ -17,17 +17,6 @@ void BaseCharacter::AddItem(ItemID id)
 	//haveItem_->AddItem(id);
 }
 
-void BaseCharacter::UpdateAttackPower()
-{
-	// 毎フレーム持ち物確認するより攻撃アクションが取られた時に持ち物を参照するのがスマート
-
-	//ItemID currentItemID = haveItem_->GetCurrentSelectedItemID();
-	//if (currentItemID == ItemID::木の剣)attackPower_ = 2.0f;
-	//if (currentItemID == ItemID::石の剣)attackPower_ = 3.0f;
-	//if (currentItemID == ItemID::鉄の剣)attackPower_ = 4.0f;
-	//if (currentItemID == ItemID::ダイヤの剣)attackPower_ = 15.0f;
-}
-
 void BaseCharacter::Jump()
 {
 	// 接地していないならジャンプ不可
@@ -95,6 +84,9 @@ void BaseCharacter::UpdateLeftClick()
 	//	targetCharacter->TakeDamage(int32_t(attackPower_));
 	//}
 }
+
+void BaseCharacter::UpdateRightClick()
+{}
 
 
 void BaseCharacter::SetNewBlock(BlockID id)

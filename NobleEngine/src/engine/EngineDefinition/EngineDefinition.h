@@ -1023,7 +1023,7 @@ struct Material
 	Vector3 diffuseColor = { 1.0f, 1.0f, 1.0f };
 	float  shininess = 1.0f;
 	Vector3 specularColor = { 1.0f, 1.0f, 1.0f };
-    float  _pad0;
+	float  _pad0 = 0.0f;
 };
 
 #pragma endregion
@@ -1303,42 +1303,3 @@ enum class LineType
 };
 std::string EnumToString(LineType e);
 
-
-class Block;
-struct lookAtBlock
-{
-    Block* block = nullptr;
-	Vector3int chunkIndex = { 0,0,0 };
-	Vector3int localIndex = { 0,0,0 };
-    AABBFace face = AABBFace::NONE;
-	float distance = 0.0f;
-};
-
-class BaseCharacter;
-struct RayHitResult
-{
-    enum class Type
-    {
-        None,
-        Block,
-        Character
-    };
-
-    Type type = Type::None;
-
-    // type == Block のとき有効
-    lookAtBlock blockHit{};
-
-    // type == Character のとき有効
-    BaseCharacter* Character = nullptr;
-
-    // 共通：レイ原点からの距離
-    float distance = 0.0f;
-};
-
-struct Rect
-{
-    int minX, minY;
-    int maxX, maxY;
-    bool empty = true;
-};

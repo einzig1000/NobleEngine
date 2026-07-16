@@ -21,7 +21,12 @@ private:
 
 	int32_t WellSRVID_ = -1;
 	int32_t vertexSRVID_ = -1;
+	std::vector<VertexData> vertices;
 	int32_t vertexInflenceSRVID_ = -1;
+	std::vector<VertexInfluence> vertexInfluences;
+
+	int32_t resultSRVID_ = -1;
+	std::vector<VertexData> resultVertices;
 
 	int32_t animationID_ = -1;
 	uint32_t texID_ = -1;

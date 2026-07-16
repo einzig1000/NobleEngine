@@ -13,6 +13,8 @@ public:
 	void SetSBufferData(const uint32_t key, const uint32_t srvAllocIndex, uint32_t space = 0);
 	void SetUAVData(const uint32_t key, const uint32_t uavAllocIndex, uint32_t space = 0);
 
+	void Dispatch();
+
 	// このComputeObjectが書き込む出力バッファをバリア管理のために登録しておく
 	void RegisterOutput(int32_t handle) { outputHandles_.push_back(handle); }
 	const std::vector<int32_t>& GetOutputHandles() const { return outputHandles_; }

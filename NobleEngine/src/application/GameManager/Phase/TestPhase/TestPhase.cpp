@@ -533,15 +533,15 @@ void TestPhase::DrawImGui()
 	ImGui::SameLine();
 	if (ImGui::Button("Load"))Load_renderTarget();
 
-	for (auto& [id, data] : renderTargetData_)
-	{
-		if (ImGui::TreeNode(data.name.c_str()))
-		{
-			ImGui::Image((ImTextureID)Game::Asset::RenderTexture::GetRenderTexture(data.name), ImVec2(data.width / 10, data.height / 10));
+	//for (auto& [id, data] : renderTargetData_)
+	//{
+	//	if (ImGui::TreeNode(data.name.c_str()))
+	//	{
+	//		ImGui::Image((ImTextureID)Game::Asset::RenderTexture::GetRenderTexture(data.name), ImVec2(data.width / 10, data.height / 10));
 
-			ImGui::TreePop();
-		}
-	}
+	//		ImGui::TreePop();
+	//	}
+	//}
 
 	ImGui::End();
 

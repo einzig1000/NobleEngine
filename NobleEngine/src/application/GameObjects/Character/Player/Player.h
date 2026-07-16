@@ -14,9 +14,6 @@ public:
 	void Initialize() override;
 	void Update(int32_t cameraID) override;
 	void Draw(int32_t renderTextureID) override;
-	void DrawCrafting();
-	void DrawInventory();
-	void DrawHotbar();
 	void DrawImGui() override;
 
 	void UpdateViewRay(int32_t cameraID);	// 視線レイ更新

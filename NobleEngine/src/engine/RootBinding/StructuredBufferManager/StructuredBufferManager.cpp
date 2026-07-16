@@ -18,7 +18,7 @@ int32_t StructuredBufferManager::CreateComputeOutput(size_t elementSize, size_t 
 	const size_t bytes = elementSize * elementCount;
 
 	// デフォルトヒープ(GPUからの高速アクセス)に作る
-	entry.buffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bytes);
+	entry.buffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
 	// 同じバッファに対して UAVとSRVの両方を作る
 	entry.uav = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateUAVforStructuredBuffer(

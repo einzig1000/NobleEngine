@@ -1,0 +1,65 @@
+{
+  "Keys": [
+    "Air",
+    "Stone",
+    "Iron",
+    "Diamond",
+    "Bedrock",
+    "Dirt",
+    "Grass",
+    "Glass",
+    "wood",
+    "Leaf"
+  ],
+
+  "Air": {
+    "durability": -1.0,
+    "isTransparent": true,
+    "color": 0
+  },
+  "Stone": {
+    "durability": 120.0,
+    "isTransparent": false,
+    "color": 2155905279
+  },
+  "Iron": {
+    "durability": 160.0,
+    "isTransparent": false,
+    "color": 3233857791
+  },
+  "Diamond": {
+    "durability": 240.0,
+    "isTransparent": false,
+    "color": 4278255615
+  },
+  "Bedrock": {
+    "durability": -1.0,
+    "isTransparent": false,
+    "color": 1077952767
+  },
+  "Dirt": {
+    "durability": 30.0,
+    "isTransparent": false,
+    "color": 2336560127
+  },
+  "Grass": {
+    "durability": 30.0,
+    "isTransparent": false,
+    "color": 579543807
+  },
+  "Glass": {
+    "durability": 10.0,
+    "isTransparent": true,
+    "color": 0
+  },
+  "wood": {
+    "durability": 40.0,
+    "isTransparent": false,
+    "color": 2336560127
+  },
+  "Leaf": {
+    "durability": 20.0,
+    "isTransparent": true,
+    "color": 579543807
+  }
+}

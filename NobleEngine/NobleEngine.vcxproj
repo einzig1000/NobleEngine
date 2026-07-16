@@ -11,8 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\Character\HaveItem\HaveItem.cpp" />
+    <ClCompile Include="src\application\Camera\CameraController.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\BaseCharacter.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\Player\Player.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\ItemInventory\ItemInventory.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\CraftScreen\CraftScreen.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\InventoryScreen\InventoryScreen.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\PauseScreen\PauseScreen.cpp" />
@@ -128,8 +131,11 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\Character\HaveItem\HaveItem.h" />
+    <ClInclude Include="src\application\Camera\CameraController.h" />
     <ClInclude Include="src\application\GameObjects\Character\BaseCharacter.h" />
     <ClInclude Include="src\application\GameObjects\Character\Player\Player.h" />
+    <ClInclude Include="src\application\GameObjects\Character\ItemInventory\ItemInventory.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIData.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIScreen\CraftScreen\CraftScreen.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIScreen\InventoryScreen\InventoryScreen.h" />

@@ -74,6 +74,9 @@ void Chunk::CreateChunkData(const NoiseParameter& param, const Vector3int & chun
 
 	// 配置後のブロックの露出状態を更新
 	SetExposedAllBlocks();
+
+	// 初回なので無条件でメッシュ生成
+	instanceBufferDirty_ = true;
 }
 
 // Jsonから読み込まれたデータを元にチャンクデータを生成
@@ -291,7 +294,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 			// 幹
 			for (int32_t y = trunkY0; y < trunkY0 + trunkH; ++y)
 			{
-				SetBlock(Vector3int(x, y, z), BlockID::wood);
+				SetBlock(Vector3int(x, y, z), BlockID::Wood);
 			}
 
 			// 葉（幹先端に球っぽく）
@@ -325,8 +328,6 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 		}
 	}
 }
-
-
 
 //void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 //{
@@ -406,33 +407,6 @@ bool Chunk::IsNeighborExist(DirectionXYZ direction)
 #pragma region 露出状態計算
 
 // localIndexのブロックの露出状態を更新
-//void Chunk::RefreshExposeAt(const Vector3int& localIndex)
-//{
-//	Block* targetBlock = GetBlock(localIndex);
-//	if (!targetBlock) return;
-//
-//	const bool preExposed = targetBlock->isExposed_;
-//	targetBlock->isExposed_ = ComputeExposed(localIndex);
-//
-//	// 変化なしなら何もしない
-//	if (targetBlock->isExposed_ == preExposed) return;
-//
-//	// (前フレーム露出なし && 今フレーム露出あり)なら描画リストに追加
-//	if (targetBlock->isExposed_)
-//	{
-//		InstanceData data;
-//		data.World = Matrix4x4::MakeTranslateMatrix(targetBlock->position_);
-//		data.Color = Vector4(1, 1, 1, 1);
-//		int32_t slot = AllocateInstanceSlot(targetBlock, data);
-//	}
-//	// (前フレーム露出あり && 今フレーム露出なし)なら描画リストから削除(前フレーム露出ありの時点でdataSlot_には有効なスロット番号が入っているはず)
-//	else
-//	{
-//		FreeInstanceSlot(targetBlock);
-//	}
-//}
-
-// localIndexのブロックの露出状態を更新
 void Chunk::RefreshExposeAt(const Vector3int& localIndex)
 {
 	Block* targetBlock = GetBlock(localIndex);
@@ -442,24 +416,7 @@ void Chunk::RefreshExposeAt(const Vector3int& localIndex)
 	ComputeExposed(localIndex);
 	const int32_t postExposed = targetBlock->GetExposedFace();
 
-	// 変化なしなら何もしない
-	if (preExposed == postExposed) return;
-
-	instanceBufferDirty_ = true;
-
-	//// (前フレーム露出なし && 今フレーム露出あり)なら描画リストに追加
-	//if (!wasExposed && targetBlock->isExpose())
-	//{
-	//	InstanceData data;
-	//	data.World = Matrix4x4::MakeTranslateMatrix(targetBlock->position_);
-	//	data.Color = Vector4(1, 1, 1, 1);
-	//	int32_t slot = AllocateInstanceSlot(targetBlock, data);
-	//}
-	//// (前フレーム露出あり && 今フレーム露出なし)なら描画リストから削除(前フレーム露出ありの時点でdataSlot_には有効なスロット番号が入っているはず)
-	//else if (wasExposed && !targetBlock->isExpose())
-	//{
-	//	FreeInstanceSlot(targetBlock);
-	//}
+	if (preExposed != postExposed) instanceBufferDirty_ = true;
 }
 // localIndexのブロックの露出状態を判定
 int32_t Chunk::ComputeExposed(const Vector3int& localIndex)
@@ -476,7 +433,7 @@ int32_t Chunk::ComputeExposed(const Vector3int& localIndex)
 	for (int32_t i = 0; i < 6; i++)
 	{
 		Vector3int neighborIndex(localIndex.x + dx[i], localIndex.y + dy[i], localIndex.z + dz[i]);
-		Block* neighborBlock = GetBlock(neighborIndex);
+		Block* neighborBlock = GetBlock(neighborIndex, true);
 		
 		// 隣接ブロックが非存在 || Air || 半透明ブロック　なら露出している
 		bool exposed = false;
@@ -505,9 +462,6 @@ void Chunk::SetExposedAllBlocks()
 			}
 		}
 	}
-
-	// メッシュ再構築
-	RefreshMeshData();
 }
 // localIndexの隣接６ブロックの露出状態を更新
 void Chunk::SetExposedAroundBlocks(const Vector3int& localIndex)
@@ -570,9 +524,6 @@ void Chunk::SetExposedAroundBlocks(const Vector3int& localIndex)
 // チャンク境界ブロックの露出状態を更新
 void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 {
-	Chunk* neighborChunk = neighbors_[direction];
-	if (!neighborChunk) return;
-
 	switch (direction)
 	{
 	case DirectionXYZ::Left: // -X
@@ -580,10 +531,8 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 		{
 			for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(Constexprs::kChunkX - 1, y, z));
-				neighborChunk->RefreshExposeAt(Vector3int(Constexprs::kChunkX - 2, y, z));
-				this->RefreshExposeAt(Vector3int(0, y, z));	
-				this->RefreshExposeAt(Vector3int(1, y, z));
+				RefreshExposeAt(Vector3int(0, y, z));	
+				RefreshExposeAt(Vector3int(1, y, z));
 			}
 		}
 		break;
@@ -592,10 +541,8 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 		{
 			for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(0, y, z));
-				neighborChunk->RefreshExposeAt(Vector3int(1, y, z));
-				this->RefreshExposeAt(Vector3int(Constexprs::kChunkX - 1, y, z));
-				this->RefreshExposeAt(Vector3int(Constexprs::kChunkX - 2, y, z));
+				RefreshExposeAt(Vector3int(Constexprs::kChunkX - 1, y, z));
+				RefreshExposeAt(Vector3int(Constexprs::kChunkX - 2, y, z));
 			}
 		}
 		break;
@@ -604,10 +551,8 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 		{
 			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 1));
-				neighborChunk->RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 2));
-				this->RefreshExposeAt(Vector3int(x, y, 0));
-				this->RefreshExposeAt(Vector3int(x, y, 1));
+				RefreshExposeAt(Vector3int(x, y, 0));
+				RefreshExposeAt(Vector3int(x, y, 1));
 			}
 		}
 		break;
@@ -616,10 +561,8 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 		{
 			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(x, y, 0));
-				neighborChunk->RefreshExposeAt(Vector3int(x, y, 1));
-				this->RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 1));
-				this->RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 2));
+				RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 1));
+				RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 2));
 			}
 		}
 		break;
@@ -628,10 +571,8 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 		{
 			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 1, z));
-				neighborChunk->RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 2, z));
-				this->RefreshExposeAt(Vector3int(x, 0, z));
-				this->RefreshExposeAt(Vector3int(x, 1, z));
+				RefreshExposeAt(Vector3int(x, 0, z));
+				RefreshExposeAt(Vector3int(x, 1, z));
 			}
 		}
 		break;
@@ -640,10 +581,8 @@ void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
 		{
 			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
 			{
-				neighborChunk->RefreshExposeAt(Vector3int(x, 0, z));
-				neighborChunk->RefreshExposeAt(Vector3int(x, 1, z));
-				this->RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 1, z));
-				this->RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 2, z));
+				RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 1, z));
+				RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 2, z));
 			}
 		}
 		break;
@@ -668,11 +607,10 @@ void Chunk::RefreshMeshData()
 		{
 			for (int32_t z = 0; z < Constexprs::kChunkZ; z++)
 			{
-				Block* block = GetBlock(Vector3int(x, y, z));
-				// ブロックが存在している かつ露出している
-				if (block && block->IsExposed())
+				// ブロックが露出している
+				if (blocks_[x][y][z].IsExposed())
 				{
-					Pushvertex(block);
+					Pushvertex(&blocks_[x][y][z]);
 				}
 			}
 		}
@@ -722,15 +660,6 @@ void Chunk::Pushvertex(const Block* block)
 		{ 6, 7, 3, 2 }, // +Y
 		{ 1, 0, 4, 5 }  // -Y
 	};
-	//static const int32_t kFaceQuadVertices[6][4] = {
-	//	{ 6, 7, 4, 5 }, // 0: +Z 面
-	//	{ 3, 2, 1, 0 }, // 1: -Z 面
-	//	{ 2, 6, 5, 1 }, // 2: +X 面
-	//	{ 7, 3, 0, 4 }, // 3: -X 面
-	//	{ 3, 2, 6, 7 }, // 4: +Y 面
-	//	{ 4, 5, 1, 0 }  // 5: -Y 面
-	//};
-
 	// 適当なUV
 	static const Vector2 kQuadUVs[4] = {
 		{0.0f, 0.0f},
@@ -770,16 +699,6 @@ void Chunk::Pushvertex(const Block* block)
 	}
 }
 
-void Chunk::PushvertexOptimized(const Block* block)
-{
-	// X軸で輪切りにする。
-	for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
-	{
-
-
-	}
-}
-
 #pragma endregion
 
 void Chunk::Update(int32_t cameraID)
@@ -807,7 +726,12 @@ void Chunk::Update(int32_t cameraID)
 	// チャンクに更新が来ていたら
 	if (instanceBufferDirty_)
 	{
-		// メッシュレットを再構築
+		// フラグリセット
+		instanceBufferDirty_ = false;
+
+		// メッシュ再構築
+		RefreshMeshData();
+		if (vertices_.empty()) return;
 		std::string name = "Chunk(" + std::to_string(chunkIndex_.x) + "," + std::to_string(chunkIndex_.y) + "," + std::to_string(chunkIndex_.z) + ")";
 		int32_t modelID = Game::Asset::Model::Create(vertices_, name);
 
@@ -825,33 +749,31 @@ void Chunk::Update(int32_t cameraID)
 		modelInfoHeapIndex.z = modelData->uniqueVertexIndexSrvIndex;
 		modelInfoHeapIndex.w = modelData->primitiveIndexSrvIndex;
 
-		// フラグリセット
-		instanceBufferDirty_ = false;
 
 		// データ更新
 		renderData_->SetCBufferData(0, ShaderType::MeshShader, &modelInfoHeapIndex);
-	}
-
-	if (vertexColors_.size() > 0)
-	{
 		Game::Resource::UpdateData(colorHeapIndex_, vertexColors_.data(), sizeof(uint32_t), vertexColors_.size());
 		renderData_->SetSBufferData(0, ShaderType::MeshShader, Game::Resource::GetSRV(colorHeapIndex_));
 	}
+
+	if (vertices_.empty()) return;
+
+	//Game::Resource::UpdateData(colorHeapIndex_, vertexColors_.data(), sizeof(uint32_t), vertexColors_.size());
+	//renderData_->SetSBufferData(0, ShaderType::MeshShader, Game::Resource::GetSRV(colorHeapIndex_));
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	renderData_->SetCBufferData(1, ShaderType::MeshShader, &viewPro);
 }
 
 void Chunk::Draw(int32_t renderTargetID)
 {
-	if (vertexColors_.size() > 0)
-	{
-		renderData_->Draw(renderTargetID);
-	}
+	if (vertices_.empty()) return;
+
+	renderData_->Draw(renderTargetID);
 }
 
 
 
-Block* Chunk::GetBlock(const Vector3int& index)
+Block* Chunk::GetBlock(const Vector3int& index, bool checkNeighborChunk)
 {
 	// チャンク内
 	if (0 <= index.x && index.x < Constexprs::kChunkX &&
@@ -860,6 +782,8 @@ Block* Chunk::GetBlock(const Vector3int& index)
 	{
 		return &blocks_[index.x][index.y][index.z];
 	}
+
+	if (!checkNeighborChunk) return nullptr;
 
 	Chunk* targetChunk = nullptr;
 	Vector3int localIndex = index;
@@ -947,53 +871,6 @@ void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id)
 	Vector3 worldPos = LocalCenter(localIndex);
 	targetBlock->SetBlockPosition(worldPos);
 }
-
-/// ブロック破壊(SetBlockに統合したため削除)
-//void Chunk::DestroyBlock(const Vector3int& localIndex)
-//{
-//	Block* block = GetBlock(localIndex);
-//	if (!block) return;
-//
-//	// ブロックをAirに置換
-//	SetBlock(localIndex, BlockID::Air);
-//
-//	// ブロック側の状態フラグ
-//	block->isExposed_ = false;
-//
-//	// 描画データから削除
-//}
-
-/// 露出になったとき（割当）
-//int32_t Chunk::AllocateInstanceSlot(Block* b, const InstanceData& data)
-//{
-//	int32_t slot = static_cast<int32_t>(instanceDataList_.size());
-//	instanceDataList_.push_back(data);
-//	instanceBlockMap_.push_back(b);
-//	b->dataSlot_ = slot;
-//	instanceBufferDirty_ = true;
-//	return slot;
-//}
-
-/// 非露出になったとき（解放）
-//void Chunk::FreeInstanceSlot(Block* b)
-//{
-//	int32_t slot = b->dataSlot_;
-//	if (slot < 0) return;
-//	int32_t last = static_cast<int32_t>(instanceDataList_.size()) - 1;
-//	if (slot != last)
-//	{
-//		// 末尾要素を slot に移す
-//		instanceDataList_[slot] = instanceDataList_[last];
-//		Block* movedBlock = instanceBlockMap_[last];
-//		instanceBlockMap_[slot] = movedBlock;
-//		movedBlock->dataSlot_ = slot;
-//	}
-//	// 末尾を削る
-//	instanceDataList_.pop_back();
-//	instanceBlockMap_.pop_back();
-//	b->dataSlot_ = -1;
-//	instanceBufferDirty_ = true;
-//}
 
 void Chunk::RebuildBlockPositions()
 {}

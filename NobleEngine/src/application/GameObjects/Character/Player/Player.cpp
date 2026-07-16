@@ -1,6 +1,5 @@
 #include "Player.h"
 #include <GameObjects/Map/MapManager.h>
-//#include "UIManager/UIManager.h"
 
 Player::Player()
 {
@@ -9,8 +8,6 @@ Player::Player()
 	render_.psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_.psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_.SetupFromShaders();
-
-	breakPower_ = 1.0f;
 
 	c_viewCameraID_ = Game::Camera::AddCamera("PlayerView");
 	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
@@ -44,71 +41,42 @@ void Player::Initialize()
 	rotate_.acceleration = Vector3(0.0f, 0.0f, 0.0f);
 
 	mapManager_->RegisterCharacter(this);
+
+	haveItem_.SetCharacterPosition(translate_.value);
 }
 
 void Player::Update(int32_t cameraID)
 {
-	if (Game::IO::Key::IsJustPressed('X'))
+	if (Game::IO::Key::IsJustPressed('Q'))
 	{
-		translate_.value.y = 100.0f;
-		translate_.velocity.y = 0.0f;
-		translate_.acceleration.y = 0.0f;
+		inventory_.AddItem(ItemID::Tool_Sword_of_Gold);
 	}
 
-	//currentMode_ = uiManager_->GetCurrentUIMode();
+	// 移動更新
+	UpdateDash();
+	UpdateMove(cameraID);
+	UpdateJump();
 
-	// プレイ中または非表示時のみ操作可能
-	//if (currentMode_ == UIMode::Playing || currentMode_ == UIMode::Hidden)
+	// 移動後の視線レイ更新
+	UpdateViewRay(cameraID);
+
+	// ターゲットブロック取得
+	SetTargetBlock();
+
+	// 左クリック処理
+	if (Game::IO::Mouse::IsHeld(0))
 	{
-		// 移動更新
-		UpdateDash();
-		UpdateMove(cameraID);
-		UpdateJump();
-
-		// 移動後の視線レイ更新
-		UpdateViewRay(cameraID);
-
-		// ターゲットブロック取得
-		SetTargetBlock();
-
-		// 左クリック処理
-		if (Game::IO::Mouse::IsHeld(0))
-		{
-			UpdateLeftClick();
-		}
-
-		// ブロック設置
-		if (Game::IO::Mouse::IsJustPressed(1))
-		{
-			//SetNewBlock(ItemIDToBlockID(haveItem_->GetCurrentSelectedItemID()));
-		}
-
-		// アイテムポイ捨て
-		if (Game::IO::Key::IsJustPressed('Q'))
-		{
-			//haveItem_->DropCurrentSelectedItem(data_.aabbs[0].center());
-		}
+		UpdateLeftClick();
 	}
-	//else
-	//{
-	//	// 落下処理
-	//	Move(Vector3(0.0f, 0.0f, 0.0f), speed_);
-	//
-	//	// 移動後の視線レイ更新
-	//	UpdateViewRay(cameraID);
-	//
-	//	// ターゲットブロック取得
-	//	SetTargetBlock();
-	//}
 
-	//if (currentMode_ == UIMode::Crafting)
-	//{
-	//	haveItem_->craftMode3x3_ = true;
-	//}
-	//if (currentMode_ == UIMode::Inventory)
-	//{
-	//	haveItem_->craftMode3x3_ = false;
-	//}
+	// 右クリック処理
+	if (Game::IO::Mouse::IsJustPressed(1))
+	{
+		UpdateRightClick();
+	}
+
+	haveItem_.SetItem(inventory_.GetCurrentSelectedItemID());
+	haveItem_.Update(cameraID);
 
 	// AABB更新
 	aabb_.max = translate_.value + Vector3(0.5f, 1.0f, 0.5f);
@@ -122,8 +90,6 @@ void Player::Update(int32_t cameraID)
 	// 接地判定更新
 	if (translate_.velocity.y == 0.0f)isGrounded_ = true;
 	else isGrounded_ = false;
-	//UpdateGrounded();
-
 
 	Game::Camera::Setter::SetCenter(translate_.value + Vector3(0.0f, 5.0f, 0.0f), 0, EaseType::IN_BACK, c_viewCameraID_);
 
@@ -140,38 +106,11 @@ void Player::Update(int32_t cameraID)
 
 void Player::Draw(int32_t renderTextureID)
 {
+	// プレイヤー描画
 	render_.Draw(renderTextureID);
-	//reticle_.Draw();
-}
 
-void Player::DrawCrafting()
-{
-	//// インベントリのアイコンを動かせる
-	//haveItem_->UpdateInventory();
-	//// インベントリのアイコン描画
-	//haveItem_->DrawInventory();
-
-	//// ホットバーのアイコン描画
-	//haveItem_->DrawHotbar();
-}
-
-void Player::DrawInventory()
-{
-	//// インベントリのアイコンを動かせる
-	//haveItem_->UpdateInventory();
-	//// インベントリのアイコン描画
-	//haveItem_->DrawInventory();
-
-	//// ホットバーのアイコン描画
-	//haveItem_->DrawHotbar();
-}
-
-void Player::DrawHotbar()
-{
-	//// マウスホイールでホットバー選択
-	//haveItem_->UpdateHotbar();
-	//// ホットバーのアイコン描画
-	//haveItem_->DrawHotbar();
+	// 所持アイテム描画
+	haveItem_.Draw(renderTextureID);
 }
 
 void Player::DrawImGui()
@@ -181,6 +120,7 @@ void Player::DrawImGui()
 	ImGui::DragFloat3("Scale", &scale_.value.x, 0.1f);
 	ImGui::End();
 }
+
 
 void Player::UpdateViewRay(int32_t cameraID)
 {
@@ -193,26 +133,6 @@ void Player::UpdateViewRay(int32_t cameraID)
 
 	SetViewRay(viewRay_);
 }
-
-void Player::UpdateDash()
-{
-	if (Game::IO::Key::IsJustReleased('W'))
-	{
-		speed_ = normalSpeed_;
-		if (wHeldFrames_ < 20)dashBufferTimer_ = 20;
-	}
-	if (dashBufferTimer_ > 0)
-	{
-		dashBufferTimer_--;
-		if (Game::IO::Key::IsJustPressed('W'))
-		{
-			speed_ = dashSpeed_;
-		}
-	}
-
-	wHeldFrames_ = Game::IO::Key::HoldFrames('W');
-}
-
 void Player::UpdateMove(int32_t cameraID)
 {
 	Vector3 cameraRot = Game::Camera::Getter::GetRotate(cameraID);
@@ -253,7 +173,24 @@ void Player::UpdateMove(int32_t cameraID)
 	}
 	Move(moveDir, speed_);
 }
+void Player::UpdateDash()
+{
+	if (Game::IO::Key::IsJustReleased('W'))
+	{
+		speed_ = normalSpeed_;
+		if (wHeldFrames_ < 20)dashBufferTimer_ = 20;
+	}
+	if (dashBufferTimer_ > 0)
+	{
+		dashBufferTimer_--;
+		if (Game::IO::Key::IsJustPressed('W'))
+		{
+			speed_ = dashSpeed_;
+		}
+	}
 
+	wHeldFrames_ = Game::IO::Key::HoldFrames('W');
+}
 void Player::UpdateJump()
 {
 	// ジャンプ処置
@@ -265,5 +202,5 @@ void Player::UpdateJump()
 
 void Player::AddItemToItemslot(ItemID itemID)
 {
-	//haveItem_->AddItem(itemID);
+	//haveItem_.AddItem(itemID);
 }

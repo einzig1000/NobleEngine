@@ -36,8 +36,14 @@ int32_t AnimationLoader::LoadAnimation(const std::string & filePath, const std::
 void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::string& animationName, AnimationData* animationData)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_ConvertToLeftHanded | aiProcess_Triangulate);
+	const aiScene* scene = importer.ReadFile(filePath.c_str(),
+		aiProcess_Triangulate               // 面を三角形に分割する
+		| aiProcess_ConvertToLeftHanded     // 左手座標系に変換する(逆に言うとこのエンジンで使用するモデルは右手座標系で作成する必要がある)
+		| aiProcess_GenSmoothNormals        // 法線データが存在しないときに自動生成する
+		| aiProcess_JoinIdenticalVertices   // 重複頂点を結合する
+	);
 	assert(scene->HasAnimations());
+
 	aiAnimation* animationAssimp = scene->mAnimations[0];
 	if (animationAssimp->mName.C_Str() != "")	//名前がなかった場合先頭を利用する
 	{

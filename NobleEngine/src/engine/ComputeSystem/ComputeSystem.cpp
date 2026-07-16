@@ -4,7 +4,12 @@
 
 ComputeSystem::ComputeSystem(DirectXManager* dxManager, StructuredBufferManager* structuredBufferManager)
 	: dxManager_(dxManager), structuredBufferManager_(structuredBufferManager)
-{}
+{
+	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
+	{
+		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
+	}
+}
 
 ComputeSystem::~ComputeSystem()
 {}

@@ -57,7 +57,7 @@ void Camera::Update_Orbit()
 		// パン
 		if (isMiddleHeld && isShiftHeld)
 		{
-			Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(transform_.rotate.x) * Matrix4x4::MakeRotateYMatrix(transform_.rotate.y);
+			Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(spherical_.phi) * Matrix4x4::MakeRotateYMatrix(-spherical_.theta);
 			Vector3 right = { rot.m[0][0], rot.m[1][0], rot.m[2][0] };
 			Vector3 up = { rot.m[0][1], rot.m[1][1], rot.m[2][1] };
 

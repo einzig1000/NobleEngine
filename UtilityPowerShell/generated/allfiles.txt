@@ -1,1177 +1,799 @@
 ========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\DirectX\Pipeline\RenderPipelineTypes.h ===
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Camera\Camera.cpp ===
 ========================================
-#pragma once
-#include <cstdint>
-#include <d3d12.h>
+#include "Camera.h"
+#include <Facade/Game.h>
+#include <Window/WindowManager.h>
+#include <algorithm>
+#include <numbers>
+#include <ImGuiManager/ImGuiManager.h>
+#include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
+#include <Utilities/Easing/Easing.h>
 
-enum class ShaderType
+Camera::Camera()
 {
-	None,
-    VertexShader,
-    PixelShader,
-    ComputeShader,
-	MeshShader,
-	AmplificationShader,
-};
+    enableControl_ = true;
 
-enum class ParamType
+    fovY_ = 0.65f;
+
+    screenSize_ = Vector2{ float(WindowManager::winWidth_) , float(WindowManager::winHeight_) };
+
+    spherical_.radius = 20.0f;
+	spherical_.theta = std::numbers::pi_v<float> / 2.0f;
+    spherical_.phi = 0;
+
+    Resize();
+}
+
+Camera::~Camera()
 {
-	None,
-	CBV,
-	SRV,
-};
+}
 
-struct InputElement
+void Camera::Update()
 {
-    std::string semanticName;
-	UINT semanticIndex;
-    D3D12_INPUT_ELEMENT_DESC desc;
-};
-
-
-
-struct RootParam
-{
-	ParamType paramType = ParamType::None;
-	ShaderType shaderType = ShaderType::None;
-    uint32_t key = 0;           // "b0", "b1" など
-	uint32_t registerSpace = 0; // space0, space1 など。2Dテクスチャバインドレスとddsテクスチャバインドレスで区別
-    uint32_t hash = 0;          // paramType･shaderType･key･registerSpace のハッシュ
-
-	// CBuffer用
-	uint32_t sizeBytes = 0;     // 自身のサイズ。CBuffer用ストレージ内でどれだけのサイズが必要か。
-	uint32_t offsetBytes = 0;   // cpuStorage_ 内オフセット
-
-	// SRV用
-	uint32_t srvStorageIndex = 0;   // そのSRVがdynamicSrvStorage_のどこにあるか。
-	uint32_t srvAllocIndex = UINT32_MAX;    // SRVのスロットインデックス(0であればBindlessテクスチャ配列、1以上UINT32_MAX未満であればリソース確保済みのSRV)
-
-    void ComputeHash()
+    switch (cameraMode_)
     {
-        uint32_t h = 0;
-
-        h ^= static_cast<uint32_t>(paramType);
-        h *= 0x85ebca6b;
-
-        h ^= static_cast<uint32_t>(shaderType);
-        h *= 0x85ebca6b;
-
-        h ^= key;
-        h *= 0x85ebca6b;
-
-        h ^= registerSpace;
-        h *= 0x85ebca6b;
-
-        h ^= h >> 16;
-        h *= 0xc2b2ae35;
-        h ^= h >> 16;
-
-		hash = h;
+    case CameraMode_ORBIT_FPS::ORBIT:
+        Update_Orbit();
+        break;
+    case CameraMode_ORBIT_FPS::FPS:
+        Update_FPS();
+        break;
+    default:
+        break;
     }
-};
+}
 
-// ブレンドステートの種類
-enum class BlendStateID : uint8_t
+void Camera::Update_Orbit()
 {
-    Opaque,
-	Alpha,
-    Normal,
-    Normal2,
-    Add,
-    Sub,
-    Mul,
-    Screen,
-};
-
-// 深度ステンシルの種類
-enum class DepthStencilID : uint8_t
-{
-    Default,      // depth write/test
-    TestOnly,     // depth test only (write off)
-    Disable,      // depth off
-};
-
-// ラスタライザの種類
-enum class RasterizerID : uint8_t
-{
-    Solid_BackCull,      // Fill: Solid, Cull: Back
-    Solid_FrontCull,     // Fill: Solid, Cull: Front
-    Solid_NoCull,        // Fill: Solid, Cull: None
-
-    Wireframe_NoCull,    // Fill: Wireframe, Cull: None
-    Wireframe_BackCull,  // Fill: Wireframe, Cull: Back
-};
-
-// DSVformatの種類
-enum class DSVFormatID : uint8_t
-{
-	D24,
-	Unknown,
-};
-
-struct PSOConfig
-{
-    /// 頂点シェーダーファイル名
-    std::string vs = "unknown";
-    /// ピクセルシェーダーファイル名
-    std::string ps = "unknown";
-	/// メッシュシェーダーファイル名
-	std::string ms = "unknown";
-	/// アンプリフィケーションシェーダーファイル名
-	std::string as = "unknown";
-    /// ブレンドステートID
-    BlendStateID blendID = BlendStateID::Normal;
-    /// 深度ステンシルID
-    DepthStencilID depthStencilID = DepthStencilID::Default;
-    /// ラスタライザーID
-    RasterizerID rasterizerID = RasterizerID::Solid_NoCull;
-    /// プリミティブトポロジ
-    D3D12_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	/// DSVフォーマットID
-	DSVFormatID dsvFormatID = DSVFormatID::D24;
-};
-
-struct ComputePSOConfig
-{
-};
-
-
-
-========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp ===
-========================================
-#include "PipelineStateManager.h"
-#include <string>
-#include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
-#include <Utilities/Logger/Logger.h>
-#include <Utilities/Converter/StringConverter/StringConverter.h>
-#include <externals/DirectXTex/d3dx12.h>
-
-#pragma comment(lib, "dxcompiler.lib")
-
-namespace
-{
-    static size_t HashCombine(size_t seed, size_t v)
-    {
-        return seed ^ (v + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2));
-    }
-
-    static size_t HashString(const std::string& s)
-    {
-        return std::hash<std::string>{}(s);
-    }
-
-	static size_t HashRootLayout(const std::vector<RootParam>& params)
-    {
-        size_t h = 1469598103934665603ULL;
-        h = HashCombine(h, params.size());
-		for (const auto& param : params)
-        {
-			h = HashCombine(h, param.hash);
-        }
-        return h;
-    }
-
-    static size_t HashPsoConfig(const PSOConfig& c)
-    {
-        size_t h = 0;
-        h = HashCombine(h, HashString(c.vs));
-        h = HashCombine(h, HashString(c.ps));
-        h = HashCombine(h, static_cast<size_t>(c.blendID));
-        h = HashCombine(h, static_cast<size_t>(c.depthStencilID));
-        h = HashCombine(h, static_cast<size_t>(c.rasterizerID));
-        h = HashCombine(h, static_cast<size_t>(c.topology));
-        h = HashCombine(h, static_cast<size_t>(c.dsvFormatID));
-
-        return h;
-    }
-
-
-    static D3D12_PRIMITIVE_TOPOLOGY_TYPE ToTopologyType(D3D12_PRIMITIVE_TOPOLOGY topo)
-    {
-        switch (topo)
-        {
-        case D3D_PRIMITIVE_TOPOLOGY_LINELIST:
-            return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-        case D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
-            return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        default:
-            return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        }
-    }
-
-    static D3D12_BLEND_DESC MakeBlendDesc(BlendStateID id)
-    {
-        D3D12_BLEND_DESC d{};
-        // 
-        d.AlphaToCoverageEnable = FALSE;
-        // 
-        d.IndependentBlendEnable = FALSE;
-        auto& rt = d.RenderTarget[0];
-
-        switch (id)
-        {
-        case BlendStateID::Normal:
-            rt.BlendEnable = TRUE;
-            rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-            rt.BlendOp = D3D12_BLEND_OP_ADD;
-            rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-            rt.SrcBlendAlpha = D3D12_BLEND_SRC_ALPHA;
-            rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
-            rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-            break;
-        case BlendStateID::Normal2:
-            rt.BlendEnable = TRUE;
-            rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-            rt.BlendOp = D3D12_BLEND_OP_ADD;
-            rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-            rt.SrcBlendAlpha = D3D12_BLEND_SRC_ALPHA;
-            rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
-            rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL & ~D3D12_COLOR_WRITE_ENABLE_ALPHA;
-            break;
-		case BlendStateID::Alpha:
-            rt.BlendEnable = TRUE;
-            rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-            rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-            rt.BlendOp = D3D12_BLEND_OP_ADD;
-            rt.SrcBlendAlpha = D3D12_BLEND_ONE;
-            rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
-            rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-            break;
-        case BlendStateID::Add:
-            rt.BlendEnable = TRUE;
-            rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-            rt.BlendOp = D3D12_BLEND_OP_ADD;
-            rt.DestBlend = D3D12_BLEND_ONE;
-            rt.SrcBlendAlpha = D3D12_BLEND_ONE;
-            rt.DestBlendAlpha = D3D12_BLEND_ZERO;
-            rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-            break;
-        case BlendStateID::Sub:
-            rt.BlendEnable = TRUE;
-            rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-            rt.BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
-            rt.DestBlend = D3D12_BLEND_ONE;
-            rt.SrcBlendAlpha = D3D12_BLEND_ONE;
-            rt.DestBlendAlpha = D3D12_BLEND_ZERO;
-            rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-            break;
-        case BlendStateID::Mul:
-            rt.BlendEnable = TRUE;
-            rt.SrcBlend = D3D12_BLEND_DEST_COLOR;
-            rt.BlendOp = D3D12_BLEND_OP_ADD;
-            rt.DestBlend = D3D12_BLEND_ZERO;
-            rt.SrcBlendAlpha = D3D12_BLEND_ONE;
-            rt.DestBlendAlpha = D3D12_BLEND_ZERO;
-            rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-            break;
-        case BlendStateID::Screen:
-            rt.BlendEnable = TRUE;
-            rt.SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
-            rt.BlendOp = D3D12_BLEND_OP_ADD;
-            rt.DestBlend = D3D12_BLEND_ONE;
-            rt.SrcBlendAlpha = D3D12_BLEND_ONE;
-            rt.DestBlendAlpha = D3D12_BLEND_ZERO;
-            rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-            rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-            break;
-		case BlendStateID::Opaque:
-			rt.BlendEnable = FALSE;
-			break;
-        }
-        return d;
-    }
-
-    static D3D12_RASTERIZER_DESC MakeRasterizerDesc(RasterizerID id)
-    {
-        D3D12_RASTERIZER_DESC d{};
-		d.DepthClipEnable = TRUE;
-
-        switch (id)
-        {
-        case RasterizerID::Solid_BackCull:
-            d.FillMode = D3D12_FILL_MODE_SOLID;
-            d.CullMode = D3D12_CULL_MODE_BACK;
-            break;
-
-        case RasterizerID::Solid_FrontCull:
-            d.FillMode = D3D12_FILL_MODE_SOLID;
-            d.CullMode = D3D12_CULL_MODE_FRONT;
-            break;
-
-        case RasterizerID::Solid_NoCull:
-            d.FillMode = D3D12_FILL_MODE_SOLID;
-            d.CullMode = D3D12_CULL_MODE_NONE;
-            break;
-
-        case RasterizerID::Wireframe_NoCull:
-            d.FillMode = D3D12_FILL_MODE_WIREFRAME;
-            d.CullMode = D3D12_CULL_MODE_NONE;
-            break;
-
-        case RasterizerID::Wireframe_BackCull:
-            d.FillMode = D3D12_FILL_MODE_WIREFRAME;
-            d.CullMode = D3D12_CULL_MODE_BACK;
-            break;
-
-        default:
-            d.FillMode = D3D12_FILL_MODE_SOLID;
-            d.CullMode = D3D12_CULL_MODE_NONE;
-            break;
-        }
-        return d;
-    }
-
-	static DXGI_FORMAT MakeDsvFormat(DSVFormatID id)
+	if (enableControl_)
 	{
-		switch (id)
+		// マウス移動量
+		Vector2 mouseDelta = Game::IO::Mouse::Get2DPositionDelta();
+		// マウスホイール
+		int32_t mouseWheel = Game::IO::Mouse::GetWheel();
+		// マウス中クリック
+		bool isMiddleHeld = Game::IO::Mouse::IsHeld(2);
+		// Shiftキー
+		bool isShiftHeld = Game::IO::Key::IsHeld(VK_LSHIFT);
+
+		// パン
+		if (isMiddleHeld && isShiftHeld)
 		{
-		case DSVFormatID::D24:
-			return DXGI_FORMAT_D24_UNORM_S8_UINT;
-		case DSVFormatID::Unknown:
-            return DXGI_FORMAT_UNKNOWN;
-		default:
-			return DXGI_FORMAT_UNKNOWN;
+			Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(transform_.rotate.x) * Matrix4x4::MakeRotateYMatrix(transform_.rotate.y);
+			Vector3 right = { rot.m[0][0], rot.m[1][0], rot.m[2][0] };
+			Vector3 up = { rot.m[0][1], rot.m[1][1], rot.m[2][1] };
+
+			float speed = spherical_.radius * 0.02f;
+			center_ += (right * mouseDelta.x + up * mouseDelta.y) * 0.1f * speed;
 		}
+		// 回転
+		if (isMiddleHeld && !isShiftHeld)
+		{
+			spherical_.phi -= mouseDelta.y * -0.01f;
+			spherical_.theta -= mouseDelta.x * 0.01f;
+		}
+		spherical_.radius -= mouseWheel * spherical_.radius * 0.001f;
 	}
 
-    static D3D12_DEPTH_STENCIL_DESC MakeDepthStencilDesc(DepthStencilID id)
+    // イージング
+	MovingCenter();
+	MovingRotate();
+	MovingDistance();
+	MovingScreenSize();
+	MovingFov();
+
+	// 距離をクランプ
+	if (spherical_.radius < 0.1f) spherical_.radius = 0.1f;
+
+    // ピッチのクランプ
+    spherical_.phi = std::clamp(
+        spherical_.phi,
+        -std::numbers::pi_v<float> / 2 + 0.001f,
+        +std::numbers::pi_v<float> / 2 - 0.001f
+    );
+
+    // カメラ位置
+    Vector3 localPos = CoordinateConverter::ToCartesian(spherical_);
+    eye_ = center_ + localPos;
+
+    // 視線ベクトル
+	Vector3 forward = (center_ - eye_).Normalized();
+
+	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
+    viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
+
+    CreateFrustumPlanes();
+}
+
+// 移動(回転)するものをcenter_にして、カメラ座標を固定
+void Camera::Update_FPS()
+{
+
+}
+
+void Camera::Resize()
+{
+	aspect_ = float(screenSize_.x) / float(screenSize_.y);
+    projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
+    viewportMatrix = Matrix4x4::MakeViewPortMatrix(0.0f, 0.0f, float(screenSize_.x), float(screenSize_.y), 0.0f, 1.0f);
+	orthoProjectionMatrix_ = Matrix4x4::MakeOrthographicMatrix(0.0f, 0.0f, float(screenSize_.x), float(screenSize_.y), nearZ_, farZ_);
+}
+
+void Camera::Draw()
+{
+}
+
+void Camera::DrawImGui()
+{
+    static const char* EaseTypeNames[] = {
+    "LINEAR",
+    "IN_SINE", "OUT_SINE", "IN_OUT_SINE",
+    "IN_QUAD", "OUT_QUAD", "IN_OUT_QUAD",
+    "IN_CUBIC", "OUT_CUBIC", "IN_OUT_CUBIC",
+    "IN_QUART", "OUT_QUART", "IN_OUT_QUART",
+    "IN_QUINT", "OUT_QUINT", "IN_OUT_QUINT",
+    "IN_EXPO", "OUT_EXPO", "IN_OUT_EXPO",
+    "IN_CIRC", "OUT_CIRC", "IN_OUT_CIRC",
+    "IN_BACK", "OUT_BACK", "IN_OUT_BACK",
+    "IN_ELASTIC", "OUT_ELASTIC", "IN_OUT_ELASTIC",
+    "IN_BOUNCE", "OUT_BOUNCE"
+    };
+
+	std::string cameraTag = "##";
+    std::string tag;
+
+	std::string radiusTag = "##radius";
+	tag = "radius" + radiusTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &spherical_.radius, 0.1f);
+	tag = "duration" + radiusTag + cameraTag;
+    ImGui::DragInt(tag.c_str(), &distanceEasing_.duration, 1, 0, 1000);
+	tag = "target" + radiusTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &distanceEasing_.target, 0.1f);
+	tag = "easeType" + radiusTag + cameraTag;
+	int32_t easeType = static_cast<int32_t>(distanceEasing_.easetype);
+    if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
     {
-		D3D12_DEPTH_STENCIL_DESC d{};
-
-        switch (id)
-        {
-        case DepthStencilID::Default:
-            d.DepthEnable = TRUE;
-            d.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-            d.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-            break;
-
-        case DepthStencilID::TestOnly:
-            d.DepthEnable = TRUE;
-            d.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-            d.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-            break;
-
-        case DepthStencilID::Disable:
-            d.DepthEnable = FALSE;
-            d.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-            d.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-            d.StencilEnable = false;
-            break;
-        }
-
-        return d;
+		distanceEasing_.easetype = static_cast<EaseType>(easeType);
     }
-}
-
-PipelineStateManager::PipelineStateManager(ID3D12Device2* device)
-	: device_(device)
-{
-    InitializeDxc();
-    Log("コンストラクタ実行成功 : PipelineStateManager");
-}
-
-
-PipelineStateManager::~PipelineStateManager()
-{
-    Log("デストラクタ実行成功 : PipelineStateManager");
-}
-
-void PipelineStateManager::InitializeDxc()
-{
-    HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-    assert(SUCCEEDED(hr));
-    hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler));
-    assert(SUCCEEDED(hr));
-    hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
-    assert(SUCCEEDED(hr));
-}
-
-Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::GetRootSignature(const std::vector<RootParam>& params)
-{
-	// ハッシュキーを生成
-	const size_t key = HashRootLayout(params);
-
-	// キャッシュにあればそれを返す
-    auto it = rootSignatureCache_.find(key);
-    if (it != rootSignatureCache_.end())
+	tag = "start" + radiusTag + cameraTag;
+    if (ImGui::Button(tag.c_str()))
     {
-        return it->second;
-    }
-
-	// ルートシグネチャ生成
-    auto rs = CreateRootSignature(params);
-	assert(rs);
-	Log("成功: キー %zu", key);
-
-	// キャッシュに保存してから返す
-    rootSignatureCache_.emplace(key, rs);
-	return rs;
-}
-
-Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::GetPipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params)
-{
-    // ハッシュキーを生成
-    const size_t rootKey = HashRootLayout(params);
-    const size_t psoKey = HashCombine(HashPsoConfig(psoConfig), rootKey);
-
-    // キャッシュにあればそれを返す
-    auto it = psoCache_.find(psoKey);
-    if (it != psoCache_.end())
-    {
-        return it->second;
+		SetDistanceTarget(distanceEasing_.target, distanceEasing_.duration, distanceEasing_.easetype);
     }
 
-    // パイプラインステート生成
-    auto pso = CreateGraphicsPipelineState(psoConfig, params);
-    assert(pso);
-    Log("成功: キー %zu", psoKey);
-
-    // キャッシュに保存してから返す
-    psoCache_.emplace(psoKey, pso);
-    return pso;
-}
-
-Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::GetShaderBlob(const wchar_t* path, const wchar_t* target)
-{
-    // キーを生成
-    std::wstring key = std::wstring(path) + L"|" + target;
-
-	// キャッシュにあればそれを返す
-    auto it = shaderCache_.find(key);
-    if (it != shaderCache_.end())
-    {
-        return it->second;
-    }
-
-	// blob生成
-    auto blob = CompileShader(path, target);
-    assert(blob);
-
-	// キャッシュに保存してから返す
-    shaderCache_.emplace(std::move(key), blob);
-    return blob;
-}
-
-
-Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSignature(const std::vector<RootParam>& params)
-{
-	Log("ルートシグネチャ生成開始");
-
-    size_t srvCount = 0;
-	size_t cbvCount = 0;
-    for (const auto& p : params)
-    {
-        if (p.paramType == ParamType::CBV)
-        {
-            ++cbvCount;
-        }
-        else if (p.paramType == ParamType::SRV)
-        {
-            ++srvCount;
-        }
-        else
-        {
-            assert(false && "Invalid RootParam");
-        }
-    }
-
-    std::vector<D3D12_ROOT_PARAMETER> rootParams;
-	rootParams.resize(params.size());
-
-    std::vector<D3D12_DESCRIPTOR_RANGE> srvRanges;
-	srvRanges.resize(srvCount);
-
-    size_t srvIndex = 0;
-	size_t vectorIndex = 0;
-
-	for (const auto& param : params)
-    {
-		D3D12_ROOT_PARAMETER rootParam{};
-
-        if (param.paramType == ParamType::CBV)
-        {
-            rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-            const UINT reg = static_cast<UINT>(param.key);
-            rootParam.Descriptor.ShaderRegister = reg;
-            rootParam.Descriptor.RegisterSpace = 0;
-            rootParam.ShaderVisibility = GetShaderVisibilityFromShaderType(param.shaderType);
-        }
-        else if (param.paramType == ParamType::SRV)
-        {
-            assert(srvIndex < srvRanges.size());
-
-            D3D12_DESCRIPTOR_RANGE& range = srvRanges[srvIndex++];
-
-            range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-            const UINT reg = static_cast<UINT>(param.key);
-            range.BaseShaderRegister = reg;
-            if (param.srvAllocIndex == 0)
-            {
-                range.NumDescriptors = UINT_MAX;
-            }
-            else
-            {
-                range.NumDescriptors = 1;
-            }
-            range.RegisterSpace = param.registerSpace;
-            range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-            rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-            rootParam.DescriptorTable.NumDescriptorRanges = 1;
-            rootParam.DescriptorTable.pDescriptorRanges = &range;
-            rootParam.ShaderVisibility = GetShaderVisibilityFromShaderType(param.shaderType);
-        }
-        else
-        {
-            assert(false && "Invalid RootParam");
-        }
-
-        rootParams[vectorIndex] = rootParam;
-		vectorIndex++;
-    }
-
-    // s0 Linear補間
-    D3D12_STATIC_SAMPLER_DESC staticSamplers[2] = {};
-    staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-    staticSamplers[0].ShaderRegister = 0; // s0
-    staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-	// s1 Point補間
-    staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-    staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-    staticSamplers[1].ShaderRegister = 1; // s1
-    staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-
-    D3D12_ROOT_SIGNATURE_DESC desc{};
-    desc.NumParameters = static_cast<UINT>(rootParams.size());
-    desc.pParameters = rootParams.empty() ? nullptr : rootParams.data();
-    desc.NumStaticSamplers = _countof(staticSamplers);
-    desc.pStaticSamplers = staticSamplers;
-    desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED;
-
-    Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;
-    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
-    HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signatureBlob, &errorBlob);
-    if (FAILED(hr))
-    {
-        if (errorBlob)
-        {
-            Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-        }
-        assert(false);
-        return nullptr;
-    }
-
-    // ルートシグネチャ生成
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> rs;
-    hr = device_->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rs));
-    assert(SUCCEEDED(hr));
-
-    return rs;
-}
-
-Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphicsPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params)
-{
-    bool isMeshShader = false;
-	if (cfg.ms != "unknown") isMeshShader = true;
-
-    Log("パイプラインステート生成開始: VS = %s, MS=%s, PS=%s", cfg.vs.c_str(), cfg.ms.c_str(), cfg.ps.c_str());
-
-	HRESULT hr = S_OK;
-	CD3DX12PipelineStateStream stream{};
-
-    // ルートシグネチャ取得（なければ生成）
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = GetRootSignature(params);
-
-	stream.pRootSignature = rs.Get();
-    std::wstring psPath = StringConverter::Convert(cfg.ps);
-    auto psBlob = GetShaderBlob(psPath.c_str(), L"ps_6_6");
-	stream.pPS = CD3DX12_SHADER_BYTECODE(psBlob->GetBufferPointer(), psBlob->GetBufferSize());
-	stream.pBlend = CD3DX12_BLEND_DESC(MakeBlendDesc(cfg.blendID));
-	stream.pDepthStencil = CD3DX12_DEPTH_STENCIL_DESC(MakeDepthStencilDesc(cfg.depthStencilID));
-	stream.pDSVFormat = MakeDsvFormat(cfg.dsvFormatID);
-	stream.pRasterizer = CD3DX12_RASTERIZER_DESC(MakeRasterizerDesc(cfg.rasterizerID));
-    D3D12_RT_FORMAT_ARRAY rtvFormats{};
-    rtvFormats.NumRenderTargets = 1;
-    rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-    stream.pRTVFormats = rtvFormats;
-
-    std::vector<InputElement> inputLayout;
-    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescs;
-
-	if (isMeshShader)
+	std::string phiTag = "##phi";
+	tag = "phi" + phiTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &spherical_.phi, 0.01f);
+	tag = "duration" + phiTag + cameraTag;
+	ImGui::DragInt(tag.c_str(), &rotateEasing_.duration, 1, 0, 1000);
+	tag = "target" + phiTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &rotateEasing_.target.x, 0.01f);
+	tag = "easeType" + phiTag + cameraTag;
+	int32_t easeType2 = static_cast<int32_t>(rotateEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType2, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
-		std::wstring msPath = StringConverter::Convert(cfg.ms);
-		auto msBlob = GetShaderBlob(msPath.c_str(), L"ms_6_6");
-		stream.pMS = CD3DX12_SHADER_BYTECODE(msBlob->GetBufferPointer(), msBlob->GetBufferSize());
+		rotateEasing_.easetype = static_cast<EaseType>(easeType2);
+	}
+	tag = "start" + phiTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		SetRotateTarget(rotateEasing_.target, rotateEasing_.duration, rotateEasing_.easetype);
+	}
+
+	std::string thetaTag = "##theta";
+	tag = "theta" + thetaTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &spherical_.theta, 0.01f);
+	tag = "duration" + thetaTag + cameraTag;
+	ImGui::DragInt(tag.c_str(), &rotateEasing_.duration, 1, 0, 1000);
+	tag = "target" + thetaTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &rotateEasing_.target.y, 0.01f);
+	tag = "easeType" + thetaTag + cameraTag;
+	int32_t easeType3 = static_cast<int32_t>(rotateEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType3, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	{
+		rotateEasing_.easetype = static_cast<EaseType>(easeType3);
+	}
+	tag = "start" + thetaTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		SetRotateTarget(rotateEasing_.target, rotateEasing_.duration, rotateEasing_.easetype);
+	}
+
+	std::string centerTag = "##Center";
+	tag = "center" + centerTag + cameraTag;
+	ImGui::DragFloat3(tag.c_str(), &center_.x, 0.1f);
+	tag = "duration" + centerTag + cameraTag;
+	ImGui::DragInt(tag.c_str(), &centerEasing_.duration, 1, 0, 1000);
+	tag = "target" + centerTag + cameraTag;
+	ImGui::DragFloat3(tag.c_str(), &centerEasing_.target.x, 0.1f);
+	tag = "easeType" + centerTag + cameraTag;
+	int32_t easeType4 = static_cast<int32_t>(centerEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType4, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	{
+		centerEasing_.easetype = static_cast<EaseType>(easeType4);
+	}
+	tag = "start" + centerTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		SetCenterTarget(centerEasing_.target, centerEasing_.duration, centerEasing_.easetype);
+	}
+
+	ImGui::Separator();
+
+	std::string screenSizeTag = "##screenSize";
+	tag = "screenSize" + screenSizeTag + cameraTag;
+    if (ImGui::DragFloat2(tag.c_str(), &screenSize_.x, 1.0f))
+    {
+		Resize();
+    }
+	tag = "duration" + screenSizeTag + cameraTag;
+	ImGui::DragInt(tag.c_str(), &screenSizeEasing_.duration, 1, 0, 1000);
+	tag = "target" + screenSizeTag + cameraTag;
+	ImGui::DragFloat2(tag.c_str(), &screenSizeEasing_.target.x, 1.0f);
+	tag = "easeType" + screenSizeTag + cameraTag;
+	int32_t easeType6 = static_cast<int32_t>(screenSizeEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType6, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	{
+		screenSizeEasing_.easetype = static_cast<EaseType>(easeType6);
+	}
+	tag = "start" + screenSizeTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		SetScreenSizeTarget(screenSizeEasing_.target, screenSizeEasing_.duration, screenSizeEasing_.easetype);
+	}
+
+	std::string fovYTag = "##fovY";
+	tag = "fovY" + fovYTag + cameraTag;
+    if (ImGui::DragFloat(tag.c_str(), &fovY_, 0.01f))
+    {
+        projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
+    }
+	tag = "duration" + fovYTag + cameraTag;
+	ImGui::DragInt(tag.c_str(), &fovEasing_.duration, 1, 0, 1000);
+	tag = "target" + fovYTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &fovEasing_.target, 0.01f);
+	tag = "easeType" + fovYTag + cameraTag;
+	int32_t easeType5 = static_cast<int32_t>(fovEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType5, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	{
+		fovEasing_.easetype = static_cast<EaseType>(easeType5);
+	}
+	tag = "start" + fovYTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		SetFovTarget(fovEasing_.target, fovEasing_.duration, fovEasing_.easetype);
+	}
+
+
+
+	std::string enableControlTag = tag + ".enableControl";
+    ImGui::Checkbox(enableControlTag.c_str(), &enableControl_);
+    ImGui::SameLine();
+	ImGui::Text("enableControl");
+
+	std::string cameraModeTag = tag + ".cameraMode";
+	int32_t currentMode = static_cast<int32_t>(cameraMode_);
+	static const char* items[] = { "ORBIT", "FPS" };
+    if (ImGui::Combo(cameraModeTag.c_str(), &currentMode, items, IM_ARRAYSIZE(items)))
+    {
+        cameraMode_ = static_cast<CameraMode_ORBIT_FPS>(currentMode);
+	}
+    ImGui::SameLine();
+	ImGui::Text("cameraMode");
+}
+
+void Camera::CreateFrustumPlanes()
+{
+    // Left Plane
+    frustumPlanes_[0].normal.x = viewProjectionMatrix.m[0][3] + viewProjectionMatrix.m[0][0];
+    frustumPlanes_[0].normal.y = viewProjectionMatrix.m[1][3] + viewProjectionMatrix.m[1][0];
+    frustumPlanes_[0].normal.z = viewProjectionMatrix.m[2][3] + viewProjectionMatrix.m[2][0];
+    frustumPlanes_[0].distance = viewProjectionMatrix.m[3][3] + viewProjectionMatrix.m[3][0];
+    // Right Plane
+    frustumPlanes_[1].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][0];
+    frustumPlanes_[1].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][0];
+    frustumPlanes_[1].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][0];
+    frustumPlanes_[1].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][0];
+    // Bottom Plane
+    frustumPlanes_[2].normal.x = viewProjectionMatrix.m[0][3] + viewProjectionMatrix.m[0][1];
+    frustumPlanes_[2].normal.y = viewProjectionMatrix.m[1][3] + viewProjectionMatrix.m[1][1];
+    frustumPlanes_[2].normal.z = viewProjectionMatrix.m[2][3] + viewProjectionMatrix.m[2][1];
+    frustumPlanes_[2].distance = viewProjectionMatrix.m[3][3] + viewProjectionMatrix.m[3][1];
+    // Top Plane
+    frustumPlanes_[3].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][1];
+    frustumPlanes_[3].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][1];
+    frustumPlanes_[3].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][1];
+    frustumPlanes_[3].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][1];
+    // Near Plane
+    frustumPlanes_[4].normal.x = viewProjectionMatrix.m[0][2];
+    frustumPlanes_[4].normal.y = viewProjectionMatrix.m[1][2];
+    frustumPlanes_[4].normal.z = viewProjectionMatrix.m[2][2];
+    frustumPlanes_[4].distance = viewProjectionMatrix.m[3][2];
+    // Far Plane
+    frustumPlanes_[5].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][2];
+    frustumPlanes_[5].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][2];
+    frustumPlanes_[5].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][2];
+    frustumPlanes_[5].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][2];
+
+    // 各平面を正規化
+    for (int32_t i = 0; i < 6; ++i)
+    {
+        float length = sqrt(frustumPlanes_[i].normal.x * frustumPlanes_[i].normal.x +
+            frustumPlanes_[i].normal.y * frustumPlanes_[i].normal.y +
+            frustumPlanes_[i].normal.z * frustumPlanes_[i].normal.z);
+        frustumPlanes_[i].normal = frustumPlanes_[i].normal / length;
+        frustumPlanes_[i].distance /= length;
+    }
+
+
+}
+
+bool Camera::InCamera(const AABB& aabb)
+{
+    Vector3 points[8];
+
+    points[0] = Vector3{ aabb.min.x, aabb.min.y, aabb.min.z };
+    points[1] = Vector3{ aabb.max.x, aabb.min.y, aabb.min.z };
+    points[2] = Vector3{ aabb.max.x, aabb.max.y, aabb.min.z };
+    points[3] = Vector3{ aabb.min.x, aabb.max.y, aabb.min.z };
+    points[4] = Vector3{ aabb.min.x, aabb.min.y, aabb.max.z };
+    points[5] = Vector3{ aabb.max.x, aabb.min.y, aabb.max.z };
+    points[6] = Vector3{ aabb.max.x, aabb.max.y, aabb.max.z };
+    points[7] = Vector3{ aabb.min.x, aabb.max.y, aabb.max.z };
+
+    // 6つの各平面に対してテスト
+    for (const auto& plane : frustumPlanes_)
+    {
+        int32_t inCount = 0;
+        // AABBのすべての頂点が平面の裏側にあるかチェック
+        for (int32_t i = 0; i < 8; ++i)
+        {
+            float dist = plane.normal.Dot(points[i]) + plane.distance;
+            if (dist >= 0)
+            {
+                inCount++;
+            }
+        }
+        // すべての頂点が平面の裏側にある場合は、AABBは視錐台の外
+        if (inCount == 0)
+        {
+            return false;
+        }
+    }
+
+    return true; // どの平面の外側にもない場合は、視錐台内にあると判定
+}
+
+// 実際に動かす
+void Camera::MovingCenter()
+{
+	if (!centerEasing_.easeing) return;
+
+	center_ = Easing::EasingVector3(
+        centerEasing_.start, 
+        centerEasing_.target,
+        centerEasing_.easetype,
+		float(centerEasing_.currentFrame) / float(centerEasing_.duration)
+    );
+
+	centerEasing_.currentFrame++;
+
+	if (centerEasing_.currentFrame > centerEasing_.duration)
+	{
+		centerEasing_.easeing = false;
+	}
+}
+void Camera::MovingRotate()
+{
+	if (!rotateEasing_.easeing) return;
+
+	Vector3 spherical = Easing::EasingVector3(
+		rotateEasing_.start,
+		rotateEasing_.target,
+		rotateEasing_.easetype,
+		float(rotateEasing_.currentFrame) / float(rotateEasing_.duration)
+	);
+	spherical_.phi = spherical.x;
+	spherical_.theta = spherical.y;
+
+	rotateEasing_.currentFrame++;
+	if (rotateEasing_.currentFrame > rotateEasing_.duration)
+	{
+		rotateEasing_.easeing = false;
+	}
+}
+void Camera::MovingDistance()
+{
+	if (!distanceEasing_.easeing) return;
+
+	spherical_.radius = Easing::EasingFloat(
+		distanceEasing_.start,
+		distanceEasing_.target,
+		distanceEasing_.easetype,
+		float(distanceEasing_.currentFrame) / float(distanceEasing_.duration)
+	);
+
+	distanceEasing_.currentFrame++;
+	if (distanceEasing_.currentFrame > distanceEasing_.duration)
+	{
+		distanceEasing_.easeing = false;
+	}
+}
+void Camera::MovingScreenSize()
+{
+	if (!screenSizeEasing_.easeing) return;
+
+    screenSize_.x = Easing::EasingFloat(
+        screenSizeEasing_.start.x,
+        screenSizeEasing_.target.x,
+        screenSizeEasing_.easetype,
+        float(screenSizeEasing_.currentFrame) / float(screenSizeEasing_.duration)
+    );
+    screenSize_.y = Easing::EasingFloat(
+        screenSizeEasing_.start.y,
+        screenSizeEasing_.target.y,
+        screenSizeEasing_.easetype,
+        float(screenSizeEasing_.currentFrame) / float(screenSizeEasing_.duration)
+    );
+
+	screenSizeEasing_.currentFrame++;
+	
+    if (screenSizeEasing_.currentFrame > screenSizeEasing_.duration)
+	{
+		screenSizeEasing_.easeing = false;
+	}
+
+    Resize();
+}
+void Camera::MovingFov()
+{
+	if (!fovEasing_.easeing) return;
+
+    fovY_ = Easing::EasingFloat(
+		fovEasing_.start,
+		fovEasing_.target,
+		fovEasing_.easetype,
+		float(fovEasing_.currentFrame) / float(fovEasing_.duration)
+	);
+	fovEasing_.currentFrame++;
+	if (fovEasing_.currentFrame > fovEasing_.duration)
+	{
+		fovEasing_.easeing = false;
+	}
+
+    projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
+}
+
+// 動かす先の設定
+void Camera::SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype)
+{
+	if (duration <= 0)
+	{
+		center_ = target;
+		centerEasing_.easeing = false;
 	}
 	else
 	{
-        std::wstring vsPath = StringConverter::Convert(cfg.vs);
-		auto vsBlob = GetShaderBlob(vsPath.c_str(), L"vs_6_6");
-		stream.VS = CD3DX12_SHADER_BYTECODE(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize());
-        stream.PrimitiveTopologyType = ToTopologyType(cfg.topology);
-
-        inputLayout = ShaderReflection::GetInputLayoutFromShader(vsBlob.Get());
-        inputElementDescs;
-        inputElementDescs.reserve(inputLayout.size());
-        for (auto& elem : inputLayout)
-        {
-            elem.desc.SemanticName = elem.semanticName.c_str();
-            elem.desc.SemanticIndex = elem.semanticIndex;
-            inputElementDescs.push_back(elem.desc);
-        }
-
-        D3D12_INPUT_LAYOUT_DESC ilDesc{};
-        ilDesc.pInputElementDescs = inputElementDescs.data();
-        ilDesc.NumElements = static_cast<UINT>(inputElementDescs.size());
-        stream.InputLayout = ilDesc;
+		centerEasing_.start = center_;
+		centerEasing_.target = target;
+		centerEasing_.duration = duration;
+		centerEasing_.currentFrame = 0;
+		centerEasing_.easeing = true;
+		centerEasing_.easetype = easetype;
 	}
-
-    D3D12_PIPELINE_STATE_STREAM_DESC streamDesc{};
-    streamDesc.SizeInBytes = sizeof(stream);
-    streamDesc.pPipelineStateSubobjectStream = &stream;
-
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
-    hr = device_->CreatePipelineState(&streamDesc, IID_PPV_ARGS(&pso));
-    assert(SUCCEEDED(hr));
-
-	return pso;
 }
-
-Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::wstring& filePath, const wchar_t* profile)
+void Camera::SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype)
 {
-    ///////////////////////////////////////
-    //// 1 hlslファイルを読む
-    ///////////////////////////////////////
-    /// これからシェーダーをコンパイルする旨をログに出す
-    Log("シェーダーコンパイル開始 パス:%s", StringConverter::Convert(filePath).c_str());
-    // hlslファイルを読む
-    IDxcBlobEncoding* shaderSource = nullptr;
-    HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
-    // 読めなかったら停止する
-    if (FAILED(hr))
-    {
-		Log("ファイルが見つかりませんでした:%s", StringConverter::Convert(filePath).c_str());
-        assert(false);
-        return nullptr;
-	}
-    // 読み込んだファイルの内容を設定する
-    DxcBuffer shaderSourceBuffer;
-    shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
-    shaderSourceBuffer.Size = shaderSource->GetBufferSize();
-    shaderSourceBuffer.Encoding = DXC_CP_UTF8;
-
-    ///////////////////////////////////////
-    //// 2 Compileする
-    ///////////////////////////////////////
-    LPCWSTR arguments[] = {
-        filePath.c_str(),			// コンパイル対象のhlslファイル名
-        L"-E", L"main",				// エントリーポイントの指定。基本的にmain
-        L"-T", profile,				// ShaderProfileの設定
-        L"-Zi", L"-Qembed_debug",	// デバック用の情報を埋め込む
-        L"-Od",						// 最適化を外しておく
-        L"-Zpr",					// 目盛レイアウトは行優先
-    };
-    // 実際にシェーダーをコンパイルする
-    IDxcResult* shaderResult = nullptr;
-    hr = dxcCompiler->Compile(
-        &shaderSourceBuffer,	// 読み込んだファイル
-        arguments,				// コンパイルオプション
-        _countof(arguments),	// コンパイルオプションの数
-        includeHandler.Get(),	// includeが含まれた諸々
-        IID_PPV_ARGS(&shaderResult)// コンパイル結果
-    );
-    // コンパイルエラーではなくdxcが起動出来ないなど致命的な状況
-	if (FAILED(hr))
+	if (duration <= 0)
 	{
-		Log("シェーダーのコンパイルに失敗しました。多分dxcが起動できていません。");
-		assert(false);
-		return nullptr;
+		spherical_.phi = target.x;
+		spherical_.theta = target.y;
+		rotateEasing_.easeing = false;
 	}
-
-    ///////////////////////////////////////
-    //// 3 警告・エラーが出ていないか確認する
-    ///////////////////////////////////////
-    /// 警告・エラーが出たらログにだして止める
-    IDxcBlobUtf8* shaderError = nullptr;
-    IDxcBlobUtf16* outputName = nullptr;
-    shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), &outputName);
-
-    if (shaderError != nullptr && shaderError->GetStringLength() != 0)
+	else
+	{
+		rotateEasing_.start = Vector3{ spherical_.phi, spherical_.theta, 0.0f };
+		rotateEasing_.target = target;
+		rotateEasing_.duration = duration;
+		rotateEasing_.currentFrame = 0;
+		rotateEasing_.easeing = true;
+		rotateEasing_.easetype = easetype;
+	}
+}
+void Camera::SetDistanceTarget(float target, int32_t duration, EaseType easetype)
+{
+	if (duration <= 0)
+	{
+		spherical_.radius = target;
+		distanceEasing_.easeing = false;
+	}
+	else
+	{
+		distanceEasing_.start = spherical_.radius;
+		distanceEasing_.target = target;
+		distanceEasing_.duration = duration;
+		distanceEasing_.currentFrame = 0;
+		distanceEasing_.easeing = true;
+		distanceEasing_.easetype = easetype;
+	}
+}
+void Camera::SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType easetype)
+{
+    if (duration <= 0)
     {
-		Log("シェーダーのコンパイルに警告・エラーが出ました。");
-        Log(shaderError->GetStringPointer());
-        assert(false); // コンパイルエラーが発生した場合は停止
-    }
-
-    ///////////////////////////////////////
-    //// 4 Compile結果を受け取って返す
-    ///////////////////////////////////////
-    // コンパイル結果から実行用のバイナリ部分を取得
-    IDxcBlob* shaderBlob = nullptr;
-    if (shaderResult->HasOutput(DXC_OUT_OBJECT))
-    {
-        IDxcBlobWide* dummyOutputName = nullptr;
-        hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), &dummyOutputName);
-        //hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
-    }
+		screenSize_.x = target.x;
+		screenSize_.y = target.y;
+		screenSizeEasing_.easeing = false;
+        Resize();
+	}
     else
     {
-        hr = E_FAIL;
-        shaderBlob = nullptr;
+        screenSizeEasing_.start = screenSize_;
+        screenSizeEasing_.target = target;
+        screenSizeEasing_.duration = duration;
+        screenSizeEasing_.currentFrame = 0;
+        screenSizeEasing_.easeing = true;
+        screenSizeEasing_.easetype = easetype;
     }
-	if (FAILED(hr) || shaderBlob == nullptr)
+}
+void Camera::SetFovTarget(float target, int32_t duration, EaseType easetype)
+{
+	if (duration <= 0)
 	{
-		Log("シェーダーのコンパイルに失敗しました。");
-		assert(false);
-		return nullptr;
+		fovY_ = target;
+		fovEasing_.easeing = false; 
+        projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
 	}
-    // 成功したログを出す;
-    Log("成功");
-    // もう使わないリソースを解放
-    shaderSource->Release();
-    shaderResult->Release();
-    // 実行用のバイナリを返却
-    return shaderBlob;
+	else
+	{
+		fovEasing_.start = fovY_;
+		fovEasing_.target = target;
+		fovEasing_.duration = duration;
+		fovEasing_.currentFrame = 0;
+		fovEasing_.easeing = true;
+		fovEasing_.easetype = easetype;
+	}
 }
 
-
-D3D12_SHADER_VISIBILITY PipelineStateManager::GetShaderVisibilityFromShaderType(ShaderType shaderType)
+// シェイク
+void Camera::StartShake(float intensity, float duration, float frequency)
 {
-    switch (shaderType)
-    {
-    case ShaderType::VertexShader:
-        return D3D12_SHADER_VISIBILITY_VERTEX;
-    case ShaderType::PixelShader:
-        return D3D12_SHADER_VISIBILITY_PIXEL;
-    case ShaderType::MeshShader:
-        return D3D12_SHADER_VISIBILITY_MESH;
-	case ShaderType::ComputeShader:
-		return D3D12_SHADER_VISIBILITY_ALL;
+}
 
-    default:
-        assert(false);
-        return D3D12_SHADER_VISIBILITY_ALL;
-	}
+bool Camera::IsShaking() const
+{
+	return false;
+}
+
+void Camera::StopShake()
+{
+}
+
+Vector3 Camera::GetShakeOffset() const
+{
+	return Vector3{ 0.0f, 0.0f, 0.0f };
 }
 
 
 
 ========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h ===
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Camera\Camera.h ===
 ========================================
 #pragma once
-#include <d3d12.h>
-#include <externals/DirectXTex/d3dx12.h>
-#include <wrl.h>
-#include <dxcapi.h>
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <DirectX/Pipeline/RenderPipelineTypes.h>
+#include <EngineDefinition/EngineDefinition.h>
+#include <array>
 
-struct CD3DX12PipelineStateStream
-{
-    CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
-    CD3DX12_PIPELINE_STATE_STREAM_VS VS;                                   // VS用
-    CD3DX12_PIPELINE_STATE_STREAM_MS pMS;                                  // MS用
-    CD3DX12_PIPELINE_STATE_STREAM_PS pPS;                                  // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;                // VS用
-    CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;// VS用
-    CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC pBlend;                       // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL pDepthStencil;             // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS pRTVFormats;       // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT pDSVFormat;         // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER pRasterizer;                  // 共通
-};
-
-class PipelineStateManager
+// カメラは常にcenter_を見る
+// ↳オービットの時はcenterを中心に、カメラが回転する。
+//  FPSの時はカメラを中心に、centerが回転する
+class Camera
 {
 public:
-    PipelineStateManager(ID3D12Device2* device);
-    ~PipelineStateManager();
+    Camera();
+    ~Camera();
 
-	// ルートシグネチャの取得
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> GetRootSignature(const std::vector<RootParam>& params);
-	// PSO取得
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetPipelineState(const PSOConfig& psoConfig, const std::vector<RootParam>& params);
-	// シェーダーBlobの取得
-    Microsoft::WRL::ComPtr<IDxcBlob> GetShaderBlob(const wchar_t* path, const wchar_t* target);
+    void Update();
+    void Draw();
+    void DrawImGui();
+    void Resize();
+
+	void SetName(const std::string& name) { name_ = name; }
+	std::string GetName() const { return name_; }
+
+    // 動かす先の設定
+    void SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype);
+    void SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype);
+    void SetDistanceTarget(float target, int32_t duration, EaseType easetype);
+	void SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType easetype);
+	void SetFovTarget(float target, int32_t duration, EaseType easetype);
+
+    // シェイク
+    void StartShake(float intensity, float duration, float frequency = 25.0f);
+    bool IsShaking() const;
+    void StopShake();
+
+    // 視錐台内にAABBがあるか
+    bool InCamera(const AABB& aabb);
+
+    // 操作可能か設定
+    void SetEnableControl(bool enable) { enableControl_ = enable; }
+
+    void SetCameraMode(CameraMode_ORBIT_FPS mode) { cameraMode_ = mode; }
+
+public:
+    // 情報取得
+    Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix; }
+    Matrix4x4 GetViewMatrix() const { return viewMatrix_; }
+    Matrix4x4 GetViewportMatrix() const { return viewportMatrix; }
+    Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }
+    Matrix4x4 GetOrthoProjectionMatrix() const { return orthoProjectionMatrix_; }
+    Vector3 GetCenter() const { return center_; }
+    Vector3 GetTranslate() const { return eye_; }
+    Vector3 GetRotate() const { return transform_.rotate; }
+    float GetDistance() const { return spherical_.radius; }
 
 private:
-	// ルートシグネチャ生成
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> CreateRootSignature(const std::vector<RootParam>& params);
-	// PSO生成
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(const PSOConfig& cfg, const std::vector<RootParam>& params);
-	// シェーダーコンパイル
-    Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
+    Vector3 GetShakeOffset() const;
 
-    // シェーダーキャッシュ
-    std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<IDxcBlob>> shaderCache_;
-    // ルートシグネチャキャッシュ
-    std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12RootSignature>> rootSignatureCache_;
-    // PSOキャッシュ
-    std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12PipelineState>> psoCache_;
+    void Update_Orbit();
+    void Update_FPS();
 
-    // シェーダー系
-    void InitializeDxc();
-    Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
-    Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
-    Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
+private:
 
-    // 外部ポインタ
-    ID3D12Device2* device_ = nullptr;
+    CameraMode_ORBIT_FPS cameraMode_ = CameraMode_ORBIT_FPS::ORBIT;
+
+    // 名前
+	std::string name_ = "Camera";
+
+    // 操作可能か
+    bool enableControl_;
+
+	// カメラ位置
+    Coordinate_spherical spherical_ = {20.0f, 1.57f, -1.57f};
+	Vector3 eye_ = { 0.0f, 0.0f, 0.0f };
+	// 注視点
+	Vector3 center_ = { 0.0f, 0.0f, 0.0f };
+    // カメラの最終的な変換
+	EulerTransforms transform_;
+	// スクリーンサイズ
+    Vector2 screenSize_;
 
 
-	D3D12_SHADER_VISIBILITY GetShaderVisibilityFromShaderType(ShaderType shaderType);
+    /// カメラ回転
+    void MovingCenter();
+	EasingSet<Vector3> centerEasing_;
+    /// 回転中心
+    void MovingRotate();
+	EasingSet<Vector3> rotateEasing_;
+    /// カメラ距離
+    void MovingDistance();
+	EasingSet<float> distanceEasing_;
+	/// 画面サイズ
+	void MovingScreenSize();
+	EasingSet<Vector2> screenSizeEasing_;
+	/// FOV
+	void MovingFov();
+	EasingSet<float> fovEasing_;
 
+
+    /// 視錐台判定用
+    void CreateFrustumPlanes();
+    std::array<Plane, 6> frustumPlanes_;// 視錐台を構成する6つの平面
+
+	// ビューポート行列
+    Matrix4x4 viewportMatrix;
+
+	// ビュー行列
+    Matrix4x4 viewMatrix_;
+
+	// 正射影行列
+	Matrix4x4 orthoProjectionMatrix_;
+
+    /// プロジェクション行列関連データ
+    Matrix4x4 projectionMatrix_;
+	float fovY_ = 0.45f;
+    float aspect_;
+    float nearZ_ = 0.01f;
+	float farZ_ = 500.0f;
+
+	// ビュープロジェクション行列
+    Matrix4x4 viewProjectionMatrix;
 };
 
 
 
 ========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp ===
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Camera\CameraManager.cpp ===
 ========================================
-#include "ShaderReflectionHelper.h"
-#include <Utilities/Logger/Logger.h>
-#include <d3d12shader.h>
-#include <cassert>
-#include <wrl/client.h>
-#include <d3d12shader.h>
+#include "CameraManager.h"
+#include <Camera/Camera.h>
+#include <ImGuiManager/ImGuiManager.h>
 
-#pragma comment(lib, "dxcompiler.lib")
-
-namespace ShaderReflection
+CameraManager::CameraManager()
 {
-    std::vector<InputElement> GetInputLayoutFromShader(IDxcBlob* shaderBlob)
-    {
-        std::vector<InputElement> inputElements;
+}
 
-        // DXILコンテナからリフレクション情報を取得
-        Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
-        HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-        if (FAILED(hr))
-        {
-            Log("IDxcUtilsの生成に失敗しました");
-            return inputElements;
-        }
+CameraManager::~CameraManager()
+{
+}
 
-        DxcBuffer dxcBuffer = {};
-        dxcBuffer.Ptr = shaderBlob->GetBufferPointer();
-        dxcBuffer.Size = shaderBlob->GetBufferSize();
-        dxcBuffer.Encoding = DXC_CP_ACP;
+int32_t CameraManager::AddCamera(const std::string& name)
+{
+	Camera def;
+	std::string cameraName = name;
+	if (cameraName == "")
+	{
+		cameraName = "Camera" + std::to_string(camera_.size());
+	}
+	def.SetName(cameraName);
+	camera_.push_back(def);
+	return static_cast<int32_t>(camera_.size() - 1);
+}
 
-        Microsoft::WRL::ComPtr<ID3D12ShaderReflection> reflection;
-        hr = dxcUtils->CreateReflection(&dxcBuffer, __uuidof(ID3D12ShaderReflection), (void**)&reflection);
-        if (FAILED(hr))
-        {
-            Log("シェーダーリフレクションの取得失敗");
-            return inputElements;
-        }
+void CameraManager::Update(const int32_t cameraID)
+{
+	Camera* targetCamera = GetCamera(cameraID);
+	if (!targetCamera) return;
 
-        D3D12_SHADER_DESC shaderDesc;
-        reflection->GetDesc(&shaderDesc);
+	targetCamera->Update();
+}
 
-        // 入力パラメータを列挙
-        for (UINT i = 0; i < shaderDesc.InputParameters; ++i)
-        {
-            D3D12_SIGNATURE_PARAMETER_DESC paramDesc;
-            reflection->GetInputParameterDesc(i, &paramDesc);
+void CameraManager::DrawImGui()
+{
+	ImGui::Begin("CameraManager");
+	if (ImGui::BeginTabBar("Camera", ImGuiTabBarFlags_::ImGuiTabBarFlags_Reorderable))
+	{
+		for (size_t i = 0; i < camera_.size(); i++)
+		{
+			std::string name = camera_[i].GetName();
+			if (ImGui::BeginTabItem(name.c_str()))
+			{
+				camera_[i].DrawImGui();
+				ImGui::EndTabItem();
+			}
+		}
+		ImGui::EndTabBar();
+	}
+	ImGui::End();
+}
 
-			std::string semanticName = NormalizeSemanticName(paramDesc.SemanticName);
-
-            D3D12_INPUT_ELEMENT_DESC elemDesc{};
-            elemDesc.Format = GetDXGIFormatFromComponentType(paramDesc.ComponentType, __popcnt(paramDesc.Mask));
-            if (semanticName == "WEIGHT" || semanticName == "INDEX")
-            {
-                elemDesc.InputSlot = 1; // ウェイトとインデックスは2つ目のバッファ(スロット1)
-            }
-            else
-            {
-                elemDesc.InputSlot = 0; // それ以外(POSITION, NORMAL, TEXCOORD)はスロット0
-            }
-            elemDesc.AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-            elemDesc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-            elemDesc.InstanceDataStepRate = 0;
-
-            InputElement elem{};
-            elem.semanticName = semanticName;
-            elem.semanticIndex = paramDesc.SemanticIndex;
-            elem.desc = elemDesc;
-
-            inputElements.push_back(elem);
-        }
-
-        if (inputElements.empty())
-        {
-            Log("シェーダーから入力レイアウトが見つかりませんでした。");
-        }
-
-        return inputElements;
-    }
-
-    DXGI_FORMAT GetDXGIFormatFromComponentType(D3D_REGISTER_COMPONENT_TYPE componentType, uint32_t componentCount)
-    {
-        switch (componentType)
-        {
-        case D3D_REGISTER_COMPONENT_FLOAT32:
-            switch (componentCount)
-            {
-            case 1: return DXGI_FORMAT_R32_FLOAT;
-            case 2: return DXGI_FORMAT_R32G32_FLOAT;
-            case 3: return DXGI_FORMAT_R32G32B32_FLOAT;
-            case 4: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-            }
-            break;
-        case D3D_REGISTER_COMPONENT_UINT32:
-            switch (componentCount)
-            {
-            case 1: return DXGI_FORMAT_R32_UINT;
-            case 2: return DXGI_FORMAT_R32G32_UINT;
-            case 3: return DXGI_FORMAT_R32G32B32_UINT;
-            case 4: return DXGI_FORMAT_R32G32B32A32_UINT;
-            }
-            break;
-        case D3D_REGISTER_COMPONENT_SINT32:
-            switch (componentCount)
-            {
-            case 1: return DXGI_FORMAT_R32_SINT;
-            case 2: return DXGI_FORMAT_R32G32_SINT;
-            case 3: return DXGI_FORMAT_R32G32B32_SINT;
-            case 4: return DXGI_FORMAT_R32G32B32A32_SINT;
-            }
-            break;
-        }
-        return DXGI_FORMAT_R32G32B32A32_FLOAT;
-    }
-
-    std::string NormalizeSemanticName(const std::string& name)
-    {
-
-        return name;
-    }
-
-
-
-    void BuildRootParamsFromShader(IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams, uint32_t& currentCBVOffsetBytes, uint32_t& currentSRVOffsetIndex)
-    {
-        Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
-        HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-        if (FAILED(hr))
-        {
-            Log("IDxcUtilsの生成に失敗しました");
-            return;
-        }
-
-        DxcBuffer dxcBuffer{};
-        dxcBuffer.Ptr = shaderBlob->GetBufferPointer();
-        dxcBuffer.Size = shaderBlob->GetBufferSize();
-        dxcBuffer.Encoding = DXC_CP_ACP;
-
-        Microsoft::WRL::ComPtr<ID3D12ShaderReflection> reflection;
-        hr = dxcUtils->CreateReflection(&dxcBuffer, __uuidof(ID3D12ShaderReflection), (void**)&reflection);
-        if (FAILED(hr))
-        {
-            Log("シェーダーリフレクションの取得失敗");
-            return;
-        }
-
-        D3D12_SHADER_DESC shaderDesc;
-        reflection->GetDesc(&shaderDesc);
-
-        for (UINT i = 0; i < shaderDesc.BoundResources; ++i)
-        {
-            D3D12_SHADER_INPUT_BIND_DESC bind{};
-            reflection->GetResourceBindingDesc(i, &bind);
-
-            // CBV
-            if (bind.Type == D3D_SIT_CBUFFER)
-            {
-                ID3D12ShaderReflectionConstantBuffer* cb = reflection->GetConstantBufferByIndex(bind.BindPoint);
-                D3D12_SHADER_BUFFER_DESC cbDesc{};
-                cb->GetDesc(&cbDesc);
-
-                RootParam p{};
-                p.paramType = ParamType::CBV;
-                p.shaderType = shaderType;
-                p.key = bind.BindPoint;
-				p.registerSpace = bind.Space;
-                p.ComputeHash();
-
-                p.sizeBytes = cbDesc.Size;
-                p.offsetBytes = currentCBVOffsetBytes;
-
-                currentCBVOffsetBytes += cbDesc.Size;
-				outParams.push_back(p);
-            }
-			// SRV
-            else if (bind.Type == D3D_SIT_STRUCTURED || bind.Type == D3D_SIT_BYTEADDRESS)
-            {
-                RootParam p{};
-                p.paramType = ParamType::SRV;
-                p.shaderType = shaderType;
-                p.key = bind.BindPoint;
-                p.registerSpace = bind.Space;
-				p.ComputeHash();
-
-				p.srvStorageIndex = currentSRVOffsetIndex;
-                currentSRVOffsetIndex++;
-				outParams.push_back(p);
-            }
-			// Bindlessテクスチャ配列 (BindCountが0で、型がテクスチャ)
-            else if (bind.Type == D3D_SIT_TEXTURE && bind.BindCount == 0)
-            {
-                RootParam p{};
-                p.paramType = ParamType::SRV;
-                p.shaderType = shaderType;
-                p.key = bind.BindPoint;
-                p.registerSpace = bind.Space;
-                p.ComputeHash();
-
-                switch (bind.Dimension)
-                {
-                case D3D_SRV_DIMENSION_TEXTURE2D:
-                    p.srvAllocIndex = 0;
-                    break;
-
-                case D3D_SRV_DIMENSION_TEXTURECUBE:
-                    p.srvAllocIndex = 0;
-                    break;
-
-                default:
-                    Log("未対応のテクスチャタイプ");
-                    break;
-                }
-
-                outParams.push_back(p);
-            }
-			// 通常のテクスチャSRV 
-            else if (bind.Type == D3D_SIT_TEXTURE && bind.BindCount > 0)
-            {
-                RootParam p{};
-                p.paramType = ParamType::SRV;
-                p.shaderType = shaderType;
-                p.key = bind.BindPoint;
-                p.registerSpace = bind.Space;
-                p.ComputeHash();
-
-                // BindCountが0でないテクスチャは通常のSRVとして扱う
-                p.srvStorageIndex = currentSRVOffsetIndex;
-                currentSRVOffsetIndex++;
-                outParams.push_back(p);
-            }
-        }
-    }
-
-    bool HasBindlessTextureArray(IDxcBlob* shaderBlob)
-    {
-        Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
-        HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-        if (FAILED(hr))
-        {
-            Log("IDxcUtilsの生成に失敗しました");
-            return false;
-        }
-
-        DxcBuffer dxcBuffer{};
-        dxcBuffer.Ptr = shaderBlob->GetBufferPointer();
-        dxcBuffer.Size = shaderBlob->GetBufferSize();
-        dxcBuffer.Encoding = DXC_CP_ACP;
-
-        Microsoft::WRL::ComPtr<ID3D12ShaderReflection> reflection;
-        hr = dxcUtils->CreateReflection(&dxcBuffer, __uuidof(ID3D12ShaderReflection), (void**)&reflection);
-        if (FAILED(hr))
-        {
-            Log("シェーダーリフレクションの取得失敗");
-            return false;
-        }
-
-        D3D12_SHADER_DESC shaderDesc;
-        reflection->GetDesc(&shaderDesc);
-
-        for (UINT i = 0; i < shaderDesc.BoundResources; i++)
-        {
-            D3D12_SHADER_INPUT_BIND_DESC bind{};
-            reflection->GetResourceBindingDesc(i, &bind);
-
-            if (bind.Type == D3D_SIT_TEXTURE &&
-                bind.BindCount == 0 &&
-                std::string(bind.Name) == "textures")
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+Camera* CameraManager::GetCamera(const int32_t cameraID)
+{
+	if (cameraID < 0 || cameraID >= static_cast<int32_t>(camera_.size()))
+	{
+		return nullptr;
+	}
+	return &camera_[cameraID];
 }
 
 
 
 ========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h ===
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Camera\CameraManager.h ===
 ========================================
 #pragma once
-#include <d3d12.h>
-#include <dxcapi.h>
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <DirectX/Pipeline/RenderPipelineTypes.h>
+#include <EngineDefinition/EngineDefinition.h>
 
-namespace ShaderReflection
+class Camera;
+
+class CameraManager
 {
-    /// <summary>
-	/// シェーダーからRootParameterを作成する関数(完成版)
-    /// </summary>
-    void BuildRootParamsFromShader(
-        IDxcBlob* shaderBlob,
-        ShaderType shaderType,
-        std::vector<RootParam>& outParams,
-        uint32_t& currentCBVOffsetBytes,
-        uint32_t& currentSRVOffsetIndex
-    );
+public:
+	CameraManager();
+	~CameraManager();
 
-	/// <summary>
-    /// Texture2D<float4> textures[] があるか確認する
-	/// </summary>
-    bool HasBindlessTextureArray(IDxcBlob* shaderBlob);
+	int32_t AddCamera(const std::string& name);
 
+	void Update(const int32_t cameraID);
+	void DrawImGui();
 
+	Camera* GetCamera(const int32_t cameraID);
 
-    /// <summary>
-    /// DXCでコンパイルされたシェーダーからInputLayoutを取得
-    /// </summary>
-    /// <param name="shaderBlob">コンパイル済みシェーダーバイナリ</param>
-    /// <returns>Input Element Descの配列</returns>
-    std::vector<InputElement> GetInputLayoutFromShader(IDxcBlob* shaderBlob);
-
-    /// <summary>
-    /// DXGIフォーマットをコンポーネント情報から取得
-    /// </summary>
-    DXGI_FORMAT GetDXGIFormatFromComponentType(D3D_REGISTER_COMPONENT_TYPE componentType, uint32_t componentCount);
-
-    /// <summary>
-    /// セマンティック名の標準化
-    /// </summary>
-    std::string NormalizeSemanticName(const std::string& name);
-}
+private:
+	std::vector<Camera> camera_;
+};
+ 
 
 
 

@@ -35,10 +35,16 @@ public:
 	// メッシュ生成
 	void RefreshMeshData();	// メッシュデータを更新
 	void Pushvertex(const Block* block);
-	void PushvertexOptimized(const Block* block);
 
-	// ブロック取得
-	Block* GetBlock(const Vector3int& index);
+	/// <summary>
+	/// ブロックを取得する
+	/// </summary>
+	/// <param name="index">thisから見たローカル座標</param>
+	/// <param name="checkNeighborChunk">隣接チャンクまで探索しにいくか</param>
+	/// <returns>ブロック</returns>
+	Block* GetBlock(const Vector3int& index, bool checkNeighborChunk = false);
+
+
 	// AABB取得
 	AABB GetAABB(const Vector3int& index);
 	// 座標取得

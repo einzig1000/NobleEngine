@@ -15,6 +15,7 @@ struct VertexInfluence
 
 struct SkinningInformation
 {
+    // 頂点数
     uint numVertices;
 };
 
