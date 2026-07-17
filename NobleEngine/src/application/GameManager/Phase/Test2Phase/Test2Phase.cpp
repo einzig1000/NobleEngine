@@ -65,7 +65,6 @@ void Test2Phase::Draw()
 
 void Test2Phase::DrawImGui()
 {
-
 	ImGui::Begin("Test2Phase"); 
 	ImGui::DragFloat("Threshold", &threshold, 0.01f, 0.0f, 1.0f);
 	ImGui::End();

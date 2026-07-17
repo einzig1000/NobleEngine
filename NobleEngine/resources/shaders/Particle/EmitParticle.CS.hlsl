@@ -74,10 +74,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
             if (particleindex < kMaxParticles)
             {
                 // カウント分Particleを射出する
-                gParticles[countIndex].scale = generator.Generate3d();
-                gParticles[countIndex].translate = generator.Generate3d();
-                gParticles[countIndex].color.rgb = generator.Generate3d();
-                gParticles[countIndex].color.a = 1.0f;
+                gParticles[particleindex].scale = generator.Generate3d();
+                gParticles[particleindex].translate = generator.Generate3d();
+                gParticles[particleindex].color.rgb = generator.Generate3d();
+                gParticles[particleindex].color.a = 1.0f;
             }
         }
     }

@@ -355,7 +355,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
         aiQuaternion rotate;
         bindPoseMatrixAssimp.Decompose(scale, rotate, translate);
         Matrix4x4 bindPoseMatrix = Matrix4x4::MakeAffineMatrix(
-            { scale.x, scale.y, scale.z }, { rotate.x, -rotate.y, -rotate.z, rotate.w }, { -translate.x, translate.y, translate.z });
+            { scale.x, scale.y, scale.z }, { rotate.x, rotate.y, rotate.z, rotate.w }, { translate.x, translate.y, translate.z });
         jointWeightData.inverseBindPoseMatrix = bindPoseMatrix.Inverse();
 
         for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
@@ -376,8 +376,8 @@ Node ModelLoader::ReadNode(const aiNode* node)
     aiVector3D translate;
     node->mTransformation.Decompose(scale, rotate, translate);
     result.transform.scale = { scale.x, scale.y, scale.z };
-    result.transform.rotate = { rotate.x, -rotate.y, -rotate.z, rotate.w };
-    result.transform.translate = { -translate.x, translate.y, translate.z };
+    result.transform.rotate = { rotate.x, rotate.y, rotate.z, rotate.w };
+    result.transform.translate = { translate.x, translate.y, translate.z };
     result.localMatrix = Matrix4x4::MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);
     result.name = node->mName.C_Str();
     result.children.resize(node->mNumChildren);

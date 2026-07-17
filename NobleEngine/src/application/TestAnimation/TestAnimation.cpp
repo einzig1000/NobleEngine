@@ -36,10 +36,9 @@ TestAnimation::TestAnimation()
 
 
 
-	resultVertices = modelData->vertices;
-	resultSRVID_ = Game::Resource::CreateCompute(sizeof(VertexData), size_t(resultVertices.size()));
+	resultSRVID_ = Game::Resource::CreateCompute(sizeof(VertexData), size_t(modelData->vertices.size()));
 
-	compute_->size.x = resultVertices.size();
+	compute_->size.x = modelData->vertices.size();
 
 	compute_->RegisterOutput(resultSRVID_);
 }
@@ -53,6 +52,7 @@ void TestAnimation::Initialize()
 void TestAnimation::Update(int32_t cameraID)
 {
 	animationTime_ += Game::Time::GetDeltaTime();
+	//animationTime_ = 0.5f;
 
 	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	Vector4 color = Vector4{ 1.0f,1.0f,1.0f,1.0f };
@@ -76,7 +76,7 @@ void TestAnimation::Update(int32_t cameraID)
 	compute_->SetSBufferData(1, Game::Resource::GetSRV(vertexSRVID_));
 	compute_->SetSBufferData(2, Game::Resource::GetSRV(vertexInflenceSRVID_));
 	compute_->SetUAVData(0, Game::Resource::GetUAV(resultSRVID_));
-	uint32_t numVertices = static_cast<uint32_t>(resultVertices.size());
+	uint32_t numVertices = static_cast<uint32_t>(vertices.size());
 	compute_->SetCBufferData(0, &numVertices);
 }
 

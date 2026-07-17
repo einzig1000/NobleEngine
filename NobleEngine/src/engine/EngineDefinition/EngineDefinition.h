@@ -855,7 +855,9 @@ struct VertexData
 {
     Vector4 position;
     Vector2 texcoord;
+    //float   _pad0[2];
     Vector3 normal;
+    //float   _pad1; 
 };
 
 struct VertexWeightData

@@ -73,7 +73,7 @@ void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 			aiVectorKey& keyAssimp = nodeAnimationAssimp->mPositionKeys[keyIndex];
 			Keyframe<Vector3> keyframe;
 			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);
-			keyframe.value = { -keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z };
+			keyframe.value = { keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z };
 			nodeAnimation.translate.keyFrames.push_back(keyframe);
 		}
 		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumRotationKeys; ++keyIndex)
@@ -81,7 +81,7 @@ void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 			const aiQuatKey& keyAssimp = nodeAnimationAssimp->mRotationKeys[keyIndex];
 			Keyframe<Quaternion> keyframe;
 			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);
-			keyframe.value = { keyAssimp.mValue.x, -keyAssimp.mValue.y, -keyAssimp.mValue.z, keyAssimp.mValue.w };
+			keyframe.value = { keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z, keyAssimp.mValue.w };
 			nodeAnimation.rotate.keyFrames.push_back(keyframe);
 		}
 		for (uint32_t keyIndex = 0; keyIndex < nodeAnimationAssimp->mNumScalingKeys; ++keyIndex)

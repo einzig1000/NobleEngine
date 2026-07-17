@@ -26,7 +26,6 @@ private:
 	std::vector<VertexInfluence> vertexInfluences;
 
 	int32_t resultSRVID_ = -1;
-	std::vector<VertexData> resultVertices;
 
 	int32_t animationID_ = -1;
 	uint32_t texID_ = -1;

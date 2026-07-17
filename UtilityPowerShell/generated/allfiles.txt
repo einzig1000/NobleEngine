@@ -1,799 +1,1089 @@
 ========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Camera\Camera.cpp ===
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model\ModelManager.cpp ===
 ========================================
-#include "Camera.h"
-#include <Facade/Game.h>
-#include <Window/WindowManager.h>
-#include <algorithm>
-#include <numbers>
-#include <ImGuiManager/ImGuiManager.h>
-#include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
-#include <Utilities/Easing/Easing.h>
+#include "ModelManager.h"
+#include <DirectX/DirectXManager.h>
 
-Camera::Camera()
+ModelManager::ModelManager(DirectXManager* dxManager)
 {
-    enableControl_ = true;
-
-    fovY_ = 0.65f;
-
-    screenSize_ = Vector2{ float(WindowManager::winWidth_) , float(WindowManager::winHeight_) };
-
-    spherical_.radius = 20.0f;
-	spherical_.theta = std::numbers::pi_v<float> / 2.0f;
-    spherical_.phi = 0;
-
-    Resize();
+	// モデルバンク作成
+	bank_ = std::make_unique<ModelBank>();
+	// モデルローダー作成
+	loader_ = std::make_unique<ModelLoader>(dxManager, bank_.get());
+	// モデルクリエイター作成
+	creater_ = std::make_unique<ModelCreater>(dxManager, bank_.get());
 }
 
-Camera::~Camera()
+ModelManager::~ModelManager()
+{}
+
+
+
+========================================
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model\ModelManager.h ===
+========================================
+#pragma once
+#include "ModelLoader/ModelLoader.h"
+#include "ModelCreater/ModelCreater.h"
+#include "ModelBank/ModelBank.h"
+#include <memory>
+
+class DirectXManager;
+
+/// <summary>
+/// モデル管理クラス
+/// </summary>
+class ModelManager
 {
+public:
+	ModelManager(DirectXManager* dxManager);
+	~ModelManager();
+
+	ModelLoader* GetModelLoader() const { return loader_.get(); }
+	ModelCreater* GetModelCreater() const { return creater_.get(); }
+	ModelBank* GetModelBank() const { return bank_.get(); }
+
+private:
+	std::unique_ptr<ModelLoader> loader_;
+	std::unique_ptr<ModelCreater> creater_;
+	std::unique_ptr<ModelBank> bank_;
+};
+
+
+
+
+========================================
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model\ModelBank\ModelBank.cpp ===
+========================================
+#include "ModelBank.h"
+
+int32_t ModelBank::AddModelData(const std::string& filePath, std::unique_ptr<ModelData> modelData)
+{
+	int32_t ID = static_cast<int32_t>(objects_.size());
+
+	pathToIDMap_[filePath] = ID;
+    objects_.push_back(std::move(modelData));
+    return ID;
 }
 
-void Camera::Update()
+int32_t ModelBank::IsModelDataExist(const std::string filePath) const
 {
-    switch (cameraMode_)
+	auto it = pathToIDMap_.find(filePath);
+	if (it != pathToIDMap_.end())
+	{
+		return it->second;
+	}
+    return -1;
+}
+
+ModelData* ModelBank::GetModelData(int32_t modelID)
+{
+	if (modelID >= 0 && modelID < static_cast<int32_t>(objects_.size()))
+	{
+		return objects_[modelID].get();
+	}
+	return nullptr;
+}
+
+
+
+========================================
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model\ModelBank\ModelBank.h ===
+========================================
+#pragma once
+#include <EngineDefinition/EngineDefinition.h>
+#include <unordered_map>
+#include <memory>
+
+class ModelBank
+{
+public:
+	// モデルデータを追加
+	int32_t AddModelData(const std::string& filePath, std::unique_ptr<ModelData> modelData);
+	// filePathが同じモデルデータが存在するか
+	int32_t IsModelDataExist(const std::string filePath) const;
+	// modelIDからモデルデータを取得
+	ModelData* GetModelData(int32_t modelID);
+	// モデルリストを取得
+	std::vector<std::unique_ptr<ModelData>>& GetModelList() { return objects_; }
+
+private:
+	// キー：テクスチャのファイルパス、値：ID
+	std::unordered_map<std::string, int32_t> pathToIDMap_;
+	// キー：ID、値：テクスチャデータ
+	std::vector<std::unique_ptr<ModelData>> objects_;
+};
+
+
+
+
+========================================
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model\ModelCreater\ModelCreater.cpp ===
+========================================
+#include "ModelCreater.h"
+#include <Utilities/Logger/Logger.h>
+#include <DirectX/Resource/Dx12ResourceUtilities.h>
+#include <DirectX/DirectXManager.h>
+#include <AssetManager/Model/ModelBank/ModelBank.h>
+#include <filesystem>
+#include <externals/meshoptimizer-1.1/meshoptimizer.h>
+
+ModelCreater::ModelCreater(DirectXManager* dxManager, ModelBank* bank)
+	: dxManager_(dxManager), bank_(bank)
+{}
+
+ModelCreater::~ModelCreater()
+{
+	intermediateUploadResources_.clear();
+}
+
+int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize)
+{
+	if (vertices.empty()) return -1;
+
+    Log("モデル作成開始:%s", name.c_str());
+
+    uint32_t backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+    auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+
+    std::unique_ptr<ModelData> modelData = std::make_unique<ModelData>();
+
+    // 頂点データの取得
+    modelData->vertices = vertices; 
+
+	// 形だけ作成
+    std::vector<uint32_t> indices(vertices.size());
+    for (uint32_t i = 0; i < vertices.size(); ++i)
     {
-    case CameraMode_ORBIT_FPS::ORBIT:
-        Update_Orbit();
-        break;
-    case CameraMode_ORBIT_FPS::FPS:
-        Update_FPS();
-        break;
-    default:
-        break;
+        indices[i] = i;
     }
-}
+    modelData->indices = indices;
 
-void Camera::Update_Orbit()
-{
-	if (enableControl_)
-	{
-		// マウス移動量
-		Vector2 mouseDelta = Game::IO::Mouse::Get2DPositionDelta();
-		// マウスホイール
-		int32_t mouseWheel = Game::IO::Mouse::GetWheel();
-		// マウス中クリック
-		bool isMiddleHeld = Game::IO::Mouse::IsHeld(2);
-		// Shiftキー
-		bool isShiftHeld = Game::IO::Key::IsHeld(VK_LSHIFT);
-
-		// パン
-		if (isMiddleHeld && isShiftHeld)
-		{
-			Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(transform_.rotate.x) * Matrix4x4::MakeRotateYMatrix(transform_.rotate.y);
-			Vector3 right = { rot.m[0][0], rot.m[1][0], rot.m[2][0] };
-			Vector3 up = { rot.m[0][1], rot.m[1][1], rot.m[2][1] };
-
-			float speed = spherical_.radius * 0.02f;
-			center_ += (right * mouseDelta.x + up * mouseDelta.y) * 0.1f * speed;
-		}
-		// 回転
-		if (isMiddleHeld && !isShiftHeld)
-		{
-			spherical_.phi -= mouseDelta.y * -0.01f;
-			spherical_.theta -= mouseDelta.x * 0.01f;
-		}
-		spherical_.radius -= mouseWheel * spherical_.radius * 0.001f;
-	}
-
-    // イージング
-	MovingCenter();
-	MovingRotate();
-	MovingDistance();
-	MovingScreenSize();
-	MovingFov();
-
-	// 距離をクランプ
-	if (spherical_.radius < 0.1f) spherical_.radius = 0.1f;
-
-    // ピッチのクランプ
-    spherical_.phi = std::clamp(
-        spherical_.phi,
-        -std::numbers::pi_v<float> / 2 + 0.001f,
-        +std::numbers::pi_v<float> / 2 - 0.001f
-    );
-
-    // カメラ位置
-    Vector3 localPos = CoordinateConverter::ToCartesian(spherical_);
-    eye_ = center_ + localPos;
-
-    // 視線ベクトル
-	Vector3 forward = (center_ - eye_).Normalized();
-
-	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
-    viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
-
-    CreateFrustumPlanes();
-}
-
-// 移動(回転)するものをcenter_にして、カメラ座標を固定
-void Camera::Update_FPS()
-{
-
-}
-
-void Camera::Resize()
-{
-	aspect_ = float(screenSize_.x) / float(screenSize_.y);
-    projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
-    viewportMatrix = Matrix4x4::MakeViewPortMatrix(0.0f, 0.0f, float(screenSize_.x), float(screenSize_.y), 0.0f, 1.0f);
-	orthoProjectionMatrix_ = Matrix4x4::MakeOrthographicMatrix(0.0f, 0.0f, float(screenSize_.x), float(screenSize_.y), nearZ_, farZ_);
-}
-
-void Camera::Draw()
-{
-}
-
-void Camera::DrawImGui()
-{
-    static const char* EaseTypeNames[] = {
-    "LINEAR",
-    "IN_SINE", "OUT_SINE", "IN_OUT_SINE",
-    "IN_QUAD", "OUT_QUAD", "IN_OUT_QUAD",
-    "IN_CUBIC", "OUT_CUBIC", "IN_OUT_CUBIC",
-    "IN_QUART", "OUT_QUART", "IN_OUT_QUART",
-    "IN_QUINT", "OUT_QUINT", "IN_OUT_QUINT",
-    "IN_EXPO", "OUT_EXPO", "IN_OUT_EXPO",
-    "IN_CIRC", "OUT_CIRC", "IN_OUT_CIRC",
-    "IN_BACK", "OUT_BACK", "IN_OUT_BACK",
-    "IN_ELASTIC", "OUT_ELASTIC", "IN_OUT_ELASTIC",
-    "IN_BOUNCE", "OUT_BOUNCE"
-    };
-
-	std::string cameraTag = "##";
-    std::string tag;
-
-	std::string radiusTag = "##radius";
-	tag = "radius" + radiusTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &spherical_.radius, 0.1f);
-	tag = "duration" + radiusTag + cameraTag;
-    ImGui::DragInt(tag.c_str(), &distanceEasing_.duration, 1, 0, 1000);
-	tag = "target" + radiusTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &distanceEasing_.target, 0.1f);
-	tag = "easeType" + radiusTag + cameraTag;
-	int32_t easeType = static_cast<int32_t>(distanceEasing_.easetype);
-    if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+    // 頂点データ & インデックスデータの最適化
+	if (optimize)
     {
-		distanceEasing_.easetype = static_cast<EaseType>(easeType);
-    }
-	tag = "start" + radiusTag + cameraTag;
-    if (ImGui::Button(tag.c_str()))
-    {
-		SetDistanceTarget(distanceEasing_.target, distanceEasing_.duration, distanceEasing_.easetype);
-    }
+        std::vector<uint32_t> remap(modelData->vertices.size());
+    
+        size_t vertexCount = meshopt_generateVertexRemap(
+            remap.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            modelData->vertices.data(),
+            modelData->vertices.size(),
+            sizeof(VertexData));
 
-	std::string phiTag = "##phi";
-	tag = "phi" + phiTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &spherical_.phi, 0.01f);
-	tag = "duration" + phiTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &rotateEasing_.duration, 1, 0, 1000);
-	tag = "target" + phiTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &rotateEasing_.target.x, 0.01f);
-	tag = "easeType" + phiTag + cameraTag;
-	int32_t easeType2 = static_cast<int32_t>(rotateEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType2, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-	{
-		rotateEasing_.easetype = static_cast<EaseType>(easeType2);
-	}
-	tag = "start" + phiTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		SetRotateTarget(rotateEasing_.target, rotateEasing_.duration, rotateEasing_.easetype);
-	}
-
-	std::string thetaTag = "##theta";
-	tag = "theta" + thetaTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &spherical_.theta, 0.01f);
-	tag = "duration" + thetaTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &rotateEasing_.duration, 1, 0, 1000);
-	tag = "target" + thetaTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &rotateEasing_.target.y, 0.01f);
-	tag = "easeType" + thetaTag + cameraTag;
-	int32_t easeType3 = static_cast<int32_t>(rotateEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType3, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-	{
-		rotateEasing_.easetype = static_cast<EaseType>(easeType3);
-	}
-	tag = "start" + thetaTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		SetRotateTarget(rotateEasing_.target, rotateEasing_.duration, rotateEasing_.easetype);
-	}
-
-	std::string centerTag = "##Center";
-	tag = "center" + centerTag + cameraTag;
-	ImGui::DragFloat3(tag.c_str(), &center_.x, 0.1f);
-	tag = "duration" + centerTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &centerEasing_.duration, 1, 0, 1000);
-	tag = "target" + centerTag + cameraTag;
-	ImGui::DragFloat3(tag.c_str(), &centerEasing_.target.x, 0.1f);
-	tag = "easeType" + centerTag + cameraTag;
-	int32_t easeType4 = static_cast<int32_t>(centerEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType4, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-	{
-		centerEasing_.easetype = static_cast<EaseType>(easeType4);
-	}
-	tag = "start" + centerTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		SetCenterTarget(centerEasing_.target, centerEasing_.duration, centerEasing_.easetype);
-	}
-
-	ImGui::Separator();
-
-	std::string screenSizeTag = "##screenSize";
-	tag = "screenSize" + screenSizeTag + cameraTag;
-    if (ImGui::DragFloat2(tag.c_str(), &screenSize_.x, 1.0f))
-    {
-		Resize();
-    }
-	tag = "duration" + screenSizeTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &screenSizeEasing_.duration, 1, 0, 1000);
-	tag = "target" + screenSizeTag + cameraTag;
-	ImGui::DragFloat2(tag.c_str(), &screenSizeEasing_.target.x, 1.0f);
-	tag = "easeType" + screenSizeTag + cameraTag;
-	int32_t easeType6 = static_cast<int32_t>(screenSizeEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType6, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-	{
-		screenSizeEasing_.easetype = static_cast<EaseType>(easeType6);
-	}
-	tag = "start" + screenSizeTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		SetScreenSizeTarget(screenSizeEasing_.target, screenSizeEasing_.duration, screenSizeEasing_.easetype);
-	}
-
-	std::string fovYTag = "##fovY";
-	tag = "fovY" + fovYTag + cameraTag;
-    if (ImGui::DragFloat(tag.c_str(), &fovY_, 0.01f))
-    {
-        projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
-    }
-	tag = "duration" + fovYTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &fovEasing_.duration, 1, 0, 1000);
-	tag = "target" + fovYTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &fovEasing_.target, 0.01f);
-	tag = "easeType" + fovYTag + cameraTag;
-	int32_t easeType5 = static_cast<int32_t>(fovEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType5, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-	{
-		fovEasing_.easetype = static_cast<EaseType>(easeType5);
-	}
-	tag = "start" + fovYTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		SetFovTarget(fovEasing_.target, fovEasing_.duration, fovEasing_.easetype);
-	}
-
-
-
-	std::string enableControlTag = tag + ".enableControl";
-    ImGui::Checkbox(enableControlTag.c_str(), &enableControl_);
-    ImGui::SameLine();
-	ImGui::Text("enableControl");
-
-	std::string cameraModeTag = tag + ".cameraMode";
-	int32_t currentMode = static_cast<int32_t>(cameraMode_);
-	static const char* items[] = { "ORBIT", "FPS" };
-    if (ImGui::Combo(cameraModeTag.c_str(), &currentMode, items, IM_ARRAYSIZE(items)))
-    {
-        cameraMode_ = static_cast<CameraMode_ORBIT_FPS>(currentMode);
-	}
-    ImGui::SameLine();
-	ImGui::Text("cameraMode");
-}
-
-void Camera::CreateFrustumPlanes()
-{
-    // Left Plane
-    frustumPlanes_[0].normal.x = viewProjectionMatrix.m[0][3] + viewProjectionMatrix.m[0][0];
-    frustumPlanes_[0].normal.y = viewProjectionMatrix.m[1][3] + viewProjectionMatrix.m[1][0];
-    frustumPlanes_[0].normal.z = viewProjectionMatrix.m[2][3] + viewProjectionMatrix.m[2][0];
-    frustumPlanes_[0].distance = viewProjectionMatrix.m[3][3] + viewProjectionMatrix.m[3][0];
-    // Right Plane
-    frustumPlanes_[1].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][0];
-    frustumPlanes_[1].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][0];
-    frustumPlanes_[1].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][0];
-    frustumPlanes_[1].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][0];
-    // Bottom Plane
-    frustumPlanes_[2].normal.x = viewProjectionMatrix.m[0][3] + viewProjectionMatrix.m[0][1];
-    frustumPlanes_[2].normal.y = viewProjectionMatrix.m[1][3] + viewProjectionMatrix.m[1][1];
-    frustumPlanes_[2].normal.z = viewProjectionMatrix.m[2][3] + viewProjectionMatrix.m[2][1];
-    frustumPlanes_[2].distance = viewProjectionMatrix.m[3][3] + viewProjectionMatrix.m[3][1];
-    // Top Plane
-    frustumPlanes_[3].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][1];
-    frustumPlanes_[3].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][1];
-    frustumPlanes_[3].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][1];
-    frustumPlanes_[3].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][1];
-    // Near Plane
-    frustumPlanes_[4].normal.x = viewProjectionMatrix.m[0][2];
-    frustumPlanes_[4].normal.y = viewProjectionMatrix.m[1][2];
-    frustumPlanes_[4].normal.z = viewProjectionMatrix.m[2][2];
-    frustumPlanes_[4].distance = viewProjectionMatrix.m[3][2];
-    // Far Plane
-    frustumPlanes_[5].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][2];
-    frustumPlanes_[5].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][2];
-    frustumPlanes_[5].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][2];
-    frustumPlanes_[5].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][2];
-
-    // 各平面を正規化
-    for (int32_t i = 0; i < 6; ++i)
-    {
-        float length = sqrt(frustumPlanes_[i].normal.x * frustumPlanes_[i].normal.x +
-            frustumPlanes_[i].normal.y * frustumPlanes_[i].normal.y +
-            frustumPlanes_[i].normal.z * frustumPlanes_[i].normal.z);
-        frustumPlanes_[i].normal = frustumPlanes_[i].normal / length;
-        frustumPlanes_[i].distance /= length;
+        //std::vector<VertexData> vertices(vertexCount);
+		std::vector<VertexData> optimizedVertices(vertexCount);
+        std::vector<uint32_t> indices(modelData->indices.size());
+    
+        // インデックスバッファをリマップ
+        meshopt_remapIndexBuffer(
+            indices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            remap.data());
+    
+        // 頂点データをリマップ
+        meshopt_remapVertexBuffer(
+            optimizedVertices.data(),
+            modelData->vertices.data(),
+            modelData->vertices.size(),
+            sizeof(VertexData),
+            remap.data());
+    
+        // 最適なサイズに圧縮
+        modelData->vertices.resize(optimizedVertices.size());
+        modelData->indices.resize(indices.size());
+    
+        // 頂点キャッシュ最適化
+        meshopt_optimizeVertexCache(
+            modelData->indices.data(),
+            indices.data(),
+            indices.size(),
+            vertexCount);
+    
+        // オーバードロー最適化
+        meshopt_optimizeOverdraw(
+            modelData->indices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            &optimizedVertices[0].position.x,
+            optimizedVertices.size(),
+            sizeof(VertexData),
+            1.05f);
+    
+        // 頂点フェッチ最適化
+        meshopt_optimizeVertexFetch(
+            modelData->vertices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            optimizedVertices.data(),
+            optimizedVertices.size(),
+            sizeof(VertexData));
     }
 
-
-}
-
-bool Camera::InCamera(const AABB& aabb)
-{
-    Vector3 points[8];
-
-    points[0] = Vector3{ aabb.min.x, aabb.min.y, aabb.min.z };
-    points[1] = Vector3{ aabb.max.x, aabb.min.y, aabb.min.z };
-    points[2] = Vector3{ aabb.max.x, aabb.max.y, aabb.min.z };
-    points[3] = Vector3{ aabb.min.x, aabb.max.y, aabb.min.z };
-    points[4] = Vector3{ aabb.min.x, aabb.min.y, aabb.max.z };
-    points[5] = Vector3{ aabb.max.x, aabb.min.y, aabb.max.z };
-    points[6] = Vector3{ aabb.max.x, aabb.max.y, aabb.max.z };
-    points[7] = Vector3{ aabb.min.x, aabb.max.y, aabb.max.z };
-
-    // 6つの各平面に対してテスト
-    for (const auto& plane : frustumPlanes_)
+    // メッシュレットの生成
     {
-        int32_t inCount = 0;
-        // AABBのすべての頂点が平面の裏側にあるかチェック
-        for (int32_t i = 0; i < 8; ++i)
+        const size_t kMaxVertices = 64;
+        const size_t kMaxPrimitives = 126;
+
+        const size_t maxMeshlets = meshopt_buildMeshletsBound(modelData->indices.size(), kMaxVertices, kMaxPrimitives);
+
+        std::vector<meshopt_Meshlet> meshlets(maxMeshlets);
+        std::vector<unsigned int> meshletVertices(maxMeshlets * kMaxVertices);
+        std::vector<unsigned char> meshletTriangles(maxMeshlets * kMaxPrimitives * 3);
+
+        size_t meshletCount =
+            meshopt_buildMeshlets(
+                meshlets.data(),
+                meshletVertices.data(),
+                meshletTriangles.data(),
+                modelData->indices.data(),
+                modelData->indices.size(),
+                &modelData->vertices[0].position.x,
+                modelData->vertices.size(),
+                sizeof(VertexData),
+                kMaxVertices,
+                kMaxPrimitives,
+                0.25f
+            );
+
+        if (meshletCount > 0)
         {
-            float dist = plane.normal.Dot(points[i]) + plane.distance;
-            if (dist >= 0)
+            // 不要メモリを解放
+            const meshopt_Meshlet& last = meshlets[meshletCount - 1];
+            meshletVertices.resize(last.vertex_offset + last.vertex_count);
+            meshletTriangles.resize(last.triangle_offset + last.triangle_count * 3);
+            meshlets.resize(meshletCount);
+
+            // 各メッシュレットの内部を最適化
+            for (size_t i = 0; i < meshletCount; ++i)
             {
-                inCount++;
+                meshopt_Meshlet& m = meshlets[i];
+                meshopt_optimizeMeshlet(
+                    &meshletVertices[m.vertex_offset],
+                    &meshletTriangles[m.triangle_offset],
+                    size_t(m.triangle_count),
+                    size_t(m.vertex_count)
+                );
             }
         }
-        // すべての頂点が平面の裏側にある場合は、AABBは視錐台の外
-        if (inCount == 0)
+
+        modelData->uniqueVertexIndices.reserve(meshletCount * kMaxVertices);
+        modelData->primitiveIndices.reserve(meshletCount * kMaxPrimitives * 3);
+
+        for (auto& meshlet : meshlets)
         {
-            return false;
+            uint32_t vertexOffset = uint32_t(modelData->uniqueVertexIndices.size());
+            uint32_t primitiveOffset = uint32_t(modelData->primitiveIndices.size());
+
+            for (unsigned int i = 0; i < meshlet.vertex_count; ++i)
+            {
+                modelData->uniqueVertexIndices.push_back(meshletVertices[meshlet.vertex_offset + i]);
+            }
+
+            for (unsigned int i = 0; i < meshlet.triangle_count; ++i)
+            {
+                uint32_t tris{};
+                uint32_t baseIndex = meshlet.triangle_offset + (i * 3);
+                tris =  (static_cast<uint32_t>(meshletTriangles[baseIndex]) |
+                        (static_cast<uint32_t>(meshletTriangles[baseIndex + 1]) << 10) |
+                        (static_cast<uint32_t>(meshletTriangles[baseIndex + 2]) << 20));
+                modelData->primitiveIndices.push_back(tris);
+            }
+
+            meshlet.vertex_offset = vertexOffset;
+            meshlet.triangle_offset = primitiveOffset;
+
+            // メッシュレットデータ設定
+            ResMeshlet resMeshlet{};
+            resMeshlet.vertexCount = meshlet.vertex_count;
+            resMeshlet.vertexOffset = vertexOffset;
+            resMeshlet.primitiveCount = meshlet.triangle_count;
+            resMeshlet.primitiveOffset = primitiveOffset;
+
+            modelData->meshlets.push_back(resMeshlet);
+        }
+
+        // サイズ最適化
+        modelData->uniqueVertexIndices.shrink_to_fit();
+        modelData->primitiveIndices.shrink_to_fit();
+        modelData->meshlets.shrink_to_fit();
+    }
+
+    // AABB作成
+    // ref->aabb = CreateLocalAABB(vertices);
+
+	// 表記揺れを防ぐため小文字に変換してファイルパスとして扱う
+    std::string filePath = name;
+    std::transform(filePath.begin(), filePath.end(), filePath.begin(), ::tolower);
+    modelData->filePath = filePath;
+
+    /// 頂点バッファ作成
+    {
+        size_t bufferSize = sizeof(VertexData) * modelData->vertices.size();
+        modelData->vertexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> uploadBuffer = Dx12ResourceFactory::CreateUploadResource(modelData->vertexBuffer.Get(), modelData->vertices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(uploadBuffer);
+
+        modelData->vertexBufferView.BufferLocation = modelData->vertexBuffer->GetGPUVirtualAddress();
+        modelData->vertexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
+        modelData->vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->vertexBuffer.Get(),
+            UINT(modelData->vertices.size()),
+            sizeof(VertexData));
+        modelData->vertexSrvindex = srvAllocation.index;
+    }
+
+    /// インデックスバッファ作成
+    {
+        size_t bufferSize = sizeof(uint32_t) * UINT(modelData->indices.size());
+        modelData->indexBuffer = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), bufferSize);
+        uint32_t* iData = nullptr;
+        modelData->indexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&iData));
+        std::memcpy(iData, modelData->indices.data(), bufferSize);
+        modelData->indexBuffer->Unmap(0, nullptr);
+        modelData->indexBufferView.BufferLocation = modelData->indexBuffer->GetGPUVirtualAddress();
+        modelData->indexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
+        modelData->indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+    }
+
+    /// メッシュレットバッファ作成
+    {
+        size_t bufferSize = sizeof(ResMeshlet) * modelData->meshlets.size();
+        modelData->meshletBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> meshletBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->meshletBuffer.Get(), modelData->meshlets, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(meshletBufferUpload);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->meshletBuffer.Get(),
+            UINT(modelData->meshlets.size()),
+            sizeof(ResMeshlet));
+        modelData->meshletSrvIndex = srvAllocation.index;
+    }
+
+    /// ユニーク頂点インデックスバッファ作成
+    {
+        size_t bufferSize = sizeof(uint32_t) * modelData->uniqueVertexIndices.size();
+        modelData->uniqueVertexIndexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> uniqueVertexIndexBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->uniqueVertexIndexBuffer.Get(), modelData->uniqueVertexIndices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(uniqueVertexIndexBufferUpload);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->uniqueVertexIndexBuffer.Get(),
+            UINT(modelData->uniqueVertexIndices.size()),
+            sizeof(uint32_t));
+        modelData->uniqueVertexIndexSrvIndex = srvAllocation.index;
+    }
+
+    /// プリミティブインデックスバッファ作成
+    {
+        size_t bufferSize = sizeof(uint32_t) * modelData->primitiveIndices.size();
+        modelData->primitiveIndexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> primitiveIndexBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->primitiveIndexBuffer.Get(), modelData->primitiveIndices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(primitiveIndexBufferUpload);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->primitiveIndexBuffer.Get(),
+            UINT(modelData->primitiveIndices.size()),
+            sizeof(uint32_t));
+        modelData->primitiveIndexSrvIndex = srvAllocation.index;
+    }
+
+
+    // モデルバンクに登録
+    int32_t ID = bank_->AddModelData(filePath, std::move(modelData));
+
+    Log("成功 ID:%d", ID);
+
+    return ID;
+}
+
+
+
+========================================
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model\ModelCreater\ModelCreater.h ===
+========================================
+#pragma once
+#include <EngineDefinition/EngineDefinition.h>
+
+class ModelBank;
+class DirectXManager;
+
+class ModelCreater
+{
+public:
+	ModelCreater(DirectXManager* dxManager, ModelBank* bank);
+	~ModelCreater();
+
+	/// <summary>
+	/// モデルを作成する
+	/// </summary>
+	/// <param name="vertices">トライアングルリストの頂点配列</param>
+	/// <param name="name">モデルのユニークな名前</param>
+	/// <param name="optimize">頂点の最適化を行うかどうか</param>
+	/// <returns></returns>
+	int32_t CreateModel(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize);
+
+private:
+	DirectXManager* dxManager_;
+	ModelBank* bank_;
+
+	// アップロード用一時リソースを保持するリスト
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> intermediateUploadResources_;
+};
+
+
+
+
+========================================
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model\ModelLoader\ModelLoader.cpp ===
+========================================
+#include "ModelLoader.h"
+#include <Utilities/Logger/Logger.h>
+#include <DirectX/Resource/Dx12ResourceUtilities.h>
+#include <DirectX/DirectXManager.h>
+#include <AssetManager/Model/ModelBank/ModelBank.h>
+#include <filesystem>
+#include <fstream>
+#include <externals/meshoptimizer-1.1/meshoptimizer.h>
+
+
+ModelLoader::ModelLoader(DirectXManager* dxManager, ModelBank* bank)
+    : dxManager_(dxManager), bank_(bank)
+{}
+
+ModelLoader::~ModelLoader()
+{
+	intermediateUploadResources_.clear();
+}
+
+int32_t ModelLoader::LoadModel(const std::string & filePath)
+{
+	// すでに読み込まれていたらそのモデルIDを返す
+	int32_t modelID = bank_->IsModelDataExist(filePath);
+	if (modelID != -1) return modelID;
+
+    Log("モデル読み込み開始:%s", filePath.c_str());
+
+    std::unique_ptr<ModelData> obj = std::make_unique<ModelData>();
+
+    // モデルデータ読みこみ
+    LoadModelFile(filePath, obj.get());
+
+	// モデルバンクに登録
+	modelID = bank_->AddModelData(filePath, std::move(obj));
+
+    Log("成功 ID:%d", modelID);
+
+    return modelID;
+}
+
+MaterialData ModelLoader::LoadMaterialTemplateFile(const std::string& filePath)
+{
+    return MaterialData();
+}
+
+void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelData)
+{
+    uint32_t backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+    auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(filePath.c_str(),
+        aiProcess_Triangulate               // 面を三角形に分割する
+        | aiProcess_ConvertToLeftHanded     // 左手座標系に変換する(逆に言うとこのエンジンで使用するモデルは右手座標系で作成する必要がある)
+        | aiProcess_GenSmoothNormals        // 法線データが存在しないときに自動生成する
+        | aiProcess_JoinIdenticalVertices   // 重複頂点を結合する
+    );
+    assert(scene->HasMeshes());
+
+    // メッシュ取得
+    aiMesh* mesh = scene->mMeshes[0];
+	modelData->materialID = mesh->mMaterialIndex;
+
+    // 各情報が存在するか
+    const bool hasNormals = mesh->HasNormals();
+    if (!hasNormals) Log("法線データが存在しません。自動生成された数値が使用されます");
+    const bool hasTexCoords = mesh->HasTextureCoords(0);
+    if (!hasTexCoords) Log("テクスチャ座標データが存在しません。(0.0f,0.0f)で初期化されます");
+
+    // 頂点データ & インデックスデータの読み込み
+    modelData->vertices.resize(mesh->mNumVertices);
+    for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex)
+    {
+        aiVector3D position = mesh->mVertices[vertexIndex];
+		aiVector3D normal = hasNormals ? mesh->mNormals[vertexIndex] : aiVector3D(0.0f, 1.0f, 0.0f);
+        aiVector3D texCoord = hasTexCoords ? mesh->mTextureCoords[0][vertexIndex] : aiVector3D(0.0f, 0.0f, 0.0f);
+
+        modelData->vertices[vertexIndex].position = { position.x, position.y, position.z, 1.0f };
+		modelData->vertices[vertexIndex].normal = { normal.x, normal.y, normal.z };
+		modelData->vertices[vertexIndex].texcoord = { texCoord.x, texCoord.y };
+    }
+
+    modelData->indices.resize(mesh->mNumFaces * 3);
+    for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex)
+    {
+        const aiFace& face = mesh->mFaces[faceIndex];
+        assert(face.mNumIndices == 3); // 三角形でなければエラー
+
+        modelData->indices[faceIndex * 3 + 0] = face.mIndices[0];
+        modelData->indices[faceIndex * 3 + 1] = face.mIndices[1];
+        modelData->indices[faceIndex * 3 + 2] = face.mIndices[2];
+    }
+
+	// 頂点データ & インデックスデータの最適化
+    {
+        std::vector<uint32_t> remap(modelData->vertices.size());
+
+        size_t vertexCount = meshopt_generateVertexRemap(
+            remap.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            modelData->vertices.data(),
+            modelData->vertices.size(),
+            sizeof(VertexData));
+
+        std::vector<VertexData> vertices(vertexCount);
+        std::vector<uint32_t> indices(modelData->indices.size());
+
+        // インデックスバッファをリマップ
+        meshopt_remapIndexBuffer(
+            indices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            remap.data());
+
+        // 頂点データをリマップ
+        meshopt_remapVertexBuffer(
+            vertices.data(),
+            modelData->vertices.data(),
+            modelData->vertices.size(),
+            sizeof(VertexData),
+            remap.data());
+
+        // 最適なサイズに圧縮
+        modelData->vertices.resize(vertices.size());
+        modelData->indices.resize(indices.size());
+
+        // 頂点キャッシュ最適化
+        meshopt_optimizeVertexCache(
+            modelData->indices.data(),
+            indices.data(),
+            indices.size(),
+            vertexCount);
+
+        // オーバードロー最適化
+        meshopt_optimizeOverdraw(
+            modelData->indices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            &vertices[0].position.x,
+            vertices.size(),
+            sizeof(VertexData),
+            1.05f);
+
+        // 頂点フェッチ最適化
+        meshopt_optimizeVertexFetch(
+            modelData->vertices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            vertices.data(),
+            vertices.size(),
+            sizeof(VertexData));
+    }
+
+    // メッシュレットの生成
+    {
+        const size_t kMaxVertices = 64;
+        const size_t kMaxPrimitives = 126;
+
+        const size_t maxMeshlets = meshopt_buildMeshletsBound(modelData->indices.size(), kMaxVertices, kMaxPrimitives);
+
+        std::vector<meshopt_Meshlet> meshlets(maxMeshlets);
+        std::vector<unsigned int> meshletVertices(maxMeshlets * kMaxVertices);
+        std::vector<unsigned char> meshletTriangles(maxMeshlets * kMaxPrimitives * 3);
+
+        //template <typename T>
+        //inline size_t meshopt_buildMeshlets(
+        // meshopt_Meshlet * meshlets,          // [出] メッシュレットのメタ情報（オフセットなど）が格納される配列
+        // unsigned int* meshlet_vertices,      // [出] 元の頂点バッファへのインデックス（ローカル頂点マップ）
+        // unsigned char* meshlet_triangles,    // [出] メッシュレット内のローカルな三角形インデックス（3の倍数）
+        // const T * indices,                   // [入] 元のメッシュのインデックスバッファ
+        // size_t index_count,                  // [入] 元のメッシュのインデックス数
+        // const float* vertex_positions,       // [入] 頂点座標（Vector3等）の先頭ポインタ（クラスタリングの計算に使用）
+        // size_t vertex_count,                 // [入] 元のメッシュの頂点数
+        // size_t vertex_positions_stride,      // [入] 頂点構造体のストライド（バイトサイズ）
+        // size_t max_vertices,                 // メッシュレットごとの最大頂点数限制
+        // size_t max_triangles,                // メッシュレットごとの最大三角形数限制
+        // float cone_weight)                   // コーンカリングの重み（0.0 ～ 1.0）
+
+        size_t meshletCount =
+            meshopt_buildMeshlets(
+                meshlets.data(),
+                meshletVertices.data(),
+                meshletTriangles.data(),
+                modelData->indices.data(),
+                modelData->indices.size(),
+                &modelData->vertices[0].position.x,
+                modelData->vertices.size(),
+                sizeof(VertexData),
+                kMaxVertices,
+                kMaxPrimitives,
+                0.25f
+            );
+
+        if (meshletCount > 0)
+        {
+            // 不要メモリを解放
+            const meshopt_Meshlet& last = meshlets[meshletCount - 1];
+            meshletVertices.resize(last.vertex_offset + last.vertex_count);
+            meshletTriangles.resize(last.triangle_offset + last.triangle_count * 3);
+            meshlets.resize(meshletCount);
+
+            // 各メッシュレットの内部を最適化
+            for (size_t i = 0; i < meshletCount; ++i)
+            {
+                meshopt_Meshlet& m = meshlets[i];
+                meshopt_optimizeMeshlet(
+                    &meshletVertices[m.vertex_offset],
+                    &meshletTriangles[m.triangle_offset],
+                    size_t(m.triangle_count),
+                    size_t(m.vertex_count)
+                );
+            }
+        }
+
+        modelData->uniqueVertexIndices.reserve(meshletCount * kMaxVertices);
+        modelData->primitiveIndices.reserve(meshletCount * kMaxPrimitives * 3);
+
+        for (auto& meshlet : meshlets)
+        {
+            uint32_t vertexOffset = uint32_t(modelData->uniqueVertexIndices.size());
+            uint32_t primitiveOffset = uint32_t(modelData->primitiveIndices.size());
+
+            for (unsigned int i = 0; i < meshlet.vertex_count; ++i)
+            {
+                modelData->uniqueVertexIndices.push_back(meshletVertices[meshlet.vertex_offset + i]);
+            }
+
+            for (unsigned int i = 0; i < meshlet.triangle_count; ++i)
+            {
+                uint32_t tris{};
+                uint32_t baseIndex = meshlet.triangle_offset + (i * 3);
+                tris = (meshletTriangles[baseIndex]) |
+                    (meshletTriangles[baseIndex + 1] << 10) |
+                    (meshletTriangles[baseIndex + 2] << 20);
+                modelData->primitiveIndices.push_back(tris);
+            }
+
+            // メッシュレットデータ設定
+            ResMeshlet resMeshlet{};
+            resMeshlet.vertexCount = uint32_t(meshlet.vertex_count);
+            resMeshlet.vertexOffset = vertexOffset;
+            resMeshlet.primitiveCount = uint32_t(meshlet.triangle_count);
+            resMeshlet.primitiveOffset = primitiveOffset;
+
+            modelData->meshlets.push_back(resMeshlet);
+        }
+
+        // サイズ最適化
+        modelData->uniqueVertexIndices.shrink_to_fit();
+        modelData->primitiveIndices.shrink_to_fit();
+        modelData->meshlets.shrink_to_fit();
+    }
+
+    modelData->rootNode = ReadNode(scene->mRootNode);
+
+    /// スケルトン作成
+    modelData->skeleton = CreateSkeleton(modelData->rootNode);
+
+    /// AABB読み込み
+    modelData->aabb = LoadAABB(filePath, modelData->vertices);
+
+    /// ファイルパスを保存
+    modelData->filePath = filePath;
+
+    /// 頂点バッファ作成
+    {
+        size_t bufferSize = sizeof(VertexData) * modelData->vertices.size();
+        modelData->vertexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> uploadBuffer = Dx12ResourceFactory::CreateUploadResource(modelData->vertexBuffer.Get(), modelData->vertices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(uploadBuffer);
+
+        modelData->vertexBufferView.BufferLocation = modelData->vertexBuffer->GetGPUVirtualAddress();
+        modelData->vertexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
+        modelData->vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->vertexBuffer.Get(),
+            UINT(modelData->vertices.size()),
+            sizeof(VertexData));
+        modelData->vertexSrvindex = srvAllocation.index;
+    }
+
+    /// インデックスバッファ作成
+    {
+        size_t bufferSize = sizeof(uint32_t) * UINT(modelData->indices.size());
+        modelData->indexBuffer = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), bufferSize);
+        uint32_t* iData = nullptr;
+        modelData->indexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&iData));
+        std::memcpy(iData, modelData->indices.data(), bufferSize);
+        modelData->indexBuffer->Unmap(0, nullptr);
+        modelData->indexBufferView.BufferLocation = modelData->indexBuffer->GetGPUVirtualAddress();
+        modelData->indexBufferView.SizeInBytes = static_cast<UINT>(bufferSize);
+        modelData->indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+    }
+
+	/// メッシュレットバッファ作成
+    {
+        size_t bufferSize = sizeof(ResMeshlet) * modelData->meshlets.size();
+        modelData->meshletBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+        
+        Microsoft::WRL::ComPtr<ID3D12Resource> meshletBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->meshletBuffer.Get(), modelData->meshlets, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(meshletBufferUpload);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->meshletBuffer.Get(),
+            UINT(modelData->meshlets.size()),
+            sizeof(ResMeshlet));
+        modelData->meshletSrvIndex = srvAllocation.index;
+    }
+
+	/// ユニーク頂点インデックスバッファ作成
+    {
+        size_t bufferSize = sizeof(uint32_t) * modelData->uniqueVertexIndices.size();
+        modelData->uniqueVertexIndexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+        
+        Microsoft::WRL::ComPtr<ID3D12Resource> uniqueVertexIndexBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->uniqueVertexIndexBuffer.Get(), modelData->uniqueVertexIndices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(uniqueVertexIndexBufferUpload);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->uniqueVertexIndexBuffer.Get(),
+            UINT(modelData->uniqueVertexIndices.size()),
+            sizeof(uint32_t));
+        modelData->uniqueVertexIndexSrvIndex = srvAllocation.index;
+    }
+
+	/// プリミティブインデックスバッファ作成
+    {
+        size_t bufferSize = sizeof(uint32_t) * modelData->primitiveIndices.size();
+        modelData->primitiveIndexBuffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bufferSize);
+        
+        Microsoft::WRL::ComPtr<ID3D12Resource> primitiveIndexBufferUpload = Dx12ResourceFactory::CreateUploadResource(modelData->primitiveIndexBuffer.Get(), modelData->primitiveIndices, dxManager_->GetDevice(), cmdList);
+        intermediateUploadResources_.push_back(primitiveIndexBufferUpload);
+
+        SRV_UAVManager::Allocation srvAllocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+            modelData->primitiveIndexBuffer.Get(),
+            UINT(modelData->primitiveIndices.size()),
+            sizeof(uint32_t));
+        modelData->primitiveIndexSrvIndex = srvAllocation.index;
+    }
+
+	// modelData->skinClusterDataを作成する
+    for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+    {
+		// Joint(Bone)から情報を取得
+        aiBone* bone = mesh->mBones[boneIndex];
+        std::string jointName = bone->mName.C_Str();
+        JointWeightData& jointWeightData = modelData->skinClusterData[jointName];
+
+		// Inverced Bind Pose Matrixを取得
+        aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
+        aiVector3D scale, translate;
+        aiQuaternion rotate;
+        bindPoseMatrixAssimp.Decompose(scale, rotate, translate);
+        Matrix4x4 bindPoseMatrix = Matrix4x4::MakeAffineMatrix(
+            { scale.x, scale.y, scale.z }, { rotate.x, -rotate.y, -rotate.z, rotate.w }, { -translate.x, translate.y, translate.z });
+        jointWeightData.inverseBindPoseMatrix = bindPoseMatrix.Inverse();
+
+        for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
+        {
+            jointWeightData.vertexWeights.push_back({ bone->mWeights[weightIndex].mWeight, bone->mWeights[weightIndex].mVertexId });
         }
     }
 
-    return true; // どの平面の外側にもない場合は、視錐台内にあると判定
+    /// スキンクラスタ作成
+    modelData->skinCluster = CreateSkinCluster(modelData);
 }
 
-// 実際に動かす
-void Camera::MovingCenter()
+Node ModelLoader::ReadNode(const aiNode* node)
 {
-	if (!centerEasing_.easeing) return;
-
-	center_ = Easing::EasingVector3(
-        centerEasing_.start, 
-        centerEasing_.target,
-        centerEasing_.easetype,
-		float(centerEasing_.currentFrame) / float(centerEasing_.duration)
-    );
-
-	centerEasing_.currentFrame++;
-
-	if (centerEasing_.currentFrame > centerEasing_.duration)
-	{
-		centerEasing_.easeing = false;
-	}
-}
-void Camera::MovingRotate()
-{
-	if (!rotateEasing_.easeing) return;
-
-	Vector3 spherical = Easing::EasingVector3(
-		rotateEasing_.start,
-		rotateEasing_.target,
-		rotateEasing_.easetype,
-		float(rotateEasing_.currentFrame) / float(rotateEasing_.duration)
-	);
-	spherical_.phi = spherical.x;
-	spherical_.theta = spherical.y;
-
-	rotateEasing_.currentFrame++;
-	if (rotateEasing_.currentFrame > rotateEasing_.duration)
-	{
-		rotateEasing_.easeing = false;
-	}
-}
-void Camera::MovingDistance()
-{
-	if (!distanceEasing_.easeing) return;
-
-	spherical_.radius = Easing::EasingFloat(
-		distanceEasing_.start,
-		distanceEasing_.target,
-		distanceEasing_.easetype,
-		float(distanceEasing_.currentFrame) / float(distanceEasing_.duration)
-	);
-
-	distanceEasing_.currentFrame++;
-	if (distanceEasing_.currentFrame > distanceEasing_.duration)
-	{
-		distanceEasing_.easeing = false;
-	}
-}
-void Camera::MovingScreenSize()
-{
-	if (!screenSizeEasing_.easeing) return;
-
-    screenSize_.x = Easing::EasingFloat(
-        screenSizeEasing_.start.x,
-        screenSizeEasing_.target.x,
-        screenSizeEasing_.easetype,
-        float(screenSizeEasing_.currentFrame) / float(screenSizeEasing_.duration)
-    );
-    screenSize_.y = Easing::EasingFloat(
-        screenSizeEasing_.start.y,
-        screenSizeEasing_.target.y,
-        screenSizeEasing_.easetype,
-        float(screenSizeEasing_.currentFrame) / float(screenSizeEasing_.duration)
-    );
-
-	screenSizeEasing_.currentFrame++;
-	
-    if (screenSizeEasing_.currentFrame > screenSizeEasing_.duration)
-	{
-		screenSizeEasing_.easeing = false;
-	}
-
-    Resize();
-}
-void Camera::MovingFov()
-{
-	if (!fovEasing_.easeing) return;
-
-    fovY_ = Easing::EasingFloat(
-		fovEasing_.start,
-		fovEasing_.target,
-		fovEasing_.easetype,
-		float(fovEasing_.currentFrame) / float(fovEasing_.duration)
-	);
-	fovEasing_.currentFrame++;
-	if (fovEasing_.currentFrame > fovEasing_.duration)
-	{
-		fovEasing_.easeing = false;
-	}
-
-    projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
-}
-
-// 動かす先の設定
-void Camera::SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype)
-{
-	if (duration <= 0)
-	{
-		center_ = target;
-		centerEasing_.easeing = false;
-	}
-	else
-	{
-		centerEasing_.start = center_;
-		centerEasing_.target = target;
-		centerEasing_.duration = duration;
-		centerEasing_.currentFrame = 0;
-		centerEasing_.easeing = true;
-		centerEasing_.easetype = easetype;
-	}
-}
-void Camera::SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype)
-{
-	if (duration <= 0)
-	{
-		spherical_.phi = target.x;
-		spherical_.theta = target.y;
-		rotateEasing_.easeing = false;
-	}
-	else
-	{
-		rotateEasing_.start = Vector3{ spherical_.phi, spherical_.theta, 0.0f };
-		rotateEasing_.target = target;
-		rotateEasing_.duration = duration;
-		rotateEasing_.currentFrame = 0;
-		rotateEasing_.easeing = true;
-		rotateEasing_.easetype = easetype;
-	}
-}
-void Camera::SetDistanceTarget(float target, int32_t duration, EaseType easetype)
-{
-	if (duration <= 0)
-	{
-		spherical_.radius = target;
-		distanceEasing_.easeing = false;
-	}
-	else
-	{
-		distanceEasing_.start = spherical_.radius;
-		distanceEasing_.target = target;
-		distanceEasing_.duration = duration;
-		distanceEasing_.currentFrame = 0;
-		distanceEasing_.easeing = true;
-		distanceEasing_.easetype = easetype;
-	}
-}
-void Camera::SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType easetype)
-{
-    if (duration <= 0)
+    Node result;
+    aiVector3D scale;
+    aiQuaternion rotate;
+    aiVector3D translate;
+    node->mTransformation.Decompose(scale, rotate, translate);
+    result.transform.scale = { scale.x, scale.y, scale.z };
+    result.transform.rotate = { rotate.x, -rotate.y, -rotate.z, rotate.w };
+    result.transform.translate = { -translate.x, translate.y, translate.z };
+    result.localMatrix = Matrix4x4::MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);
+    result.name = node->mName.C_Str();
+    result.children.resize(node->mNumChildren);
+    for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
     {
-		screenSize_.x = target.x;
-		screenSize_.y = target.y;
-		screenSizeEasing_.easeing = false;
-        Resize();
-	}
-    else
-    {
-        screenSizeEasing_.start = screenSize_;
-        screenSizeEasing_.target = target;
-        screenSizeEasing_.duration = duration;
-        screenSizeEasing_.currentFrame = 0;
-        screenSizeEasing_.easeing = true;
-        screenSizeEasing_.easetype = easetype;
+        result.children[childIndex] = ReadNode(node->mChildren[childIndex]);
     }
+    return result;
 }
-void Camera::SetFovTarget(float target, int32_t duration, EaseType easetype)
+
+SkinCluster ModelLoader::CreateSkinCluster(const ModelData* modelData)
 {
-	if (duration <= 0)
+	SkinCluster skinCluster;
+
+	// palette用のResourceを作成
+	skinCluster.paletteResource = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), sizeof(WellForGPU) * modelData->skeleton.joints.size());
+	WellForGPU* wData = nullptr;
+	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&wData));
+	skinCluster.mappedPalette = { wData, modelData->skeleton.joints.size() };
+	SRV_UAVManager::Allocation allocation = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(skinCluster.paletteResource.Get(), static_cast<UINT>(modelData->skeleton.joints.size()), sizeof(WellForGPU));
+    skinCluster.paletteSrvHandle.first = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetCPUHandleAt(allocation.index);
+   	skinCluster.paletteSrvHandle.second = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(allocation.index);
+
+	// influence用のResourceを作成
+	skinCluster.influenceResource = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), sizeof(VertexInfluence) * modelData->vertices.size());
+	VertexInfluence* iData = nullptr;
+	skinCluster.influenceResource->Map(0, nullptr, reinterpret_cast<void**>(&iData));
+	std::memset(iData, 0, sizeof(VertexInfluence) * modelData->vertices.size());
+	skinCluster.mappedInfluences = { iData, modelData->vertices.size() };
+	skinCluster.influenceBufferView.BufferLocation = skinCluster.influenceResource->GetGPUVirtualAddress();
+	skinCluster.influenceBufferView.SizeInBytes = static_cast<UINT>(sizeof(VertexInfluence) * modelData->vertices.size());
+	skinCluster.influenceBufferView.StrideInBytes = sizeof(VertexInfluence);
+
+	skinCluster.inverseBindPoseMatrices.resize(modelData->skeleton.joints.size());
+	std::generate(skinCluster.inverseBindPoseMatrices.begin(), skinCluster.inverseBindPoseMatrices.end(), Matrix4x4::MakeIdentity4x4 );
+
+	// modelDataのskinClusterDataからJointWeightDataを取得し、各JointのInverseBindPoseMatrixを保存する
+	for (const auto& [jointName, jointWeightData] : modelData->skinClusterData)
 	{
-		fovY_ = target;
-		fovEasing_.easeing = false; 
-        projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
-	}
-	else
-	{
-		fovEasing_.start = fovY_;
-		fovEasing_.target = target;
-		fovEasing_.duration = duration;
-		fovEasing_.currentFrame = 0;
-		fovEasing_.easeing = true;
-		fovEasing_.easetype = easetype;
-	}
-}
-
-// シェイク
-void Camera::StartShake(float intensity, float duration, float frequency)
-{
-}
-
-bool Camera::IsShaking() const
-{
-	return false;
-}
-
-void Camera::StopShake()
-{
-}
-
-Vector3 Camera::GetShakeOffset() const
-{
-	return Vector3{ 0.0f, 0.0f, 0.0f };
-}
-
-
-
-========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Camera\Camera.h ===
-========================================
-#pragma once
-#include <EngineDefinition/EngineDefinition.h>
-#include <array>
-
-// カメラは常にcenter_を見る
-// ↳オービットの時はcenterを中心に、カメラが回転する。
-//  FPSの時はカメラを中心に、centerが回転する
-class Camera
-{
-public:
-    Camera();
-    ~Camera();
-
-    void Update();
-    void Draw();
-    void DrawImGui();
-    void Resize();
-
-	void SetName(const std::string& name) { name_ = name; }
-	std::string GetName() const { return name_; }
-
-    // 動かす先の設定
-    void SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype);
-    void SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype);
-    void SetDistanceTarget(float target, int32_t duration, EaseType easetype);
-	void SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType easetype);
-	void SetFovTarget(float target, int32_t duration, EaseType easetype);
-
-    // シェイク
-    void StartShake(float intensity, float duration, float frequency = 25.0f);
-    bool IsShaking() const;
-    void StopShake();
-
-    // 視錐台内にAABBがあるか
-    bool InCamera(const AABB& aabb);
-
-    // 操作可能か設定
-    void SetEnableControl(bool enable) { enableControl_ = enable; }
-
-    void SetCameraMode(CameraMode_ORBIT_FPS mode) { cameraMode_ = mode; }
-
-public:
-    // 情報取得
-    Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix; }
-    Matrix4x4 GetViewMatrix() const { return viewMatrix_; }
-    Matrix4x4 GetViewportMatrix() const { return viewportMatrix; }
-    Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }
-    Matrix4x4 GetOrthoProjectionMatrix() const { return orthoProjectionMatrix_; }
-    Vector3 GetCenter() const { return center_; }
-    Vector3 GetTranslate() const { return eye_; }
-    Vector3 GetRotate() const { return transform_.rotate; }
-    float GetDistance() const { return spherical_.radius; }
-
-private:
-    Vector3 GetShakeOffset() const;
-
-    void Update_Orbit();
-    void Update_FPS();
-
-private:
-
-    CameraMode_ORBIT_FPS cameraMode_ = CameraMode_ORBIT_FPS::ORBIT;
-
-    // 名前
-	std::string name_ = "Camera";
-
-    // 操作可能か
-    bool enableControl_;
-
-	// カメラ位置
-    Coordinate_spherical spherical_ = {20.0f, 1.57f, -1.57f};
-	Vector3 eye_ = { 0.0f, 0.0f, 0.0f };
-	// 注視点
-	Vector3 center_ = { 0.0f, 0.0f, 0.0f };
-    // カメラの最終的な変換
-	EulerTransforms transform_;
-	// スクリーンサイズ
-    Vector2 screenSize_;
-
-
-    /// カメラ回転
-    void MovingCenter();
-	EasingSet<Vector3> centerEasing_;
-    /// 回転中心
-    void MovingRotate();
-	EasingSet<Vector3> rotateEasing_;
-    /// カメラ距離
-    void MovingDistance();
-	EasingSet<float> distanceEasing_;
-	/// 画面サイズ
-	void MovingScreenSize();
-	EasingSet<Vector2> screenSizeEasing_;
-	/// FOV
-	void MovingFov();
-	EasingSet<float> fovEasing_;
-
-
-    /// 視錐台判定用
-    void CreateFrustumPlanes();
-    std::array<Plane, 6> frustumPlanes_;// 視錐台を構成する6つの平面
-
-	// ビューポート行列
-    Matrix4x4 viewportMatrix;
-
-	// ビュー行列
-    Matrix4x4 viewMatrix_;
-
-	// 正射影行列
-	Matrix4x4 orthoProjectionMatrix_;
-
-    /// プロジェクション行列関連データ
-    Matrix4x4 projectionMatrix_;
-	float fovY_ = 0.45f;
-    float aspect_;
-    float nearZ_ = 0.01f;
-	float farZ_ = 500.0f;
-
-	// ビュープロジェクション行列
-    Matrix4x4 viewProjectionMatrix;
-};
-
-
-
-========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Camera\CameraManager.cpp ===
-========================================
-#include "CameraManager.h"
-#include <Camera/Camera.h>
-#include <ImGuiManager/ImGuiManager.h>
-
-CameraManager::CameraManager()
-{
-}
-
-CameraManager::~CameraManager()
-{
-}
-
-int32_t CameraManager::AddCamera(const std::string& name)
-{
-	Camera def;
-	std::string cameraName = name;
-	if (cameraName == "")
-	{
-		cameraName = "Camera" + std::to_string(camera_.size());
-	}
-	def.SetName(cameraName);
-	camera_.push_back(def);
-	return static_cast<int32_t>(camera_.size() - 1);
-}
-
-void CameraManager::Update(const int32_t cameraID)
-{
-	Camera* targetCamera = GetCamera(cameraID);
-	if (!targetCamera) return;
-
-	targetCamera->Update();
-}
-
-void CameraManager::DrawImGui()
-{
-	ImGui::Begin("CameraManager");
-	if (ImGui::BeginTabBar("Camera", ImGuiTabBarFlags_::ImGuiTabBarFlags_Reorderable))
-	{
-		for (size_t i = 0; i < camera_.size(); i++)
+		auto jointIt = modelData->skeleton.jointIndexByName.find(jointName);
+		if (jointIt != modelData->skeleton.jointIndexByName.end())
 		{
-			std::string name = camera_[i].GetName();
-			if (ImGui::BeginTabItem(name.c_str()))
+			size_t jointIndex = jointIt->second;
+			skinCluster.inverseBindPoseMatrices[jointIndex] = jointWeightData.inverseBindPoseMatrix;
+			// 各頂点の影響を設定
+			for (const auto& vertexWeight : jointWeightData.vertexWeights)
 			{
-				camera_[i].DrawImGui();
-				ImGui::EndTabItem();
+				VertexInfluence& influence = skinCluster.mappedInfluences[vertexWeight.vertexIndex];
+				for (int i = 0; i < 4; ++i)
+				{
+					if (influence.weights[i] == 0.0f)
+					{
+						influence.weights[i] = vertexWeight.weight;
+						influence.jointIndices[i] = static_cast<uint32_t>(jointIndex);
+						break;
+					}
+				}
 			}
 		}
-		ImGui::EndTabBar();
 	}
-	ImGui::End();
+
+	return skinCluster;
 }
 
-Camera* CameraManager::GetCamera(const int32_t cameraID)
+// スケルトンの作成
+Skeleton ModelLoader::CreateSkeleton(const Node& node)
 {
-	if (cameraID < 0 || cameraID >= static_cast<int32_t>(camera_.size()))
-	{
-		return nullptr;
-	}
-	return &camera_[cameraID];
+    Skeleton skeleton;
+    skeleton.root = CreateJoint(node, std::nullopt, skeleton.joints);
+
+    for (size_t i = 0; i < skeleton.joints.size(); ++i)
+    {
+        skeleton.jointIndexByName[skeleton.joints[i].name] = int32_t(i);
+    }
+
+    return skeleton;
+}
+
+int32_t ModelLoader::CreateJoint(const Node& node, const std::optional<int32_t>& parentIndex, std::vector<Joint>& joints)
+{
+    Joint joint;
+    joint.name = node.name;
+    joint.localMatrix = node.localMatrix;
+    joint.skeletonSpaceMatrix = Matrix4x4::MakeIdentity4x4();
+    joint.transform = node.transform;
+    joint.index = int32_t(joints.size());
+    joint.parentIndex = parentIndex;
+    joints.push_back(joint);
+    for (const auto& child : node.children)
+    {
+        int32_t childIndex = CreateJoint(child, joint.index, joints);
+        joints[joint.index].childrenIndex.push_back(childIndex);
+    }
+    return joint.index;
+}
+
+
+// AABB.csvの読み込み & 存在しなければ作成,保存
+std::vector<AABB> ModelLoader::LoadAABB(const std::string& filePath, const std::vector<VertexData>& vertices)
+{
+    auto path = std::filesystem::path(filePath);
+    // ディレクトリ名
+    std::string directory = path.parent_path().string();
+    // 拡張子を除いたファイル名
+    std::string stem = path.stem().string();
+	// AABB.csvのパス
+	std::string csvFilePath = directory + "/" + stem + ".csv";
+
+    std::vector<AABB> aabbs;
+    if (std::filesystem::exists(csvFilePath))
+    {
+        aabbs = LoadAABBFromCSV(csvFilePath);
+    }
+    else
+    {
+        // 今までの方法でAABBを1つ作成
+        AABB aabb = CreateLocalAABB(vertices);
+        aabbs.push_back(aabb);
+        SaveAABBToCSV(csvFilePath, aabbs);
+    }
+    return aabbs;
+}
+// AABB.csvの読み込み
+std::vector<AABB> ModelLoader::LoadAABBFromCSV(const std::string& filePath)
+{
+    std::vector<AABB> aabbs;
+    std::ifstream file(filePath);
+    if (!file.is_open()) return aabbs;
+
+    std::string line;
+    // 1行目はヘッダーなのでスキップ
+    std::getline(file, line);
+
+    while (std::getline(file, line))
+    {
+        std::istringstream ss(line);
+        std::string token;
+        std::vector<float> values;
+        while (std::getline(ss, token, ','))
+        {
+            values.push_back(std::stof(token));
+        }
+        if (values.size() == 6)
+        {
+            AABB aabb;
+            aabb.min = { values[0], values[1], values[2] };
+            aabb.max = { values[3], values[4], values[5] };
+            aabbs.push_back(aabb);
+        }
+    }
+    return aabbs;
+}
+// AABBの作成
+AABB ModelLoader::CreateLocalAABB(const std::vector<VertexData>& vertices)
+{
+    AABB localAABB;
+
+    // 最小値と最大値を初期化
+    localAABB.min.x = (std::numeric_limits<float>::max)();
+    localAABB.min.y = (std::numeric_limits<float>::max)();
+    localAABB.min.z = (std::numeric_limits<float>::max)();
+
+    localAABB.max.x = std::numeric_limits<float>::lowest();
+
+    // 頂点データ空だったらエラー出すべきだけどunityシステムあるかもだから落とさない
+    if (vertices.empty())
+    {
+        localAABB.min = { 0.0f, 0.0f, 0.0f };
+        localAABB.max = { 0.0f, 0.0f, 0.0f };
+        return localAABB;
+    }
+
+    // 全ての頂点を調べてAABBの最小値と最大値を更新
+    for (const auto& vertex : vertices)
+    {
+        // 各軸の最小値を更新
+        if (vertex.position.x < localAABB.min.x) localAABB.min.x = vertex.position.x;
+        if (vertex.position.y < localAABB.min.y) localAABB.min.y = vertex.position.y;
+        if (vertex.position.z < localAABB.min.z) localAABB.min.z = vertex.position.z;
+
+        // 各軸の最大値を更新
+        if (vertex.position.x > localAABB.max.x) localAABB.max.x = vertex.position.x;
+        if (vertex.position.y > localAABB.max.y) localAABB.max.y = vertex.position.y;
+        if (vertex.position.z > localAABB.max.z) localAABB.max.z = vertex.position.z;
+    }
+
+    return localAABB;
+}
+// AABB.csvの作成、保存
+void ModelLoader::SaveAABBToCSV(const std::string& filePath, const std::vector<AABB>& aabbs)
+{
+    std::ofstream file(filePath);
+    file << "min_x,min_y,min_z,max_x,max_y,max_z\n";
+    for (const auto& aabb : aabbs)
+    {
+        file << aabb.min.x << "," << aabb.min.y << "," << aabb.min.z << ","
+            << aabb.max.x << "," << aabb.max.y << "," << aabb.max.z << "\n";
+    }
 }
 
 
 
 ========================================
-=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Camera\CameraManager.h ===
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model\ModelLoader\ModelLoader.h ===
 ========================================
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
-class Camera;
 
-class CameraManager
+
+
+class ModelBank;
+class DirectXManager;
+
+class ModelLoader
 {
 public:
-	CameraManager();
-	~CameraManager();
+	ModelLoader(DirectXManager* dxManager, ModelBank* bank);
+	~ModelLoader();
 
-	int32_t AddCamera(const std::string& name);
-
-	void Update(const int32_t cameraID);
-	void DrawImGui();
-
-	Camera* GetCamera(const int32_t cameraID);
+	// モデル読み込み
+	int32_t LoadModel(const std::string& filePath);
 
 private:
-	std::vector<Camera> camera_;
+	DirectXManager* dxManager_;
+	ModelBank* bank_;
+
+	// mtlファイル読み込み
+	MaterialData LoadMaterialTemplateFile(const std::string& filePath);
+
+	// モデルファイル読み込み
+	void LoadModelFile(const std::string& filePath, ModelData* modelData);
+	Node ReadNode(const aiNode* node);
+
+	// SkinClusterを作成する
+	SkinCluster CreateSkinCluster(const ModelData* modelData);
+
+	// NodeからSkeletonを作成
+	Skeleton CreateSkeleton(const Node& node);
+	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parentIndex, std::vector<Joint>& joints);
+
+	// １，AABB読み込み
+	std::vector<AABB> LoadAABB(const std::string& filePath, const std::vector<VertexData>& vertices);
+	// ２、AABB.csvがあれば読み込み
+	std::vector<AABB> LoadAABBFromCSV(const std::string& filePath);
+	// ２，AABB.csvがなければモデルデータから作成
+	AABB CreateLocalAABB(const std::vector<VertexData>& vertices);
+	// ３、AABBをCSVに保存
+	void SaveAABBToCSV(const std::string& filePath, const std::vector<AABB>& aabbs);
+
+
+	// アップロード用一時リソースを保持するリスト
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> intermediateUploadResources_;
 };
- 
+
 
 
 
