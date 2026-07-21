@@ -33,7 +33,7 @@ private:
 	std::unique_ptr<RenderObject> draw_UI_;
 
 	// カメラ
-	//std::unique_ptr<CameraController> cameraController_;
+	std::unique_ptr<CameraController> cameraController_;
 
 	// プレイヤー
 	std::unique_ptr<Player> player_;

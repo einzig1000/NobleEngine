@@ -7,6 +7,32 @@
 #include <fstream>
 #include <externals/meshoptimizer-1.1/meshoptimizer.h>
 
+namespace
+{
+    Matrix4x4 aiMatrix4x4ToMatrix4x4(const aiMatrix4x4& aiMat)
+	{
+		Matrix4x4 result;
+
+        result.m[0][0] = aiMat.a1;
+        result.m[1][0] = aiMat.a2;
+        result.m[2][0] = aiMat.a3;
+        result.m[3][0] = aiMat.a4;
+        result.m[0][1] = aiMat.b1;
+        result.m[1][1] = aiMat.b2;
+        result.m[2][1] = aiMat.b3;
+        result.m[3][1] = aiMat.b4;
+        result.m[0][2] = aiMat.c1;
+        result.m[1][2] = aiMat.c2;
+        result.m[2][2] = aiMat.c3;
+        result.m[3][2] = aiMat.c4;
+        result.m[0][3] = aiMat.d1;
+        result.m[1][3] = aiMat.d2;
+        result.m[2][3] = aiMat.d3;
+        result.m[3][3] = aiMat.d4;
+
+		return result;
+	}
+}
 
 ModelLoader::ModelLoader(DirectXManager* dxManager, ModelBank* bank)
     : dxManager_(dxManager), bank_(bank)
@@ -93,65 +119,65 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     }
 
 	// 頂点データ & インデックスデータの最適化
-    {
-        std::vector<uint32_t> remap(modelData->vertices.size());
+    //{
+    //    std::vector<uint32_t> remap(modelData->vertices.size());
 
-        size_t vertexCount = meshopt_generateVertexRemap(
-            remap.data(),
-            modelData->indices.data(),
-            modelData->indices.size(),
-            modelData->vertices.data(),
-            modelData->vertices.size(),
-            sizeof(VertexData));
+    //    size_t vertexCount = meshopt_generateVertexRemap(
+    //        remap.data(),
+    //        modelData->indices.data(),
+    //        modelData->indices.size(),
+    //        modelData->vertices.data(),
+    //        modelData->vertices.size(),
+    //        sizeof(VertexData));
 
-        std::vector<VertexData> vertices(vertexCount);
-        std::vector<uint32_t> indices(modelData->indices.size());
+    //    std::vector<VertexData> vertices(vertexCount);
+    //    std::vector<uint32_t> indices(modelData->indices.size());
 
-        // インデックスバッファをリマップ
-        meshopt_remapIndexBuffer(
-            indices.data(),
-            modelData->indices.data(),
-            modelData->indices.size(),
-            remap.data());
+    //    // インデックスバッファをリマップ
+    //    meshopt_remapIndexBuffer(
+    //        indices.data(),
+    //        modelData->indices.data(),
+    //        modelData->indices.size(),
+    //        remap.data());
 
-        // 頂点データをリマップ
-        meshopt_remapVertexBuffer(
-            vertices.data(),
-            modelData->vertices.data(),
-            modelData->vertices.size(),
-            sizeof(VertexData),
-            remap.data());
+    //    // 頂点データをリマップ
+    //    meshopt_remapVertexBuffer(
+    //        vertices.data(),
+    //        modelData->vertices.data(),
+    //        modelData->vertices.size(),
+    //        sizeof(VertexData),
+    //        remap.data());
 
-        // 最適なサイズに圧縮
-        modelData->vertices.resize(vertices.size());
-        modelData->indices.resize(indices.size());
+    //    // 最適なサイズに圧縮
+    //    modelData->vertices.resize(vertices.size());
+    //    modelData->indices.resize(indices.size());
 
-        // 頂点キャッシュ最適化
-        meshopt_optimizeVertexCache(
-            modelData->indices.data(),
-            indices.data(),
-            indices.size(),
-            vertexCount);
+    //    // 頂点キャッシュ最適化
+    //    meshopt_optimizeVertexCache(
+    //        modelData->indices.data(),
+    //        indices.data(),
+    //        indices.size(),
+    //        vertexCount);
 
-        // オーバードロー最適化
-        meshopt_optimizeOverdraw(
-            modelData->indices.data(),
-            modelData->indices.data(),
-            modelData->indices.size(),
-            &vertices[0].position.x,
-            vertices.size(),
-            sizeof(VertexData),
-            1.05f);
+    //    // オーバードロー最適化
+    //    meshopt_optimizeOverdraw(
+    //        modelData->indices.data(),
+    //        modelData->indices.data(),
+    //        modelData->indices.size(),
+    //        &vertices[0].position.x,
+    //        vertices.size(),
+    //        sizeof(VertexData),
+    //        1.05f);
 
-        // 頂点フェッチ最適化
-        meshopt_optimizeVertexFetch(
-            modelData->vertices.data(),
-            modelData->indices.data(),
-            modelData->indices.size(),
-            vertices.data(),
-            vertices.size(),
-            sizeof(VertexData));
-    }
+    //    // 頂点フェッチ最適化
+    //    meshopt_optimizeVertexFetch(
+    //        modelData->vertices.data(),
+    //        modelData->indices.data(),
+    //        modelData->indices.size(),
+    //        vertices.data(),
+    //        vertices.size(),
+    //        sizeof(VertexData));
+    //}
 
     // メッシュレットの生成
     {
@@ -348,15 +374,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
         aiBone* bone = mesh->mBones[boneIndex];
         std::string jointName = bone->mName.C_Str();
         JointWeightData& jointWeightData = modelData->skinClusterData[jointName];
-
-		// Inverced Bind Pose Matrixを取得
-        aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
-        aiVector3D scale, translate;
-        aiQuaternion rotate;
-        bindPoseMatrixAssimp.Decompose(scale, rotate, translate);
-        Matrix4x4 bindPoseMatrix = Matrix4x4::MakeAffineMatrix(
-            { scale.x, scale.y, scale.z }, { rotate.x, -rotate.y, -rotate.z, rotate.w }, { -translate.x, translate.y, translate.z });
-        jointWeightData.inverseBindPoseMatrix = bindPoseMatrix.Inverse();
+        jointWeightData.inverseBindPoseMatrix = aiMatrix4x4ToMatrix4x4(bone->mOffsetMatrix);
 
         for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
         {
@@ -376,9 +394,10 @@ Node ModelLoader::ReadNode(const aiNode* node)
     aiVector3D translate;
     node->mTransformation.Decompose(scale, rotate, translate);
     result.transform.scale = { scale.x, scale.y, scale.z };
-    result.transform.rotate = { rotate.x, -rotate.y, -rotate.z, rotate.w };
-    result.transform.translate = { -translate.x, translate.y, translate.z };
-    result.localMatrix = Matrix4x4::MakeAffineMatrix(result.transform.scale, result.transform.rotate, result.transform.translate);
+    result.transform.rotate = { rotate.x, rotate.y, rotate.z, rotate.w };
+    result.transform.translate = { translate.x, translate.y, translate.z };
+	result.localMatrix = aiMatrix4x4ToMatrix4x4(node->mTransformation);
+
     result.name = node->mName.C_Str();
     result.children.resize(node->mNumChildren);
     for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex)

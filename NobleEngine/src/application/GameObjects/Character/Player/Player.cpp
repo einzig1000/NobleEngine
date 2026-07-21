@@ -1,29 +1,17 @@
 #include "Player.h"
-#include <GameObjects/Map/MapManager.h>
-//#include "UIManager/UIManager.h"
 
 Player::Player()
 {
 	// プレイヤーデータ初期化
 	render_.modelID_ = Game::Asset::Model::Load("resources/prototypes/model/cube/cube.obj");
+	ModelData* modelData = Game::Asset::Model::GetData(render_.modelID_);
+	SetBoundingBox(modelData->aabb[0]);
 	render_.psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_.psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_.SetupFromShaders();
 
-	breakPower_ = 1.0f;
-
 	c_viewCameraID_ = Game::Camera::AddCamera("PlayerView");
 	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
-
-	//SetHaveItem();
-
-	//AddItem(ItemID::作業台ブロック);
-	//for (int i = 0; i < 64; ++i)
-	//{
-	//	AddItem(ItemID::ダイヤモンド);
-	//	AddItem(ItemID::鉄インゴット);
-	//	AddItem(ItemID::棒);
-	//}
 }
 
 Player::~Player()
@@ -43,135 +31,78 @@ void Player::Initialize()
 	rotate_.velocity = Vector3(0.0f, 0.0f, 0.0f);
 	rotate_.acceleration = Vector3(0.0f, 0.0f, 0.0f);
 
-	mapManager_->RegisterCharacter(this);
+	RegisterToMap();
 }
 
 void Player::Update(int32_t cameraID)
 {
-	if (Game::IO::Key::IsJustPressed('X'))
+	if (Game::IO::Key::IsJustPressed('Q'))
 	{
-		translate_.value.y = 100.0f;
-		translate_.velocity.y = 0.0f;
-		translate_.acceleration.y = 0.0f;
+		AddItem(ItemID::Tool_Pickel_of_Iron);
 	}
 
-	//currentMode_ = uiManager_->GetCurrentUIMode();
+	// 移動系入力処理
+	UpdateInput(cameraID);
+	// マップ情報を見て適切に移動を適用する
+	ApplyMove();
 
-	// プレイ中または非表示時のみ操作可能
-	//if (currentMode_ == UIMode::Playing || currentMode_ == UIMode::Hidden)
+	// 移動後の視線レイ更新
+	ComputeViewRay();
+
+	// ターゲットブロック取得
+	SetTargetBlock();
+
+	// 左クリックで起きるイベント更新(ブロック破壊とか)
+	UpdateLeftClick();
+	// 右クリックで起きるイベント更新(ブロック設置とか)
+	UpdateRightClick();
+
+	// 持ってるアイテムの更新
+	UpdateHaveItem(cameraID);
+
+	// 一旦常にブロックを破壊
+	if (Game::IO::Mouse::IsHeld(0))
 	{
-		// 移動更新
-		UpdateDash();
-		UpdateMove(cameraID);
-		UpdateJump();
-
-		// 移動後の視線レイ更新
-		UpdateViewRay(cameraID);
-
-		// ターゲットブロック取得
-		SetTargetBlock();
-
-		// 左クリック処理
-		if (Game::IO::Mouse::IsHeld(0))
+		const std::vector<AABB>& itemAABBs = GetHaveItemAABB();
+		for (const auto& aabb : itemAABBs)
 		{
-			UpdateLeftClick();
-		}
-
-		// ブロック設置
-		if (Game::IO::Mouse::IsJustPressed(1))
-		{
-			//SetNewBlock(ItemIDToBlockID(haveItem_->GetCurrentSelectedItemID()));
-		}
-
-		// アイテムポイ捨て
-		if (Game::IO::Key::IsJustPressed('Q'))
-		{
-			//haveItem_->DropCurrentSelectedItem(data_.aabbs[0].center());
+			DestroyBlockInAABB(aabb);
 		}
 	}
-	//else
-	//{
-	//	// 落下処理
-	//	Move(Vector3(0.0f, 0.0f, 0.0f), speed_);
-	//
-	//	// 移動後の視線レイ更新
-	//	UpdateViewRay(cameraID);
-	//
-	//	// ターゲットブロック取得
-	//	SetTargetBlock();
-	//}
 
-	//if (currentMode_ == UIMode::Crafting)
-	//{
-	//	haveItem_->craftMode3x3_ = true;
-	//}
-	//if (currentMode_ == UIMode::Inventory)
-	//{
-	//	haveItem_->craftMode3x3_ = false;
-	//}
+	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, c_viewCameraID_);
 
-	// AABB更新
-	aabb_.max = translate_.value + Vector3(0.5f, 1.0f, 0.5f);
-	aabb_.min = translate_.value - Vector3(0.5f, 0.0f, 0.5f);
-
-	// 実際に移動
-	translate_.velocity += translate_.acceleration;
-	mapManager_->SweepAABB(aabb_, translate_.velocity);
-	translate_.value += translate_.velocity;
-
-	// 接地判定更新
-	if (translate_.velocity.y == 0.0f)isGrounded_ = true;
-	else isGrounded_ = false;
-	//UpdateGrounded();
-
-
-	Game::Camera::Setter::SetCenter(translate_.value + Vector3(0.0f, 5.0f, 0.0f), 0, EaseType::IN_BACK, c_viewCameraID_);
-
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
-	Matrix4x4 wvpMatrix = worldMatrix * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	Matrix4x4 wvpMatrix = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	int32_t texID = 2;
 
 	render_.SetCBufferData(0, ShaderType::VertexShader, &wvpMatrix);
-	render_.SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+	render_.SetCBufferData(1, ShaderType::VertexShader, &worldMatrix_);
 	render_.SetCBufferData(0, ShaderType::PixelShader, &color);
 	render_.SetCBufferData(1, ShaderType::PixelShader, &texID);
 }
 
+void Player::UpdateLeftClick()
+{
+	if (!Game::IO::Mouse::IsHeld(0)) return;
+
+	//DestroyBlockInAABB(aabb);
+}
+
+void Player::UpdateRightClick()
+{
+	if (!Game::IO::Mouse::IsJustPressed(1)) return;
+}
+
+
+
+
 void Player::Draw(int32_t renderTextureID)
 {
-	render_.Draw(renderTextureID);
-	//reticle_.Draw();
-}
+	// プレイヤー描画
+	//render_.Draw(renderTextureID);
 
-void Player::DrawCrafting()
-{
-	//// インベントリのアイコンを動かせる
-	//haveItem_->UpdateInventory();
-	//// インベントリのアイコン描画
-	//haveItem_->DrawInventory();
-
-	//// ホットバーのアイコン描画
-	//haveItem_->DrawHotbar();
-}
-
-void Player::DrawInventory()
-{
-	//// インベントリのアイコンを動かせる
-	//haveItem_->UpdateInventory();
-	//// インベントリのアイコン描画
-	//haveItem_->DrawInventory();
-
-	//// ホットバーのアイコン描画
-	//haveItem_->DrawHotbar();
-}
-
-void Player::DrawHotbar()
-{
-	//// マウスホイールでホットバー選択
-	//haveItem_->UpdateHotbar();
-	//// ホットバーのアイコン描画
-	//haveItem_->DrawHotbar();
+	DrawHaveItem(renderTextureID);
 }
 
 void Player::DrawImGui()
@@ -182,43 +113,34 @@ void Player::DrawImGui()
 	ImGui::End();
 }
 
-void Player::UpdateViewRay(int32_t cameraID)
+
+void Player::UpdateInputSpeed()
 {
-	Vector3 cameraRot = Game::Camera::Getter::GetRotate(cameraID);
-	Vector3 direction = Game::Math::DirectionFromYawPitch(cameraRot.y, cameraRot.x);
-
-	viewRay_.origin = translate_.value;
-	//viewRay_.origin.y += translate_.value.y + 1.6f; // プレイヤーの目線の高さに調整
-	viewRay_.diff = direction.Normalized();
-
-	SetViewRay(viewRay_);
-}
-
-void Player::UpdateDash()
-{
-	if (Game::IO::Key::IsJustReleased('W'))
+	if (dash_ && Game::IO::Key::IsJustReleased('W'))
 	{
+		dash_ = false;
 		speed_ = normalSpeed_;
-		if (wHeldFrames_ < 20)dashBufferTimer_ = 20;
 	}
-	if (dashBufferTimer_ > 0)
+
+	// 10フレーム以内の単タップを検知したら
+	if (Game::IO::Key::TestTapLong('W', 10))
+	{
+		dashBufferTimer_ = 30;
+	}
+	else if (dashBufferTimer_ > 0)
 	{
 		dashBufferTimer_--;
+
 		if (Game::IO::Key::IsJustPressed('W'))
 		{
+			dash_ = true;
 			speed_ = dashSpeed_;
+			dashBufferTimer_ = 0;
 		}
 	}
-
-	wHeldFrames_ = Game::IO::Key::HoldFrames('W');
 }
-
-void Player::UpdateMove(int32_t cameraID)
+void Player::UpdateInputMove(int32_t cameraID)
 {
-	Vector3 cameraRot = Game::Camera::Getter::GetRotate(cameraID);
-	Vector3 forward = Game::Math::DirectionFromYawPitch(cameraRot.y, 0.0f);
-	forward.Normalize();
-
 	// 移動処理
 	Vector2 input(0.0f, 0.0f);
 
@@ -232,6 +154,12 @@ void Player::UpdateMove(int32_t cameraID)
 
 	if (input.x != 0.0f || input.y != 0.0f)
 	{
+		Vector3 cameraPos = Game::Camera::Getter::GetTranslate(cameraID);
+		Vector3 cameraCenter = Game::Camera::Getter::GetCenter(cameraID);
+		Vector3 cameraDir = cameraCenter - cameraPos;
+		cameraDir.y = 0.0f;
+		cameraDir.Normalize();
+
 		// 正規化
 		input.Normalize();
 
@@ -244,17 +172,16 @@ void Player::UpdateMove(int32_t cameraID)
 
 		// 進む方向ベクトル
 		moveDir = Vector3(
-			forward.x * cosA - forward.z * sinA,
-			forward.y,
-			forward.x * sinA + forward.z * cosA
+			cameraDir.x * cosA - cameraDir.z * sinA,
+			cameraDir.y,
+			cameraDir.x * sinA + cameraDir.z * cosA
 		);
 
 		moveDir.Normalize();
 	}
 	Move(moveDir, speed_);
 }
-
-void Player::UpdateJump()
+void Player::UpdateInputJump()
 {
 	// ジャンプ処置
 	if (Game::IO::Key::IsJustPressed(VK_SPACE))
@@ -263,7 +190,9 @@ void Player::UpdateJump()
 	}
 }
 
-void Player::AddItemToItemslot(ItemID itemID)
+void Player::UpdateInput(int32_t cameraID)
 {
-	//haveItem_->AddItem(itemID);
+	UpdateInputSpeed();
+	UpdateInputJump();
+	UpdateInputMove(cameraID);
 }

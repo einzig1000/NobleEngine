@@ -1,5 +1,6 @@
 #include "AnimationComputer.h"
 #include <AssetManager/Animation/AnimationBank/AnimationBank.h>
+#include <Utilities/Logger/Logger.h>
 
 namespace
 {

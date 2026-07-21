@@ -39,6 +39,9 @@ public:
 	void DestroyBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex);
 	void AddDropItemAt(const Vector3& position, ItemID id);
 
+	// AABB内のブロックを破壊する
+	void DestroyBlockInAABB(const AABB& aabb);
+
 	// ブロック設置
 	bool SetBlockAt(const lookAtBlock& lab, BlockID id);
 	bool SetBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id);
@@ -52,13 +55,21 @@ public:
 	/// <param name="movement">申請移動量(衝突していた場合修正される)</param>
 	void SweepAABB(const AABB& aabb, Vector3& movement);
 
-	// 指定位置に固体ブロックがあるか
-	bool IsSolidAt(const Vector3& position) const;
-	// 指定面上に固体ブロックがあるか
-	int32_t IsSolidAt(const AABB& aabb, AABBFace face, int32_t layerCount) const;
+	/// <summary>
+	/// 指定ブロック分進めるか。
+	/// </summary>
+	/// <param name="aabb">キャラクター衝突判定AABB</param>
+	/// <param name="face">衝突判定したい面</param>
+	/// <param name="layerCount">何層分進むか</param>
+	/// <returns>何層分進めたか</returns>
+	int32_t SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount);
+
 
 	// 指定AABBにキャラがあるか
 	bool IsOverlappingAnyCharacter(const AABB& aabb) const;
+
+	// 指定位置に固体ブロックがあるか
+	bool IsSolidAt(const Vector3& position) const;
 
 	// レイとブロックの交差判定（衝突ブロックを返す）
 	std::optional<lookAtBlock> GetBlockByCrossedRay(const Ray& ray, const float maxDistance) const;

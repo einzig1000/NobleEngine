@@ -16,12 +16,12 @@ int32_t LocalMod(int32_t a, int32_t n)
 
 MapManager::MapManager()
 {
-	drawRadius_.x = 6;
-	drawRadius_.y = 6;
-	drawRadius_.z = 6;
-	updateRadius_.x = 6;
-	updateRadius_.y = 6;
-	updateRadius_.z = 6;
+	drawRadius_.x = 1;
+	drawRadius_.y = 2;
+	drawRadius_.z = 1;
+	updateRadius_.x = 1;
+	updateRadius_.y = 2;
+	updateRadius_.z = 1;
 }
 
 MapManager::~MapManager(){}
@@ -227,20 +227,20 @@ void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 		{
 			DirectionXYZ::Left,
 			DirectionXYZ::Right,
+			DirectionXYZ::Back,
+			DirectionXYZ::Front,
 			DirectionXYZ::Down,
 			DirectionXYZ::Up,
-			DirectionXYZ::Back,
-			DirectionXYZ::Front
 		};
 
 		static constexpr DirectionXYZ opposite[6] =
 		{
 			DirectionXYZ::Right,// Left  の反対
 			DirectionXYZ::Left,	// Right の反対
+			DirectionXYZ::Front,// Back  の反対
+			DirectionXYZ::Back,	// Front の反対
 			DirectionXYZ::Up,	// Down  の反対
 			DirectionXYZ::Down,	// Up    の反対
-			DirectionXYZ::Front,// Back  の反対
-			DirectionXYZ::Back	// Front の反対
 		};
 
 		for (int32_t dir = 0; dir < 6; ++dir)
@@ -292,6 +292,7 @@ void MapManager::Update(int32_t cameraID)
 			}
 		}
 	}
+
 }
 
 void MapManager::Draw(int32_t renderTargetID)
@@ -321,41 +322,57 @@ void MapManager::DrawImGui()
 	ImGui::Begin("MapManager");
 	ImGui::Text("Chunks count : %zu", chunks.size());
 	ImGui::Text("GenerateQueue: %zu", chunkScheduled_.size());
+
+	if (ImGui::Button("Save Map"))
+	{
+		for (int32_t dx = -10; dx <= 10; ++dx)
+		{
+			for (int32_t dy = -10; dy <= 10; ++dy)
+			{
+				for (int32_t dz = -10; dz <= 10; ++dz)
+				{
+					if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+					{
+						continue;
+					}
+
+					Vector3int chunkPos(dx, dy, dz);
+					EnsureChunkScheduled(chunkPos);
+				}
+			}
+		}
+	}
+
 	ImGui::End();
 }
 
-//// 指定位置のブロックを破壊
-//void MapManager::DestroyBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex)
-//{
-//	// 破壊するチャンクを取得
-//	Chunk* chunk = GetChunk(chunkPos);
-//	if (!chunk) return;
-//
-//	// 破壊するブロックを取得
-//	Block* targetBlock = chunk->blocks_[localIndex.x][localIndex.y][localIndex.z].get();
-//	if (!targetBlock) return;
-//
-//	// 破壊するブロックのIDを取得
-//	const BlockID destroyedId = targetBlock->GetBlockID();
-//	if (destroyedId == BlockID::Air) return;
-//
-//	// ブロック破壊
-//	chunk->DestroyBlock(localIndex);
-//
-//	// 露出状態更新
-//	chunk->SetExposedAroundBlocks(localIndex);
-//
-//	// ドロップアイテム生成
-//	//AddDropItemAt(targetBlock->position_, BlockIdToDropItemId(destroyedId));
-//}
+// このAABBに含まれるブロックをすべて破壊(空気に置き換え)する
+void MapManager::DestroyBlockInAABB(const AABB& aabb)
+{
+	int32_t countX = std::max(1, static_cast<int32_t>((aabb.max.x - aabb.min.x) / Constexprs::kBlockSize));
+	int32_t countY = std::max(1, static_cast<int32_t>((aabb.max.y - aabb.min.y) / Constexprs::kBlockSize));
+	int32_t countZ = std::max(1, static_cast<int32_t>((aabb.max.z - aabb.min.z) / Constexprs::kBlockSize));
 
-//void MapManager::AddDropItemAt(const Vector3& position, ItemID id)
-//{
-//	//Vector3 dropPos = position;
-//	//dropPos.x += Game::Math::RandFloat(-0.3f, 0.3f, 2);
-//	//dropPos.z += Game::Math::RandFloat(-0.3f, 0.3f, 2);
-//	//dropItemManager_->AddItem(id, dropPos);
-//}
+	// 決定された軸とブロック数に従って走査
+	for (int32_t x = 0; x < countX; ++x)
+	{
+		for (int32_t y = 0; y < countY; ++y)
+		{
+			for (int32_t z = 0; z < countZ; ++z)
+			{
+				// 基準位置から現在の走査距離を加算してチェック座標を算出
+				Vector3 checkPos = aabb.min + Vector3((x * Constexprs::kBlockSize), (y * Constexprs::kBlockSize), (z * Constexprs::kBlockSize));
+
+				// チャンク座標とローカル座標を取得
+				Vector3int chunkIndex = ChunkIndexByPosition(checkPos);
+				Vector3int localIndex = BlockIndexByPosition(checkPos);
+
+				// 
+				SetBlockAt(chunkIndex, localIndex, BlockID::Air);
+			}
+		}
+	}
+}
 
 // 指定位置にブロックを設置
 bool MapManager::SetBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id)
@@ -368,19 +385,9 @@ bool MapManager::SetBlockAt(const Vector3int& chunkPos, const Vector3int& localI
 	Block* targetBlock = chunk->GetBlock(localIndex);
 	if (!targetBlock) return false;
 
-	// 置き換えも出来るようにするため以下はコメントアウト。この関数を利用する側で置き換えの可否を判断する
-	//// Air ブロックは設置できない
-	//if (id == BlockID::Air) return false;
-	//
-	//// 指定位置に既にブロックが存在しているなら設置できない
-	//if (targetBlock->GetBlockID() != BlockID::Air) return false;
-
 	// キャラクターと重なってたら設置できない
 	const AABB placeAabb = GetAABB(chunkPos, localIndex);
-	if (IsOverlappingAnyCharacter(placeAabb))
-	{
-		return false;
-	}
+	if (IsOverlappingAnyCharacter(placeAabb)) return false;
 
 	// ブロック設置
 	chunk->SetBlock(localIndex, id);
@@ -478,14 +485,14 @@ void MapManager::SweepAABB(const AABB& aabb, Vector3& movement)
 
 	Vector3int ableToMove = Vector3int(0, 0, 0);
 
-	if (movement.x > 0) ableToMove.x = IsSolidAt(movedAABB, AABBFace::XPlus, layerCount.x);
-	else if (movement.x < 0) ableToMove.x = IsSolidAt(movedAABB, AABBFace::XMinus, layerCount.x);
+	if (movement.x > 0) ableToMove.x = SweepAABB(movedAABB, AABBFace::XPlus, layerCount.x);
+	else if (movement.x < 0) ableToMove.x = SweepAABB(movedAABB, AABBFace::XMinus, layerCount.x);
 
-	if (movement.y > 0) ableToMove.y = IsSolidAt(movedAABB, AABBFace::YPlus, layerCount.y);
-	else if (movement.y < 0) ableToMove.y = IsSolidAt(movedAABB, AABBFace::YMinus, layerCount.y);
+	if (movement.y > 0) ableToMove.y = SweepAABB(movedAABB, AABBFace::YPlus, layerCount.y);
+	else if (movement.y < 0) ableToMove.y = SweepAABB(movedAABB, AABBFace::YMinus, layerCount.y);
 
-	if (movement.z > 0) ableToMove.z = IsSolidAt(movedAABB, AABBFace::ZPlus, layerCount.z);
-	else if (movement.z < 0) ableToMove.z = IsSolidAt(movedAABB, AABBFace::ZMinus, layerCount.z);
+	if (movement.z > 0) ableToMove.z = SweepAABB(movedAABB, AABBFace::ZPlus, layerCount.z);
+	else if (movement.z < 0) ableToMove.z = SweepAABB(movedAABB, AABBFace::ZMinus, layerCount.z);
 
 
 	// movement.x == nの時→nブロック分進んでも衝突はしない
@@ -494,23 +501,7 @@ void MapManager::SweepAABB(const AABB& aabb, Vector3& movement)
 	movement.y = (movement.y > 0) ? std::min(movement.y, wallDist.y) : std::max(movement.y, -wallDist.y);
 	movement.z = (movement.z > 0) ? std::min(movement.z, wallDist.z) : std::max(movement.z, -wallDist.z);
 }
-
-bool MapManager::IsSolidAt(const Vector3& position) const
-{
-	Vector3int chunkPos = ChunkIndexByPosition(position);
-	Vector3int index = BlockIndexByPosition(position);
-	Chunk* chunk = GetChunk(chunkPos);
-	if (chunk)
-	{
-		Block* block = chunk->GetBlock(index);
-		if (block && block->GetBlockID() != BlockID::Air)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-int32_t MapManager::IsSolidAt(const AABB& aabb, AABBFace face, int32_t layerCount) const
+int32_t MapManager::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount)
 {
 	// AABBのサイズから各軸のブロック数を算出
 	// 端数や最小値などを考慮し、適宜計算式を調整してください
@@ -605,6 +596,23 @@ int32_t MapManager::IsSolidAt(const AABB& aabb, AABBFace face, int32_t layerCoun
 
 	return layerCount;
 }
+
+bool MapManager::IsSolidAt(const Vector3& position) const
+{
+	Vector3int chunkPos = ChunkIndexByPosition(position);
+	Vector3int index = BlockIndexByPosition(position);
+	Chunk* chunk = GetChunk(chunkPos);
+	if (chunk)
+	{
+		Block* block = chunk->GetBlock(index);
+		if (block && block->GetBlockID() != BlockID::Air)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 
 bool MapManager::IsOverlappingAnyCharacter(const AABB& aabb) const
 {
@@ -765,7 +773,8 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	const int32_t stepZ = Sign(dir.z);
 
 	// deltaDist（dir==0 は INF 扱い）
-	const float INF = std::numeric_limits<float>::infinity();
+	//const float INF = std::numeric_limits<float>::infinity();
+	const float INF = 3.402823466e+38F;
 	const float deltaDistX = (std::abs(dir.x) < 1e-6f) ? INF : std::abs(Constexprs::kBlockSize / dir.x);
 	const float deltaDistY = (std::abs(dir.y) < 1e-6f) ? INF : std::abs(Constexprs::kBlockSize / dir.y);
 	const float deltaDistZ = (std::abs(dir.z) < 1e-6f) ? INF : std::abs(Constexprs::kBlockSize / dir.z);

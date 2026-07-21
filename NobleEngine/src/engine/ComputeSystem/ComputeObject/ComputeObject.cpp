@@ -1,5 +1,6 @@
 #include "ComputeObject.h"
 #include <Engine.h>
+#include <ComputeSystem/ComputeSystem.h>
 #include <DirectX/DirectXManager.h>
 #include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
 #include <Utilities/Converter/StringConverter/StringConverter.h>
@@ -76,4 +77,9 @@ void ComputeObject::SetUAVData(const uint32_t key, const uint32_t uavAllocIndex,
 	auto& param = rootParams_.at(it->second);
 
 	param.uavAllocIndex = uavAllocIndex;
+}
+
+void ComputeObject::Dispatch()
+{
+	Engine::Instance().GetComputeSystem()->AddComputeObject(this);
 }

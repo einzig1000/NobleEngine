@@ -34,7 +34,7 @@ void Test2Phase::Update()
 {
 	Game::Camera::Update(c_main_);
 
-	testParticle.Update(c_main_);
+	//testParticle.Update(c_main_);
 	testAnimation.Update(c_main_);
 
 	if (Game::IO::Key::IsJustPressed(VK_F11))
@@ -65,7 +65,6 @@ void Test2Phase::Draw()
 
 void Test2Phase::DrawImGui()
 {
-
 	ImGui::Begin("Test2Phase"); 
 	ImGui::DragFloat("Threshold", &threshold, 0.01f, 0.0f, 1.0f);
 	ImGui::End();

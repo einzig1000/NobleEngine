@@ -17,6 +17,8 @@ ModelCreater::~ModelCreater()
 
 int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize)
 {
+	if (vertices.empty()) return -1;
+
     Log("モデル作成開始:%s", name.c_str());
 
     uint32_t backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();

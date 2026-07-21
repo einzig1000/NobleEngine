@@ -3,7 +3,6 @@
 KeyboardController::KeyboardController(HWND hwnd)
     : hwnd_(hwnd)
 {
-    // 初期化
     for (int32_t i = 0; i < 256; ++i)
     {
         keys_[i] = KeyState{};
@@ -12,9 +11,6 @@ KeyboardController::KeyboardController(HWND hwnd)
 
 void KeyboardController::Update()
 {
-    // 元の DISCL_FOREGROUND 相当の挙動を再現するため、
-    // フォアグラウンドでないときは全キー解放扱いにする。
-    // （不要ならこの判定は外してよい）
     const bool hasFocus = (GetForegroundWindow() == hwnd_);
 
     for (int32_t k = 0; k < 256; ++k)
@@ -44,7 +40,7 @@ void KeyboardController::Update()
             // 離されたフレーム
             if (ks.prev && !ks.curr)
             {
-                // release event: 保存して holdFrames をリセット
+                // 保存して holdFrames をリセット
                 ks.lastHoldOnRelease = ks.holdFrames;
             }
             ks.holdFrames = 0;
@@ -77,27 +73,19 @@ uint32_t KeyboardController::TestTapLong(uint32_t n, BYTE key) const
 {
     const KeyState& ks = keys_[key];
 
-    // 1) 押してから n フレーム以内に離したら Tap (1)
-    //    => release が発生していて、 lastHoldOnRelease が 1..(n-1)
+    // 離された瞬間フレーム
     if (ks.prev && !ks.curr)
     {
-        // 直前が押されていて今リリース（release イベント）
-        if (ks.lastHoldOnRelease > 0)
-        {
-            if (ks.lastHoldOnRelease < n) return 1;     // Tap
-            else return 2;                                   // Long (>= n)
-        }
-        // fallthrough -> 0
-        return 0;
+        if (ks.lastHoldOnRelease < n) return 1;     // Tap
+        else return 2;                              // Long
     }
 
-    // 2) まだ押下継続中なら、現在の holdFrames をチェック
+	// 押してる最中
     if (ks.curr)
     {
-        if (ks.holdFrames >= n) return 2; // 押してから n フレーム以上経過 -> Long
-        return 0; // 継続中だがまだ n 未満 -> 未確定
+        if (ks.holdFrames >= n) return 2;           // 押してからnフレーム以上経過 -> Long確定
+        return 0;                                   // 継続中だがまだ n 未満 -> 未確定
     }
 
-    // 3) 何もない
     return 0;
 }

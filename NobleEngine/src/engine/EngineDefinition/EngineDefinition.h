@@ -860,8 +860,8 @@ struct VertexData
 
 struct VertexWeightData
 {
-	float weight;
-	uint32_t vertexIndex;
+	float weight = 0.0f;
+	uint32_t vertexIndex = 0;
 };
 
 struct JointWeightData
@@ -1023,7 +1023,7 @@ struct Material
 	Vector3 diffuseColor = { 1.0f, 1.0f, 1.0f };
 	float  shininess = 1.0f;
 	Vector3 specularColor = { 1.0f, 1.0f, 1.0f };
-    float  _pad0;
+	float  _pad0 = 0.0f;
 };
 
 #pragma endregion
@@ -1103,6 +1103,18 @@ struct CollisionInf
 #pragma region パーティクルデータ構造体
 
 // パーティクル情報
+
+struct EmitterSphere
+{
+    Vector3 translate;  // 座標
+    float radius = 1.0f;       // 射出半径
+    uint32_t count;     // 射出数
+	float frequency = 1.0f;    // 射出頻度
+	float frequencyTime = 0.0f; // 射出頻度タイマ
+	uint32_t emit = 0;      // 射出するかどうか
+};
+
+
 
 struct ParticleResource
 {
@@ -1303,42 +1315,3 @@ enum class LineType
 };
 std::string EnumToString(LineType e);
 
-
-class Block;
-struct lookAtBlock
-{
-    Block* block = nullptr;
-	Vector3int chunkIndex = { 0,0,0 };
-	Vector3int localIndex = { 0,0,0 };
-    AABBFace face = AABBFace::NONE;
-	float distance = 0.0f;
-};
-
-class BaseCharacter;
-struct RayHitResult
-{
-    enum class Type
-    {
-        None,
-        Block,
-        Character
-    };
-
-    Type type = Type::None;
-
-    // type == Block のとき有効
-    lookAtBlock blockHit{};
-
-    // type == Character のとき有効
-    BaseCharacter* Character = nullptr;
-
-    // 共通：レイ原点からの距離
-    float distance = 0.0f;
-};
-
-struct Rect
-{
-    int minX, minY;
-    int maxX, maxY;
-    bool empty = true;
-};

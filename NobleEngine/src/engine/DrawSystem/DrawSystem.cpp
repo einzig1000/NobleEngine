@@ -2,10 +2,8 @@
 #include <AssetManager/AssetManager.h>
 #include <ImGuiManager/ImGuiManager.h>
 #include <DirectX/DirectXManager.h>
-#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <Window/WindowManager.h>
 #include <Engine.h>
-#include <numbers>
 
 DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager)
 	:dxManager_(dxManager), assetManager_(assetManager)
@@ -16,9 +14,8 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager)
 	}
 
 	rt_nobleScreenID_ = dxManager_->GetRenderTextureManager()->CreateRenderTarget(
-		//Engine::Instance().GetWindowManager()->winHeight_,
-		//Engine::Instance().GetWindowManager()->winHeight_,
-		1280, 720,
+		Engine::Instance().GetWindowManager()->winWidth_,
+		Engine::Instance().GetWindowManager()->winHeight_,
 		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", 1.0f);
 
 	screenRenderObject_ = std::make_unique<RenderObject>();
@@ -46,16 +43,6 @@ void DrawSystem::Reset()
 //① PSO
 //② トポロジ
 //③ ルートシグネチャ
-//// 形状を設定 (三角形)
-//dxManager_->GetCommandContextManager()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//// ルートシグネチャを設定
-//dxManager_->GetCommandContextManager()->GetCommandList()->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature());
-//// ルートシグネチャを設定
-//dxManager_->GetCommandContextManager()->GetCommandList()->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature_block());
-//// 形状を設定 (線)
-//dxManager_->GetCommandContextManager()->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-//// PSOを設定 (線はNormal固定)
-//dxManager_->GetCommandContextManager()->GetCommandList()->SetPipelineState(dxManager_->GetPipelineStateManager()->GetLinePipelineState(BlendMode::kBlendModeNormal));
 
 
 void DrawSystem::AddSceneDrawList(const RenderObject* renderObject, int32_t renderTextureID)
@@ -116,15 +103,14 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 
 		// モデルの検索
 		const ModelData* obj = assetManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
-		//cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-		if (!obj) return;
-		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
-			obj->vertexBufferView,
-			obj->skinCluster.influenceBufferView
-		};
-
+		if (!obj)return;
+		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
+		//D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
+		//	obj->vertexBufferView,
+		//	obj->skinCluster.influenceBufferView
+		//};
 		// 5)頂点バッファをバインド
-		cmdList->IASetVertexBuffers(0, 2, vbvs);
+		//cmdList->IASetVertexBuffers(0, 2, vbvs);
 
 		const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
 		if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
@@ -180,7 +166,7 @@ void DrawSystem::ScreenDraw()
 {
 	screenRenderObject_->modelID_ = assetManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
-	//DrawObject(screenRenderObject_.get());
+	DrawObject(screenRenderObject_.get());
 
 // デバッグモードの時は、PreScreenDrawで描画した内容をImGuiのウィンドウに表示する
 #ifdef _DEBUG

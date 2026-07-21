@@ -523,13 +523,13 @@ Matrix4x4 Quaternion::MakeRotateMatrix() const
 {
     Matrix4x4 result = Matrix4x4::MakeIdentity4x4();
     result.m[0][0] = 1.0f - 2.0f * (y * y + z * z);
-    result.m[0][1] = 2.0f * (x * y - z * w);
-    result.m[0][2] = 2.0f * (x * z + y * w);
-    result.m[1][0] = 2.0f * (x * y + z * w);
+    result.m[0][1] = 2.0f * (x * y + z * w);
+    result.m[0][2] = 2.0f * (x * z - y * w);
+    result.m[1][0] = 2.0f * (x * y - z * w);
     result.m[1][1] = 1.0f - 2.0f * (x * x + z * z);
-    result.m[1][2] = 2.0f * (y * z - x * w);
-    result.m[2][0] = 2.0f * (x * z - y * w);
-    result.m[2][1] = 2.0f * (y * z + x * w);
+    result.m[1][2] = 2.0f * (y * z + x * w);
+    result.m[2][0] = 2.0f * (x * z + y * w);
+    result.m[2][1] = 2.0f * (y * z - x * w);
     result.m[2][2] = 1.0f - 2.0f * (x * x + y * y);
     return result;
 }

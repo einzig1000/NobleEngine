@@ -16,6 +16,7 @@ GameScenePhase::GameScenePhase()
 
 	draw_3D_ = std::make_unique<RenderObject>();
 	draw_3D_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//draw_3D_->psoConfig_.ps = "resources/shaders/FullScreen/RadialBlur.PS.hlsl";
 	draw_3D_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
 	draw_3D_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
 	draw_3D_->SetupFromShaders();
@@ -29,7 +30,7 @@ GameScenePhase::GameScenePhase()
 	// プレイヤー生成
 	player_ = std::make_unique<Player>();
 	// カメラコントローラー生成
-	//cameraController_ = std::make_unique<CameraController>();
+	cameraController_ = std::make_unique<CameraController>();
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
 	// UIマネージャー生成

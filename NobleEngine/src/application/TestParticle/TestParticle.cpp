@@ -1,5 +1,4 @@
 #include "TestParticle.h"
-#include <Game.h>
 #include <numbers>
 
 TestParticle::TestParticle()
@@ -55,10 +54,22 @@ TestParticle::TestParticle()
 			Vector3 normal2 = { -sinNext, 0.0f, cosNext };
 
 			// 4頂点
-			VertexData v1{ { -sin * kTopRadius,    kHeight, cos * kTopRadius,    1.0f }, { u,     0.0f }, normal1 };
-			VertexData v2{ { -sinNext * kTopRadius,    kHeight, cosNext * kTopRadius,    1.0f }, { uNext, 0.0f }, normal2 };
-			VertexData v3{ { -sin * kBottomRadius, 0.0f,    cos * kBottomRadius, 1.0f }, { u,     1.0f }, normal1 };
-			VertexData v4{ { -sinNext * kBottomRadius, 0.0f,    cosNext * kBottomRadius, 1.0f }, { uNext, 1.0f }, normal2 };
+			VertexData v1;
+			v1.position = Vector4{ -sin * kTopRadius, kHeight, cos * kTopRadius, 1.0f };
+			v1.texcoord = Vector2{ u, 0.0f };
+			v1.normal = normal1;
+			VertexData v2;
+			v2.position = Vector4{ -sinNext * kTopRadius, kHeight, cosNext * kTopRadius, 1.0f };
+			v2.texcoord = Vector2{ uNext, 0.0f };
+			v2.normal = normal2;
+			VertexData v3;
+			v3.position = Vector4{ -sin * kBottomRadius, 0.0f,    cos * kBottomRadius, 1.0f };
+			v3.texcoord = Vector2{ u,     1.0f };
+			v3.normal = normal1;
+			VertexData v4;
+			v4.position = Vector4{ -sinNext * kBottomRadius, 0.0f,    cosNext * kBottomRadius, 1.0f };
+			v4.texcoord = Vector2{ uNext, 1.0f };
+			v4.normal = normal2;
 
 			// 三角形① (左上 → 右上 → 左下)
 			vertexData_Cylinder.push_back(v1);
@@ -104,10 +115,22 @@ TestParticle::TestParticle()
 			Vector3 normal = { 0.0f, 0.0f, 1.0f };
 
 			// 4頂点
-			VertexData v1{ { -sin * kOuterRadius,     cos * kOuterRadius,     0.0f, 1.0f }, { u,     0.0f }, normal };
-			VertexData v2{ { -sinNext * kOuterRadius, cosNext * kOuterRadius, 0.0f, 1.0f }, { uNext, 0.0f }, normal };
-			VertexData v3{ { -sin * kInnerRadius,     cos * kInnerRadius,     0.0f, 1.0f }, { u,     1.0f }, normal };
-			VertexData v4{ { -sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f }, { uNext, 1.0f }, normal };
+			VertexData v1;
+			v1.position = Vector4{ -sin * kOuterRadius,     cos * kOuterRadius,     0.0f, 1.0f };
+			v1.texcoord = Vector2{ u,     0.0f };
+			v1.normal = normal;
+			VertexData v2;
+			v2.position = Vector4{ -sinNext * kOuterRadius, cosNext * kOuterRadius, 0.0f, 1.0f };
+			v2.texcoord = Vector2{ uNext, 0.0f };
+			v2.normal = normal;
+			VertexData v3;
+			v3.position = Vector4{ -sin * kInnerRadius,     cos * kInnerRadius,     0.0f, 1.0f };
+			v3.texcoord = Vector2{ u,     1.0f };
+			v3.normal = normal;
+			VertexData v4;
+			v4.position = Vector4{ -sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f };
+			v4.texcoord = Vector2{ uNext, 1.0f };
+			v4.normal = normal;
 
 			// 三角形① (左上 → 右上 → 左下)
 			vertexData_Ring.push_back(v1);
@@ -184,10 +207,22 @@ TestParticle::TestParticle()
 				float v = (float)stack / (float)kStacks;
 				float vNext = (float)(stack + 1) / (float)kStacks;
 
-				VertexData vtx1{ { p1.x, p1.y, p1.z, 1.0f }, { u,     v },     p1.Normalized() };
-				VertexData vtx2{ { p2.x, p2.y, p2.z, 1.0f }, { uNext, v },     p2.Normalized() };
-				VertexData vtx3{ { p3.x, p3.y, p3.z, 1.0f }, { u,     vNext },  p3.Normalized() };
-				VertexData vtx4{ { p4.x, p4.y, p4.z, 1.0f }, { uNext, vNext },  p4.Normalized() };
+				VertexData vtx1;
+				vtx1.position = Vector4{ p1.x, p1.y, p1.z, 1.0f };
+				vtx1.texcoord = Vector2{ u,     v };
+				vtx1.normal = p1.Normalized();
+				VertexData vtx2;
+				vtx2.position = Vector4{ p2.x, p2.y, p2.z, 1.0f };
+				vtx2.texcoord = Vector2{ uNext, v };
+				vtx2.normal = p2.Normalized();
+				VertexData vtx3;
+				vtx3.position = Vector4{ p3.x, p3.y, p3.z, 1.0f };
+				vtx3.texcoord = Vector2{ u,     vNext };
+				vtx3.normal = p3.Normalized();
+				VertexData vtx4;
+				vtx4.position = Vector4{ p4.x, p4.y, p4.z, 1.0f };
+				vtx4.texcoord = Vector2{ uNext, vNext };
+				vtx4.normal = p4.Normalized();
 
 				// 三角形① (左上 → 右上 → 左下)
 				vertexData_Sphere.push_back(vtx1);
@@ -213,6 +248,40 @@ TestParticle::TestParticle()
 		sphereTransform.translate = { 0.0f, 0.0f, 0.0f };
 		sphereTransform.rotate = { Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1), Game::Math::Rand::RandFloat(-3.14f, 3.141f, 1) };
 	}
+
+	emitterSphere.count = 10;
+	emitterSphere.frequency = 0.5f;
+	emitterSphere.frequencyTime = 0.0f;
+	emitterSphere.translate = { 0.0f, 0.0f, 0.0f };
+	emitterSphere.radius = 1.0f;
+	emitterSphere.emit = 0;
+
+	particleSRVID_ = Game::Resource::CreateCompute(sizeof(Particle), 1024);
+	freeCounterSRVID_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1);
+
+	particle_ = std::make_unique<RenderObject>();
+	particle_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	particle_->psoConfig_.ps = "resources/shaders/Particle/Particle.PS.hlsl";
+	particle_->psoConfig_.vs = "resources/shaders/Particle/Particle.VS.hlsl";
+	particle_->SetupFromShaders();
+	//particle_->psoConfig_.blendID = BlendStateID::Add;
+	//particle_->psoConfig_.depthStencilID = DepthStencilID::TestOnly;
+	particle_->instanceNum_ = 1024;
+
+	initializeCompute_ = std::make_unique<ComputeObject>();
+	initializeCompute_->psoConfig_.cs = "resources/shaders/Particle/Particle.Initialize.CS.hlsl";
+	initializeCompute_->SetupFromShaders();
+	initializeCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
+	initializeCompute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
+	initializeCompute_->RegisterOutput(particleSRVID_);
+	initializeCompute_->RegisterOutput(freeCounterSRVID_);
+	initializeCompute_->Dispatch();
+
+	Compute_ = std::make_unique<ComputeObject>();
+	Compute_->psoConfig_.cs = "resources/shaders/Particle/EmitParticle.CS.hlsl";
+	Compute_->SetupFromShaders();
+	Compute_->RegisterOutput(particleSRVID_);
+	Compute_->RegisterOutput(freeCounterSRVID_);
 }
 
 TestParticle::~TestParticle()
@@ -274,18 +343,48 @@ void TestParticle::Update(int32_t cameraID)
 		renderSphere_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
 		renderSphere_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 	}
+
+	
+	TransformationMatrix perView;
+	perView.WVP = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	perView.World = Game::Camera::Getter::GetBillboardMatrix(cameraID);
+	particle_->SetCBufferData(0, ShaderType::VertexShader, &perView);
+	particle_->SetSBufferData(0, ShaderType::VertexShader, Game::Resource::GetSRV(particleSRVID_));
+
+
+	emitterSphere.frequencyTime += Game::Time::GetDeltaTime();
+	if (emitterSphere.frequency <= emitterSphere.frequencyTime)
+	{
+		emitterSphere.frequencyTime -= emitterSphere.frequency;
+		emitterSphere.emit = 1;
+	}
+	else
+	{
+		emitterSphere.emit = 0;
+	}
+
+
+	Compute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
+	Compute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
+	Compute_->SetCBufferData(0, &emitterSphere);
+	Vector3 rand = { Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1) };
+	Compute_->SetCBufferData(1, &rand);
 }
 
 void TestParticle::Draw(int32_t renderTextureID)
 {
-	for (int i = 0; i < 10; ++i)
-	{
-		renderPlanes_[i]->Draw(renderTextureID);
-	}
-	for (int i = 0; i < 10; ++i)
-	{
-		renderRings_[i]->Draw(renderTextureID);
-	}
-	renderCylinder_->Draw(renderTextureID);
-	renderSphere_->Draw(renderTextureID);
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderPlanes_[i]->Draw(renderTextureID);
+	//}
+	//for (int i = 0; i < 10; ++i)
+	//{
+	//	renderRings_[i]->Draw(renderTextureID);
+	//}
+	//renderCylinder_->Draw(renderTextureID);
+	//renderSphere_->Draw(renderTextureID);
+
+	Compute_->Dispatch();
+	particle_->Draw(renderTextureID);
+	//Compute_->Dispatch();
 }

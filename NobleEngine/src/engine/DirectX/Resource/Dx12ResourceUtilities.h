@@ -36,7 +36,7 @@ namespace Dx12ResourceFactory
     /// <param name="sizeInBytes">バッファのサイズ (バイト単位)</param>
     /// <returns>作成された定数バッファリソース</returns>
     Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBufferResource(
-        ID3D12Device2* device, size_t sizeInBytes);
+		ID3D12Device2* device, size_t sizeInBytes, D3D12_RESOURCE_FLAGS Flags = D3D12_RESOURCE_FLAG_NONE);
 
     template <typename T>
     [[nodiscard]]

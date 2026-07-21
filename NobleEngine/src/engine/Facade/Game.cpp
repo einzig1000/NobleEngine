@@ -323,10 +323,6 @@ namespace Game
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetTranslate();
 			}
-			Vector3 GetRotate(int32_t cameraID)
-			{
-				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetRotate();
-			}
 			float GetDistance(int32_t cameraID)
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetDistance();
@@ -346,6 +342,10 @@ namespace Game
 			Matrix4x4 GetProjectionMatrix(int32_t cameraID)
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetProjectionMatrix();
+			}
+			Matrix4x4 GetBillboardMatrix(int32_t cameraID)
+			{
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetBillboardMatrix();
 			}
 		}
 
@@ -468,7 +468,6 @@ namespace Game
 			{
 				return CoordinateConverter::ToCylindrical(cartesian);
 			}
-
 			Coordinate_cylindrical ToCylindrical(const Coordinate_spherical& spherical)
 			{
 				return CoordinateConverter::ToCylindrical(spherical);
@@ -478,7 +477,6 @@ namespace Game
 			{
 				return CoordinateConverter::ToSpherical(cartesian);
 			}
-
 			Coordinate_spherical ToSpherical(const Coordinate_cylindrical& cylindrical)
 			{
 				return CoordinateConverter::ToSpherical(cylindrical);

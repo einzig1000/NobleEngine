@@ -5,6 +5,7 @@
 #include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <Engine.h>
 #include <DrawSystem/RenderData/RenderObject.h>
+#include <ComputeSystem/ComputeObject/ComputeObject.h>
 
 /// <summary>
 /// ファサードクラス
@@ -435,8 +436,6 @@ namespace Game
 			Vector3 GetCenter(int32_t cameraID = 0);
 			/// <returns>カメラのワールド座標</returns>
 			Vector3 GetTranslate(int32_t cameraID = 0);
-			/// <returns>カメラの回転量(オイラー角)</returns>
-			Vector3 GetRotate(int32_t cameraID = 0);
 			/// <returns>カメラのCenterまでの距離</returns>
 			float GetDistance(int32_t cameraID = 0);
 			/// <returns>カメラのビュープロジェクション行列</returns>
@@ -447,6 +446,8 @@ namespace Game
 			Matrix4x4 GetViewMatrix(int32_t cameraID = 0);
 			/// <returns>カメラのプロジェクション行列</returns>
 			Matrix4x4 GetProjectionMatrix(int32_t cameraID = 0);
+			/// <returns>カメラのビルボード行列</returns>
+			Matrix4x4 GetBillboardMatrix(int32_t cameraID = 0);
 		};
 
 		namespace Setter

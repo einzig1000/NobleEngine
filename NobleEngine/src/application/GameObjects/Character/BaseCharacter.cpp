@@ -11,21 +11,26 @@ void BaseCharacter::SetTargetBlock()
 	target_ = mapManager_->GetFirstHitByRay(viewRay_, maxDistance, this);
 }
 
-
-void BaseCharacter::AddItem(ItemID id)
+void BaseCharacter::ComputeViewRay()
 {
-	//haveItem_->AddItem(id);
+	Vector3 cameraPos = Game::Camera::Getter::GetTranslate(c_viewCameraID_);
+	Vector3 cameraCenter = Game::Camera::Getter::GetCenter(c_viewCameraID_);
+	Vector3 cameraDir = (cameraCenter - cameraPos).Normalized();
+
+	viewRay_.origin = translate_.value;
+	viewRay_.diff = cameraDir;
 }
 
-void BaseCharacter::UpdateAttackPower()
+void BaseCharacter::UpdateHaveItem(int32_t cameraID)
 {
-	// 毎フレーム持ち物確認するより攻撃アクションが取られた時に持ち物を参照するのがスマート
+	haveItem_.SetParentWorldMatrix(worldMatrix_);
+	haveItem_.SetItem(GetHaveItem());
+	haveItem_.Update(cameraID);
+}
 
-	//ItemID currentItemID = haveItem_->GetCurrentSelectedItemID();
-	//if (currentItemID == ItemID::木の剣)attackPower_ = 2.0f;
-	//if (currentItemID == ItemID::石の剣)attackPower_ = 3.0f;
-	//if (currentItemID == ItemID::鉄の剣)attackPower_ = 4.0f;
-	//if (currentItemID == ItemID::ダイヤの剣)attackPower_ = 15.0f;
+void BaseCharacter::DrawHaveItem(int32_t renderTextureID)
+{
+	haveItem_.Draw(renderTextureID);
 }
 
 void BaseCharacter::Jump()
@@ -36,6 +41,21 @@ void BaseCharacter::Jump()
 	translate_.velocity.y = jumpPower_;
 	translate_.acceleration.y = Constexprs::GRAVITY; // ジャンプ後は重力を戻す
 	isGrounded_ = false;
+}
+
+void BaseCharacter::ApplyMove()
+{
+	AABB aabb = aabb_;									// ワールド座標系でのプレイヤーのあたり判定を計算
+	aabb.max = translate_.value + aabb.max;
+	Vector3 aabbMin = aabb.min;
+	aabbMin.y += Constexprs::kBlockSize * 0.5f;			// 足元の判定を少し上げる
+	aabb.min = translate_.value + aabbMin;
+	translate_.velocity += translate_.acceleration;		// 加速度を速度に反映
+	mapManager_->SweepAABB(aabb, translate_.velocity);	// mapManager_に希望移動量を申請し修正してもらう
+	translate_.value += translate_.velocity;			// 移動
+	worldMatrix_ = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
+	if (translate_.velocity.y == 0.0f)isGrounded_ = true;// 移動後の接地判定
+	else isGrounded_ = false;
 }
 
 void BaseCharacter::TakeDamage(int32_t damage)
@@ -53,51 +73,9 @@ void BaseCharacter::Move(const Vector3& direction, float speed)
 }
 
 
-void BaseCharacter::UpdateLeftClick()
-{
-	//if (target_.type == RayHitResult::Type::Block)
-	//{
-	//	lookAtBlock lab = target_.blockHit;
-	//	Block* block = lab.block;
-	//	if (!block) return;
-	//
-	//	ItemID currentItemID = haveItem_->GetCurrentSelectedItemID();
-	//
-	//	breakPower_ = 1.0f;
-	//	// ツールのジャンルとブロックのジャンルが合っている場合
-	//	if (block->blockInfo_.genre == ItemGenre::Wood)
-	//	{
-	//		if (currentItemID == ItemID::木の斧)breakPower_ = 2.0f;
-	//		if (currentItemID == ItemID::石の斧)breakPower_ = 3.0f;
-	//		if (currentItemID == ItemID::鉄の斧)breakPower_ = 4.0f;
-	//		if (currentItemID == ItemID::ダイヤの斧)breakPower_ = 15.0f;
-	//	}
-	//	else if (block->blockInfo_.genre == ItemGenre::Stone)
-	//	{
-	//		if (currentItemID == ItemID::木のツルハシ)breakPower_ = 2.0f;
-	//		if (currentItemID == ItemID::石のツルハシ)breakPower_ = 3.0f;
-	//		if (currentItemID == ItemID::鉄のツルハシ)breakPower_ = 4.0f;
-	//		if (currentItemID == ItemID::ダイヤのツルハシ)breakPower_ = 15.0f;
-	//	}
-	//
-	//	block->durability_->DecreaseDurability(breakPower_);
-	//
-	//	// 破壊されていたら非アクティブ化
-	//	if (block->durability_->GetIsDestroy())
-	//	{
-	//		mapManager_->DestroyBlockAt(lab.chunkIndex, lab.localIndex);
-	//	}
-	//}
-	//else if (target_.type == RayHitResult::Type::Character)
-	//{
-	//	BaseCharacter* targetCharacter = target_.Character;
-	//	if (!targetCharacter) return;
-	//	targetCharacter->TakeDamage(int32_t(attackPower_));
-	//}
-}
 
 
-void BaseCharacter::SetNewBlock(BlockID id)
+void BaseCharacter::SetBlock(BlockID id)
 {
 	//if (target_.type != RayHitResult::Type::Block) return;
 	//
@@ -119,4 +97,14 @@ void BaseCharacter::SetNewBlock(BlockID id)
 	//
 	//// アイテムを1つ消費
 	//haveItem_->RemoveCurrentSelectedItem(1);
+}
+
+void BaseCharacter::DestroyBlockInAABB(const AABB& aabb)
+{
+	mapManager_->DestroyBlockInAABB(aabb);
+}
+
+void BaseCharacter::RegisterToMap()
+{
+	mapManager_->RegisterCharacter(this);
 }

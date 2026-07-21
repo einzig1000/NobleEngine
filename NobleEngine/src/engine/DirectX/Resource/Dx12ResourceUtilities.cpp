@@ -55,7 +55,7 @@ namespace Dx12ResourceFactory
     }
 
     Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBufferResource(
-        ID3D12Device2* device, size_t sizeInBytes)
+        ID3D12Device2* device, size_t sizeInBytes, D3D12_RESOURCE_FLAGS Flags)
     {
         // リソース記述子を作成
         D3D12_RESOURCE_DESC resourceDesc{};
@@ -66,7 +66,7 @@ namespace Dx12ResourceFactory
         resourceDesc.MipLevels = 1;
         resourceDesc.SampleDesc.Count = 1;
         resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-        resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+        resourceDesc.Flags = Flags;
 
         D3D12_HEAP_PROPERTIES heapProperties{};
         heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;

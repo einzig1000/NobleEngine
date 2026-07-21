@@ -13,8 +13,9 @@ void TimeEditor::DrawImGui()
 {
 	ImGui::Begin("Time Editor");
 	ImGui::Text("FPS		: %.1f ", fixFPS_->GetRealFPS());
+	ImGui::Text("Max FPS	: %.1f ", fixFPS_->GetMaxFPS());
 	ImGui::Text("Frame Count: %d", fixFPS_->GetFrameCount());
-	ImGui::DragInt("Target FPS", &fixFPS_->GettargetFpsPtr(), 1.0f, 12, 60);
+	ImGui::DragInt("Target FPS", &fixFPS_->GetTargetFpsPtr(), 1.0f, 12, 60);
 
 	ImGui::End();
 }

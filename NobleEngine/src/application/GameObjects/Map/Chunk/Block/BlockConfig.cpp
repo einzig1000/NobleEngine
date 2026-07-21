@@ -52,11 +52,11 @@ BlockConfig::BlockConfig()
 	info.color = 0x00000000;		// 色:透明
 	blockInfoMap_[BlockID::Glass] = info;
 
-	info.ID = BlockID::wood;		// ID:木材
+	info.ID = BlockID::Wood;		// ID:木材
 	info.durability = 40.0f;		// 耐久値:400
 	info.isTransparent = false;		// 透過ブロック:false
 	info.color = 0x8B4513FF;		// 色:茶色
-	blockInfoMap_[BlockID::wood] = info;
+	blockInfoMap_[BlockID::Wood] = info;
 
 	info.ID = BlockID::Leaf;		// ID:葉っぱ
 	info.durability = 20.0f;		// 耐久値:200

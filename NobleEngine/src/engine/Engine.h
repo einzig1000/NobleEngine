@@ -43,6 +43,7 @@ public:
 	DirectXManager* GetDirectXManager() { return dxManager_.get(); }
 	WindowManager* GetWindowManager() { return windowManager_.get(); }
 	DrawSystem* GetDrawSystem() { return drawSystem_.get(); }
+	ComputeSystem* GetComputeSystem() { return computeSystem_.get(); }
 	IOManager* GetIOManager() { return ioManager_.get(); }
 	AssetManager* GetAssetManager() { return assetManager_.get(); }
 	CameraManager* GetCameraManager() { return cameraManager_.get(); }

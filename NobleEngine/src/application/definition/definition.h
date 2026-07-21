@@ -37,14 +37,14 @@ enum class ItemGenre
 	Tool,
 	// ブロック
 	Block,
-	// 構造物(かまどとかの既製品)
-	Structure,
+	// オブジェクト(かまどとかチェスト)
+	Object,
 
 	MAX,
 };
 
 
-// 全てのアイテムID　// いずれ廃止。Jsonに名前もstring型で保存する
+// 全てのアイテムID
 enum class ItemID
 {
 	None,
@@ -128,14 +128,39 @@ enum class BlockID
     Glass,	// ガラス
     Dirt,	// 土
 	Grass,	// 芝
-	wood,	// 木
+	Wood,	// 木
     Leaf,	// 葉
 
     MAX,
 };
 
+// 全てのツールID
+enum class ToolID
+{
+	None,
+	// ツール
+	Sword_of_Wood,
+	Sword_of_Stone,
+	Sword_of_Iron,
+	Sword_of_Gold,
+	Sword_of_Diamond,
+	Pickel_of_Wood,
+	Pickel_of_Stone,
+	Pickel_of_Iron,
+	Pickel_of_Gold,
+	Pickel_of_Diamond,
+	Axe_of_Wood,
+	Axe_of_Stone,
+	Axe_of_Iron,
+	Axe_of_Gold,
+	Axe_of_Diamond,
+	MAX,
+};
+
 // BlockID → ItemID 変換
 ItemID BlockIDtoItemID(BlockID id);
+// ToolID → ItemID 変換
+ItemID ToolIDtoItemID(ToolID id);
 
 /////////////////////////////////////////////////
 /// BlockInfo・ItemInfoのリストをJsonで管理
@@ -181,8 +206,12 @@ struct ItemInfo
 	// ツールとして扱う時のデータ(ItemGenre::Toolの時のみ有効)
 	ToolInfo toolInfo;
 
-	// バッグに入ってる時のテクスチャ
-	std::string texturePath{};
+	// テクスチャ
+	int32_t textureID = -1;
+	// モデル
+	int32_t modelID = -1;
+	// あたり判定
+	std::vector<AABB> aabb;
 };
 
 
@@ -221,7 +250,7 @@ struct EnumStringTraits<BlockID>
 		case BlockID::Glass:	return "Glass"; break;
 		case BlockID::Dirt:		return "Dirt"; break;
 		case BlockID::Grass:	return "Grass"; break;
-		case BlockID::wood:		return "wood"; break;
+		case BlockID::Wood:		return "wood"; break;
 		case BlockID::Leaf:		return "Leaf"; break;
 		case BlockID::MAX:		return "unknown"; break;
 		}
@@ -239,12 +268,65 @@ struct EnumStringTraits<BlockID>
 		if (str == "Glass")		return BlockID::Glass;
 		if (str == "Dirt")		return BlockID::Dirt;
 		if (str == "Grass")		return BlockID::Grass;
-		if (str == "wood")		return BlockID::wood;
+		if (str == "wood")		return BlockID::Wood;
 		if (str == "Leaf")		return BlockID::Leaf;
 
 		return BlockID::MAX;
 	}
 };
+
+template <>
+struct EnumStringTraits<ToolID>
+{
+	static std::string ToString(ToolID id)
+	{
+		switch (id)
+		{
+		case ToolID::None:				return "None"; break;
+		case ToolID::Sword_of_Wood:		return "Sword_of_Wood"; break;
+		case ToolID::Sword_of_Stone:	return "Sword_of_Stone"; break;
+		case ToolID::Sword_of_Iron:		return "Sword_of_Iron"; break;
+		case ToolID::Sword_of_Gold:		return "Sword_of_Gold"; break;
+		case ToolID::Sword_of_Diamond:	return "Sword_of_Diamond"; break;
+		case ToolID::Pickel_of_Wood:	return "Pickel_of_Wood"; break;
+		case ToolID::Pickel_of_Stone:	return "Pickel_of_Stone"; break;
+		case ToolID::Pickel_of_Iron:	return "Pickel_of_Iron"; break;
+		case ToolID::Pickel_of_Gold:	return "Pickel_of_Gold"; break;
+		case ToolID::Pickel_of_Diamond:	return "Pickel_of_Diamond"; break;
+		case ToolID::Axe_of_Wood:		return "Axe_of_Wood"; break;
+		case ToolID::Axe_of_Stone:		return "Axe_of_Stone"; break;
+		case ToolID::Axe_of_Iron:		return "Axe_of_Iron"; break;
+		case ToolID::Axe_of_Gold:		return "Axe_of_Gold"; break;
+		case ToolID::Axe_of_Diamond:	return "Axe_of_Diamond"; break;
+		case ToolID::MAX:				return "unknown"; break;
+		default:
+			break;
+		}
+		return "unknown";
+	}
+
+	static ToolID FromString(std::string_view str)
+	{
+		if (str == "None")				return ToolID::None;
+		if (str == "Sword_of_Wood")		return ToolID::Sword_of_Wood;
+		if (str == "Sword_of_Stone")	return ToolID::Sword_of_Stone;
+		if (str == "Sword_of_Iron")		return ToolID::Sword_of_Iron;
+		if (str == "Sword_of_Gold")		return ToolID::Sword_of_Gold;
+		if (str == "Sword_of_Diamond")	return ToolID::Sword_of_Diamond;
+		if (str == "Pickel_of_Wood")	return ToolID::Pickel_of_Wood;
+		if (str == "Pickel_of_Stone")	return ToolID::Pickel_of_Stone;
+		if (str == "Pickel_of_Iron")	return ToolID::Pickel_of_Iron;
+		if (str == "Pickel_of_Gold")		return ToolID::Pickel_of_Gold;
+		if (str == "Pickel_of_Diamond")	return ToolID::Pickel_of_Diamond;
+		if (str == "Axe_of_Wood")		return ToolID::Axe_of_Wood;
+		if (str == "Axe_of_Stone")		return ToolID::Axe_of_Stone;
+		if (str == "Axe_of_Iron")		return ToolID::Axe_of_Iron;
+		if (str == "Axe_of_Gold")		return ToolID::Axe_of_Gold;
+		if (str == "Axe_of_Diamond")		return ToolID::Axe_of_Diamond;
+		return ToolID::MAX;
+	}
+};
+
 
 template <>
 struct EnumStringTraits<ItemID>
@@ -375,4 +457,75 @@ struct EnumStringTraits<ItemID>
 
 		return ItemID::MAX;
 	}
+};
+
+template<>
+struct EnumStringTraits<ItemGenre>
+{
+	static std::string_view ToString(ItemGenre value)
+	{
+		switch (value)
+		{
+		case ItemGenre::None:			return "None";		break;
+		case ItemGenre::Armor:			return "Armor";		break;
+		case ItemGenre::Tool:			return "Tool";		break;
+		case ItemGenre::Block:			return "Block";		break;
+		case ItemGenre::Object:			return "Object";	break;
+		case ItemGenre::MAX:
+		default:
+			break;
+		}
+		return "unknown";
+	}
+	static ItemGenre FromString(std::string_view str)
+	{
+		if (str == "None")		return ItemGenre::None;
+		if (str == "Armor")		return ItemGenre::Armor;
+		if (str == "Tool")		return ItemGenre::Tool;
+		if (str == "Block")		return ItemGenre::Block;
+		if (str == "Object")	return ItemGenre::Object;
+		return ItemGenre::MAX;
+	}
+
+};
+
+
+class Block;
+struct lookAtBlock
+{
+	Block* block = nullptr;
+	Vector3int chunkIndex = { 0,0,0 };
+	Vector3int localIndex = { 0,0,0 };
+	AABBFace face = AABBFace::NONE;
+	float distance = 0.0f;
+};
+
+class BaseCharacter;
+struct RayHitResult
+{
+	enum class Type
+	{
+		None,
+		Block,      // マップ上のブロック
+		Character,  // キャラクター
+		Object,     // マップ上のオブジェクト(かまど、チェストなど)
+	};
+
+	Type type = Type::None;
+
+	// type == Block のとき有効
+	lookAtBlock blockHit{};
+
+	// type == Character のとき有効
+	BaseCharacter* Character = nullptr;
+
+	// 共通：レイ原点からの距離
+	float distance = 0.0f;
+};
+
+struct Rect
+{
+	int minX, minY;
+	int maxX, maxY;
+	bool empty = true;
 };

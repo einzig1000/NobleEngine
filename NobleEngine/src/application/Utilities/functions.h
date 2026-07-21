@@ -84,11 +84,4 @@ std::optional<Vector3> IntersectRayAABB(const Ray& ray, const AABB& box);
 
 #pragma endregion
 
-#pragma region Rand
-#pragma endregion
-
-
-
-
-
 
