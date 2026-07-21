@@ -70,7 +70,7 @@ void Player::Update(int32_t cameraID)
 		}
 	}
 
-	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, c_viewCameraID_);
+	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_CUBIC, c_viewCameraID_);
 
 	Matrix4x4 wvpMatrix = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -102,7 +102,10 @@ void Player::Draw(int32_t renderTextureID)
 	// プレイヤー描画
 	//render_.Draw(renderTextureID);
 
-	DrawHaveItem(renderTextureID);
+	if (Game::IO::Mouse::IsHeld(0))
+	{
+		DrawHaveItem(renderTextureID);
+	}
 }
 
 void Player::DrawImGui()

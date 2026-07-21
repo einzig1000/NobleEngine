@@ -116,9 +116,10 @@ void Engine::BeginFrame()
 	// インプット系を更新
 	ioManager_->Update();
 
-	// デバッグモードの時のみ呼び出す
+	// エディタを更新
 #ifdef _DEBUG
 	engineEditor_->Update();
+	engineEditor_->Draw();
 #endif
 }
 
@@ -127,9 +128,8 @@ void Engine::EndFrame()
 	// 入力終了処理
 	ioManager_->EndFrame();
 
-	// デバッグモードの時のみ呼び出す
+	// エディタを描画
 #ifdef _DEBUG
-	engineEditor_->Draw();
 	engineEditor_->DrawImGui();
 #endif
 

@@ -155,28 +155,8 @@ void MapManager::EnsureChunkScheduled(const Vector3int& chunkPos)
 	// 既にスケジュール済みならreturn
 	if (chunkScheduled_.find(chunkPos) != chunkScheduled_.end()) return;
 
-	// スケジュール済み集合にも登録
+	// スケジュール済み集合に登録
 	chunkScheduled_.insert(chunkPos);
-
-	//// chunkGenQueue_をプレイヤー位置から近い順にソートする
-	//std::vector<Vector3int> tempQueue;
-	//while (!chunkGenQueue_.empty())
-	//{
-	//	tempQueue.push_back(chunkGenQueue_.front());
-	//	chunkGenQueue_.pop();
-	//}
-	//Vector3int playerIndex = ChunkIndexByPosition(player_->data_.translate.value);
-	//std::sort(tempQueue.begin(), tempQueue.end(),
-	//	[playerIndex](const Vector2int& a, const Vector2int& b)
-	//	{
-	//		int32_t distA = (a.x - playerIndex.x) * (a.x - playerIndex.x) + (a.y - playerIndex.y) * (a.y - playerIndex.y);
-	//		int32_t distB = (b.x - playerIndex.x) * (b.x - playerIndex.x) + (b.y - playerIndex.y) * (b.y - playerIndex.y);
-	//		return distA < distB;
-	//	});
-	//for (const auto& pos : tempQueue)
-	//{
-	//	chunkGenQueue_.push(pos);
-	//}
 }
 
 // スケジュールに登録されたチャンクを1つ生成
@@ -199,7 +179,7 @@ void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 		Vector3int pos = tempQueue.front();
 		chunkScheduled_.erase(pos);
 
-		// 一応存在確認
+		// 存在確認
 		if (GetChunk(pos) != nullptr)
 		{
 			// 生成済み集合に登録
@@ -207,62 +187,67 @@ void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 			return;
 		}
 
-		// 新規生成
-		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>();
-		// チャンクデータ生成
-		chunk->CreateChunkData(noiseParam_, pos);
-
-		// 隣接チャンク設定
-		static constexpr Vector3int dirOffsets[6] =
-		{
-			Vector3int(-1, 0, 0),	// Left
-			Vector3int(1, 0, 0),	// Right
-			Vector3int(0, 0, -1),	// Back
-			Vector3int(0, 0, 1),	// Front
-			Vector3int(0, -1, 0),	// Down
-			Vector3int(0, 1, 0)		// Up
-		};
-
-		static constexpr DirectionXYZ dirArr[6] =
-		{
-			DirectionXYZ::Left,
-			DirectionXYZ::Right,
-			DirectionXYZ::Back,
-			DirectionXYZ::Front,
-			DirectionXYZ::Down,
-			DirectionXYZ::Up,
-		};
-
-		static constexpr DirectionXYZ opposite[6] =
-		{
-			DirectionXYZ::Right,// Left  の反対
-			DirectionXYZ::Left,	// Right の反対
-			DirectionXYZ::Front,// Back  の反対
-			DirectionXYZ::Back,	// Front の反対
-			DirectionXYZ::Up,	// Down  の反対
-			DirectionXYZ::Down,	// Up    の反対
-		};
-
-		for (int32_t dir = 0; dir < 6; ++dir)
-		{
-			Chunk* neighbor = GetChunk(pos + dirOffsets[dir]);
-
-			// 自分→隣（隣が無ければnullptrでOK）
-			chunk->SetNeighborChunk(dirArr[dir], neighbor);
-
-			// 隣→自分（隣がある時だけ）
-			if (neighbor)
-			{
-				neighbor->SetNeighborChunk(opposite[dir], chunk.get());
-			}
-		}
-
-		// チャンク登録
-		chunks[pos] = std::move(chunk);
-
-		// 生成済み集合に登録
-		chunkCreated_.insert(pos);
+		GenerateChunk(pos);
 	}
+}
+
+void MapManager::GenerateChunk(const Vector3int& chunkPos)
+{
+	// 新規生成
+	std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>();
+	// チャンクデータ生成
+	chunk->CreateChunkData(noiseParam_, chunkPos);
+
+	// 隣接チャンク設定
+	static constexpr Vector3int dirOffsets[6] =
+	{
+		Vector3int(-1, 0, 0),	// Left
+		Vector3int(1, 0, 0),	// Right
+		Vector3int(0, 0, -1),	// Back
+		Vector3int(0, 0, 1),	// Front
+		Vector3int(0, -1, 0),	// Down
+		Vector3int(0, 1, 0)		// Up
+	};
+
+	static constexpr DirectionXYZ dirArr[6] =
+	{
+		DirectionXYZ::Left,
+		DirectionXYZ::Right,
+		DirectionXYZ::Back,
+		DirectionXYZ::Front,
+		DirectionXYZ::Down,
+		DirectionXYZ::Up,
+	};
+
+	static constexpr DirectionXYZ opposite[6] =
+	{
+		DirectionXYZ::Right,// Left  の反対
+		DirectionXYZ::Left,	// Right の反対
+		DirectionXYZ::Front,// Back  の反対
+		DirectionXYZ::Back,	// Front の反対
+		DirectionXYZ::Up,	// Down  の反対
+		DirectionXYZ::Down,	// Up    の反対
+	};
+
+	for (int32_t dir = 0; dir < 6; ++dir)
+	{
+		Chunk* neighbor = GetChunk(chunkPos + dirOffsets[dir]);
+
+		// 自分→隣（隣が無ければnullptrでOK）
+		chunk->SetNeighborChunk(dirArr[dir], neighbor);
+
+		// 隣→自分（隣がある時だけ）
+		if (neighbor)
+		{
+			neighbor->SetNeighborChunk(opposite[dir], chunk.get());
+		}
+	}
+
+	// チャンク登録
+	chunks[chunkPos] = std::move(chunk);
+
+	// 生成済み集合に登録
+	chunkCreated_.insert(chunkPos);
 }
 
 
@@ -325,18 +310,18 @@ void MapManager::DrawImGui()
 
 	if (ImGui::Button("Save Map"))
 	{
-		for (int32_t dx = -10; dx <= 10; ++dx)
+		for (int32_t dx = -7; dx <= 7; ++dx)
 		{
-			for (int32_t dy = -10; dy <= 10; ++dy)
+			for (int32_t dy = -7; dy <= 7; ++dy)
 			{
-				for (int32_t dz = -10; dz <= 10; ++dz)
+				for (int32_t dz = -7; dz <= 7; ++dz)
 				{
 					if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
 					{
 						continue;
 					}
 
-					Vector3int chunkPos(dx, dy, dz);
+					Vector3int chunkPos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
 					EnsureChunkScheduled(chunkPos);
 				}
 			}

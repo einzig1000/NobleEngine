@@ -74,7 +74,7 @@ void HaveItem::Update(int32_t cameraID)
 
 		if (Game::IO::Mouse::IsJustReleased(0))
 		{
-			pivotTransform_.rotate.x = 0.0f;
+			pivotTransform_.rotate.x = 0.5f;
 		}
 
 		const ItemInfo& itemConfig = ItemConfig::Instance().GetItemInfo(currentItemID_);
@@ -112,14 +112,14 @@ void HaveItem::Draw(int32_t renderTextureID)
 		render_->Draw(renderTextureID);
 	}
 
-	ImGui::Begin("HaveItem");
-	ImGui::DragFloat3("Item Position", &itemTransform_.translate.x, 0.1f);
-	ImGui::DragFloat3("Item Rotation", &itemTransform_.rotate.x, 0.01f);
-	ImGui::DragFloat3("Item Scale", &itemTransform_.scale.x, 0.1f);
-	ImGui::Separator();
-	ImGui::DragFloat3("pivot Position", &pivotTransform_.translate.x, 0.1f);
-	ImGui::DragFloat3("pivot Rotation", &pivotTransform_.rotate.x, 0.01f);
-	ImGui::DragFloat3("pivot Scale", &pivotTransform_.scale.x, 0.1f);
+	//ImGui::Begin("HaveItem");
+	//ImGui::DragFloat3("Item Position", &itemTransform_.translate.x, 0.1f);
+	//ImGui::DragFloat3("Item Rotation", &itemTransform_.rotate.x, 0.01f);
+	//ImGui::DragFloat3("Item Scale", &itemTransform_.scale.x, 0.1f);
+	//ImGui::Separator();
+	//ImGui::DragFloat3("pivot Position", &pivotTransform_.translate.x, 0.1f);
+	//ImGui::DragFloat3("pivot Rotation", &pivotTransform_.rotate.x, 0.01f);
+	//ImGui::DragFloat3("pivot Scale", &pivotTransform_.scale.x, 0.1f);
 
-	ImGui::End();
+	//ImGui::End();
 }

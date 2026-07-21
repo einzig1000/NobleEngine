@@ -88,12 +88,14 @@ public:
 	Vector3int WorldBlockIndexByPosition(const Vector3& position) const;
 
 
-	// チャンク取得(なくても生成はしない)
+	// チャンク取得
 	Chunk* GetChunk(const Vector3int& chunkPos) const;
-	// 欲しいチャンクが存在しなければスケジュールに登録
+	// 生成スケジュールに登録
 	void EnsureChunkScheduled(const Vector3int& chunkPos);
-	// スケジュールに登録されたチャンクを1Fに1つ生成
+	// スケジュールに登録されたチャンクを1つ生成
 	void ProcessChunkGeneration(const Vector3int& cameraChunkPos);
+	// 実際に生成
+	void GenerateChunk(const Vector3int& chunkPos);
 
 	// キャラクター登録
 	void RegisterCharacter(BaseCharacter* c) { Characters_.push_back(c); }

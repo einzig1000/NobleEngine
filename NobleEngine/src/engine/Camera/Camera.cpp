@@ -393,6 +393,7 @@ void Camera::MovingCenter()
 {
 	if (!centerEasing_.easeing) return;
 
+	centerEasing_.currentFrame++;
 	center_ = Easing::EasingVector3(
         centerEasing_.start, 
         centerEasing_.target,
@@ -400,7 +401,6 @@ void Camera::MovingCenter()
 		float(centerEasing_.currentFrame) / float(centerEasing_.duration)
     );
 
-	centerEasing_.currentFrame++;
 
 	if (centerEasing_.currentFrame > centerEasing_.duration)
 	{
