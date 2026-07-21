@@ -34,7 +34,7 @@ void Test2Phase::Update()
 {
 	Game::Camera::Update(c_main_);
 
-	testParticle.Update(c_main_);
+	//testParticle.Update(c_main_);
 	testAnimation.Update(c_main_);
 
 	if (Game::IO::Key::IsJustPressed(VK_F11))
@@ -57,8 +57,8 @@ void Test2Phase::Update()
 
 void Test2Phase::Draw()
 {
-	testParticle.Draw(rt_main_);
-	//testAnimation.Draw(rt_main_);
+	//testParticle.Draw(rt_main_);
+	testAnimation.Draw(rt_main_);
 
 	render_->ScreenDraw();
 }

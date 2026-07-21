@@ -49,8 +49,7 @@ public:
 	Matrix4x4 GetBillboardMatrix() const { return billboardMatrix_; }
     Vector3 GetCenter() const { return center_; }
     Vector3 GetTranslate() const { return eye_; }
-    Vector3 GetRotate() const { return transform_.rotate; }
-    float GetDistance() const { return spherical_.radius; }
+    float GetDistance() const { return sphericalEye_.radius; }
 
 private:
     Vector3 GetShakeOffset() const;
@@ -69,12 +68,10 @@ private:
     bool enableControl_;
 
 	// カメラ位置
-    Coordinate_spherical spherical_ = {20.0f, 1.57f, -1.57f};
+    Coordinate_spherical sphericalEye_ = {20.0f, 1.57f, -1.57f};
 	Vector3 eye_ = { 0.0f, 0.0f, 0.0f };
 	// 注視点
 	Vector3 center_ = { 0.0f, 0.0f, 0.0f };
-    // カメラの最終的な変換
-	EulerTransforms transform_;
 	// スクリーンサイズ
     Vector2 screenSize_;
 

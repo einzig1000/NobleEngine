@@ -1,14 +1,15 @@
+
 struct Vertex
 {
     float4 position;
-    float2 texCoord;
+    float2 texcoord;
     float3 normal;
 };
 
 struct VSOutput
 {
     float4 position : SV_POSITION;
-    float2 texCoord : TEXCOORD0;
+    float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
 };
 
@@ -29,7 +30,7 @@ VSOutput main(uint vertexID : SV_VertexID)
     VSOutput output;
     Vertex vertex = gVertices[vertexID];
     output.position = mul(vertex.position, wvp);
-    output.texCoord = vertex.texCoord;
+    output.texcoord = vertex.texcoord;
     float3 worldNormal = mul(vertex.normal, (float3x3) world);
     output.normal = normalize(worldNormal);
     return output;

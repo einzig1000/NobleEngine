@@ -10,14 +10,20 @@ public:
 	void Update(int32_t cameraID);
 	void Draw(int32_t renderTextureID);
 
-	void SetCharacterPosition(Vector3& position) { charactorPosition_ = &position; }
-	void SetItem(ItemID itemID) { currentItemID = itemID; }
+	void SetItem(ItemID itemID) { currentItemID_ = itemID; }
+	void SetParentWorldMatrix(const Matrix4x4& world) { parentWorldMatrix_ = world; }
+
+	const std::vector<AABB>& GetAABB() const { return itemAABB_; }
 
 private:
-	std::unique_ptr<RenderObject> rightHandItemRenderObject_;
+	std::unique_ptr<RenderObject> render_;
 	std::vector<AABB> itemAABB_;
-	ItemID currentItemID = ItemID::None;
+	ItemID currentItemID_ = ItemID::None;
 
-	Vector3* charactorPosition_;
+	Matrix4x4 parentWorldMatrix_;
+	EulerTransforms pivotTransform_;
+	EulerTransforms itemTransform_;
+
+	float startTime_;
 };
 

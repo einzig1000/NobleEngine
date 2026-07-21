@@ -15,9 +15,9 @@ Camera::Camera()
 
     screenSize_ = Vector2{ float(WindowManager::winWidth_) , float(WindowManager::winHeight_) };
 
-    spherical_.radius = 20.0f;
-	spherical_.theta = std::numbers::pi_v<float> / 2.0f;
-    spherical_.phi = 0;
+    sphericalEye_.radius = 20.0f;
+	sphericalEye_.theta = std::numbers::pi_v<float> / 2.0f;
+    sphericalEye_.phi = 0;
 
     Resize();
 }
@@ -57,20 +57,20 @@ void Camera::Update_Orbit()
 		// パン
 		if (isMiddleHeld && isShiftHeld)
 		{
-			Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(spherical_.phi) * Matrix4x4::MakeRotateYMatrix(-spherical_.theta);
+			Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(sphericalEye_.phi) * Matrix4x4::MakeRotateYMatrix(-sphericalEye_.theta);
 			Vector3 right = { rot.m[0][0], rot.m[1][0], rot.m[2][0] };
 			Vector3 up = { rot.m[0][1], rot.m[1][1], rot.m[2][1] };
 
-			float speed = spherical_.radius * 0.02f;
+			float speed = sphericalEye_.radius * 0.02f;
 			center_ += (right * mouseDelta.x + up * mouseDelta.y) * 0.1f * speed;
 		}
 		// 回転
 		if (isMiddleHeld && !isShiftHeld)
 		{
-			spherical_.phi -= mouseDelta.y * -0.01f;
-			spherical_.theta -= mouseDelta.x * 0.01f;
+			sphericalEye_.phi -= mouseDelta.y * -0.01f;
+			sphericalEye_.theta -= mouseDelta.x * 0.01f;
 		}
-		spherical_.radius -= mouseWheel * spherical_.radius * 0.001f;
+		sphericalEye_.radius -= mouseWheel * sphericalEye_.radius * 0.001f;
 	}
 
     // イージング
@@ -81,17 +81,17 @@ void Camera::Update_Orbit()
 	MovingFov();
 
 	// 距離をクランプ
-	if (spherical_.radius < 0.1f) spherical_.radius = 0.1f;
+	if (sphericalEye_.radius < 0.1f) sphericalEye_.radius = 0.1f;
 
     // ピッチのクランプ
-    spherical_.phi = std::clamp(
-        spherical_.phi,
+    sphericalEye_.phi = std::clamp(
+        sphericalEye_.phi,
         -std::numbers::pi_v<float> / 2 + 0.001f,
         +std::numbers::pi_v<float> / 2 - 0.001f
     );
 
     // カメラ位置
-    Vector3 localPos = CoordinateConverter::ToCartesian(spherical_);
+    Vector3 localPos = CoordinateConverter::ToCartesian(sphericalEye_);
     eye_ = center_ + localPos;
 
     // 視線ベクトル
@@ -103,7 +103,7 @@ void Camera::Update_Orbit()
 
 	backToFrontMatrix.m[0][0] = -1.00000000f;
 	backToFrontMatrix.m[0][1] = 0.00000000f;
-	backToFrontMatrix.m[0][2] = 8.74227766e-08;
+	backToFrontMatrix.m[0][2] = 8.74227766e-08f;
 	backToFrontMatrix.m[0][3] = 0.00000000f;
 
 	backToFrontMatrix.m[1][0] = 0.00000000f;
@@ -111,7 +111,7 @@ void Camera::Update_Orbit()
 	backToFrontMatrix.m[1][2] = 0.00000000f;
 	backToFrontMatrix.m[1][3] = 0.00000000f;
 
-	backToFrontMatrix.m[2][0] = -8.74227766e-08;
+	backToFrontMatrix.m[2][0] = -8.74227766e-08f;
 	backToFrontMatrix.m[2][1] = 0.00000000f;
 	backToFrontMatrix.m[2][2] = -1.00000000f;
 	backToFrontMatrix.m[2][3] = 0.00000000f;
@@ -137,10 +137,10 @@ void Camera::Update_FPS()
 
 void Camera::Resize()
 {
-	aspect_ = float(screenSize_.x) / float(screenSize_.y);
+	aspect_ = screenSize_.x / screenSize_.y;
     projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
-    viewportMatrix = Matrix4x4::MakeViewPortMatrix(0.0f, 0.0f, float(screenSize_.x), float(screenSize_.y), 0.0f, 1.0f);
-	orthoProjectionMatrix_ = Matrix4x4::MakeOrthographicMatrix(0.0f, 0.0f, float(screenSize_.x), float(screenSize_.y), nearZ_, farZ_);
+    viewportMatrix = Matrix4x4::MakeViewPortMatrix(0.0f, 0.0f, screenSize_.x, screenSize_.y, 0.0f, 1.0f);
+	orthoProjectionMatrix_ = Matrix4x4::MakeOrthographicMatrix(0.0f, 0.0f, screenSize_.x, screenSize_.y, nearZ_, farZ_);
 }
 
 void Camera::Draw()
@@ -168,7 +168,7 @@ void Camera::DrawImGui()
 
 	std::string radiusTag = "##radius";
 	tag = "radius" + radiusTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &spherical_.radius, 0.1f);
+	ImGui::DragFloat(tag.c_str(), &sphericalEye_.radius, 0.1f);
 	tag = "duration" + radiusTag + cameraTag;
     ImGui::DragInt(tag.c_str(), &distanceEasing_.duration, 1, 0, 1000);
 	tag = "target" + radiusTag + cameraTag;
@@ -187,7 +187,7 @@ void Camera::DrawImGui()
 
 	std::string phiTag = "##phi";
 	tag = "phi" + phiTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &spherical_.phi, 0.01f);
+	ImGui::DragFloat(tag.c_str(), &sphericalEye_.phi, 0.01f);
 	tag = "duration" + phiTag + cameraTag;
 	ImGui::DragInt(tag.c_str(), &rotateEasing_.duration, 1, 0, 1000);
 	tag = "target" + phiTag + cameraTag;
@@ -206,7 +206,7 @@ void Camera::DrawImGui()
 
 	std::string thetaTag = "##theta";
 	tag = "theta" + thetaTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &spherical_.theta, 0.01f);
+	ImGui::DragFloat(tag.c_str(), &sphericalEye_.theta, 0.01f);
 	tag = "duration" + thetaTag + cameraTag;
 	ImGui::DragInt(tag.c_str(), &rotateEasing_.duration, 1, 0, 1000);
 	tag = "target" + thetaTag + cameraTag;
@@ -417,8 +417,8 @@ void Camera::MovingRotate()
 		rotateEasing_.easetype,
 		float(rotateEasing_.currentFrame) / float(rotateEasing_.duration)
 	);
-	spherical_.phi = spherical.x;
-	spherical_.theta = spherical.y;
+	sphericalEye_.phi = spherical.x;
+	sphericalEye_.theta = spherical.y;
 
 	rotateEasing_.currentFrame++;
 	if (rotateEasing_.currentFrame > rotateEasing_.duration)
@@ -430,7 +430,7 @@ void Camera::MovingDistance()
 {
 	if (!distanceEasing_.easeing) return;
 
-	spherical_.radius = Easing::EasingFloat(
+	sphericalEye_.radius = Easing::EasingFloat(
 		distanceEasing_.start,
 		distanceEasing_.target,
 		distanceEasing_.easetype,
@@ -510,13 +510,13 @@ void Camera::SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype
 {
 	if (duration <= 0)
 	{
-		spherical_.phi = target.x;
-		spherical_.theta = target.y;
+		sphericalEye_.phi = target.x;
+		sphericalEye_.theta = target.y;
 		rotateEasing_.easeing = false;
 	}
 	else
 	{
-		rotateEasing_.start = Vector3{ spherical_.phi, spherical_.theta, 0.0f };
+		rotateEasing_.start = Vector3{ sphericalEye_.phi, sphericalEye_.theta, 0.0f };
 		rotateEasing_.target = target;
 		rotateEasing_.duration = duration;
 		rotateEasing_.currentFrame = 0;
@@ -528,12 +528,12 @@ void Camera::SetDistanceTarget(float target, int32_t duration, EaseType easetype
 {
 	if (duration <= 0)
 	{
-		spherical_.radius = target;
+		sphericalEye_.radius = target;
 		distanceEasing_.easeing = false;
 	}
 	else
 	{
-		distanceEasing_.start = spherical_.radius;
+		distanceEasing_.start = sphericalEye_.radius;
 		distanceEasing_.target = target;
 		distanceEasing_.duration = duration;
 		distanceEasing_.currentFrame = 0;
@@ -545,8 +545,7 @@ void Camera::SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType ease
 {
     if (duration <= 0)
     {
-		screenSize_.x = target.x;
-		screenSize_.y = target.y;
+		screenSize_ = target;
 		screenSizeEasing_.easeing = false;
         Resize();
 	}

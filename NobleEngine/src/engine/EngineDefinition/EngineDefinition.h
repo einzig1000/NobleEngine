@@ -855,15 +855,13 @@ struct VertexData
 {
     Vector4 position;
     Vector2 texcoord;
-    //float   _pad0[2];
     Vector3 normal;
-    //float   _pad1; 
 };
 
 struct VertexWeightData
 {
-	float weight;
-	uint32_t vertexIndex;
+	float weight = 0.0f;
+	uint32_t vertexIndex = 0;
 };
 
 struct JointWeightData
@@ -1109,11 +1107,11 @@ struct CollisionInf
 struct EmitterSphere
 {
     Vector3 translate;  // 座標
-    float radius;       // 射出半径
+    float radius = 1.0f;       // 射出半径
     uint32_t count;     // 射出数
-	float frequency;    // 射出頻度
-	float frequencyTime; // 射出頻度タイマ
-	uint32_t emit;      // 射出するかどうか
+	float frequency = 1.0f;    // 射出頻度
+	float frequencyTime = 0.0f; // 射出頻度タイマ
+	uint32_t emit = 0;      // 射出するかどうか
 };
 
 

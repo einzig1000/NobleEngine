@@ -1,26 +1,17 @@
 #include "Player.h"
-#include <GameObjects/Map/MapManager.h>
 
 Player::Player()
 {
 	// プレイヤーデータ初期化
 	render_.modelID_ = Game::Asset::Model::Load("resources/prototypes/model/cube/cube.obj");
+	ModelData* modelData = Game::Asset::Model::GetData(render_.modelID_);
+	SetBoundingBox(modelData->aabb[0]);
 	render_.psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_.psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_.SetupFromShaders();
 
 	c_viewCameraID_ = Game::Camera::AddCamera("PlayerView");
 	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
-
-	//SetHaveItem();
-
-	//AddItem(ItemID::作業台ブロック);
-	//for (int i = 0; i < 64; ++i)
-	//{
-	//	AddItem(ItemID::ダイヤモンド);
-	//	AddItem(ItemID::鉄インゴット);
-	//	AddItem(ItemID::棒);
-	//}
 }
 
 Player::~Player()
@@ -40,77 +31,78 @@ void Player::Initialize()
 	rotate_.velocity = Vector3(0.0f, 0.0f, 0.0f);
 	rotate_.acceleration = Vector3(0.0f, 0.0f, 0.0f);
 
-	mapManager_->RegisterCharacter(this);
-
-	haveItem_.SetCharacterPosition(translate_.value);
+	RegisterToMap();
 }
 
 void Player::Update(int32_t cameraID)
 {
 	if (Game::IO::Key::IsJustPressed('Q'))
 	{
-		inventory_.AddItem(ItemID::Tool_Sword_of_Gold);
+		AddItem(ItemID::Tool_Pickel_of_Iron);
 	}
 
-	// 移動更新
-	UpdateDash();
-	UpdateMove(cameraID);
-	UpdateJump();
+	// 移動系入力処理
+	UpdateInput(cameraID);
+	// マップ情報を見て適切に移動を適用する
+	ApplyMove();
 
 	// 移動後の視線レイ更新
-	UpdateViewRay(cameraID);
+	ComputeViewRay();
 
 	// ターゲットブロック取得
 	SetTargetBlock();
 
-	// 左クリック処理
+	// 左クリックで起きるイベント更新(ブロック破壊とか)
+	UpdateLeftClick();
+	// 右クリックで起きるイベント更新(ブロック設置とか)
+	UpdateRightClick();
+
+	// 持ってるアイテムの更新
+	UpdateHaveItem(cameraID);
+
+	// 一旦常にブロックを破壊
 	if (Game::IO::Mouse::IsHeld(0))
 	{
-		UpdateLeftClick();
+		const std::vector<AABB>& itemAABBs = GetHaveItemAABB();
+		for (const auto& aabb : itemAABBs)
+		{
+			DestroyBlockInAABB(aabb);
+		}
 	}
 
-	// 右クリック処理
-	if (Game::IO::Mouse::IsJustPressed(1))
-	{
-		UpdateRightClick();
-	}
+	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, c_viewCameraID_);
 
-	haveItem_.SetItem(inventory_.GetCurrentSelectedItemID());
-	haveItem_.Update(cameraID);
-
-	// AABB更新
-	aabb_.max = translate_.value + Vector3(0.5f, 1.0f, 0.5f);
-	aabb_.min = translate_.value - Vector3(0.5f, 0.0f, 0.5f);
-
-	// 実際に移動
-	translate_.velocity += translate_.acceleration;
-	mapManager_->SweepAABB(aabb_, translate_.velocity);
-	translate_.value += translate_.velocity;
-
-	// 接地判定更新
-	if (translate_.velocity.y == 0.0f)isGrounded_ = true;
-	else isGrounded_ = false;
-
-	Game::Camera::Setter::SetCenter(translate_.value + Vector3(0.0f, 5.0f, 0.0f), 0, EaseType::IN_BACK, c_viewCameraID_);
-
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
-	Matrix4x4 wvpMatrix = worldMatrix * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	Matrix4x4 wvpMatrix = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	int32_t texID = 2;
 
 	render_.SetCBufferData(0, ShaderType::VertexShader, &wvpMatrix);
-	render_.SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+	render_.SetCBufferData(1, ShaderType::VertexShader, &worldMatrix_);
 	render_.SetCBufferData(0, ShaderType::PixelShader, &color);
 	render_.SetCBufferData(1, ShaderType::PixelShader, &texID);
 }
 
+void Player::UpdateLeftClick()
+{
+	if (!Game::IO::Mouse::IsHeld(0)) return;
+
+	//DestroyBlockInAABB(aabb);
+}
+
+void Player::UpdateRightClick()
+{
+	if (!Game::IO::Mouse::IsJustPressed(1)) return;
+}
+
+
+
+
 void Player::Draw(int32_t renderTextureID)
 {
 	// プレイヤー描画
-	render_.Draw(renderTextureID);
+	//render_.Draw(renderTextureID);
 
-	// 所持アイテム描画
-	haveItem_.Draw(renderTextureID);
+	DrawHaveItem(renderTextureID);
 }
 
 void Player::DrawImGui()
@@ -122,23 +114,33 @@ void Player::DrawImGui()
 }
 
 
-void Player::UpdateViewRay(int32_t cameraID)
+void Player::UpdateInputSpeed()
 {
-	Vector3 cameraRot = Game::Camera::Getter::GetRotate(cameraID);
-	Vector3 direction = Game::Math::DirectionFromYawPitch(cameraRot.y, cameraRot.x);
+	if (dash_ && Game::IO::Key::IsJustReleased('W'))
+	{
+		dash_ = false;
+		speed_ = normalSpeed_;
+	}
 
-	viewRay_.origin = translate_.value;
-	//viewRay_.origin.y += translate_.value.y + 1.6f; // プレイヤーの目線の高さに調整
-	viewRay_.diff = direction.Normalized();
+	// 10フレーム以内の単タップを検知したら
+	if (Game::IO::Key::TestTapLong('W', 10))
+	{
+		dashBufferTimer_ = 30;
+	}
+	else if (dashBufferTimer_ > 0)
+	{
+		dashBufferTimer_--;
 
-	SetViewRay(viewRay_);
+		if (Game::IO::Key::IsJustPressed('W'))
+		{
+			dash_ = true;
+			speed_ = dashSpeed_;
+			dashBufferTimer_ = 0;
+		}
+	}
 }
-void Player::UpdateMove(int32_t cameraID)
+void Player::UpdateInputMove(int32_t cameraID)
 {
-	Vector3 cameraRot = Game::Camera::Getter::GetRotate(cameraID);
-	Vector3 forward = Game::Math::DirectionFromYawPitch(cameraRot.y, 0.0f);
-	forward.Normalize();
-
 	// 移動処理
 	Vector2 input(0.0f, 0.0f);
 
@@ -152,6 +154,12 @@ void Player::UpdateMove(int32_t cameraID)
 
 	if (input.x != 0.0f || input.y != 0.0f)
 	{
+		Vector3 cameraPos = Game::Camera::Getter::GetTranslate(cameraID);
+		Vector3 cameraCenter = Game::Camera::Getter::GetCenter(cameraID);
+		Vector3 cameraDir = cameraCenter - cameraPos;
+		cameraDir.y = 0.0f;
+		cameraDir.Normalize();
+
 		// 正規化
 		input.Normalize();
 
@@ -164,34 +172,16 @@ void Player::UpdateMove(int32_t cameraID)
 
 		// 進む方向ベクトル
 		moveDir = Vector3(
-			forward.x * cosA - forward.z * sinA,
-			forward.y,
-			forward.x * sinA + forward.z * cosA
+			cameraDir.x * cosA - cameraDir.z * sinA,
+			cameraDir.y,
+			cameraDir.x * sinA + cameraDir.z * cosA
 		);
 
 		moveDir.Normalize();
 	}
 	Move(moveDir, speed_);
 }
-void Player::UpdateDash()
-{
-	if (Game::IO::Key::IsJustReleased('W'))
-	{
-		speed_ = normalSpeed_;
-		if (wHeldFrames_ < 20)dashBufferTimer_ = 20;
-	}
-	if (dashBufferTimer_ > 0)
-	{
-		dashBufferTimer_--;
-		if (Game::IO::Key::IsJustPressed('W'))
-		{
-			speed_ = dashSpeed_;
-		}
-	}
-
-	wHeldFrames_ = Game::IO::Key::HoldFrames('W');
-}
-void Player::UpdateJump()
+void Player::UpdateInputJump()
 {
 	// ジャンプ処置
 	if (Game::IO::Key::IsJustPressed(VK_SPACE))
@@ -200,7 +190,9 @@ void Player::UpdateJump()
 	}
 }
 
-void Player::AddItemToItemslot(ItemID itemID)
+void Player::UpdateInput(int32_t cameraID)
 {
-	//haveItem_.AddItem(itemID);
+	UpdateInputSpeed();
+	UpdateInputJump();
+	UpdateInputMove(cameraID);
 }

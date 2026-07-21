@@ -1,5 +1,5 @@
 # 対象フォルダ（必要ならここを変更）
-$targetPath = "C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\AssetManager\Model"
+$targetPath = "C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine"
 
 # 出力ファイル
 $outputPath = "C:\Users\K024G\Desktop\A_CG2\NobleEngine\UtilityPowerShell\generated\allfiles.txt"

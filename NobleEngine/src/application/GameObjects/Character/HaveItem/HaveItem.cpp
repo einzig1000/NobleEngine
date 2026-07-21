@@ -44,10 +44,12 @@ namespace
 
 HaveItem::HaveItem()
 {
-	rightHandItemRenderObject_ = std::make_unique<RenderObject>();
-	rightHandItemRenderObject_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	rightHandItemRenderObject_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	rightHandItemRenderObject_->SetupFromShaders();
+	render_ = std::make_unique<RenderObject>();
+	render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	render_->SetupFromShaders();
+
+	itemTransform_.translate.y = 2.0f;
 }
 
 HaveItem::~HaveItem()
@@ -55,33 +57,69 @@ HaveItem::~HaveItem()
 
 void HaveItem::Update(int32_t cameraID)
 {
-    if (currentItemID != ItemID::None)
-    {
-        const ItemInfo& itemConfig = ItemConfig::Instance().GetItemInfo(currentItemID);
+	if (currentItemID_ != ItemID::None)
+	{
+		Vector3 cameraCenter = Game::Camera::Getter::GetCenter(cameraID);
+		Vector3 cameraPos = Game::Camera::Getter::GetTranslate(cameraID);
+		Vector3 cameraDir = cameraCenter - cameraPos;
+		cameraDir.y = 0.0f;
+		cameraDir.Normalize();
+		pivotTransform_.rotate.y = std::atan2(cameraDir.x, cameraDir.z);
 
-        rightHandItemRenderObject_->modelID_ = itemConfig.modelID;
-		Matrix4x4 world = Matrix4x4::MakeTranslateMatrix(*charactorPosition_);
-        Matrix4x4 wvp = world * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-        Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-        int32_t textureID = itemConfig.textureID;
 
-        rightHandItemRenderObject_->SetCBufferData(0, ShaderType::VertexShader, &wvp);
-        rightHandItemRenderObject_->SetCBufferData(1, ShaderType::VertexShader, &world);
-        rightHandItemRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &color);
-        rightHandItemRenderObject_->SetCBufferData(1, ShaderType::PixelShader, &textureID);
+		if (Game::IO::Mouse::IsHeld(0))
+		{
+			pivotTransform_.rotate.x += 0.1f;
+		}
 
-		itemAABB_ = CreateAABB(itemAABB_, world);
-    }
+		if (Game::IO::Mouse::IsJustReleased(0))
+		{
+			pivotTransform_.rotate.x = 0.0f;
+		}
+
+		const ItemInfo& itemConfig = ItemConfig::Instance().GetItemInfo(currentItemID_);
+
+		render_->modelID_ = itemConfig.modelID;
+		itemAABB_ = Game::Asset::Model::GetData(itemConfig.modelID)->aabb;
+
+		Matrix4x4 itemWorld = Matrix4x4::MakeAffineMatrix(itemTransform_.scale, itemTransform_.rotate, itemTransform_.translate);
+		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(pivotTransform_.scale, pivotTransform_.rotate, pivotTransform_.translate);
+		itemWorld = itemWorld * pivotWorld * parentWorldMatrix_;
+		Matrix4x4 wvp = itemWorld * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+		int32_t textureID = itemConfig.textureID;
+
+		render_->SetCBufferData(0, ShaderType::VertexShader, &wvp);
+		render_->SetCBufferData(1, ShaderType::VertexShader, &itemWorld);
+		render_->SetCBufferData(0, ShaderType::PixelShader, &color);
+		render_->SetCBufferData(1, ShaderType::PixelShader, &textureID);
+
+		itemAABB_ = CreateAABB(itemAABB_, itemWorld);
+	}
     else
     {
-        rightHandItemRenderObject_->modelID_ = -1;
+        render_->modelID_ = -1;
     }
+
+
+
 }
 
 void HaveItem::Draw(int32_t renderTextureID)
 {
-	if (rightHandItemRenderObject_->modelID_ >= 0)
+	if (render_->modelID_ >= 0)
 	{
-		rightHandItemRenderObject_->Draw(renderTextureID);
+		render_->Draw(renderTextureID);
 	}
+
+	ImGui::Begin("HaveItem");
+	ImGui::DragFloat3("Item Position", &itemTransform_.translate.x, 0.1f);
+	ImGui::DragFloat3("Item Rotation", &itemTransform_.rotate.x, 0.01f);
+	ImGui::DragFloat3("Item Scale", &itemTransform_.scale.x, 0.1f);
+	ImGui::Separator();
+	ImGui::DragFloat3("pivot Position", &pivotTransform_.translate.x, 0.1f);
+	ImGui::DragFloat3("pivot Rotation", &pivotTransform_.rotate.x, 0.01f);
+	ImGui::DragFloat3("pivot Scale", &pivotTransform_.scale.x, 0.1f);
+
+	ImGui::End();
 }

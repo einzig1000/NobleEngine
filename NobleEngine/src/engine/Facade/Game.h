@@ -436,8 +436,6 @@ namespace Game
 			Vector3 GetCenter(int32_t cameraID = 0);
 			/// <returns>カメラのワールド座標</returns>
 			Vector3 GetTranslate(int32_t cameraID = 0);
-			/// <returns>カメラの回転量(オイラー角)</returns>
-			Vector3 GetRotate(int32_t cameraID = 0);
 			/// <returns>カメラのCenterまでの距離</returns>
 			float GetDistance(int32_t cameraID = 0);
 			/// <returns>カメラのビュープロジェクション行列</returns>

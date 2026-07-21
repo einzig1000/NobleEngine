@@ -54,10 +54,22 @@ TestParticle::TestParticle()
 			Vector3 normal2 = { -sinNext, 0.0f, cosNext };
 
 			// 4頂点
-			VertexData v1{ { -sin * kTopRadius,    kHeight, cos * kTopRadius,    1.0f }, { u,     0.0f }, normal1 };
-			VertexData v2{ { -sinNext * kTopRadius,    kHeight, cosNext * kTopRadius,    1.0f }, { uNext, 0.0f }, normal2 };
-			VertexData v3{ { -sin * kBottomRadius, 0.0f,    cos * kBottomRadius, 1.0f }, { u,     1.0f }, normal1 };
-			VertexData v4{ { -sinNext * kBottomRadius, 0.0f,    cosNext * kBottomRadius, 1.0f }, { uNext, 1.0f }, normal2 };
+			VertexData v1;
+			v1.position = Vector4{ -sin * kTopRadius, kHeight, cos * kTopRadius, 1.0f };
+			v1.texcoord = Vector2{ u, 0.0f };
+			v1.normal = normal1;
+			VertexData v2;
+			v2.position = Vector4{ -sinNext * kTopRadius, kHeight, cosNext * kTopRadius, 1.0f };
+			v2.texcoord = Vector2{ uNext, 0.0f };
+			v2.normal = normal2;
+			VertexData v3;
+			v3.position = Vector4{ -sin * kBottomRadius, 0.0f,    cos * kBottomRadius, 1.0f };
+			v3.texcoord = Vector2{ u,     1.0f };
+			v3.normal = normal1;
+			VertexData v4;
+			v4.position = Vector4{ -sinNext * kBottomRadius, 0.0f,    cosNext * kBottomRadius, 1.0f };
+			v4.texcoord = Vector2{ uNext, 1.0f };
+			v4.normal = normal2;
 
 			// 三角形① (左上 → 右上 → 左下)
 			vertexData_Cylinder.push_back(v1);
@@ -103,10 +115,22 @@ TestParticle::TestParticle()
 			Vector3 normal = { 0.0f, 0.0f, 1.0f };
 
 			// 4頂点
-			VertexData v1{ { -sin * kOuterRadius,     cos * kOuterRadius,     0.0f, 1.0f }, { u,     0.0f }, normal };
-			VertexData v2{ { -sinNext * kOuterRadius, cosNext * kOuterRadius, 0.0f, 1.0f }, { uNext, 0.0f }, normal };
-			VertexData v3{ { -sin * kInnerRadius,     cos * kInnerRadius,     0.0f, 1.0f }, { u,     1.0f }, normal };
-			VertexData v4{ { -sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f }, { uNext, 1.0f }, normal };
+			VertexData v1;
+			v1.position = Vector4{ -sin * kOuterRadius,     cos * kOuterRadius,     0.0f, 1.0f };
+			v1.texcoord = Vector2{ u,     0.0f };
+			v1.normal = normal;
+			VertexData v2;
+			v2.position = Vector4{ -sinNext * kOuterRadius, cosNext * kOuterRadius, 0.0f, 1.0f };
+			v2.texcoord = Vector2{ uNext, 0.0f };
+			v2.normal = normal;
+			VertexData v3;
+			v3.position = Vector4{ -sin * kInnerRadius,     cos * kInnerRadius,     0.0f, 1.0f };
+			v3.texcoord = Vector2{ u,     1.0f };
+			v3.normal = normal;
+			VertexData v4;
+			v4.position = Vector4{ -sinNext * kInnerRadius, cosNext * kInnerRadius, 0.0f, 1.0f };
+			v4.texcoord = Vector2{ uNext, 1.0f };
+			v4.normal = normal;
 
 			// 三角形① (左上 → 右上 → 左下)
 			vertexData_Ring.push_back(v1);
@@ -183,10 +207,22 @@ TestParticle::TestParticle()
 				float v = (float)stack / (float)kStacks;
 				float vNext = (float)(stack + 1) / (float)kStacks;
 
-				VertexData vtx1{ { p1.x, p1.y, p1.z, 1.0f }, { u,     v },     p1.Normalized() };
-				VertexData vtx2{ { p2.x, p2.y, p2.z, 1.0f }, { uNext, v },     p2.Normalized() };
-				VertexData vtx3{ { p3.x, p3.y, p3.z, 1.0f }, { u,     vNext },  p3.Normalized() };
-				VertexData vtx4{ { p4.x, p4.y, p4.z, 1.0f }, { uNext, vNext },  p4.Normalized() };
+				VertexData vtx1;
+				vtx1.position = Vector4{ p1.x, p1.y, p1.z, 1.0f };
+				vtx1.texcoord = Vector2{ u,     v };
+				vtx1.normal = p1.Normalized();
+				VertexData vtx2;
+				vtx2.position = Vector4{ p2.x, p2.y, p2.z, 1.0f };
+				vtx2.texcoord = Vector2{ uNext, v };
+				vtx2.normal = p2.Normalized();
+				VertexData vtx3;
+				vtx3.position = Vector4{ p3.x, p3.y, p3.z, 1.0f };
+				vtx3.texcoord = Vector2{ u,     vNext };
+				vtx3.normal = p3.Normalized();
+				VertexData vtx4;
+				vtx4.position = Vector4{ p4.x, p4.y, p4.z, 1.0f };
+				vtx4.texcoord = Vector2{ uNext, vNext };
+				vtx4.normal = p4.Normalized();
 
 				// 三角形① (左上 → 右上 → 左下)
 				vertexData_Sphere.push_back(vtx1);

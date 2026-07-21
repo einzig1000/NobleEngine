@@ -26,9 +26,13 @@ void FixFPS::UpdateFixFPS()
     std::chrono::steady_clock::time_point currentTime =
         std::chrono::steady_clock::now();
 
-    // 経過時間を計算
+	// 経過時間を計算(1フレームにかかった時間)
     std::chrono::microseconds elapsedTime =
         std::chrono::duration_cast<std::chrono::microseconds>(currentTime - previousTime_);
+
+	// このフレーム時間を継続出来るならＦＰＳはどこまでだせたかをmaxFPS_に格納
+	maxFPS_ = static_cast<float>(std::round(1.0 / (elapsedTime.count() * 1e-6)));
+    averageMaxFPS_ = (averageMaxFPS_ * 0.99f) + (maxFPS_ * 0.01f);
 
     // 目標フレーム時間に満たないなら待機
     if (elapsedTime < kFrame)

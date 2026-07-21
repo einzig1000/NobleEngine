@@ -50,6 +50,7 @@ Chunk::Chunk()
 	//renderData_->psoConfig_.vs = "resources/shaders/Block.VS.hlsl";
 	renderData_->psoConfig_.ms = "resources/shaders/Block.MS.hlsl";
 	renderData_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
+	renderData_->psoConfig_.rasterizerID = RasterizerID::Solid_FrontCull;
 	renderData_->SetupFromShaders();
 
 	colorHeapIndex_ = Game::Resource::CreateDynamic();

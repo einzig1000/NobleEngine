@@ -17,10 +17,10 @@ int32_t LocalMod(int32_t a, int32_t n)
 MapManager::MapManager()
 {
 	drawRadius_.x = 1;
-	drawRadius_.y = 1;
+	drawRadius_.y = 2;
 	drawRadius_.z = 1;
 	updateRadius_.x = 1;
-	updateRadius_.y = 1;
+	updateRadius_.y = 2;
 	updateRadius_.z = 1;
 }
 
@@ -292,6 +292,7 @@ void MapManager::Update(int32_t cameraID)
 			}
 		}
 	}
+
 }
 
 void MapManager::Draw(int32_t renderTargetID)
@@ -321,41 +322,57 @@ void MapManager::DrawImGui()
 	ImGui::Begin("MapManager");
 	ImGui::Text("Chunks count : %zu", chunks.size());
 	ImGui::Text("GenerateQueue: %zu", chunkScheduled_.size());
+
+	if (ImGui::Button("Save Map"))
+	{
+		for (int32_t dx = -10; dx <= 10; ++dx)
+		{
+			for (int32_t dy = -10; dy <= 10; ++dy)
+			{
+				for (int32_t dz = -10; dz <= 10; ++dz)
+				{
+					if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+					{
+						continue;
+					}
+
+					Vector3int chunkPos(dx, dy, dz);
+					EnsureChunkScheduled(chunkPos);
+				}
+			}
+		}
+	}
+
 	ImGui::End();
 }
 
-//// 指定位置のブロックを破壊
-//void MapManager::DestroyBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex)
-//{
-//	// 破壊するチャンクを取得
-//	Chunk* chunk = GetChunk(chunkPos);
-//	if (!chunk) return;
-//
-//	// 破壊するブロックを取得
-//	Block* targetBlock = chunk->blocks_[localIndex.x][localIndex.y][localIndex.z].get();
-//	if (!targetBlock) return;
-//
-//	// 破壊するブロックのIDを取得
-//	const BlockID destroyedId = targetBlock->GetBlockID();
-//	if (destroyedId == BlockID::Air) return;
-//
-//	// ブロック破壊
-//	chunk->DestroyBlock(localIndex);
-//
-//	// 露出状態更新
-//	chunk->SetExposedAroundBlocks(localIndex);
-//
-//	// ドロップアイテム生成
-//	//AddDropItemAt(targetBlock->position_, BlockIdToDropItemId(destroyedId));
-//}
+// このAABBに含まれるブロックをすべて破壊(空気に置き換え)する
+void MapManager::DestroyBlockInAABB(const AABB& aabb)
+{
+	int32_t countX = std::max(1, static_cast<int32_t>((aabb.max.x - aabb.min.x) / Constexprs::kBlockSize));
+	int32_t countY = std::max(1, static_cast<int32_t>((aabb.max.y - aabb.min.y) / Constexprs::kBlockSize));
+	int32_t countZ = std::max(1, static_cast<int32_t>((aabb.max.z - aabb.min.z) / Constexprs::kBlockSize));
 
-//void MapManager::AddDropItemAt(const Vector3& position, ItemID id)
-//{
-//	//Vector3 dropPos = position;
-//	//dropPos.x += Game::Math::RandFloat(-0.3f, 0.3f, 2);
-//	//dropPos.z += Game::Math::RandFloat(-0.3f, 0.3f, 2);
-//	//dropItemManager_->AddItem(id, dropPos);
-//}
+	// 決定された軸とブロック数に従って走査
+	for (int32_t x = 0; x < countX; ++x)
+	{
+		for (int32_t y = 0; y < countY; ++y)
+		{
+			for (int32_t z = 0; z < countZ; ++z)
+			{
+				// 基準位置から現在の走査距離を加算してチェック座標を算出
+				Vector3 checkPos = aabb.min + Vector3((x * Constexprs::kBlockSize), (y * Constexprs::kBlockSize), (z * Constexprs::kBlockSize));
+
+				// チャンク座標とローカル座標を取得
+				Vector3int chunkIndex = ChunkIndexByPosition(checkPos);
+				Vector3int localIndex = BlockIndexByPosition(checkPos);
+
+				// 
+				SetBlockAt(chunkIndex, localIndex, BlockID::Air);
+			}
+		}
+	}
+}
 
 // 指定位置にブロックを設置
 bool MapManager::SetBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id)

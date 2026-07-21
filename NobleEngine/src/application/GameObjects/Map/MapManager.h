@@ -39,6 +39,9 @@ public:
 	void DestroyBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex);
 	void AddDropItemAt(const Vector3& position, ItemID id);
 
+	// AABB内のブロックを破壊する
+	void DestroyBlockInAABB(const AABB& aabb);
+
 	// ブロック設置
 	bool SetBlockAt(const lookAtBlock& lab, BlockID id);
 	bool SetBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id);

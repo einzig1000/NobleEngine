@@ -38,7 +38,7 @@ TestAnimation::TestAnimation()
 
 	resultSRVID_ = Game::Resource::CreateCompute(sizeof(VertexData), size_t(modelData->vertices.size()));
 
-	compute_->size.x = modelData->vertices.size();
+	compute_->size.x = int32_t(modelData->vertices.size());
 
 	compute_->RegisterOutput(resultSRVID_);
 }

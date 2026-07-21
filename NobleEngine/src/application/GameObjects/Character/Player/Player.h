@@ -13,24 +13,22 @@ public:
 
 	void Initialize() override;
 	void Update(int32_t cameraID) override;
+	void UpdateLeftClick();		// 左クリック時の処理(ブロック破壊とか攻撃とか)
+	void UpdateRightClick();	// 右クリック時の処理(ブロック設置とか)
 	void Draw(int32_t renderTextureID) override;
 	void DrawImGui() override;
 
-	void UpdateViewRay(int32_t cameraID);	// 視線レイ更新
-	void UpdateMove(int32_t cameraID);		// 移動更新
-	void UpdateDash();		// ダッシュ更新
-	void UpdateJump();		// ジャンプ更新
+	void UpdateInput(int32_t cameraID);		// 入力更新
+	void UpdateInputMove(int32_t cameraID);		// 移動更新
+	void UpdateInputSpeed();						// ダッシュ更新
+	void UpdateInputJump();						// ジャンプ更新
 
-	// アイテムスロットにアイテムを追加
-	void AddItemToItemslot(ItemID itemID);
-
+private:
 	// 速度
-	float speed_ = 0.15f;
-	float normalSpeed_ = 0.13f;
-	float dashSpeed_ = 0.20f;
+	float normalSpeed_ = 0.30f;
+	float dashSpeed_ = 0.50f;
 
 	// ダッシュ関連
-	int32_t wHeldFrames_ = 0;
 	int32_t dashBufferTimer_ = 0;
 	bool dash_ = false;
 };
