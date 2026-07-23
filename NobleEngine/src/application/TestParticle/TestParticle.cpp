@@ -269,7 +269,7 @@ TestParticle::TestParticle()
 	particle_->instanceNum_ = 1024;
 
 	initializeCompute_ = std::make_unique<ComputeObject>();
-	initializeCompute_->psoConfig_.cs = "resources/shaders/Particle/Particle.Initialize.CS.hlsl";
+	initializeCompute_->psoConfig_.cs = "resources/shaders/Particle/InitializeParticle.CS.hlsl";
 	initializeCompute_->SetupFromShaders();
 	initializeCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
 	initializeCompute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
@@ -277,11 +277,18 @@ TestParticle::TestParticle()
 	initializeCompute_->RegisterOutput(freeCounterSRVID_);
 	initializeCompute_->Dispatch();
 
-	Compute_ = std::make_unique<ComputeObject>();
-	Compute_->psoConfig_.cs = "resources/shaders/Particle/EmitParticle.CS.hlsl";
-	Compute_->SetupFromShaders();
-	Compute_->RegisterOutput(particleSRVID_);
-	Compute_->RegisterOutput(freeCounterSRVID_);
+	emitCompute_ = std::make_unique<ComputeObject>();
+	emitCompute_->psoConfig_.cs = "resources/shaders/Particle/EmitParticle.CS.hlsl";
+	emitCompute_->SetupFromShaders();
+	emitCompute_->RegisterOutput(particleSRVID_);
+	emitCompute_->RegisterOutput(freeCounterSRVID_);
+
+	updateCompute_ = std::make_unique<ComputeObject>();
+	updateCompute_->psoConfig_.cs = "resources/shaders/Particle/UpdateParticle.CS.hlsl";
+	updateCompute_->SetupFromShaders();
+	updateCompute_->RegisterOutput(particleSRVID_);
+	updateCompute_->RegisterOutput(freeCounterSRVID_);
+
 }
 
 TestParticle::~TestParticle()
@@ -344,15 +351,9 @@ void TestParticle::Update(int32_t cameraID)
 		renderSphere_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 	}
 
-	
-	TransformationMatrix perView;
-	perView.WVP = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-	perView.World = Game::Camera::Getter::GetBillboardMatrix(cameraID);
-	particle_->SetCBufferData(0, ShaderType::VertexShader, &perView);
-	particle_->SetSBufferData(0, ShaderType::VertexShader, Game::Resource::GetSRV(particleSRVID_));
 
-
-	emitterSphere.frequencyTime += Game::Time::GetDeltaTime();
+	float deltaTime = Game::Time::GetDeltaTime();
+	emitterSphere.frequencyTime += deltaTime;
 	if (emitterSphere.frequency <= emitterSphere.frequencyTime)
 	{
 		emitterSphere.frequencyTime -= emitterSphere.frequency;
@@ -364,11 +365,21 @@ void TestParticle::Update(int32_t cameraID)
 	}
 
 
-	Compute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
-	Compute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
-	Compute_->SetCBufferData(0, &emitterSphere);
+	emitCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
+	emitCompute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
+	emitCompute_->SetCBufferData(0, &emitterSphere);
 	Vector3 rand = { Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1) };
-	Compute_->SetCBufferData(1, &rand);
+	emitCompute_->SetCBufferData(1, &rand);
+
+	//updateCompute_->size.x = 1024;
+	updateCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
+	updateCompute_->SetCBufferData(0, &deltaTime);
+	
+	TransformationMatrix perView;
+	perView.WVP = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	perView.World = Game::Camera::Getter::GetBillboardMatrix(cameraID);
+	particle_->SetCBufferData(0, ShaderType::VertexShader, &perView);
+	particle_->SetSBufferData(0, ShaderType::VertexShader, Game::Resource::GetSRV(particleSRVID_));
 }
 
 void TestParticle::Draw(int32_t renderTextureID)
@@ -384,7 +395,7 @@ void TestParticle::Draw(int32_t renderTextureID)
 	//renderCylinder_->Draw(renderTextureID);
 	//renderSphere_->Draw(renderTextureID);
 
-	Compute_->Dispatch();
+	emitCompute_->Dispatch();
+	updateCompute_->Dispatch();
 	particle_->Draw(renderTextureID);
-	//Compute_->Dispatch();
 }

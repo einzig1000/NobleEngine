@@ -76,8 +76,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
                 // カウント分Particleを射出する
                 gParticles[particleindex].scale = generator.Generate3d();
                 gParticles[particleindex].translate = generator.Generate3d();
+                float3 randomDirection = generator.Generate3d();
+                randomDirection = randomDirection * 2.0f - 1.0f;
+                gParticles[particleindex].velocity = randomDirection * 0.1f;
                 gParticles[particleindex].color.rgb = generator.Generate3d();
                 gParticles[particleindex].color.a = 1.0f;
+                gParticles[particleindex].lifeTime = 5.0f;
+
             }
         }
     }
