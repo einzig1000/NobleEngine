@@ -6,7 +6,7 @@ namespace Easing
 {
 	float EasingFloat(float start, float end, EaseType easeType, float t);
 	Vector3 EasingVector3(Vector3 start, Vector3 end, EaseType easeType, float t);
-	int COLOR(int startColor, int endColor, float t);
+	uint32_t COLOR(uint32_t startColor, uint32_t endColor, float t);
 	
 	float CalculateEasedValue(float start, float end, EaseType easeType, float t);
 

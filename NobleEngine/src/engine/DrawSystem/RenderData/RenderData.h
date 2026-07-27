@@ -70,7 +70,7 @@
 //    // 画面内に存在するか
 //    bool inPicture = false;
 //    // マウスとの衝突判定
-//    int isCollisionMouseRay = -1; // -1:非衝突, 0:最初に衝突, 1:2番目
+//    int32_t isCollisionMouseRay = -1; // -1:非衝突, 0:最初に衝突, 1:2番目
 //
 //
 //    // 他のオブジェクトとの衝突判定
@@ -120,16 +120,16 @@
 //    Matrix4x4 SetWorldMatrix();
 //
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //
 //
 //    // 初期化済みフラグ
 //    bool initialized = false;
 //
 //    // 衝突フラグ
-//    unsigned int CollisionFlags = 0x00000000;
+//    unsigned int32_t CollisionFlags = 0x00000000;
 //    // 前フレームの衝突フラグ
-//    unsigned int preCollisionFlags = 0x00000000;
+//    unsigned int32_t preCollisionFlags = 0x00000000;
 //    // 衝突したときの反発係数
 //    const float restitution = 0.0f;
 //
@@ -177,7 +177,7 @@
 //    // マウスと衝突してるか？
 //    bool isCollisionMouseRay = false;
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //    std::optional<std::string> name;
 //
 //    void Draw();
@@ -212,7 +212,7 @@
 //    // 描画オプション
 //    DrawOptions options;
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //    std::optional<std::string> name;
 //
 //    void Draw();
@@ -251,7 +251,7 @@
 //    // 描画オプション
 //    DrawOptions options;
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //    std::optional<std::string> name;
 //
 //    void Draw();
@@ -272,7 +272,7 @@
 //    // 点([0]は使用負荷)
 //    std::vector<Vector3> points;
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //    std::optional<std::string> name;
 //    // 色
 //    uint32_t color = 0xFFFFFFFF;
@@ -368,7 +368,7 @@
 //    /// 現在存在するパーティクル数
 //    uint32_t currentSum = 0;
 //
-//    int ID = 0;
+//    int32_t ID = 0;
 //
 //    uint32_t frame = 0;                 // 経過フレーム
 //
@@ -482,7 +482,7 @@
 //	// 空きスロット管理
 //    std::vector<uint32_t> freeSlots_;
 //
-//    int ID = 0;
+//    int32_t ID = 0;
 //
 //	static std::vector<RenderData_Block*> renderBlocks;
 //};

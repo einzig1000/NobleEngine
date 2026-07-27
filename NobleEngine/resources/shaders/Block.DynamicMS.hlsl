@@ -1,38 +1,6 @@
 // ブロックIDを毎フレーム受け取り、その場で頂点を計算して描画するメッシュシェーダー(AS無し版)
 // 2x2x2ボクセルを1グループとして処理する。DispatchMeshは (グループ総数, 1, 1) の1次元で呼ぶ想定。
 
-struct MSOutput
-{
-    float4 position : SV_Position;
-    float3 normal : NORMAL;
-    float4 color : COLOR0;
-};
-
-cbuffer ChunkInfo : register(b0)
-{
-    // ハロー込みブロックIDバッファ(StructuredBuffer<uint>)のbindlessインデックス
-    uint blockIdSrvIndex;
-    // チャンクのボクセル数 (Constexprs::kChunkX/Y/Z、各軸偶数である必要あり)
-    uint3 chunkDim;
-    // このチャンクのワールド座標原点
-    float3 chunkWorldOrigin;
-    // ブロックサイズ (Constexprs::kBlockSize)
-    float blockSize;
-};
-
-cbuffer WVP : register(b1)
-{
-    float4x4 wvp;
-}
-
-cbuffer BlockInfoTable : register(b2)
-{
-    // x: 16進数color                  BlockInfo::color
-    // y: 透過ブロックかどうか         BlockInfo::isTransparent
-    // z, w: きっといつか使う
-    uint4 blockInfo[16]; // BlockID::MAX(11) より大きいサイズを確保
-};
-
 static const float3 kCubeCorners[8] =
 {
     float3(0, 0, 0), float3(1, 0, 0), float3(0, 1, 0), float3(1, 1, 0),
@@ -63,6 +31,39 @@ static const int3 kFaceDir[6] =
     int3(0, 1, 0), int3(0, -1, 0),
     int3(0, 0, 1), int3(0, 0, -1),
 };
+
+
+
+struct MSOutput
+{
+    float4 position : SV_Position;
+    float3 normal : NORMAL;
+    float4 color : COLOR0;
+};
+
+cbuffer ChunkInfo : register(b0)
+{
+	// 隣接チャンク１ブロック分も含めたブロックID配列SRVスロット
+    uint blockIdSrvIndex;
+    // チャンクのボクセル数 (Constexprs::kChunkX/Y/Z、各軸偶数である必要あり)
+    uint3 chunkDim;
+    // このチャンクのワールド座標原点
+    float3 chunkWorldOrigin;
+    // ブロックサイズ (Constexprs::kBlockSize)
+    float blockSize;
+};
+
+cbuffer WVP : register(b1)
+{
+    float4x4 wvp;
+}
+
+StructuredBuffer<uint> blockIds : register(t0);
+
+// x: 16進数color                  BlockInfo::color
+// y: 透過ブロックかどうか         BlockInfo::isTransparent
+// z, w: きっといつか使う
+StructuredBuffer<uint4> BlockInfoTable : register(t1);
 
 // 2x2x2グループ内でのスレッド数と、そこから出る最大面数(8ボクセル×6面=48面)ぶんの領域
 groupshared uint gFaceCountPerThread[8];
@@ -117,7 +118,7 @@ void main(
     int3 voxelPos = groupOrigin + localOffset;
     
     // ブロックIDを取得
-    StructuredBuffer<uint> blockIds = ResourceDescriptorHeap[blockIdSrvIndex];
+    //StructuredBuffer<uint> blockIds = ResourceDescriptorHeap[blockIdSrvIndex];
     uint blockId = blockIds[FlattenHalo(voxelPos)];
 
     // 露出している面をビットマスクで求める(BlockID::Air == 0)
@@ -130,7 +131,7 @@ void main(
             // 隣接ブロックのIDを取得
             uint neighborId = blockIds[FlattenHalo(voxelPos + kFaceDir[f])];
             // 隣接ブロックが空気or透過ブロックなら、この面は露出している
-            bool neighborIsAirOrTransparent = (neighborId == 0) || (blockInfo[neighborId].y != 0);
+            bool neighborIsAirOrTransparent = (neighborId == 0) || (BlockInfoTable[neighborId].y != 0);
             if (neighborIsAirOrTransparent)
                 faceMask |= (1u << f);
         }
@@ -153,18 +154,23 @@ void main(
             offset += gFaceCountPerThread[i];
         }
         // 総頂点数, 総プリミティブ数を送る
-        SetMeshOutputCounts(offset * 4, offset * 2);
+        //SetMeshOutputCounts(offset * 4, offset * 2);
     }
     // gtid 1～7を待たせる
     GroupMemoryBarrierWithGroupSync();
+    
+    // 総頂点数, 総プリミティブ数を送る
+    uint totalFaceCount = gFaceOffsetPerThread[7] + gFaceCountPerThread[7];
+    SetMeshOutputCounts(totalFaceCount * 4, totalFaceCount * 2);
     
     // 自スレッドに割り当てられた書き込み開始面番号を取得
     uint faceOut = gFaceOffsetPerThread[gtid];
     // このブロックのワールド空間での原点座標（左下奥）を計算
     float3 worldVoxelOrigin = chunkWorldOrigin + float3(voxelPos) * blockSize;
     // ブロックの属性テーブルから色情報を取り出して float4(RGBA) に変換
-    uint4 info = blockInfo[blockId];
+    uint4 info = BlockInfoTable[blockId];
     float4 color = UnpackColor(info.x);
+    //float4 color = float4(0.f, 0.f, 0.f, 1.0f);
 
     // 6面ループ
     [unroll]
@@ -194,8 +200,8 @@ void main(
                 verts[vBase + c] = vOut;
             }
 
-            tris[pBase + 0] = uint3(vBase, vBase + 1, vBase + 2);
-            tris[pBase + 1] = uint3(vBase, vBase + 2, vBase + 3);
+            tris[pBase + 0] = uint3(vBase, vBase + 2, vBase + 1);
+            tris[pBase + 1] = uint3(vBase, vBase + 3, vBase + 2);
 
             faceOut++;
         }

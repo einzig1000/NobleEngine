@@ -1,8 +1,18 @@
-#include "ItemConfig.h"
+#include "ItemDataLoader.h"
 #include <Utilities/Json/JsonManager.h>
+#include <ResourceLoader/Data/Item/Bank/ItemDataBank.h>
 #include <Game.h>
 
-ItemConfig::ItemConfig()
+ItemDataLoader::ItemDataLoader(ItemDataBank* bank)
+	: bank_(bank)
+{
+	Load();
+}
+
+ItemDataLoader::~ItemDataLoader()
+{}
+
+void ItemDataLoader::Load()
 {
 	std::vector<std::string> blockKeys;
 	JsonManager::Load("resources/json/BlockConfig.json", "/Keys", blockKeys);
@@ -16,9 +26,10 @@ ItemConfig::ItemConfig()
 		JsonManager::Load("resources/json/BlockConfig.json", "/" + blockIDStr + "/durability", info.durability);
 		JsonManager::Load("resources/json/BlockConfig.json", "/" + blockIDStr + "/isTransparent", info.isTransparent);
 
-		blockInfoMap_[info.ID] = info;
+		bank_->SetBlockInfo(info.ID, info);
 	}
 
+	bank_->CreateBlockInfoTable();
 
 	std::vector<std::string> toolKeys;
 	JsonManager::Load("resources/json/ToolConfig.json", "/Keys", toolKeys);
@@ -32,7 +43,7 @@ ItemConfig::ItemConfig()
 		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
 		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/miningSpeed", info.miningSpeed);
 
-		toolInfoMap_[toolID] = info;
+		bank_->SetToolInfo(toolID, info);
 	}
 
 
@@ -62,40 +73,16 @@ ItemConfig::ItemConfig()
 			std::string blockIDStr;
 			JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/blockID", blockIDStr);
 			BlockID blockID = StringToEnum<BlockID>(blockIDStr);
-			info.blockInfo = blockInfoMap_[blockID];
+			info.blockID = blockID;
 		}
 		else if (info.genre == ItemGenre::Tool)
 		{
 			std::string toolIDStr;
 			JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/toolID", toolIDStr);
 			ToolID toolID = StringToEnum<ToolID>(toolIDStr);
-			info.toolInfo = toolInfoMap_[toolID];
+			info.toolID = toolID;
 		}
 
-		itemInfoMap_[info.id] = info;
+		bank_->SetItemInfo(info.id, info);
 	}
-}
-
-ItemConfig::~ItemConfig()
-{}
-
-ItemConfig& ItemConfig::Instance()
-{
-	static ItemConfig instance;
-	return instance;
-}
-
-const ItemInfo& ItemConfig::GetItemInfo(ItemID id)
-{
-	return itemInfoMap_.at(id);
-}
-
-const BlockInfo& ItemConfig::GetBlockInfo(BlockID id)
-{
-	return blockInfoMap_.at(id);
-}
-
-const ToolInfo& ItemConfig::GetToolInfo(ToolID id)
-{
-	return toolInfoMap_.at(id);
 }

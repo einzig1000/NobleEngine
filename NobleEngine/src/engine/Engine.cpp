@@ -1,5 +1,4 @@
 #include "Engine.h"
-//#include <Utilities/functions.h>
 #include <Window/WindowManager.h>
 #include <DirectX/DirectXManager.h>
 #include <DrawSystem/DrawSystem.h>
@@ -50,7 +49,7 @@ Engine& Engine::Instance()
 }
 
 // 初期化用
-void Engine::Initialize(int width, int height, const std::wstring& title)
+void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title)
 {
 	// COM の初期化
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);

@@ -2,48 +2,8 @@
 #include <definition/constexprs.h>
 #include <algorithm>
 
-Block::Block()
-{
-}
 
-Block::~Block()
-{
-}
-
-void Block::Initialize()
-{
-}
-
-void Block::SetBlockType(BlockInfo info)
-{
-	blockInfo_ = info;
-}
-
-void Block::SetBlockPosition(const Vector3& position)
-{
-	position_ = position;
-	aabb_.min = position - Vector3(Constexprs::kBlockSize / 2.0f, Constexprs::kBlockSize / 2.0f, Constexprs::kBlockSize / 2.0f);
-	aabb_.max = position + Vector3(Constexprs::kBlockSize / 2.0f, Constexprs::kBlockSize / 2.0f, Constexprs::kBlockSize / 2.0f);
-}
-
-void Block::Update()
-{
-	// 表面に露出していなかったらreturn
-	if (!IsExposed()) return;
-
-	// 色更新
-	//UpdateColor();
-}
-
-void Block::UpdateColor()
-{
-	lightEmission_ = std::clamp(lightEmission_, 0, 9);
-
-	float emission = 1.0f * (float(lightEmission_) / 9.0f);
-
-	// 輝度に応じて色を変更
-	//color_ = Vector4(emission, emission, emission, 1.0f);
-}
+void Block::SetBlockID(BlockID info) { blockID_ = info; }
 
 bool Block::IsExposed()
 {

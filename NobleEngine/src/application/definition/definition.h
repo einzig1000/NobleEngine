@@ -196,15 +196,14 @@ struct ItemInfo
 {
 	// アイテムID
 	ItemID id = ItemID::None;
-
 	// アイテムジャンル
 	ItemGenre genre = ItemGenre::None;
 
 	// ブロックとして扱う時のデータ(ItemGenre::Blockの時のみ有効)
-	BlockInfo blockInfo;
-
+	BlockID blockID = BlockID::Air;
 	// ツールとして扱う時のデータ(ItemGenre::Toolの時のみ有効)
-	ToolInfo toolInfo;
+	ToolID toolID = ToolID::None;
+
 
 	// テクスチャ
 	int32_t textureID = -1;
@@ -525,7 +524,7 @@ struct RayHitResult
 
 struct Rect
 {
-	int minX, minY;
-	int maxX, maxY;
+	int32_t minX, minY;
+	int32_t maxX, maxY;
 	bool empty = true;
 };

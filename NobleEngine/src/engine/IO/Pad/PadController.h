@@ -15,19 +15,19 @@ public:
 
     void Update();
 
-	bool IsHeld(int padIndex, BYTE button) const;
-	bool IsJustPressed(int padIndex, BYTE button) const;
-	bool IsJustReleased(int padIndex, BYTE button) const;
+	bool IsHeld(int32_t padIndex, BYTE button) const;
+	bool IsJustPressed(int32_t padIndex, BYTE button) const;
+	bool IsJustReleased(int32_t padIndex, BYTE button) const;
 
-    uint32_t HoldFrames(int padIndex, BYTE button) const;	// 押されてからの経過フレーム数
-	Vector2 GetLeftStick(int padIndex) const;	    // 左スティックの値取得 (-1.0f ～ 1.0f)
-	Vector2 GetRightStick(int padIndex) const;	// 右スティックの値取得 (-1.0f ～ 1.0f)
+    uint32_t HoldFrames(int32_t padIndex, BYTE button) const;	// 押されてからの経過フレーム数
+	Vector2 GetLeftStick(int32_t padIndex) const;	    // 左スティックの値取得 (-1.0f ～ 1.0f)
+	Vector2 GetRightStick(int32_t padIndex) const;	// 右スティックの値取得 (-1.0f ～ 1.0f)
 
     // トリガーの値取得（0.0f ～ 1.0f）
-    float GetLeftTrigger(int padIndex) const;
-    float GetRightTrigger(int padIndex) const;
+    float GetLeftTrigger(int32_t padIndex) const;
+    float GetRightTrigger(int32_t padIndex) const;
     // ゲームパッド振動
-    void SetVibration(int padIndex, float leftMotor, float rightMotor);
+    void SetVibration(int32_t padIndex, float leftMotor, float rightMotor);
 
     int32_t GetConnectedPadNum() const;
 

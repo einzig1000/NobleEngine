@@ -64,7 +64,7 @@ void TitlePhase::Initialize()
 	//	startButton->color = 0x777777FF;
 
 	//	char startText[] = { 'S','T','A','R','T' };
-	//	for (int i = 0; i < 5; i++)
+	//	for (int32_t i = 0; i < 5; i++)
 	//	{
 	//		startStr[i]->texture = ResourceID::GetTextureID(TextureID::font_0);
 	//		startStr[i]->transforms.scale = { 0.15f, 0.3f, 1.0f };
@@ -87,7 +87,7 @@ void TitlePhase::Initialize()
 
 	//	char createNewWorldText[] = { 'C','R','E','A','T','E',' ','N','E','W',' ','W','O','R','L','D' };
 
-	//	for (int i = 0; i < 16; i++)
+	//	for (int32_t i = 0; i < 16; i++)
 	//	{
 	//		CreateNewWorldStr[i]->texture = ResourceID::GetTextureID(TextureID::font_0);
 	//		CreateNewWorldStr[i]->transforms.scale = { 0.1f, 0.2f, 1.0f };
@@ -183,7 +183,7 @@ void TitlePhase::Initialize()
 	//	CreateWorldDecideButton->color = 0x777777FF;
 
 	//	// シードスプライト群
-	//	for (int i = 0; i < 8; i++)
+	//	for (int32_t i = 0; i < 8; i++)
 	//	{
 	//		seedInputStr[i] = std::make_unique<RenderData_Sprite>();
 	//		seedInputStr[i]->texture = ResourceID::GetTextureID(TextureID::font_0);
@@ -199,7 +199,7 @@ void TitlePhase::Initialize()
 	//		seedInputStr[i]->cutImageLeftTop = fontCutImagePos(randChar);
 	//	}
 	//	// 名前スプライト群
-	//	for (int i = 0; i < 16; i++)
+	//	for (int32_t i = 0; i < 16; i++)
 	//	{
 	//		nameInputStr[i] = std::make_unique<RenderData_Sprite>();
 	//		nameInputStr[i]->texture = ResourceID::GetTextureID(TextureID::font_0);
@@ -843,12 +843,12 @@ void TitlePhase::Draw()
 
 	//	CreateWorldDecideButton->DrawImGui();
 
-	//	for (int i = 0; i < 8; i++)
+	//	for (int32_t i = 0; i < 8; i++)
 	//	{
 	//		seedInputStr[i]->Draw();
 	//	}
 
-	//	for (int i = 0; i < 16; i++)
+	//	for (int32_t i = 0; i < 16; i++)
 	//	{
 	//		nameInputStr[i]->Draw();
 	//	}

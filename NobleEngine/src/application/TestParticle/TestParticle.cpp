@@ -12,7 +12,7 @@ TestParticle::TestParticle()
 		renderPlanes_.resize(10);
 		planeColors.resize(10);
 		planeTransforms.resize(10);
-		for (int i = 0; i < 10; ++i)
+		for (int32_t i = 0; i < 10; ++i)
 		{
 			renderPlanes_[i] = std::make_unique<RenderObject>();
 			renderPlanes_[i]->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
@@ -147,7 +147,7 @@ TestParticle::TestParticle()
 		ringColors.resize(10);
 		ringTransforms.resize(10);
 		int32_t ringModelID = Game::Asset::Model::Create(vertexData_Ring, "Ring");
-		for (int i = 0; i < 10; ++i)
+		for (int32_t i = 0; i < 10; ++i)
 		{
 			renderRings_[i] = std::make_unique<RenderObject>();
 			renderRings_[i]->modelID_ = ringModelID;
@@ -300,7 +300,7 @@ void TestParticle::Initialize()
 void TestParticle::Update(int32_t cameraID)
 {
 	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-	for (int i = 0; i < 10; ++i)
+	for (int32_t i = 0; i < 10; ++i)
 	{
 		planeColors[i].w -= 0.02f;
 		if (Game::Math::Rand::RandInt(0, 50) == i)
@@ -316,7 +316,7 @@ void TestParticle::Update(int32_t cameraID)
 		renderPlanes_[i]->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
 	}
 
-	for (int i = 0; i < 10; ++i)
+	for (int32_t i = 0; i < 10; ++i)
 	{
 		ringColors[i].w -= 0.02f;
 		if (Game::Math::Rand::RandInt(0, 50) == i)
@@ -384,11 +384,11 @@ void TestParticle::Update(int32_t cameraID)
 
 void TestParticle::Draw(int32_t renderTextureID)
 {
-	//for (int i = 0; i < 10; ++i)
+	//for (int32_t i = 0; i < 10; ++i)
 	//{
 	//	renderPlanes_[i]->Draw(renderTextureID);
 	//}
-	//for (int i = 0; i < 10; ++i)
+	//for (int32_t i = 0; i < 10; ++i)
 	//{
 	//	renderRings_[i]->Draw(renderTextureID);
 	//}

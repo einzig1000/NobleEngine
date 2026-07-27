@@ -2,27 +2,27 @@
 //#include <Game.h>
 //
 //// 全てのアイテムのテクスチャID配列（インベントリとかに表示するアイコン）
-//std::vector<int> ResourceID::ItemIconTextureIDs_;
+//std::vector<int32_t> ResourceID::ItemIconTextureIDs_;
 //// 全てのアイテムのテクスチャID配列（モデルとして描画する用）
-//std::vector<int> ResourceID::ItemModelTextureIDs_;
+//std::vector<int32_t> ResourceID::ItemModelTextureIDs_;
 //// 全てのアイテムのモデルID配列
-//std::vector<int> ResourceID::ItemModelIDs_;
+//std::vector<int32_t> ResourceID::ItemModelIDs_;
 //
 //
 //// UIテクスチャID配列
-//std::vector<int> ResourceID::UITextureIDs_;
+//std::vector<int32_t> ResourceID::UITextureIDs_;
 //
 //// その他のテクスチャID配列
-//std::vector<int> ResourceID::TextureIDs_;
+//std::vector<int32_t> ResourceID::TextureIDs_;
 //// その他のモデルID配列
-//std::vector<int> ResourceID::ModelIDs_;
+//std::vector<int32_t> ResourceID::ModelIDs_;
 //
 //// 数字
-//std::vector<int> ResourceID::NumberTextureIDs_;
+//std::vector<int32_t> ResourceID::NumberTextureIDs_;
 //
 //void ResourceID::reload()
 //{
-//	int tmp = -1;
+//	int32_t tmp = -1;
 //
 //#pragma region //全てのアイテムのテクスチャID配列（インベントリとかに表示するアイコン）
 //
@@ -312,7 +312,7 @@
 //#pragma region 数字テクスチャ読み込み
 //
 //	NumberTextureIDs_.resize(10);
-//	for (int i = 0; i <= 9; ++i)
+//	for (int32_t i = 0; i <= 9; ++i)
 //	{
 //		std::string path = "resources/Prototypes/texture/font/" + std::to_string(i) + ".png";
 //		tmp = Game::Asset::Texture::Load(path);

@@ -1,5 +1,4 @@
 #include "ItemInventory.h"
-#include <definition/ItemConfig/ItemConfig.h>
 
 //int32_t y = index / 9;
 //int32_t x = index % 9;

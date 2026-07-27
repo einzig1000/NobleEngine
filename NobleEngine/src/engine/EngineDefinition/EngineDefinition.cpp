@@ -191,9 +191,9 @@ Matrix4x4 Matrix4x4::Transpose() const
 {
     Matrix4x4 Return{};
 
-    for (int i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
-        for (int j = 0; j < 4; ++j)
+        for (size_t j = 0; j < 4; ++j)
         {
             Return.m[i][j] = m[j][i];
         }
@@ -206,7 +206,7 @@ Matrix4x4 Matrix4x4::MakeIdentity4x4()
 {
     Matrix4x4 Return{};
 
-    for (int i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
         Return.m[i][i] = 1.0f;
     }

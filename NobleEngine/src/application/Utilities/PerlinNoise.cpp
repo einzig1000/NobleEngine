@@ -13,18 +13,18 @@ PerlinNoise::PerlinNoise(uint32_t seed)
 float PerlinNoise::noise(float x, float y) const
 {
     // 単純な実装: 周期なし
-    int xi = static_cast<int>(std::floor(x)) & 255;
-    int yi = static_cast<int>(std::floor(y)) & 255;
+    int32_t xi = static_cast<int32_t>(std::floor(x)) & 255;
+    int32_t yi = static_cast<int32_t>(std::floor(y)) & 255;
     float xf = x - std::floor(x);
     float yf = y - std::floor(y);
 
     float u = fade(xf);
     float v = fade(yf);
 
-    int aa = pen[pen[xi] + yi];
-    int ab = pen[pen[xi] + yi + 1];
-    int ba = pen[pen[xi + 1] + yi];
-    int bb = pen[pen[xi + 1] + yi + 1];
+    int32_t aa = pen[pen[xi] + yi];
+    int32_t ab = pen[pen[xi] + yi + 1];
+    int32_t ba = pen[pen[xi + 1] + yi];
+    int32_t bb = pen[pen[xi + 1] + yi + 1];
 
     float x1 = lerp(grad(aa, xf, yf), grad(ba, xf - 1, yf), u);
     float x2 = lerp(grad(ab, xf, yf - 1), grad(bb, xf - 1, yf - 1), u);
@@ -45,7 +45,7 @@ float PerlinNoise::lerp(float a, float b, float t)
     return a + t * (b - a);
 }
 
-float PerlinNoise::grad(int hash, float x, float y)
+float PerlinNoise::grad(int32_t hash, float x, float y)
 {
     // hash の下位ビットで勾配ベクトルを選ぶ（簡易）
     switch (hash & 3)
@@ -58,14 +58,14 @@ float PerlinNoise::grad(int hash, float x, float y)
     }
 }
 
-float fractalPerlin(const PerlinNoise& pn, float x, float y, int octaves, float persistence)
+float fractalPerlin(const PerlinNoise& pn, float x, float y, int32_t octaves, float persistence)
 {
 
     float total = 0.0f;
     float frequency = 1.0f;
     float amplitude = 1.0f;
     float maxValue = 0.0f;
-    for (int i = 0; i < octaves; ++i)
+    for (int32_t i = 0; i < octaves; ++i)
     {
         total += pn.noise(x * frequency, y * frequency) * amplitude;
         maxValue += amplitude;

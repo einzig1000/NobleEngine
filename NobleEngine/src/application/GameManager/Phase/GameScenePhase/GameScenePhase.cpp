@@ -3,9 +3,8 @@
 #include <ResourceLoader/ResourceID.h>
 #include <GameObjects/Character/Player/Player.h>
 #include <GameObjects/Character/Enemy/EnemyManager.h>
-#include <Camera/CameraController.h>
+#include <GameObjects/Camera/CameraController.h>
 #include <GameObjects/UI/UIManager.h>
-#include <GameObjects/Item/CraftRecipe/CraftRecipe.h>
 #include <fstream>
 
 GameScenePhase::GameScenePhase()

@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Application.h"
 #include "GameManager/GameManager.h"
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -25,6 +26,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// フレームの終了
 		Engine::Instance().EndFrame();
 	}
+	gm.reset();
 	Engine::Instance().Finalize();
 	return 0;
 }

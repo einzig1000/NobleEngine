@@ -7,40 +7,24 @@ class BlockDurability;
 class Block
 {
 public:
-	Block();
-	~Block();
-	void Initialize();
-	// チャンク内の更新
-	void Update();
+	// ブロックの種類管理
+	void SetBlockID(BlockID info);
+	BlockID GetBlockID() const { return blockID_; };
 
-	// チャンク描画オブジェクトのインスタンススロット
-	int32_t dataSlot_ = -1;
+	// 露出面管理
+	int32_t GetExposedFace() const { return exposedFace_; }
+	bool IsExposed();
+	bool IsExposed(AABBFace face) const;
+	void SetExposedFace(AABBFace face, bool isExposed);
 
-	// ブロックの種類設定
-	void SetBlockType(BlockInfo info);
-	BlockID GetBlockID() const { return blockInfo_.ID; };
+private:
 
-	// ブロックの位置設定
-	void SetBlockPosition(const Vector3& position);
-
-	// プレイヤーに見られている時、輝度に応じて色を更新
-	void UpdateColor();
-
-	Vector3 position_;
-	AABB aabb_;
+	// ブロックの種類
+	BlockID blockID_ = BlockID::Air;
 
 	// 輝度
 	int32_t lightEmission_ = 14;
 
-	int32_t GetExposedFace() const { return exposedFace_; }
-	bool IsExposed();
-	bool IsExposed(AABBFace face) const;
-
-	void SetExposedFace(AABBFace face, bool isExposed);
-
-	BlockInfo blockInfo_;
-
-private:
 	// どの面が露出しているか
 	// ビットフラグを使用
 	// 0,0,前+z,後-z,左+x,右-x,上+y,下-y

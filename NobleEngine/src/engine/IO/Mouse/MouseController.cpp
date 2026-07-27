@@ -64,7 +64,7 @@ Ray MouseController::GetRay(int32_t cameraID)
 }
 
 // 今押しているか  i: 0=左ボタン、1=右ボタン、2=中ボタン
-bool MouseController::IsHeld(int i)
+bool MouseController::IsHeld(int32_t i)
 {
     switch (i)
     {
@@ -80,7 +80,7 @@ bool MouseController::IsHeld(int i)
 }
 
 // 押した瞬間（今フレームで押された） i: 0=左ボタン、1=右ボタン、2=中ボタン
-bool MouseController::IsJustPressed(int i)
+bool MouseController::IsJustPressed(int32_t i)
 {
     switch (i)
     {
@@ -96,7 +96,7 @@ bool MouseController::IsJustPressed(int i)
 }
 
 // 離した瞬間（今フレームで離れた） i: 0=左ボタン、1=右ボタン、2=中ボタン
-bool MouseController::IsJustReleased(int i)
+bool MouseController::IsJustReleased(int32_t i)
 {
     switch (i)
     {
@@ -112,7 +112,7 @@ bool MouseController::IsJustReleased(int i)
 }
 
 // 押されてからの経過フレーム数 i: 0=左ボタン、1=右ボタン、2=中ボタン
-uint32_t MouseController::HoldFrames(int i)
+uint32_t MouseController::HoldFrames(int32_t i)
 {
     switch (i)
     {
@@ -258,7 +258,7 @@ void MouseController::UpdateSensitivity()
 
 
 // 相対移動の蓄積
-void MouseController::OnRawMouseDelta(int dx, int dy)
+void MouseController::OnRawMouseDelta(int32_t dx, int32_t dy)
 {
     rawDelta_.x += static_cast<float>(dx);
     rawDelta_.y += static_cast<float>(dy);

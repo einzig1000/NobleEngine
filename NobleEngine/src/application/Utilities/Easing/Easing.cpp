@@ -292,8 +292,8 @@ namespace Easing
 		return (1.0f - easedT) * start + easedT * end;
 	}
 
-	int COLOR(int startColor, int endColor, float t)
+	uint32_t COLOR(uint32_t startColor, uint32_t endColor, float t)
 	{
-		return int((1.0f - t) * startColor + t * endColor);
+		return uint32_t((1.0f - t) * startColor + t * endColor);
 	}
 }

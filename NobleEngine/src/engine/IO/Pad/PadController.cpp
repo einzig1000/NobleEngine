@@ -20,11 +20,11 @@ PadController::PadController()
         std::memset(leftStickY, 0, sizeof(leftStickY));
         std::memset(rightStickX, 0, sizeof(rightStickX));
         std::memset(rightStickY, 0, sizeof(rightStickY));
-        for (int i = 0; i < 4; ++i)
+        for (size_t i = 0; i < 4; ++i)
         {
             leftStickDir[i] = { 0.0f, 0.0f };
             rightStickDir[i] = { 0.0f, 0.0f };
-            for (int b = 0; b < PAD_BUTTON_MAX; ++b)
+            for (size_t b = 0; b < PAD_BUTTON_MAX; ++b)
             {
                 padStates[i][b].curr = false;
                 padStates[i][b].prev = false;
@@ -100,7 +100,7 @@ void PadController::Update()
         else
         {
             isConnect[i] = false;
-            for (int button = 0; button < PAD_BUTTON_MAX; ++button)
+            for (int32_t button = 0; button < PAD_BUTTON_MAX; ++button)
             {
                 PadButtonState& ps = padStates[i][button];
                 ps.prev = ps.curr;
@@ -118,63 +118,63 @@ void PadController::Update()
     }
 }
 
-bool PadController::IsHeld(int padIndex, BYTE button) const
+bool PadController::IsHeld(int32_t padIndex, BYTE button) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
-    int btn = std::clamp(int(button), 0, PAD_BUTTON_MAX - 1);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
 	return padStates[stateIndex][btn].curr;
 }
 
-bool PadController::IsJustPressed(int padIndex, BYTE button) const
+bool PadController::IsJustPressed(int32_t padIndex, BYTE button) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
-    int btn = std::clamp(int(button), 0, PAD_BUTTON_MAX - 1);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
 	return (!padStates[stateIndex][btn].prev && padStates[stateIndex][btn].curr);
 }
 
-bool PadController::IsJustReleased(int padIndex, BYTE button) const
+bool PadController::IsJustReleased(int32_t padIndex, BYTE button) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
-    int btn = std::clamp(int(button), 0, PAD_BUTTON_MAX - 1);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
     return (padStates[stateIndex][btn].prev && !padStates[stateIndex][btn].curr);
 }
 
-uint32_t PadController::HoldFrames(int padIndex, BYTE button) const
+uint32_t PadController::HoldFrames(int32_t padIndex, BYTE button) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
-    int btn = std::clamp(int(button), 0, PAD_BUTTON_MAX - 1);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
     return padStates[stateIndex][btn].holdFrames;
 }
 
-Vector2 PadController::GetLeftStick(int padIndex) const
+Vector2 PadController::GetLeftStick(int32_t padIndex) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
 	return leftStickDir[stateIndex];
 }
 
-Vector2 PadController::GetRightStick(int padIndex) const
+Vector2 PadController::GetRightStick(int32_t padIndex) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
     return rightStickDir[stateIndex];
 }
 
-float PadController::GetLeftTrigger(int padIndex) const
+float PadController::GetLeftTrigger(int32_t padIndex) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
 	float value = static_cast<float>(leftTrigger[stateIndex]) / 255.0f;
 	return value;
 }
 
-float PadController::GetRightTrigger(int padIndex) const
+float PadController::GetRightTrigger(int32_t padIndex) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
     float value = static_cast<float>(rightTrigger[stateIndex]) / 255.0f;
 	return value;
 }
 
-void PadController::SetVibration(int padIndex, float leftMotor, float rightMotor)
+void PadController::SetVibration(int32_t padIndex, float leftMotor, float rightMotor)
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
 
     leftMotor = std::clamp(leftMotor, 0.0f, 1.0f);
     rightMotor = std::clamp(rightMotor, 0.0f, 1.0f);
@@ -190,8 +190,8 @@ void PadController::SetVibration(int padIndex, float leftMotor, float rightMotor
 
 int32_t PadController::GetConnectedPadNum() const
 {
-    int sum = 0;
-    for (int i = 0; i < 4; ++i)
+    int32_t sum = 0;
+    for (int32_t i = 0; i < 4; ++i)
     {
         if (isConnect[i])
         {

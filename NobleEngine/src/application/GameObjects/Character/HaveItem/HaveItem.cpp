@@ -1,5 +1,5 @@
 #include "HaveItem.h"
-#include <definition/ItemConfig/ItemConfig.h>
+#include <App.h>
 #include <Utilities/functions.h>
 
 namespace
@@ -25,7 +25,7 @@ namespace
 			// 8頂点をワールド空間に変換
 			Vector3 worldMin = Transform(corners[0], worldMatrix);
 			Vector3 worldMax = worldMin;
-			for (int i = 1; i < 8; ++i)
+			for (int32_t i = 1; i < 8; ++i)
 			{
 				Vector3 v = Transform(corners[i], worldMatrix);
 				worldMin.x = std::min(worldMin.x, v.x);
@@ -77,7 +77,7 @@ void HaveItem::Update(int32_t cameraID)
 			pivotTransform_.rotate.x = 0.0f;
 		}
 
-		const ItemInfo& itemConfig = ItemConfig::Instance().GetItemInfo(currentItemID_);
+		const ItemInfo& itemConfig = App::Data::Item::Get(currentItemID_);
 
 		render_->modelID_ = itemConfig.modelID;
 		itemAABB_ = Game::Asset::Model::GetData(itemConfig.modelID)->aabb;

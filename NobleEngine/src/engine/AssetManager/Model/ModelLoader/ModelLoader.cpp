@@ -445,7 +445,7 @@ SkinCluster ModelLoader::CreateSkinCluster(const ModelData* modelData)
 			for (const auto& vertexWeight : jointWeightData.vertexWeights)
 			{
 				VertexInfluence& influence = skinCluster.mappedInfluences[vertexWeight.vertexIndex];
-				for (int i = 0; i < 4; ++i)
+				for (size_t i = 0; i < 4; ++i)
 				{
 					if (influence.weights[i] == 0.0f)
 					{

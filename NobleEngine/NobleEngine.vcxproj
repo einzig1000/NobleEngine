@@ -11,8 +11,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\Editor\ItemEditor\ItemEditor.cpp" />
+    <ClCompile Include="src\application\Editor\Editor.cpp" />
+    <ClCompile Include="src\application\Facade\App.cpp" />
+    <ClCompile Include="src\application\Application.cpp" />
+    <ClCompile Include="src\application\ResourceLoader\Data\Item\ItemDataManager.cpp" />
+    <ClCompile Include="src\application\ResourceLoader\Data\DataManager.cpp" />
+    <ClCompile Include="src\application\ResourceLoader\Data\Item\Editor\ItemDataEditor.cpp" />
+    <ClCompile Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.cpp" />
+    <ClCompile Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\HaveItem\HaveItem.cpp" />
-    <ClCompile Include="src\application\Camera\CameraController.cpp" />
+    <ClCompile Include="src\application\GameObjects\Camera\CameraController.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\BaseCharacter.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\Player\Player.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\ItemInventory\ItemInventory.cpp" />
@@ -51,7 +60,6 @@
     <ClCompile Include="externals\meshoptimizer-1.1\vertexcodec.cpp" />
     <ClCompile Include="externals\meshoptimizer-1.1\vertexfilter.cpp" />
     <ClCompile Include="externals\meshoptimizer-1.1\vfetchoptimizer.cpp" />
-    <ClCompile Include="src\application\definition\ItemConfig\ItemConfig.cpp" />
     <ClCompile Include="src\application\definition\definition.cpp" />
     <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp" />
@@ -118,7 +126,7 @@
     <ClCompile Include="src\application\Utilities\functions.cpp" />
     <ClCompile Include="src\application\Utilities\Json\JsonManager.cpp" />
     <ClCompile Include="src\application\Utilities\Logger\Logger.cpp" />
-    <ClCompile Include="src\application\PerlinNoise.cpp" />
+    <ClCompile Include="src\application\Utilities\PerlinNoise.cpp" />
     <ClCompile Include="src\application\Utilities\Random\Random.cpp" />
     <ClCompile Include="src\engine\Window\WindowManager.cpp" />
     <ClCompile Include="src\application\TestAnimation\TestAnimation.cpp" />
@@ -131,8 +139,17 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\Editor\ItemEditor\ItemEditor.h" />
+    <ClInclude Include="src\application\Editor\Editor.h" />
+    <ClInclude Include="src\application\Facade\App.h" />
+    <ClInclude Include="src\application\Application.h" />
+    <ClInclude Include="src\application\ResourceLoader\Data\Item\ItemDataManager.h" />
+    <ClInclude Include="src\application\ResourceLoader\Data\DataManager.h" />
+    <ClInclude Include="src\application\ResourceLoader\Data\Item\Editor\ItemDataEditor.h" />
+    <ClInclude Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.h" />
+    <ClInclude Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.h" />
     <ClInclude Include="src\application\GameObjects\Character\HaveItem\HaveItem.h" />
-    <ClInclude Include="src\application\Camera\CameraController.h" />
+    <ClInclude Include="src\application\GameObjects\Camera\CameraController.h" />
     <ClInclude Include="src\application\GameObjects\Character\BaseCharacter.h" />
     <ClInclude Include="src\application\GameObjects\Character\Player\Player.h" />
     <ClInclude Include="src\application\GameObjects\Character\ItemInventory\ItemInventory.h" />
@@ -321,7 +338,6 @@
     <ClInclude Include="externals\DungeonTemplateLibrary\DTL\Workaround\cstdioGets.hpp" />
     <ClInclude Include="externals\FastNoiseLite\FastNoiseLite.h" />
     <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h" />
-    <ClInclude Include="src\application\definition\ItemConfig\ItemConfig.h" />
     <ClInclude Include="src\application\definition\constexprs.h" />
     <ClInclude Include="src\application\definition\definition.h" />
     <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h" />
@@ -391,7 +407,7 @@
     <ClInclude Include="src\application\Utilities\functions.h" />
     <ClInclude Include="src\application\Utilities\Json\JsonManager.h" />
     <ClInclude Include="src\application\Utilities\Logger\Logger.h" />
-    <ClInclude Include="src\application\PerlinNoise.h" />
+    <ClInclude Include="src\application\Utilities\PerlinNoise.h" />
     <ClInclude Include="src\application\Utilities\Random\Random.h" />
     <ClInclude Include="src\engine\Window\WindowManager.h" />
     <ClInclude Include="src\application\TestAnimation\TestAnimation.h" />
@@ -456,7 +472,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary;$(ProjectDir)src/application/Facade</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
     </ClCompile>
@@ -491,7 +507,7 @@ xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary;$(ProjectDir)src/application/Facade</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
     </ClCompile>

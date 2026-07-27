@@ -70,7 +70,7 @@
 //	}
 //
 //	// 数字
-//	static int32_t GetNumberTextureID(int number)
+//	static int32_t GetNumberTextureID(int32_t number)
 //	{
 //		if (number < 0 || number > 9)
 //		{
@@ -123,23 +123,23 @@
 //private:
 //
 //	// 全てのアイテムのテクスチャID配列（インベントリとかに表示するアイコン）
-//	static std::vector<int> ItemIconTextureIDs_;
+//	static std::vector<int32_t> ItemIconTextureIDs_;
 //	// 全てのアイテムのテクスチャID配列（モデルとして描画する用）
-//	static std::vector<int> ItemModelTextureIDs_;
+//	static std::vector<int32_t> ItemModelTextureIDs_;
 //	// 全てのアイテムのモデルID配列
-//	static std::vector<int> ItemModelIDs_;
+//	static std::vector<int32_t> ItemModelIDs_;
 //	
 //
 //	// UIテクスチャID配列
-//	static std::vector<int> UITextureIDs_;
+//	static std::vector<int32_t> UITextureIDs_;
 //
 //	// その他のテクスチャID配列
-//	static std::vector<int> TextureIDs_;
+//	static std::vector<int32_t> TextureIDs_;
 //	// その他のモデルID配列
-//	static std::vector<int> ModelIDs_;
+//	static std::vector<int32_t> ModelIDs_;
 //
 //	// 数字
-//	static std::vector<int> NumberTextureIDs_;
+//	static std::vector<int32_t> NumberTextureIDs_;
 //
 //	static inline const std::unordered_map<TextureID, std::string> textureFilePaths_ =
 //	{

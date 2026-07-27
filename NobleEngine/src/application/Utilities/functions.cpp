@@ -63,22 +63,22 @@ Vector2int fontCutImagePos(char c)
 	/// ～～～
 	/// 'z' = 122
 
-    int ascii = static_cast<int>(c);
-	int col = 10;// 1行の文字数
-    int cellWidth = 32; // 各セルの幅
-    int cellHeight = 32; // 各セルの高さ
+    int32_t ascii = static_cast<int32_t>(c);
+	int32_t col = 10;// 1行の文字数
+    int32_t cellWidth = 32; // 各セルの幅
+    int32_t cellHeight = 32; // 各セルの高さ
 
     Vector2int result;
 
     if (ascii >= 48 && ascii <= 57) // '0' - '9'
     {
-		int index = ascii - 48;
+		int32_t index = ascii - 48;
         result.x = index * cellWidth;
         result.y = 0;
     }
     else if (ascii >= 65 && ascii <= 90 || ascii >= 97 && ascii <= 122) // 'A' - 'Z' & 'a' - 'z'
     {
-        int index = 0;
+        int32_t index = 0;
         if (ascii >= 65 && ascii <= 90) index = ascii - 65;
 		if (ascii >= 97 && ascii <= 122) index = ascii - 97;
 		result.x = (index % col) * cellWidth;
@@ -169,7 +169,7 @@ bool IsCollision(const Segment& s, const Triangle& t)
     // 各辺と交点のクロス積で判定
     bool allSame = true;
     float sign = 0.0f;
-    for (int i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         // 始点
         Vector3 v0 = t.vertices[i];
@@ -286,7 +286,7 @@ bool IsCollision(const Ray& r, const Triangle& t)
     // 各辺と交点のクロス積で判定
     bool allSame = true;
     float sign = 0.0f;
-    for (int i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         // 始点
         Vector3 v0 = t.vertices[i];
@@ -380,7 +380,7 @@ bool IsCollision(const AABB& aabb, const Segment& s)
     float tmax = 1.0f;
 
     // x,y,z三回の計算をforループで行う悪魔的所業
-    for (int i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         float segStart, segEnd, boxMin, boxMax;
         // X軸から見た線分の始点と終点 ＆ AABBのmin.xとmax.x
@@ -485,7 +485,7 @@ std::optional<Vector3> IntersectRayTriangle(const Ray& r, const Triangle& t)
 
     // 各辺と交点のクロス積で判定
     float sign = 0.0f;
-    for (int i = 0; i < 3; ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
         // 始点
         Vector3 v0 = t.vertices[i];

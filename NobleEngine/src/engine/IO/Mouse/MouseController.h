@@ -17,9 +17,9 @@ public:
 	void SetSensitivity(float sensitivity) { mouseSensitivity_ = sensitivity; }	// マウス感度設定
 
 	// 相対移動の蓄積
-	void OnRawMouseDelta(int dx, int dy);	
+	void OnRawMouseDelta(int32_t dx, int32_t dy);	
 	// ホイール回転量の蓄積
-	void OnMouseWheelDelta(int delta) { wheelDelta_ += delta; }
+	void OnMouseWheelDelta(int32_t delta) { wheelDelta_ += delta; }
 
 	int32_t GetWheelDelta() const { return wheelDelta_; }		// マウスホイール回転量取得
 	Vector2 GetRawDelta() const { return rawDelta_; }			// マウス相対移動を取得
@@ -27,10 +27,10 @@ public:
 	Vector3 GetWorldPosition(int32_t cameraID = 0);				// マウス3D座標取得
 	Ray GetRay(int32_t cameraID = 0);							// マウスレイ取得
 
-	bool IsHeld(int i);			// 今押しているか
-	bool IsJustPressed(int i);	// 押した瞬間（今フレームで押された）
-	bool IsJustReleased(int i);	// 離した瞬間（今フレームで離れた）
-	uint32_t HoldFrames(int i);	// 押されてからの経過フレーム数
+	bool IsHeld(int32_t i);			// 今押しているか
+	bool IsJustPressed(int32_t i);	// 押した瞬間（今フレームで押された）
+	bool IsJustReleased(int32_t i);	// 離した瞬間（今フレームで離れた）
+	uint32_t HoldFrames(int32_t i);	// 押されてからの経過フレーム数
 
 	void ToggleMouseCursorVisible();
 	void ShowCursor(bool visible);

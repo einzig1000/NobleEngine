@@ -3,7 +3,7 @@
 #include <GameObjects/Map/Chunk/Block/Block.h>
 #include <fstream>
 #include <sstream>
-#include <PerlinNoise.h>
+#include <Utilities/PerlinNoise.h>
 #include <Utilities/functions.h>
 #include <filesystem>
 #include <algorithm>
@@ -75,7 +75,7 @@ void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 {
 	// ノイズパラメータ設定
 	noiseParam_.seed = seed;			// 俗に言うシード値
-	noiseParam_.scale = 32.0f;			// 地形の粗さ（大きくすると緩やか）
+	noiseParam_.scale = 1280.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
 	noiseParam_.height = std::numeric_limits<int32_t>::max();		// マップの高さ
@@ -90,7 +90,7 @@ void MapManager::SetSeed(uint32_t seed)
 {
 	// ノイズパラメータ設定
 	noiseParam_.seed = seed;			// 俗に言うシード値
-	noiseParam_.scale = 32.0f;			// 地形の粗さ（大きくすると緩やか）
+	noiseParam_.scale = 1280.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
 	noiseParam_.height = Constexprs::kChunkY;		// マップの高さ
@@ -208,9 +208,7 @@ void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 		}
 
 		// 新規生成
-		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>();
-		// チャンクデータ生成
-		chunk->CreateChunkData(noiseParam_, pos);
+		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(noiseParam_, pos);
 
 		// 隣接チャンク設定
 		static constexpr Vector3int dirOffsets[6] =
@@ -391,9 +389,6 @@ bool MapManager::SetBlockAt(const Vector3int& chunkPos, const Vector3int& localI
 
 	// ブロック設置
 	chunk->SetBlock(localIndex, id);
-
-	// 露出状態更新
-	chunk->SetExposedAroundBlocks(localIndex);
 
 	return true;
 }
@@ -654,7 +649,7 @@ bool MapManager::GetIsActive(const Vector3int& chunkPos, const Vector3int& index
 	Chunk* chunk = GetChunk(chunkPos);
 	if (chunk)
 	{
-		if (chunk->GetBlock(index)->blockInfo_.ID != BlockID::Air)
+		if (chunk->GetBlock(index)->GetBlockID() != BlockID::Air)
 		{
 			return true;
 		}
@@ -804,12 +799,12 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 				0 <= local.y && local.y < Constexprs::kChunkY &&
 				0 <= local.z && local.z < Constexprs::kChunkZ)
 			{
-				Block* b = chunk->GetBlock(local);
-				if (b && b->GetBlockID() != BlockID::Air)
+				Block* block = chunk->GetBlock(local);
+				if (block && block->GetBlockID() != BlockID::Air)
 				{
-					const AABB& aabb = b->aabb_;
+					const AABB& aabb = GetAABB(chunkPos, local);
 
-					result.block = b;
+					result.block = block;
 					result.chunkIndex = chunkPos;
 					result.localIndex = local;
 					result.face = enterFace;

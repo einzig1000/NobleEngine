@@ -1,4 +1,5 @@
 #include "GameManager.h"
+#include <App.h>
 #include <Utilities/Logger/Logger.h>
 #include <GameManager/Phase/TestPhase/TestPhase.h>
 #include <GameManager/Phase/Test2Phase/Test2Phase.h>
@@ -7,17 +8,17 @@
 #include <GameManager/Phase/GameScenePhase/GameScenePhase.h>
 
 
-GameManager::GameManager()
+GameManager::GameManager() 
 {
-	currentPhase_ = CreatePhase(PHASE::Phase_Test2);
+	currentPhase_ = CreatePhase(PHASE::Phase_GameScene);
 	currentPhase_->SetContext(&phaseContext_);
 	currentPhase_->Initialize();
 }
 
 GameManager::~GameManager()
 {
-
 }
+
 
 void GameManager::Update()
 {
@@ -28,17 +29,24 @@ void GameManager::Update()
 		currentPhase_->SetContext(&phaseContext_);
 		currentPhase_->Initialize();
 	}
+
+	App::Update();
 }
 
 void GameManager::Draw()
 {
 	currentPhase_->Draw();
+
+	App::Draw();
 }
 
 void GameManager::DrawImGui()
 {
 	currentPhase_->DrawImGui();
+
+	App::DrawImGui();
 }
+
 
 std::unique_ptr<IPhase> GameManager::CreatePhase(PHASE phase)
 {
