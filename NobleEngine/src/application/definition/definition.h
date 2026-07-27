@@ -30,17 +30,15 @@ enum class CharacterID
 
 enum class ItemGenre
 {
-	None,
+	None = 0,
 	// 防具
-	Armor,
+	Armor = 1,
 	// ツール
-	Tool,
+	Tool = 2,
 	// ブロック
-	Block,
+	Block = 3,
 	// オブジェクト(かまどとかチェスト)
-	Object,
-
-	MAX,
+	Object = 4,
 };
 
 
@@ -470,7 +468,6 @@ struct EnumStringTraits<ItemGenre>
 		case ItemGenre::Tool:			return "Tool";		break;
 		case ItemGenre::Block:			return "Block";		break;
 		case ItemGenre::Object:			return "Object";	break;
-		case ItemGenre::MAX:
 		default:
 			break;
 		}
@@ -478,12 +475,11 @@ struct EnumStringTraits<ItemGenre>
 	}
 	static ItemGenre FromString(std::string_view str)
 	{
-		if (str == "None")		return ItemGenre::None;
 		if (str == "Armor")		return ItemGenre::Armor;
 		if (str == "Tool")		return ItemGenre::Tool;
 		if (str == "Block")		return ItemGenre::Block;
 		if (str == "Object")	return ItemGenre::Object;
-		return ItemGenre::MAX;
+		return ItemGenre::None;
 	}
 
 };

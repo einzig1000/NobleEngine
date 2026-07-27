@@ -7,7 +7,6 @@ ItemEditor::ItemEditor(DataManager* dataManager)
 	renderObject_ = std::make_unique<RenderObject>();
 	renderObject_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	renderObject_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	renderObject_->modelID_ = 0;
 	renderObject_->SetupFromShaders();
 
 	renderTextureID_ = Game::Asset::RenderTexture::CreateRenderTexture(512, 512, "ItemEditorTexture");
@@ -24,10 +23,9 @@ void ItemEditor::Update()
 {
 	Game::Camera::Update(cameraID_);
 
-	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	Matrix4x4 world = Matrix4x4::MakeAffineMatrix(transforms_.scale, transforms_.rotate, transforms_.translate);
 	Matrix4x4 wpv = world * Game::Camera::Getter::GetViewProjectionMatrix(cameraID_);
-	renderObject_->SetCBufferData(0, ShaderType::PixelShader, &color);
+	renderObject_->SetCBufferData(0, ShaderType::PixelShader, &color_);
 	renderObject_->SetCBufferData(1, ShaderType::PixelShader, &textureID_);
 	renderObject_->SetCBufferData(0, ShaderType::VertexShader, &wpv);
 	renderObject_->SetCBufferData(1, ShaderType::VertexShader, &world);
@@ -71,10 +69,85 @@ void ItemEditor::DrawImGui()
 		ImGui::EndDragDropTarget();
 	}
 
+	// アイテムジャンル
+	const char* items[] = { "None", "Armor", "Tool", "Block", "Object" };
+	static ItemGenre current_item = ItemGenre::None;
+	if (ImGui::BeginCombo("ItemGenre", items[static_cast<size_t>(current_item)]))
+	{
+		for (size_t i = 0; i < IM_ARRAYSIZE(items); i++)
+		{
+			bool is_selected = (current_item == static_cast<ItemGenre>(i));
+			if (ImGui::Selectable(items[i], is_selected))
+			{
+				current_item = static_cast<ItemGenre>(i);
+			}
+			if (is_selected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	// 現在の情報描画
+
+	switch (current_item)
+	{
+	case ItemGenre::None:
+	{
+		break;
+	}
+	case ItemGenre::Armor:
+	{
+		ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
+		std::string modelName = modelData ? modelData->filePath : "None";
+		ImGui::Text("ModelPath	: %s", modelName.c_str());
+
+		TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
+		std::string textureName = textureData ? textureData->filePath : "None";
+		ImGui::Text("TexturePath: %s", textureName.c_str());
+
+		break;
+	}
+	case ItemGenre::Tool:
+	{
+		ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
+		std::string modelName = modelData ? modelData->filePath : "None";
+		ImGui::Text("ModelPath	: %s", modelName.c_str());
+
+		TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
+		std::string textureName = textureData ? textureData->filePath : "None";
+		ImGui::Text("TexturePath: %s", textureName.c_str());
+
+		break;
+	}
+	case ItemGenre::Block:
+	{
+		ImGui::ColorEdit4("Color", &color_.x);
+
+
+		break;
+	}
+	case ItemGenre::Object:
+	{
+		ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
+		std::string modelName = modelData ? modelData->filePath : "None";
+		ImGui::Text("ModelPath	: %s", modelName.c_str());
+
+		TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
+		std::string textureName = textureData ? textureData->filePath : "None";
+		ImGui::Text("TexturePath: %s", textureName.c_str());
+
+		break;
+	}
+	default:
+		break;
+	}
+
 	// 保存
 	if (ImGui::Button("Save"))
 	{	
-		//App::Data::Item::Save(ItemID::Armor_Body_of_Diamond)
+		//App::Data::Item::Save()
 	}
 
 

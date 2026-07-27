@@ -21,6 +21,8 @@ private:
 	int32_t cameraID_ = -1;
 
 	int32_t textureID_ = -1;
+
+	Vector4 color_ = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	
 	bool fullscreen_ = false;
 

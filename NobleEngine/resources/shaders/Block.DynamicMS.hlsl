@@ -153,9 +153,8 @@ void main(
             gFaceOffsetPerThread[i] = offset;
             offset += gFaceCountPerThread[i];
         }
-        // 総頂点数, 総プリミティブ数を送る
-        //SetMeshOutputCounts(offset * 4, offset * 2);
     }
+    
     // gtid 1～7を待たせる
     GroupMemoryBarrierWithGroupSync();
     
