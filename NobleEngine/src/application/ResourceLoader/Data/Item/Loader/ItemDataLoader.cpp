@@ -34,17 +34,22 @@ void ItemDataLoader::Load()
 	std::vector<std::string> toolKeys;
 	JsonManager::Load("resources/json/ToolConfig.json", "/Keys", toolKeys);
 
-	for (const std::string& toolIDStr : toolKeys)
-	{
-		ToolInfo info;
-		ToolID toolID = StringToEnum<ToolID>(toolIDStr);
-
-		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/durability", info.durability);
-		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
-		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/miningSpeed", info.miningSpeed);
-
-		bank_->SetToolInfo(toolID, info);
-	}
+	//for (const std::string& toolIDStr : toolKeys)
+	//{
+	//	ToolInfo info;
+	//	ToolID toolID = StringToEnum<ToolID>(toolIDStr);
+	//
+	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/durability", info.durability);
+	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
+	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/miningSpeed", info.miningSpeed);
+	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/modelPath", info.modelPath);
+	//	info.modelID = Game::Asset::Model::Load(info.modelPath);
+	//	info.aabb = Game::Asset::Model::GetData(info.modelID)->aabb;
+	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/texturePath", info.texturePath);
+	//	info.textureID = Game::Asset::Texture::Load(info.texturePath);
+	//
+	//	bank_->SetToolInfo(toolID, info);
+	//}
 
 
 	std::vector<std::string> itemKeys;
@@ -56,32 +61,19 @@ void ItemDataLoader::Load()
 		info.id = StringToEnum<ItemID>(itemIDStr);
 
 		std::string itemGenreStr;
-		std::string texturePath;
-		std::string modelPath;
+		std::string blockIDStr;
+		std::string toolIDStr;
+		std::string objectIDStr;
 
 		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/itemGenre", itemGenreStr);
-		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/texturePath", texturePath);
-		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/modelPath", modelPath);
+		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/blockID", blockIDStr);
+		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/toolID", toolIDStr);
+		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/objectID", objectIDStr);
 
 		info.genre = StringToEnum<ItemGenre>(itemGenreStr);
-		info.textureID = Game::Asset::Texture::Load(texturePath);
-		info.modelID = Game::Asset::Model::Load(modelPath);
-		info.aabb = Game::Asset::Model::GetData(info.modelID)->aabb;
-
-		if (info.genre == ItemGenre::Block)
-		{
-			std::string blockIDStr;
-			JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/blockID", blockIDStr);
-			BlockID blockID = StringToEnum<BlockID>(blockIDStr);
-			info.blockID = blockID;
-		}
-		else if (info.genre == ItemGenre::Tool)
-		{
-			std::string toolIDStr;
-			JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/toolID", toolIDStr);
-			ToolID toolID = StringToEnum<ToolID>(toolIDStr);
-			info.toolID = toolID;
-		}
+		info.blockID = StringToEnum<BlockID>(blockIDStr);
+		info.objectID = StringToEnum<ObjectID>(objectIDStr);
+		info.toolID = StringToEnum<ToolID>(toolIDStr);
 
 		bank_->SetItemInfo(info.id, info);
 	}

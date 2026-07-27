@@ -1,4 +1,252 @@
 {
+  "Armor_Body_of_Diamond": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Body_of_Gold": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Body_of_Iron": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Body_of_Stone": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Body_of_Wood": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Head_of_Diamond": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Head_of_Gold": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Head_of_Iron": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Head_of_Stone": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Head_of_Wood": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Leg_of_Diamond": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Leg_of_Gold": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Leg_of_Iron": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Leg_of_Stone": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Leg_of_Wood": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Shoes_of_Diamond": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Shoes_of_Gold": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Shoes_of_Iron": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Shoes_of_Stone": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Armor_Shoes_of_Wood": {
+    "blockID": "MAX",
+    "itemGenre": "Armor",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
+  },
+  "Block_Air": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Bedrock": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Diamond": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Dirt": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Glass": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Gold": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Grass": {
+    "blockID": "Grass",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Iron": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Leaf": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Stone": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
+  "Block_Wood": {
+    "blockID": "MAX",
+    "itemGenre": "Block",
+    "modelPath": "resources/prototypes/model/cube/cube.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/prototypes/texture/uvChecker.png",
+    "toolID": "MAX"
+  },
   "Keys": [
     "Tool_Sword_of_Wood",
     "Tool_Sword_of_Stone",
@@ -45,277 +293,151 @@
     "Block_Dirt",
     "Block_Grass",
     "Block_Wood",
-    "Block_Leaf"
+    "Block_Leaf",
+    "鉄インゴット",
+    "金インゴット",
+    "ダイヤモンド",
+    "ビーコン",
+    "MAX"
   ],
-
-  "Tool_Sword_of_Wood": {
+  "Tool_Axe_of_Diamond": {
+    "blockID": "MAX",
     "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
-    "toolID": "Sword_of_Wood" 
-  },
-  "Tool_Sword_of_Stone": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
-    "toolID": "Sword_of_Stone" 
-  },
-  "Tool_Sword_of_Iron": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
-    "toolID": "Sword_of_Iron" 
-  },
-  "Tool_Sword_of_Gold": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
-    "toolID": "Sword_of_Gold" 
-  },
-  "Tool_Sword_of_Diamond": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
-    "toolID": "Sword_of_Diamond"
-  },
-  
-
-  "Tool_Pickel_of_Wood": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
-    "toolID": "Pickel_of_Wood" 
-  },
-  "Tool_Pickel_of_Stone": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
-    "toolID": "Pickel_of_Stone" 
-  },
-  "Tool_Pickel_of_Iron": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
-    "toolID": "Pickel_of_Iron" 
-  },
-  "Tool_Pickel_of_Gold": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
-    "toolID": "Pickel_of_Gold" 
-  },
-  "Tool_Pickel_of_Diamond": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
-    "toolID": "Pickel_of_Diamond"
-  },
-
-
-  "Tool_Axe_of_Wood": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
     "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
-    "toolID": "Axe_of_Wood" 
-  },
-  "Tool_Axe_of_Stone": {
-    "itemGenre": "Tool",
+    "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
-    "toolID": "Axe_of_Stone" 
-  },
-  "Tool_Axe_of_Iron": {
-    "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
-    "toolID": "Axe_of_Iron" 
+    "toolID": "MAX"
   },
   "Tool_Axe_of_Gold": {
+    "blockID": "MAX",
     "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
     "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
-    "toolID": "Axe_of_Gold" 
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
+    "toolID": "MAX"
   },
-  "Tool_Axe_of_Diamond": {
+  "Tool_Axe_of_Iron": {
+    "blockID": "MAX",
     "itemGenre": "Tool",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
     "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
-    "toolID": "Axe_of_Diamond"
-  },
-
-
-  "Armor_Head_of_Wood": {
-    "itemGenre": "Armor",
+    "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+    "toolID": "MAX"
   },
-  "Armor_Head_of_Stone": {
-    "itemGenre": "Armor",
+  "Tool_Axe_of_Stone": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+    "toolID": "MAX"
   },
-  "Armor_Head_of_Iron": {
-    "itemGenre": "Armor",
+  "Tool_Axe_of_Wood": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+    "toolID": "Axe_of_Wood"
   },
-  "Armor_Head_of_Gold": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Pickel_of_Diamond": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
+    "toolID": "MAX"
   },
-  "Armor_Head_of_Diamond": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Pickel_of_Gold": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
+    "toolID": "MAX"
   },
-
-
-  "Armor_Leg_of_Wood": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Pickel_of_Iron": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
+    "toolID": "MAX"
   },
-  "Armor_Leg_of_Stone": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Pickel_of_Stone": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
+    "toolID": "MAX"
   },
-  "Armor_Leg_of_Iron": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Pickel_of_Wood": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
+    "toolID": "MAX"
   },
-  "Armor_Leg_of_Gold": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Sword_of_Diamond": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "MAX"
   },
-  "Armor_Leg_of_Diamond": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Sword_of_Gold": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "MAX"
   },
-
-
-  "Armor_Shoes_of_Wood": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Sword_of_Iron": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "MAX"
   },
-  "Armor_Shoes_of_Stone": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Sword_of_Stone": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "MAX"
   },
-  "Armor_Shoes_of_Iron": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "Tool_Sword_of_Wood": {
+    "blockID": "MAX",
+    "itemGenre": "Tool",
+    "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "objectID": "MAX",
+    "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "Sword_of_Wood"
   },
-  "Armor_Shoes_of_Gold": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "ダイヤモンド": {
+    "blockID": "MAX",
+    "objectID": "MAX",
+    "toolID": "MAX"
   },
-  "Armor_Shoes_of_Diamond": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "ビーコン": {
+    "blockID": "MAX",
+    "objectID": "MAX",
+    "toolID": "MAX"
   },
-
-
-  "Armor_Body_of_Wood": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
+  "金インゴット": {
+    "blockID": "MAX",
+    "objectID": "MAX",
+    "toolID": "MAX"
   },
-  "Armor_Body_of_Stone": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
-  },
-  "Armor_Body_of_Iron": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
-  },
-  "Armor_Body_of_Gold": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
-  },
-  "Armor_Body_of_Diamond": {
-    "itemGenre": "Armor",
-    "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj"
-  },
-
-
-  "Block_Air": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Air"
-  },
-  "Block_Stone": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Stone"
-  },
-  "Block_Iron": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Iron"
-  },
-  "Block_Gold": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Gold"
-  },
-  "Block_Diamond": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Diamond"
-  },
-  "Block_Bedrock": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Bedrock"
-  },
-  "Block_Glass": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Glass"
-  },
-  "Block_Dirt": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Dirt"
-  },
-  "Block_Grass": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Grass"
-  },
-  "Block_Wood": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Wood"
-  },
-  "Block_Leaf": {
-    "itemGenre": "Block",
-    "texturePath": "resources/prototypes/texture/uvChecker.png",
-    "modelPath": "resources/prototypes/model/cube/cube.obj",
-    "blockID": "Leaf"
+  "鉄インゴット": {
+    "blockID": "MAX",
+    "objectID": "MAX",
+    "toolID": "MAX"
   }
 }

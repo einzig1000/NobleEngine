@@ -18,7 +18,7 @@ public:
 private:
 	std::unique_ptr<RenderObject> render_;
 	std::vector<AABB> itemAABB_;
-	ItemID currentItemID_ = ItemID::None;
+	ItemID currentItemID_ = ItemID::MAX;
 
 	Matrix4x4 parentWorldMatrix_;
 	EulerTransforms pivotTransform_;

@@ -39,17 +39,32 @@ void ItemDataBank::CreateBlockInfoTable()
 	blockInfoTableSrvIndex_ = Game::Resource::CreateStatic(blockInfoTable_);
 }
 
-const ItemInfo& ItemDataBank::GetItemInfo(ItemID id)
+const ItemInfo* ItemDataBank::GetItemInfo(ItemID id)
 {
-	return itemInfoMap_.at(id);
+	auto it = itemInfoMap_.find(id);
+	if (it != itemInfoMap_.end())
+	{
+		return &(it->second);
+	}
+	return nullptr;
 }
 
-const BlockInfo& ItemDataBank::GetBlockInfo(BlockID id)
+const BlockInfo* ItemDataBank::GetBlockInfo(BlockID id)
 {
-	return blockInfoMap_.at(id);
+	auto it = blockInfoMap_.find(id);
+	if (it != blockInfoMap_.end())
+	{
+		return &(it->second);
+	}
+	return nullptr;
 }
 
-const ToolInfo& ItemDataBank::GetToolInfo(ToolID id)
+const ToolInfo* ItemDataBank::GetToolInfo(ToolID id)
 {
-	return toolInfoMap_.at(id);
+	auto it = toolInfoMap_.find(id);
+	if (it != toolInfoMap_.end())
+	{
+		return &(it->second);
+	}
+	return nullptr;
 }

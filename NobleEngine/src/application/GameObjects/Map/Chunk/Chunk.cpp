@@ -5,7 +5,6 @@
 #include <Utilities/Logger/Logger.h>
 #include <externals/DungeonTemplateLibrary/DTL.hpp>
 #include <externals/FastNoiseLite/FastNoiseLite.h>
-//#include <definition/ItemConfig/ItemConfig.h>
 #include <App.h>
 
 namespace
@@ -754,7 +753,7 @@ void Chunk::Update(int32_t cameraID)
 					int32_t index = x + (y * sizeX) + (z * sizeX * sizeY);
 
 					// ブロックIDを取得(隣接チャンクも探す)
-					BlockID blockID = BlockID::Air;
+					BlockID blockID = BlockID::Bedrock;
 					Block* block = GetBlock(Vector3int(x - 1, y - 1, z - 1), true);
 
 					if (block != nullptr)

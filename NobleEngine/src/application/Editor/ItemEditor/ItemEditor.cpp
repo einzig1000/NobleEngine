@@ -1,5 +1,6 @@
 #include "ItemEditor.h"
 #include <ResourceLoader/Data/DataManager.h>
+#include <Utilities/Json/JsonManager.h>
 #include <App.h>
 
 ItemEditor::ItemEditor(DataManager* dataManager)
@@ -43,10 +44,6 @@ void ItemEditor::DrawImGui()
 {
 	ImGui::Begin("Item Editor");
 
-	Matrix4x4 viewMatrix = Game::Camera::Getter::GetViewMatrix(cameraID_);
-	Matrix4x4 projectionMatrix = Game::Camera::Getter::GetProjectionMatrix(cameraID_);
-	Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(transforms_.scale, transforms_.rotate, transforms_.translate);
-
 	// ミニプレビュー画面 兼 フルスクボタン
 	if (ImGui::ImageButton("##ss", ImTextureID(Game::Asset::RenderTexture::GetRenderTextureGPUPtr(renderTextureID_)), ImVec2(128, 128)))
 	{
@@ -69,29 +66,41 @@ void ItemEditor::DrawImGui()
 		ImGui::EndDragDropTarget();
 	}
 
+	// enum配列
+	auto itemGenreValues = magic_enum::enum_values<ItemGenre>();
+	auto itemGenreNames = magic_enum::enum_names<ItemGenre>();
+	auto toolIDValues = magic_enum::enum_values<ToolID>();
+	auto toolIDNames = magic_enum::enum_names<ToolID>();
+	auto blockIDValues = magic_enum::enum_values<BlockID>();
+	auto blockIDNames = magic_enum::enum_names<BlockID>();
+	auto objectIDValues = magic_enum::enum_values<ObjectID>();
+	auto objectIDNames = magic_enum::enum_names<ObjectID>();
+	auto itemIDValues = magic_enum::enum_values<ItemID>();
+	auto itemIDNames = magic_enum::enum_names<ItemID>();
+
 	// アイテムジャンル
-	const char* items[] = { "None", "Armor", "Tool", "Block", "Object" };
-	static ItemGenre current_item = ItemGenre::None;
-	if (ImGui::BeginCombo("ItemGenre", items[static_cast<size_t>(current_item)]))
 	{
-		for (size_t i = 0; i < IM_ARRAYSIZE(items); i++)
+		if (ImGui::BeginCombo("ItemGenre", magic_enum::enum_name(genre_).data()))
 		{
-			bool is_selected = (current_item == static_cast<ItemGenre>(i));
-			if (ImGui::Selectable(items[i], is_selected))
+			for (std::size_t i = 0; i < itemGenreValues.size(); i++)
 			{
-				current_item = static_cast<ItemGenre>(i);
+				ItemGenre value = itemGenreValues[i];
+				bool selected = (genre_ == value);
+
+				if (ImGui::Selectable(itemGenreNames[i].data(), selected))
+				{
+					genre_ = value;
+				}
+				if (selected) ImGui::SetItemDefaultFocus();
 			}
-			if (is_selected)
-			{
-				ImGui::SetItemDefaultFocus();
-			}
+
+			ImGui::EndCombo();
 		}
-		ImGui::EndCombo();
 	}
 
-	// 現在の情報描画
 
-	switch (current_item)
+	// 現在の情報描画
+	switch (genre_)
 	{
 	case ItemGenre::None:
 	{
@@ -111,6 +120,23 @@ void ItemEditor::DrawImGui()
 	}
 	case ItemGenre::Tool:
 	{
+		if (ImGui::BeginCombo("ToolID", magic_enum::enum_name(toolID_).data()))
+		{
+			for (std::size_t i = 0; i < toolIDValues.size(); i++)
+			{
+				ToolID value = toolIDValues[i];
+				bool selected = (toolID_ == value);
+
+				if (ImGui::Selectable(toolIDNames[i].data(), selected))
+				{
+					toolID_ = value;
+				}
+				if (selected) ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
 		ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
 		std::string modelName = modelData ? modelData->filePath : "None";
 		ImGui::Text("ModelPath	: %s", modelName.c_str());
@@ -118,18 +144,76 @@ void ItemEditor::DrawImGui()
 		TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
 		std::string textureName = textureData ? textureData->filePath : "None";
 		ImGui::Text("TexturePath: %s", textureName.c_str());
+
+		ImGui::DragFloat("toolInfo.durability", &toolInfo.durability);
+		ImGui::DragFloat("toolInfo.attackPower", &toolInfo.attackPower);
+		ImGui::DragFloat("toolInfo.miningSpeed", &toolInfo.miningSpeed);
+
+		// 保存
+		if (ImGui::Button("Save"))
+		{
+			toolInfo.textureID = textureID_;
+			toolInfo.modelID = renderObject_->modelID_;
+			toolInfo.texturePath = textureName;
+			toolInfo.modelPath = modelName;
+			App::Data::Item::Save(toolID_, toolInfo);
+		}
 
 		break;
 	}
 	case ItemGenre::Block:
 	{
-		ImGui::ColorEdit4("Color", &color_.x);
+		if (ImGui::BeginCombo("BlockID", magic_enum::enum_name(blockID_).data()))
+		{
+			for (std::size_t i = 0; i < blockIDValues.size(); i++)
+			{
+				BlockID value = blockIDValues[i];
+				bool selected = (blockID_ == value);
 
+				if (ImGui::Selectable(blockIDNames[i].data(), selected))
+				{
+					blockID_ = value;
+				}
+				if (selected) ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::ColorEdit4("Color", &color_.x);
+		ImGui::DragFloat("blockInfo.durability", &blockInfo.durability);
+
+		// 保存
+		if (ImGui::Button("Save"))
+		{
+			blockInfo.color = Game::Math::Converter::Vector4ToUint(color_);
+			if (color_.w < 1.0f) blockInfo.isTransparent = true;
+			else blockInfo.isTransparent = false;
+
+			App::Data::Item::Save(blockID_, blockInfo);
+		}
 
 		break;
 	}
 	case ItemGenre::Object:
 	{
+		if (ImGui::BeginCombo("ObjectID", magic_enum::enum_name(objectID_).data()))
+		{
+			for (std::size_t i = 0; i < objectIDValues.size(); i++)
+			{
+				ObjectID value = objectIDValues[i];
+				bool selected = (objectID_ == value);
+
+				if (ImGui::Selectable(objectIDNames[i].data(), selected))
+				{
+					objectID_ = value;
+				}
+				if (selected) ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
 		ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
 		std::string modelName = modelData ? modelData->filePath : "None";
 		ImGui::Text("ModelPath	: %s", modelName.c_str());
@@ -137,6 +221,16 @@ void ItemEditor::DrawImGui()
 		TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
 		std::string textureName = textureData ? textureData->filePath : "None";
 		ImGui::Text("TexturePath: %s", textureName.c_str());
+
+		// 保存
+		if (ImGui::Button("Save"))
+		{
+			objectInfo.textureID = textureID_;
+			objectInfo.modelID = renderObject_->modelID_;
+			objectInfo.texturePath = textureName;
+			objectInfo.modelPath = modelName;
+			//App::Data::Item::Save(objectID_, objectInfo);
+		}
 
 		break;
 	}
@@ -144,10 +238,149 @@ void ItemEditor::DrawImGui()
 		break;
 	}
 
-	// 保存
-	if (ImGui::Button("Save"))
-	{	
-		//App::Data::Item::Save()
+	ImGui::BeginChild("ItemListChild", ImVec2(250, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
+
+	// 全表示
+	for (int32_t i = 0; i < static_cast<int32_t>(ItemID::MAX); i++)
+	{
+		ItemID itemID = static_cast<ItemID>(i);
+		const ItemInfo* info = App::Data::Item::Get(itemID);
+		ItemInfo tempInfo = *info;
+
+		if (info && ImGui::TreeNode(itemIDNames[i].data()))
+		{
+			if (ImGui::BeginCombo("BlockID", magic_enum::enum_name(tempInfo.blockID).data()))
+			{
+				for (std::size_t i = 0; i < blockIDValues.size(); i++)
+				{
+					BlockID value = blockIDValues[i];
+					bool selected = (tempInfo.blockID == value);
+
+					if (ImGui::Selectable(blockIDNames[i].data(), selected))
+					{
+						tempInfo.blockID = value;
+						App::Data::Item::Save(itemID, tempInfo);
+					}
+					if (selected) ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+			if (ImGui::BeginCombo("ToolID", magic_enum::enum_name(tempInfo.toolID).data()))
+			{
+				for (std::size_t i = 0; i < toolIDValues.size(); i++)
+				{
+					ToolID value = toolIDValues[i];
+					bool selected = (tempInfo.toolID == value);
+					if (ImGui::Selectable(toolIDNames[i].data(), selected))
+					{
+						tempInfo.toolID = value;
+						App::Data::Item::Save(itemID, tempInfo);
+					}
+					if (selected) ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+			if (ImGui::BeginCombo("ObjectID", magic_enum::enum_name(tempInfo.objectID).data()))
+			{
+				for (std::size_t i = 0; i < objectIDValues.size(); i++)
+				{
+					ObjectID value = objectIDValues[i];
+					bool selected = (tempInfo.objectID == value);
+					if (ImGui::Selectable(objectIDNames[i].data(), selected))
+					{
+						tempInfo.objectID = value;
+						App::Data::Item::Save(itemID, tempInfo);
+					}
+					if (selected) ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Text("BlockID: %s", blockIDNames[static_cast<size_t>(tempInfo.blockID)].data());
+			ImGui::Text("ToolID: %s", toolIDNames[static_cast<size_t>(tempInfo.toolID)].data());
+			ImGui::Text("ObjectID: %s", objectIDNames[static_cast<size_t>(tempInfo.objectID)].data());
+
+
+			ImGui::TreePop();
+		}
+	}
+	
+	ImGui::EndChild();
+
+
+	if (ImGui::Button("AllSave"))
+	{
+		std::vector<std::string> blockKeys(blockIDNames.begin(), blockIDNames.end());
+		JsonManager::AddParam("resources/json/BlockConfig.json", "/Keys", blockKeys);
+
+		for (int32_t i = 0; i < static_cast<int32_t>(BlockID::MAX); i++)
+		{
+			BlockID blockID = static_cast<BlockID>(i);
+			const BlockInfo* info = App::Data::Item::Get(blockID);
+			if (info)
+			{
+				JsonManager::AddParam("resources/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/durability", info->durability);
+				JsonManager::AddParam("resources/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/color", info->color);
+				JsonManager::AddParam("resources/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/isTransparent", info->isTransparent);
+			}
+		}
+
+		std::vector<std::string> toolKeys(toolIDNames.begin(), toolIDNames.end());
+		JsonManager::AddParam("resources/json/ToolConfig.json", "/Keys", toolKeys);
+
+		for (int32_t i = 0; i < static_cast<int32_t>(ToolID::MAX); i++)
+		{
+			ToolID toolID = static_cast<ToolID>(i);
+			const ToolInfo* info = App::Data::Item::Get(toolID);
+			if (info)
+			{
+				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/durability", info->durability);
+				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/attackPower", info->attackPower);
+				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/miningSpeed", info->miningSpeed);
+				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/textureID", info->texturePath);
+				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/modelID", info->modelPath);
+			}
+		}
+
+		std::vector<std::string> objectKeys(objectIDNames.begin(), objectIDNames.end());
+		JsonManager::AddParam("resources/json/ObjectConfig.json", "/Keys", objectKeys);
+
+		//for (int32_t i = 0; i < static_cast<int32_t>(ObjectID::MAX); i++)
+		//{
+		//	ObjectID objectID = static_cast<ObjectID>(i);
+		//	const ObjectInfo* info = App::Data::Item::Get(objectID);
+		//	if (info)
+		//	{
+		//		JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelID", info->modelID);
+		//		JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/textureID", info->textureID);
+		//		JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelPath", info->modelPath);
+		//		JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/texturePath", info->texturePath);
+		//	}
+		//}
+
+
+		std::vector<std::string> itemKeys(itemIDNames.begin(), itemIDNames.end());
+		JsonManager::AddParam("resources/json/ItemConfig.json", "/Keys", itemKeys);
+
+		for (int32_t i = 0; i < static_cast<int32_t>(ItemID::MAX); i++)
+		{
+			ItemID itemID = static_cast<ItemID>(i);
+			const ItemInfo* info = App::Data::Item::Get(itemID);
+			if (info)
+			{
+				JsonManager::AddParam("resources/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/blockID", magic_enum::enum_name(info->blockID).data());
+				JsonManager::AddParam("resources/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/toolID", magic_enum::enum_name(info->toolID).data());
+				JsonManager::AddParam("resources/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/objectID", magic_enum::enum_name(info->objectID).data());
+			}
+		}
+
+		JsonManager::Save("resources/json/BlockConfig.json");
+		JsonManager::Save("resources/json/ToolConfig.json");
+		JsonManager::Save("resources/json/ObjectConfig.json");
+		JsonManager::Save("resources/json/ItemConfig.json");
+
+		App::Data::Item::CreateBlockInfoTable();
 	}
 
 

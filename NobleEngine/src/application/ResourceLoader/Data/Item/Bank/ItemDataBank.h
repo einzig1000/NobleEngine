@@ -13,9 +13,9 @@ public:
 	void SetToolInfo(ToolID id, const ToolInfo& info);
 	void CreateBlockInfoTable();
 
-	const ItemInfo& GetItemInfo(ItemID id);
-	const BlockInfo& GetBlockInfo(BlockID id);
-	const ToolInfo& GetToolInfo(ToolID id);
+	const ItemInfo* GetItemInfo(ItemID id);
+	const BlockInfo* GetBlockInfo(BlockID id);
+	const ToolInfo* GetToolInfo(ToolID id);
 	const int32_t GetBlockInfoTableSRVIndex() { return blockInfoTableSrvIndex_; }
 
 private:

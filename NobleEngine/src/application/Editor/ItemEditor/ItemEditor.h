@@ -20,14 +20,19 @@ private:
 	int32_t renderTextureID_ = -1;
 	int32_t cameraID_ = -1;
 
+	std::unique_ptr<RenderObject> renderObject_;
 	int32_t textureID_ = -1;
-
 	Vector4 color_ = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	
-	bool fullscreen_ = false;
-
 	EulerTransforms transforms_;
 
-	std::unique_ptr<RenderObject> renderObject_;
+	ItemGenre genre_ = ItemGenre::None;
+	ToolID toolID_ = ToolID::MAX;
+	ToolInfo toolInfo{};
+	BlockID blockID_ = BlockID::MAX;
+	BlockInfo blockInfo{};
+	ObjectID objectID_ = ObjectID::MAX;
+	ObjectInfo objectInfo{};
+
+	bool fullscreen_ = false;
 };
 

@@ -290,7 +290,6 @@ void MapManager::Update(int32_t cameraID)
 			}
 		}
 	}
-
 }
 
 void MapManager::Draw(int32_t renderTargetID)

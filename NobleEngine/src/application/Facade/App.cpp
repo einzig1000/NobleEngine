@@ -13,15 +13,15 @@ namespace App
 				Application::Instance().GetDataManager()->GetItemDataManager()->getLoader()->Load();
 			}
 
-			const ItemInfo& Get(ItemID id)
+			const ItemInfo* Get(ItemID id)
 			{
 				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetItemInfo(id);
 			}
-			const BlockInfo& Get(BlockID id)
+			const BlockInfo* Get(BlockID id)
 			{
 				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetBlockInfo(id);
 			}
-			const ToolInfo& Get(ToolID id)
+			const ToolInfo* Get(ToolID id)
 			{
 				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetToolInfo(id);
 			}
@@ -31,13 +31,24 @@ namespace App
 				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetBlockInfoTableSRVIndex();
 			}
 
+			void CreateBlockInfoTable()
+			{
+				Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->CreateBlockInfoTable();
+			}
+
 
 			void Save(ItemID id, const ItemInfo& info)
-			{}
+			{
+				Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->SetItemInfo(id, info);
+			}
 			void Save(BlockID id, const BlockInfo& info)
-			{}
+			{
+				Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->SetBlockInfo(id, info);
+			}
 			void Save(ToolID id, const ToolInfo& info)
-			{}
+			{
+				Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->SetToolInfo(id, info);
+			}
 		}
 	}
 

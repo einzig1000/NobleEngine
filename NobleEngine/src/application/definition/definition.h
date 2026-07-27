@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <stdexcept>
+#include <externals/MagicEnum/magic_enum.hpp>
 
 
 // ゲームのフェーズ
@@ -45,8 +46,6 @@ enum class ItemGenre
 // 全てのアイテムID
 enum class ItemID
 {
-	None,
-
 	// ツール
 	Tool_Sword_of_Wood,
 	Tool_Sword_of_Stone,
@@ -129,13 +128,12 @@ enum class BlockID
 	Wood,	// 木
     Leaf,	// 葉
 
-    MAX,
+	MAX,
 };
 
 // 全てのツールID
 enum class ToolID
 {
-	None,
 	// ツール
 	Sword_of_Wood,
 	Sword_of_Stone,
@@ -152,6 +150,14 @@ enum class ToolID
 	Axe_of_Iron,
 	Axe_of_Gold,
 	Axe_of_Diamond,
+	MAX,
+};
+
+enum class ObjectID
+{
+	Chest,
+	kamado,
+
 	MAX,
 };
 
@@ -181,34 +187,56 @@ struct BlockInfo
 
 struct ToolInfo
 {
+	// ツールID
+	ToolID ID = ToolID::MAX;
 	// 耐久値
 	float durability = 1.0f;
 	// 攻撃力
 	float attackPower = 1.0f;
 	// 採掘速度
 	float miningSpeed = 1.0f;
+
+	// テクスチャ
+	std::string texturePath = "";
+	int32_t textureID = -1;
+	// モデル
+	std::string modelPath = "";
+	int32_t modelID = -1;
+
+	// あたり判定
+	std::vector<AABB> aabb;
+};
+
+struct ObjectInfo
+{
+	// オブジェクトID
+	ObjectID ID = ObjectID::MAX;
+
+	// テクスチャ
+	std::string texturePath = "";
+	int32_t textureID = -1;
+	// モデル
+	std::string modelPath = "";
+	int32_t modelID = -1;
+
+	// あたり判定
+	std::vector<AABB> aabb;
 };
 
 // アイテムごとの情報
 struct ItemInfo
 {
 	// アイテムID
-	ItemID id = ItemID::None;
+	ItemID id = ItemID::MAX;
 	// アイテムジャンル
 	ItemGenre genre = ItemGenre::None;
 
-	// ブロックとして扱う時のデータ(ItemGenre::Blockの時のみ有効)
-	BlockID blockID = BlockID::Air;
-	// ツールとして扱う時のデータ(ItemGenre::Toolの時のみ有効)
-	ToolID toolID = ToolID::None;
-
-
-	// テクスチャ
-	int32_t textureID = -1;
-	// モデル
-	int32_t modelID = -1;
-	// あたり判定
-	std::vector<AABB> aabb;
+	// ブロックとして扱う時のデータ
+	BlockID blockID = BlockID::MAX;
+	// ツールとして扱う時のデータ
+	ToolID toolID = ToolID::MAX;
+	// オブジェクトとして扱う時のデータ
+	ObjectID objectID = ObjectID::MAX;
 };
 
 
@@ -279,7 +307,7 @@ struct EnumStringTraits<ToolID>
 	{
 		switch (id)
 		{
-		case ToolID::None:				return "None"; break;
+		case ToolID::MAX:				return "None"; break;
 		case ToolID::Sword_of_Wood:		return "Sword_of_Wood"; break;
 		case ToolID::Sword_of_Stone:	return "Sword_of_Stone"; break;
 		case ToolID::Sword_of_Iron:		return "Sword_of_Iron"; break;
@@ -295,7 +323,6 @@ struct EnumStringTraits<ToolID>
 		case ToolID::Axe_of_Iron:		return "Axe_of_Iron"; break;
 		case ToolID::Axe_of_Gold:		return "Axe_of_Gold"; break;
 		case ToolID::Axe_of_Diamond:	return "Axe_of_Diamond"; break;
-		case ToolID::MAX:				return "unknown"; break;
 		default:
 			break;
 		}
@@ -304,7 +331,7 @@ struct EnumStringTraits<ToolID>
 
 	static ToolID FromString(std::string_view str)
 	{
-		if (str == "None")				return ToolID::None;
+		if (str == "None")				return ToolID::MAX;
 		if (str == "Sword_of_Wood")		return ToolID::Sword_of_Wood;
 		if (str == "Sword_of_Stone")	return ToolID::Sword_of_Stone;
 		if (str == "Sword_of_Iron")		return ToolID::Sword_of_Iron;
@@ -332,7 +359,7 @@ struct EnumStringTraits<ItemID>
 	{
 		switch (id)
 		{
-		case ItemID::None:
+		case ItemID::MAX:
 		case ItemID::Tool_Sword_of_Wood:		return "Tool_Sword_of_Wood";	break;
 		case ItemID::Tool_Sword_of_Stone:		return "Tool_Sword_of_Stone";	break;
 		case ItemID::Tool_Sword_of_Iron:		return "Tool_Sword_of_Iron";	break;
@@ -383,7 +410,6 @@ struct EnumStringTraits<ItemID>
 		case ItemID::金インゴット:				return "金インゴット";	break;
 		case ItemID::ダイヤモンド:				return "ダイヤモンド";	break;
 		case ItemID::ビーコン:					return "ビーコン";	break;
-		case ItemID::MAX:
 		default:
 			break;
 		}
@@ -392,7 +418,7 @@ struct EnumStringTraits<ItemID>
 	}
 	static ItemID FromString(std::string_view str)
 	{
-		if (str == "None")						return ItemID::None;
+		if (str == "None")						return ItemID::MAX;
 		if (str == "Tool_Sword_of_Wood")		return ItemID::Tool_Sword_of_Wood;
 		if (str == "Tool_Sword_of_Stone")		return ItemID::Tool_Sword_of_Stone;
 		if (str == "Tool_Sword_of_Iron")		return ItemID::Tool_Sword_of_Iron;
@@ -484,6 +510,27 @@ struct EnumStringTraits<ItemGenre>
 
 };
 
+template<>
+struct EnumStringTraits<ObjectID>
+{
+	static std::string_view ToString(ObjectID value)
+	{
+		switch (value)
+		{
+		case ObjectID::Chest:	return "None";		break;
+		case ObjectID::kamado:	return "Furnace";	break;
+		default:
+			break;
+		}
+		return "unknown";
+	}
+	static ObjectID FromString(std::string_view str)
+	{
+		if (str == "kamado")	return ObjectID::kamado;
+		if (str == "Chest")	return ObjectID::Chest;
+		return ObjectID::MAX;
+	}
+};
 
 class Block;
 struct lookAtBlock

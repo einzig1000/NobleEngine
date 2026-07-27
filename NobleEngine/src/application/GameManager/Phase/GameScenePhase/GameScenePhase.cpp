@@ -64,7 +64,9 @@ GameScenePhase::GameScenePhase()
 
 
 	//CraftRecipeList::InitializeRecipes();
-	//ResourceID::reload();
+	ResourceID::reload();
+
+
 
 }
 

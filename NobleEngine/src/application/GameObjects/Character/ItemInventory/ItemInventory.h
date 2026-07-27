@@ -5,7 +5,7 @@
 
 struct InventorySlot
 {
-    ItemID itemID = ItemID::None;
+    ItemID itemID = ItemID::MAX;
     uint8_t count = 0;
 	int32_t iconTextureID = -1;
 };

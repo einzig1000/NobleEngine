@@ -372,9 +372,6 @@
     <ClCompile Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\Editor\ItemDataEditor.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\application\ResourceLoader\Data\DataManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -1209,9 +1206,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\Editor\ItemDataEditor.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\ResourceLoader\Data\DataManager.h">
