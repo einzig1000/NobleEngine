@@ -134,7 +134,7 @@ inline void to_json(nlohmann::json& j, const Matrix3x3& m)
 	{ "m", nlohmann::json::array() }
 	};
 
-	for (int i = 0; i < 3; ++i)
+	for (size_t i = 0; i < 3; ++i)
 	{
 		j["m"].push_back({ m.m[i][0], m.m[i][1], m.m[i][2] });
 	}
@@ -142,9 +142,9 @@ inline void to_json(nlohmann::json& j, const Matrix3x3& m)
 }
 inline void from_json(const nlohmann::json& j, Matrix3x3& m)
 {
-	for (int i = 0; i < 3; ++i)
+	for (size_t i = 0; i < 3; ++i)
 	{
-		for (int k = 0; k < 3; ++k)
+		for (size_t k = 0; k < 3; ++k)
 		{
 			j.at("m").at(i).at(k).get_to(m.m[i][k]);
 		}
@@ -157,16 +157,16 @@ inline void to_json(nlohmann::json& j, const Matrix4x4& m)
 	{ "m", nlohmann::json::array() }
 	};
 
-	for (int i = 0; i < 4; ++i)
+	for (size_t i = 0; i < 4; ++i)
 	{
 		j["m"].push_back({ m.m[i][0], m.m[i][1], m.m[i][2], m.m[i][3] });
 	}
 }
 inline void from_json(const nlohmann::json& j, Matrix4x4& m)
 {
-	for (int i = 0; i < 4; ++i)
+	for (size_t i = 0; i < 4; ++i)
 	{
-		for (int k = 0; k < 4; ++k)
+		for (size_t k = 0; k < 4; ++k)
 		{
 			j.at("m").at(i).at(k).get_to(m.m[i][k]);
 		}

@@ -92,6 +92,7 @@ private:
 
 	// TextureLoaderにもmodelLOaderにもある中間リソース　いつか統合。毎フレーム解放
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> pendingIntermediates_{};
+
 };
 
 

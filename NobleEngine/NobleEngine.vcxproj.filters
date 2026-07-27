@@ -138,7 +138,7 @@
     <ClCompile Include="src\application\Utilities\functions.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\PerlinNoise.cpp">
+    <ClCompile Include="src\application\Utilities\PerlinNoise.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Window\WindowManager.cpp">
@@ -300,9 +300,6 @@
     <ClCompile Include="src\application\definition\definition.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\definition\ItemConfig\ItemConfig.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\AssetManager\Animation\AnimationBank\AnimationBank.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -360,13 +357,37 @@
     <ClCompile Include="src\application\GameObjects\UI\UIElement\IUIElement.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Camera\CameraController.cpp">
+    <ClCompile Include="src\application\GameObjects\Camera\CameraController.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Character\ItemInventory\ItemInventory.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Character\HaveItem\HaveItem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\ResourceLoader\Data\DataManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\ResourceLoader\Data\Item\ItemDataManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\Application.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\Facade\App.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\Editor\Editor.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\Editor\ItemEditor\ItemEditor.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -497,7 +518,7 @@
     <ClInclude Include="src\application\Utilities\functions.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\PerlinNoise.h">
+    <ClInclude Include="src\application\Utilities\PerlinNoise.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Window\WindowManager.h">
@@ -1112,9 +1133,6 @@
     <ClInclude Include="src\application\definition\definition.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\definition\ItemConfig\ItemConfig.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="src\engine\AssetManager\Animation\AnimationBank\AnimationBank.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1175,13 +1193,37 @@
     <ClInclude Include="src\application\GameObjects\UI\UIData.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Camera\CameraController.h">
+    <ClInclude Include="src\application\GameObjects\Camera\CameraController.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Character\ItemInventory\ItemInventory.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Character\HaveItem\HaveItem.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\ResourceLoader\Data\DataManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\ResourceLoader\Data\Item\ItemDataManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\Application.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\Facade\App.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\Editor\Editor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\Editor\ItemEditor\ItemEditor.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

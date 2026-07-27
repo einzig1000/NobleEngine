@@ -1,65 +1,76 @@
 {
+  "Air": {
+    "color": 1,
+    "durability": -1.0,
+    "isTransparent": true
+  },
+  "Bedrock": {
+    "color": 299875327,
+    "durability": -1.0,
+    "isTransparent": false
+  },
+  "Diamond": {
+    "color": 299875327,
+    "durability": 30.0,
+    "isTransparent": false
+  },
+  "Dirt": {
+    "color": 2740588799,
+    "durability": 8.0,
+    "isTransparent": false
+  },
+  "Glass": {
+    "color": 316717874,
+    "durability": 5.0,
+    "isTransparent": true
+  },
+  "Gold": {
+    "color": 3353285119,
+    "durability": 20.0,
+    "isTransparent": false
+  },
+  "Grass": {
+    "color": 1593779455,
+    "durability": 1.0,
+    "isTransparent": false
+  },
+  "Iron": {
+    "color": 2644352511,
+    "durability": 20.0,
+    "isTransparent": false
+  },
   "Keys": [
     "Air",
     "Stone",
     "Iron",
+    "Gold",
     "Diamond",
     "Bedrock",
+    "Glass",
     "Dirt",
     "Grass",
-    "Glass",
-    "wood",
-    "Leaf"
+    "Wood",
+    "Leaf",
+    "MAX"
   ],
-
-  "Air": {
-    "durability": -1.0,
-    "isTransparent": true,
-    "color": 0
+  "Leaf": {
+    "color": 699334911,
+    "durability": 8.0,
+    "isTransparent": false
   },
   "Stone": {
-    "durability": 120.0,
-    "isTransparent": false,
-    "color": 2155905279
-  },
-  "Iron": {
-    "durability": 160.0,
-    "isTransparent": false,
-    "color": 3233857791
-  },
-  "Diamond": {
-    "durability": 240.0,
-    "isTransparent": false,
-    "color": 4278255615
-  },
-  "Bedrock": {
-    "durability": -1.0,
-    "isTransparent": false,
-    "color": 1077952767
-  },
-  "Dirt": {
-    "durability": 30.0,
-    "isTransparent": false,
-    "color": 2336560127
-  },
-  "Grass": {
-    "durability": 30.0,
-    "isTransparent": false,
-    "color": 579543807
-  },
-  "Glass": {
+    "color": 774778623,
     "durability": 10.0,
-    "isTransparent": true,
-    "color": 0
+    "isTransparent": false
+  },
+  "Wood": {
+    "color": 2135359743,
+    "durability": 8.0,
+    "isTransparent": false
   },
   "wood": {
+    "color": 2336560127,
     "durability": 40.0,
-    "isTransparent": false,
-    "color": 2336560127
-  },
-  "Leaf": {
-    "durability": 20.0,
-    "isTransparent": true,
-    "color": 579543807
+    "isTransparent": false
   }
 }

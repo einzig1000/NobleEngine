@@ -86,11 +86,11 @@ namespace Game
 
 		namespace RenderTexture
 		{
-			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName)
+			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& textureName)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
 			}
-			bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color)
+			bool SaveRenderTextureToFile(const std::string& filePath, const std::string& textureName, bool color)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveTexture(filePath, textureName, color);
 			}
@@ -98,17 +98,21 @@ namespace Game
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveAllRenderTextures(filePath, color);
 			}
-			int32_t GetRenderTextureID(const std::string textureName)
+			int32_t GetRenderTextureID(const std::string& textureName)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.index;
 			}
-			int32_t GetRenderTextureDepthID(const std::string textureName)
+			int32_t GetRenderTextureDepthID(const std::string& textureName)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->depthsrvAlloc.index;
 			}
-			UINT64 GetRenderTexture(const std::string textureName)
+			UINT64 GetRenderTextureGPUPtr(const std::string& textureName)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.gpu.ptr;
+			}
+			UINT64 GetRenderTextureGPUPtr(int32_t renderTextureID)
+			{
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(renderTextureID)->colorsrvAlloc.gpu.ptr;
 			}
 		}
 	}
@@ -190,19 +194,19 @@ namespace Game
 				return Engine::Instance().GetIOManager()->GetMouseController()->GetRay(cameraID);
 			}
 
-			bool IsHeld(int i)
+			bool IsHeld(int32_t i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->IsHeld(i);
 			}
-			bool IsJustPressed(int i)
+			bool IsJustPressed(int32_t i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->IsJustPressed(i);
 			}
-			bool IsJustReleased(int i)
+			bool IsJustReleased(int32_t i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->IsJustReleased(i);
 			}
-			uint32_t HoldFrames(int i)
+			uint32_t HoldFrames(int32_t i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->HoldFrames(i);
 			}
@@ -243,7 +247,7 @@ namespace Game
 			{
 				return Engine::Instance().GetIOManager()->GetKeyboardController()->HoldFrames(key);
 			}
-			int TestTapLong(int n, BYTE key)
+			int32_t TestTapLong(int32_t n, BYTE key)
 			{
 				return Engine::Instance().GetIOManager()->GetKeyboardController()->TestTapLong(n, key);
 			}
@@ -251,39 +255,39 @@ namespace Game
 
 		namespace Pad
 		{
-			bool IsHeld(int padIndex, BYTE button)
+			bool IsHeld(int32_t padIndex, BYTE button)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->IsHeld(padIndex, button);
 			}
-			bool IsJustPressed(int padIndex, BYTE button)
+			bool IsJustPressed(int32_t padIndex, BYTE button)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->IsJustPressed(padIndex, button);
 			}
-			bool IsJustReleased(int padIndex, BYTE button)
+			bool IsJustReleased(int32_t padIndex, BYTE button)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->IsJustReleased(padIndex, button);
 			}
-			uint32_t HoldFrames(int padIndex, BYTE button)
+			uint32_t HoldFrames(int32_t padIndex, BYTE button)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->HoldFrames(padIndex, button);
 			}
-			Vector2 GetLeftStick(int padIndex)
+			Vector2 GetLeftStick(int32_t padIndex)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->GetLeftStick(padIndex);
 			}
-			Vector2 GetRightStick(int padIndex)
+			Vector2 GetRightStick(int32_t padIndex)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->GetRightStick(padIndex);
 			}
-			float GetLeftTrigger(int padIndex)
+			float GetLeftTrigger(int32_t padIndex)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->GetLeftTrigger(padIndex);
 			}
-			float GetRightTrigger(int padIndex)
+			float GetRightTrigger(int32_t padIndex)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->GetRightTrigger(padIndex);
 			}
-			void SetVibration(int padIndex, float leftMotor, float rightMotor)
+			void SetVibration(int32_t padIndex, float leftMotor, float rightMotor)
 			{
 				Engine::Instance().GetIOManager()->GetPadController()->SetVibration(padIndex, leftMotor, rightMotor);
 			}
@@ -351,27 +355,27 @@ namespace Game
 
 		namespace Setter
 		{
-			void SetCenter(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			void SetCenter(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCenterTarget(target, spendFrame, easetype);
 			}
 
-			void SetRotate(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			void SetRotate(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetRotateTarget(target, spendFrame, easetype);
 			}
 
-			void SetDistance(float target, int spendFrame, EaseType easetype, int32_t cameraID)
+			void SetDistance(float target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetDistanceTarget(target, spendFrame, easetype);
 			}
 
-			void SetScreenSize(Vector2 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			void SetScreenSize(Vector2 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetScreenSizeTarget(target, spendFrame, easetype);
 			}
 
-			void SetFovTarget(float target, int duration, EaseType easetype, int32_t cameraID)
+			void SetFovTarget(float target, int32_t duration, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetFovTarget(target, duration, easetype);
 			}
@@ -425,11 +429,11 @@ namespace Game
 
 		namespace Rand
 		{
-			float RandFloat(float min, float max, int decimalPlaces)
+			float RandFloat(float min, float max, int32_t decimalPlaces)
 			{
 				return Random::RandomFloat(min, max, decimalPlaces);
 			}
-			int RandInt(int min, int max)
+			int32_t RandInt(int32_t min, int32_t max)
 			{
 				return Random::RandomInt(min, max);
 			}

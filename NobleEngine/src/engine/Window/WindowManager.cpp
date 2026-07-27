@@ -85,7 +85,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-WindowManager::WindowManager(int width, int height, const std::wstring& title)
+WindowManager::WindowManager(uint32_t width, uint32_t height, const std::wstring& title)
 {
 	winWidth_ = width;
 	winHeight_ = height;
@@ -139,7 +139,7 @@ void WindowManager::RegisterMouseRawInput(HWND hwnd)
     ::RegisterRawInputDevices(&rid, 1, sizeof(rid));
 }
 
-void WindowManager::CreateMainWindow(int width, int height, const std::wstring& title) 
+void WindowManager::CreateMainWindow(uint32_t width, uint32_t height, const std::wstring& title) 
 {
     // ウィンドウサイズを表す構造体にクライアント領域を入れる
     RECT wrc = { 0,0,width,height };

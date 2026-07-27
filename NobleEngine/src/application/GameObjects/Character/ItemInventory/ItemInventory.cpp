@@ -1,5 +1,4 @@
 #include "ItemInventory.h"
-#include <definition/ItemConfig/ItemConfig.h>
 
 //int32_t y = index / 9;
 //int32_t x = index % 9;
@@ -37,7 +36,7 @@ void ItemInventory::AddItem(ItemID id)
     for (int32_t index = 0; index < 36; ++index)
     {
         auto& slot = inventory_[index];
-        if (slot.itemID == ItemID::None || slot.count == 0)
+        if (slot.itemID == ItemID::MAX || slot.count == 0)
         {
             slot.itemID = id;
             slot.count = 1;

@@ -1,3 +1,4 @@
+#include "../Utilities/Utilities.hlsli"
 
 struct PSInput
 {
@@ -15,21 +16,6 @@ cbuffer Time : register(b0)
     float time;
 };
 
-float rand3dTo1d(float3 value)
-{
-    float3 smallValue = sin(value);
-    float random = dot(smallValue, float3(12.9898, 78.233, 37.719));
-    random = frac(sin(random) * 143758.5453);
-    return random;
-}
-
-float rand2dTo1d(float2 value)
-{
-    float2 smallValue = sin(value);
-    float random = dot(smallValue, float2(12.9898, 78.233));
-    random = frac(sin(random) * 143758.5453);
-    return random;
-}
 
 PSOutput main(PSInput input)
 {

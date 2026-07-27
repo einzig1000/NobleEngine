@@ -4,7 +4,7 @@
 #include <definition/constexprs.h>
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <ImGuiManager/ImGuiManager.h>
-
+#include <memory>
 
 // フェーズ間
 struct PhaseContext

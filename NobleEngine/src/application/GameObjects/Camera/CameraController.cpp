@@ -160,7 +160,7 @@
 //		{
 //			if (mapManager_->isSolidAt(cameraPos))
 //			{
-//				int i = 0;
+//				int32_t i = 0;
 //			}
 //		}
 //	}

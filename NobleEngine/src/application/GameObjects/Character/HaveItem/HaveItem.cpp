@@ -1,5 +1,5 @@
 #include "HaveItem.h"
-#include <definition/ItemConfig/ItemConfig.h>
+#include <App.h>
 #include <Utilities/functions.h>
 
 namespace
@@ -25,7 +25,7 @@ namespace
 			// 8頂点をワールド空間に変換
 			Vector3 worldMin = Transform(corners[0], worldMatrix);
 			Vector3 worldMax = worldMin;
-			for (int i = 1; i < 8; ++i)
+			for (int32_t i = 1; i < 8; ++i)
 			{
 				Vector3 v = Transform(corners[i], worldMatrix);
 				worldMin.x = std::min(worldMin.x, v.x);
@@ -57,7 +57,7 @@ HaveItem::~HaveItem()
 
 void HaveItem::Update(int32_t cameraID)
 {
-	if (currentItemID_ != ItemID::None)
+	if (currentItemID_ != ItemID::MAX)
 	{
 		Vector3 cameraCenter = Game::Camera::Getter::GetCenter(cameraID);
 		Vector3 cameraPos = Game::Camera::Getter::GetTranslate(cameraID);
@@ -77,17 +77,18 @@ void HaveItem::Update(int32_t cameraID)
 			pivotTransform_.rotate.x = 0.0f;
 		}
 
-		const ItemInfo& itemConfig = ItemConfig::Instance().GetItemInfo(currentItemID_);
+		const ToolID toolID = App::Data::Item::Get(currentItemID_)->toolID;
+		const ToolInfo* toolConfig = App::Data::Item::Get(toolID);
 
-		render_->modelID_ = itemConfig.modelID;
-		itemAABB_ = Game::Asset::Model::GetData(itemConfig.modelID)->aabb;
+		render_->modelID_ = toolConfig->modelID;
+		itemAABB_ = Game::Asset::Model::GetData(toolConfig->modelID)->aabb;
 
 		Matrix4x4 itemWorld = Matrix4x4::MakeAffineMatrix(itemTransform_.scale, itemTransform_.rotate, itemTransform_.translate);
 		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(pivotTransform_.scale, pivotTransform_.rotate, pivotTransform_.translate);
 		itemWorld = itemWorld * pivotWorld * parentWorldMatrix_;
 		Matrix4x4 wvp = itemWorld * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-		int32_t textureID = itemConfig.textureID;
+		int32_t textureID = toolConfig->textureID;
 
 		render_->SetCBufferData(0, ShaderType::VertexShader, &wvp);
 		render_->SetCBufferData(1, ShaderType::VertexShader, &itemWorld);
@@ -112,14 +113,14 @@ void HaveItem::Draw(int32_t renderTextureID)
 		render_->Draw(renderTextureID);
 	}
 
-	ImGui::Begin("HaveItem");
-	ImGui::DragFloat3("Item Position", &itemTransform_.translate.x, 0.1f);
-	ImGui::DragFloat3("Item Rotation", &itemTransform_.rotate.x, 0.01f);
-	ImGui::DragFloat3("Item Scale", &itemTransform_.scale.x, 0.1f);
-	ImGui::Separator();
-	ImGui::DragFloat3("pivot Position", &pivotTransform_.translate.x, 0.1f);
-	ImGui::DragFloat3("pivot Rotation", &pivotTransform_.rotate.x, 0.01f);
-	ImGui::DragFloat3("pivot Scale", &pivotTransform_.scale.x, 0.1f);
+	//ImGui::Begin("HaveItem");
+	//ImGui::DragFloat3("Item Position", &itemTransform_.translate.x, 0.1f);
+	//ImGui::DragFloat3("Item Rotation", &itemTransform_.rotate.x, 0.01f);
+	//ImGui::DragFloat3("Item Scale", &itemTransform_.scale.x, 0.1f);
+	//ImGui::Separator();
+	//ImGui::DragFloat3("pivot Position", &pivotTransform_.translate.x, 0.1f);
+	//ImGui::DragFloat3("pivot Rotation", &pivotTransform_.rotate.x, 0.01f);
+	//ImGui::DragFloat3("pivot Scale", &pivotTransform_.scale.x, 0.1f);
 
-	ImGui::End();
+	//ImGui::End();
 }

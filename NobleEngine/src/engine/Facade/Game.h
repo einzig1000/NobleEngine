@@ -113,7 +113,7 @@ namespace Game
 			/// <param name="height">縦幅</param>
 			/// <param name="label">識別用のラベル</param>
 			/// <returns>テクスチャID</returns>
-			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string label);
+			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& label);
 
 			/// <summary>
 			/// レンダーテクスチャをファイルに保存する
@@ -122,7 +122,7 @@ namespace Game
 			/// <param name="textureName">保存するレンダーテクスチャの名前</param>
 			/// <param name="color">カラーかどうか</param>
 			/// <returns>保存に成功したかどうか</returns>
-			bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color = true);
+			bool SaveRenderTextureToFile(const std::string& filePath, const std::string& textureName, bool color = true);
 
 			/// <summary>
 			/// 全てのレンダーテクスチャをファイルに保存する
@@ -137,21 +137,28 @@ namespace Game
 			/// </summary>
 			/// <param name="textureName">テクスチャ名</param>
 			/// <returns>テクスチャID</returns>
-			int32_t GetRenderTextureID(const std::string textureName);
+			int32_t GetRenderTextureID(const std::string& textureName);
 
 			/// <summary>
 			/// 深度レンダーテクスチャID取得
 			/// </summary>
 			/// <param name="textureName">テクスチャ名</param>
 			/// <returns>深度テクスチャID</returns>
-			int32_t GetRenderTextureDepthID(const std::string textureName);
+			int32_t GetRenderTextureDepthID(const std::string& textureName);
 
 			/// <summary>
 			/// レンダーテクスチャgpuポインタ取得
 			/// </summary>
 			/// <param name="textureName">テクスチャ名</param>
 			/// <returns>GPUポインタ</returns>
-			UINT64 GetRenderTexture(const std::string textureName);
+			UINT64 GetRenderTextureGPUPtr(const std::string& textureName);
+
+			/// <summary>
+			/// レンダーテクスチャgpuポインタ取得
+			/// </summary>
+			/// <param name="renderTextureID">レンダーテクスチャID</param>
+			/// <returns>GPUポインタ</returns>
+			UINT64 GetRenderTextureGPUPtr(int32_t renderTextureID);
 		}
 	};
 
@@ -291,28 +298,28 @@ namespace Game
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
 			/// <returns>現在押されているか</returns>
-			bool IsHeld(int i);
+			bool IsHeld(int32_t i);
 
 			/// <summary>
 			/// マウスボタンの入力取得(押した瞬間)
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
 			/// <returns>押した瞬間か</returns>
-			bool IsJustPressed(int i);
+			bool IsJustPressed(int32_t i);
 
 			/// <summary>
 			/// マウスボタンの入力取得(離した瞬間)
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
 			/// <returns>離した瞬間か</returns>
-			bool IsJustReleased(int i);
+			bool IsJustReleased(int32_t i);
 
 			/// <summary>
 			/// マウスボタンの入力取得(押されてからの経過フレーム数)
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
 			/// <returns>押されてからの経過フレーム数</returns>
-			uint32_t HoldFrames(int i);
+			uint32_t HoldFrames(int32_t i);
 
 			// カーソルの表示・非表示切り替え
 			void ToggleMouseCursorVisible();
@@ -352,7 +359,7 @@ namespace Game
 			/// <param name="n">nフレーム以上で長押しと判定</param>
 			/// <param name="key">キー</param>
 			/// <returns>0: なし  1:単押し  2:長押し</returns>
-			int TestTapLong(int n, BYTE key);
+			int32_t TestTapLong(int32_t n, BYTE key);
 		};
 
 		namespace Pad
@@ -362,56 +369,56 @@ namespace Game
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			bool IsHeld(int padIndex, BYTE button);
+			bool IsHeld(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// ゲームパッドの入力取得(押した瞬間)
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			bool IsJustPressed(int padIndex, BYTE button);
+			bool IsJustPressed(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// ゲームパッドの入力取得(離した瞬間)
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			bool IsJustReleased(int padIndex, BYTE button);
+			bool IsJustReleased(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// ゲームパッドの入力取得(押されてからの経過フレーム数)
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			uint32_t HoldFrames(int padIndex, BYTE button);
+			uint32_t HoldFrames(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// 左スティックの入力取得
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <returns> -1.0f ～ 1.0f </returns>
-			Vector2 GetLeftStick(int padIndex);
+			Vector2 GetLeftStick(int32_t padIndex);
 
 			/// <summary>
 			/// 右スティックの入力取得
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <returns> -1.0f ～ 1.0f </returns>
-			Vector2 GetRightStick(int padIndex);
+			Vector2 GetRightStick(int32_t padIndex);
 
 			/// <summary>
 			/// 左トリガーの入力取得
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <returns> 0.0f ～ 1.0f </returns>
-			float GetLeftTrigger(int padIndex);
+			float GetLeftTrigger(int32_t padIndex);
 
 			/// <summary>
 			/// 右トリガーの入力取得
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <returns> 0.0f ～ 1.0f </returns>
-			float GetRightTrigger(int padIndex);
+			float GetRightTrigger(int32_t padIndex);
 
 			/// <summary>
 			/// ゲームパッド振動設定
@@ -419,7 +426,7 @@ namespace Game
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="leftMotor"> 左モーター強度(0.0f ～ 1.0f) </param>
 			/// <param name="rightMotor"> 右モーター強度(0.0f ～ 1.0f) </param>
-			void SetVibration(int padIndex, float leftMotor, float rightMotor);
+			void SetVibration(int32_t padIndex, float leftMotor, float rightMotor);
 
 			/// <summary>
 			/// 接続されているゲームパッドの数取得
@@ -458,7 +465,7 @@ namespace Game
 			/// <param name="target">目標座標</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetCenter(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetCenter(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
 
 			/// <summary>
 			///	カメラの回転量変更
@@ -466,7 +473,7 @@ namespace Game
 			/// <param name="target">目標回転量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetRotate(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetRotate(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
 
 			/// <summary>
 			///  カメラの回転中心からの距離(ズーム量)変更
@@ -474,7 +481,7 @@ namespace Game
 			/// <param name="target">目標ズーム量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetDistance(float target, int spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetDistance(float target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
 
 			/// <summary>
 			/// カメラのスクリーンサイズ変更
@@ -483,7 +490,7 @@ namespace Game
 			/// <param name="spendFrame">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetScreenSize(Vector2 target, int spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetScreenSize(Vector2 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
 			
 			/// <summary>
 			/// カメラのfovY変更
@@ -492,7 +499,7 @@ namespace Game
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetFovTarget(float target, int duration, EaseType easetype, int32_t cameraID = 0);
+			void SetFovTarget(float target, int32_t duration, EaseType easetype, int32_t cameraID = 0);
 
 			/// <summary>
 			/// カメラコントロールの有効無効設定
@@ -578,7 +585,7 @@ namespace Game
 			/// <param name="max"> 最大値 </param>
 			/// <param name="decimalPlaces"> 小数点以下の桁数 </param>
 			/// <returns> 乱数 </returns>
-			float RandFloat(float min, float max, int decimalPlaces);
+			float RandFloat(float min, float max, int32_t decimalPlaces);
 
 			/// <summary>
 			/// 指定範囲の整数乱数取得
@@ -586,7 +593,7 @@ namespace Game
 			/// <param name="min"> 最小値 </param>
 			/// <param name="max"> 最大値 </param>
 			/// <returns> 乱数 </returns>
-			int RandInt(int min, int max);
+			int32_t RandInt(int32_t min, int32_t max);
 		}
 
 		namespace Converter

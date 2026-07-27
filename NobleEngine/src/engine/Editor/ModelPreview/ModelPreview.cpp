@@ -69,7 +69,7 @@ void ModelPreview::DrawImGui()
 
 	if (ImGui::BeginListBox("##model list"))
 	{
-		for (int i = 0; i < (int)bank_->GetModelList().size(); ++i)
+		for (int32_t i = 0; i < (int32_t)bank_->GetModelList().size(); ++i)
 		{
 			ImGui::PushID(i);
 			ImGui::BeginGroup();
@@ -93,9 +93,15 @@ void ModelPreview::DrawImGui()
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
 		{
 			IM_ASSERT(payload->DataSize == sizeof(int32_t));
-			textureID = *(const int32_t*)payload->Data;
+			textureID = *reinterpret_cast<const int32_t*>(payload->Data);
 		}
 		ImGui::EndDragDropTarget();
+	}
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+	{
+		ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
+		ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
+		ImGui::EndDragDropSource();
 	}
 
 	ImGui::End();
@@ -118,12 +124,20 @@ void ModelPreview::DrawImGui()
 
 		ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), ImVec2(512, 512));
 		
+
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
+			ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
+			ImGui::EndDragDropSource();
+		}
+
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
 			{
 				IM_ASSERT(payload->DataSize == sizeof(int32_t));
-				textureID = *(const int32_t*)payload->Data;
+				textureID = *reinterpret_cast<const int32_t*>(payload->Data);
 			}
 			ImGui::EndDragDropTarget();
 		}

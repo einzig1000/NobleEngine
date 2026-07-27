@@ -77,7 +77,7 @@ void SwapChainManager::InitializeRenderTargetView(ID3D12Device2* device)
     rtvDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     rtvDesc_.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
-    for (int i = 0; i < 2; ++i)
+    for (size_t i = 0; i < 2; ++i)
     {
         if (rtvAllocations_[i].index == UINT32_MAX)
         {
@@ -161,7 +161,7 @@ void SwapChainManager::Resize(ID3D12Device2* device, ID3D12CommandQueue* command
     hr = swapChain_->GetBuffer(1, IID_PPV_ARGS(&swapChainResources_[1]));
     assert(SUCCEEDED(hr));
 
-    for (int i = 0; i < 2; ++i)
+    for (size_t i = 0; i < 2; ++i)
     {
         if (rtvAllocations_[i].index == UINT32_MAX)
         {

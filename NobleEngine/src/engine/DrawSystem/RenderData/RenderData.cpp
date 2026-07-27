@@ -20,7 +20,7 @@
 //RenderData_Model::RenderData_Model()
 //{
 //	renderModels.push_back(this);
-//	this->ID = int(renderModels.size());
+//	this->ID = int32_t(renderModels.size());
 //	this->parentModel = nullptr;
 //}
 //
@@ -165,7 +165,7 @@
 //		size_t textureCount = Game::Asset::GetTextureCount();
 //	
 //		//static const char* items[] = { "default", "additional" };
-//		//int current_item = static_cast<int>();
+//		//int32_t current_item = static_cast<int32_t>();
 //		//if (ImGui::Combo((num + "texture.mode").c_str(), &current_item, items, IM_ARRAYSIZE(items)))
 //		//{
 //		//	options.dirLight.mode = static_cast<>(current_item);
@@ -201,7 +201,7 @@
 //
 //		// ラベルを非表示にするために "##" プレフィックスで ID を与える
 //		std::string dragId = std::string("##model") + num;
-//		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int*>(&this->model));
+//		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int32_t*>(&this->model));
 //
 //		ImGui::SameLine();
 //
@@ -209,7 +209,7 @@
 //
 //		// クランプ
 //		if (this->model < 0) this->model = 0;
-//		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
+//		if (this->model > int32_t(Game::Asset::GetModelCount() - 1)) this->model = int32_t(Game::Asset::GetModelCount() - 1);
 //
 //		ImGui::TreePop();
 //	}
@@ -224,7 +224,7 @@
 //	{
 //		// 表示名を実際のモードに合わせる
 //		static const char* items[] = { "None", "Normal", "Add", "Sub", "Mul", "Screen", "Wireframe" };
-//		int current_item = static_cast<int>(options.blendMode);
+//		int32_t current_item = static_cast<int32_t>(options.blendMode);
 //		if (ImGui::Combo((num + "blendMode").c_str(), &current_item, items, IM_ARRAYSIZE(items)))
 //		{
 //			options.blendMode = static_cast<BlendMode>(current_item);
@@ -241,7 +241,7 @@
 //			ImGui::DragFloat((num + "dirLight.intensity").c_str(), &options.dirLight.intensity, 0.01f, 0.0f, 1.0f);
 //
 //			static const char* items[] = { "None", "Lambert", "HalfLambert" };
-//			int current_item = static_cast<int>(options.dirLight.mode);
+//			int32_t current_item = static_cast<int32_t>(options.dirLight.mode);
 //			if (ImGui::Combo((num + "dirLight.mode").c_str(), &current_item, items, IM_ARRAYSIZE(items)))
 //			{
 //				options.dirLight.mode = static_cast<LightMode>(current_item);
@@ -331,8 +331,8 @@
 //		// 5) 結果を transforms.World に格納
 //		XMFLOAT4X4 tmp;
 //		DirectX::XMStoreFloat4x4(&tmp, world);
-//		for (int i = 0; i < 4; ++i)
-//			for (int j = 0; j < 4; ++j)
+//		for (int32_t i = 0; i < 4; ++i)
+//			for (int32_t j = 0; j < 4; ++j)
 //				this->localWorldMatrix.m[i][j] = tmp.m[i][j];
 //	}
 //
@@ -470,8 +470,8 @@
 //			// 5) 結果を transforms.World に格納
 //			XMFLOAT4X4 tmp;
 //			DirectX::XMStoreFloat4x4(&tmp, world);
-//			for (int i = 0; i < 4; ++i)
-//				for (int j = 0; j < 4; ++j)
+//			for (int32_t i = 0; i < 4; ++i)
+//				for (int32_t j = 0; j < 4; ++j)
 //					this->localWorldMatrix.m[i][j] = tmp.m[i][j];
 //		}
 //	}
@@ -564,8 +564,8 @@
 //	// 5) 結果を transforms.World に格納
 //	XMFLOAT4X4 tmp;
 //	DirectX::XMStoreFloat4x4(&tmp, world);
-//	for (int i = 0; i < 4; ++i)
-//		for (int j = 0; j < 4; ++j)
+//	for (int32_t i = 0; i < 4; ++i)
+//		for (int32_t j = 0; j < 4; ++j)
 //			this->localWorldMatrix.m[i][j] = tmp.m[i][j];
 //}
 //
@@ -650,7 +650,7 @@
 ////				Vector3 depth = this->aabbs[j].GetCollisionDepth(target.aabbs[i]);
 ////
 ////				// 衝突ペア・深度の保存
-////				result.AABBpair = CollisionPair{ static_cast<int>(i), static_cast<int>(j) };
+////				result.AABBpair = CollisionPair{ static_cast<int32_t>(i), static_cast<int32_t>(j) };
 ////				result.depth = -depth;
 ////				if (this->mass < target.mass)
 ////				{
@@ -688,7 +688,7 @@
 //
 //			// 一番浅い軸を探す
 //			float pen = overlap.x;
-//			int axis = 0; // 0:x, 1:y, 2:z
+//			int32_t axis = 0; // 0:x, 1:y, 2:z
 //			if (overlap.y < pen) { pen = overlap.y; axis = 1; }
 //			if (overlap.z < pen) { pen = overlap.z; axis = 2; }
 //
@@ -712,7 +712,7 @@
 //			if (pen < bestPen) {
 //				bestPen = pen;
 //				found = true;
-//				best.AABBpair = CollisionPair{ static_cast<int>(i), static_cast<int>(j) };
+//				best.AABBpair = CollisionPair{ static_cast<int32_t>(i), static_cast<int32_t>(j) };
 //				best.depth = overlap;
 //				best.face = faces;
 //			}
@@ -743,7 +743,7 @@
 //RenderData_Sprite::RenderData_Sprite()
 //{
 //	renderSprites.push_back(this);
-//	this->ID = int(renderSprites.size());
+//	this->ID = int32_t(renderSprites.size());
 //}
 //
 //RenderData_Sprite::~RenderData_Sprite()
@@ -833,7 +833,7 @@
 //	{
 //		const char* items[] =
 //		{ "Center","CenterLeft","CenterRight","CenterTop","CenterDown","LeftTop","RightTop","LeftDown","RightDown" };
-//		int item_current = int(this->anchor);
+//		int32_t item_current = int32_t(this->anchor);
 //		ImGui::Combo((num + "Anchor").c_str(), &item_current, items, IM_ARRAYSIZE(items));
 //		{
 //			if (item_current == 0)anchor = Anchor::Center;
@@ -866,7 +866,7 @@
 //RenderData_Triangle::RenderData_Triangle()
 //{
 //	renderTriangles.push_back(this);
-//	this->ID = int(renderTriangles.size());
+//	this->ID = int32_t(renderTriangles.size());
 //}
 //
 //RenderData_Triangle::~RenderData_Triangle()
@@ -960,7 +960,7 @@
 //RenderData_Line::RenderData_Line()
 //{
 //	renderLines.push_back(this);
-//	this->ID = int(renderLines.size());
+//	this->ID = int32_t(renderLines.size());
 //	this->points.push_back(Vector3{ 0.0f,0.0f,0.0f });
 //}
 //
@@ -1011,7 +1011,7 @@
 //	{
 //		const char* items[] =
 //		{ "Line","BezierCurve", "SplineCurve" };
-//		int item_current = int(this->lineType);
+//		int32_t item_current = int32_t(this->lineType);
 //		ImGui::Combo((num + "LineType").c_str(), &item_current, items, IM_ARRAYSIZE(items));
 //		{
 //			if (item_current == 0)lineType = LineType::Line;
@@ -1023,7 +1023,7 @@
 //	}
 //	if (ImGui::TreeNode("----------kSubdivision---------"))
 //	{
-//		ImGui::DragInt((num + " : kSubdivision").c_str(), (int*)&kSubdivision, 1, 1, 100);
+//		ImGui::DragInt((num + " : kSubdivision").c_str(), (int32_t*)&kSubdivision, 1, 1, 100);
 //
 //		ImGui::TreePop();
 //	}
@@ -1064,7 +1064,7 @@
 //RenderData_Particle::RenderData_Particle()
 //{
 //	renderParticles.push_back(this);
-//	this->ID = int(renderParticles.size());
+//	this->ID = int32_t(renderParticles.size());
 //
 //	instancingResource_ =
 //		Engine::Instance().CreateBufferResource(
@@ -1264,7 +1264,7 @@
 //		}
 //		else
 //		{
-//			int i = RandomInt(1, 6);
+//			int32_t i = RandomInt(1, 6);
 //			if (i == 1 || i == 2)
 //			{
 //				if (i == 1)
@@ -1674,8 +1674,8 @@
 //
 //	ImGui::Begin(str->c_str());
 //
-//	ImGui::Text("capacity : %d", static_cast<int>(capacity));
-//	ImGui::Text("currentSum : %d", static_cast<int>(currentSum));
+//	ImGui::Text("capacity : %d", static_cast<int32_t>(capacity));
+//	ImGui::Text("currentSum : %d", static_cast<int32_t>(currentSum));
 //
 //	if (ImGui::TreeNode("----------Emitter--------------"))
 //	{
@@ -1841,7 +1841,7 @@
 //
 //		// ラベルを非表示にするために "##" プレフィックスで ID を与える
 //		std::string dragId = std::string("##model") + num;
-//		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int*>(&this->model));
+//		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int32_t*>(&this->model));
 //
 //		ImGui::SameLine();
 //
@@ -1849,17 +1849,17 @@
 //
 //		// クランプ
 //		if (this->model < 0) this->model = 0;
-//		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
+//		if (this->model > int32_t(Game::Asset::GetModelCount() - 1)) this->model = int32_t(Game::Asset::GetModelCount() - 1);
 //
 //		ImGui::TreePop();
 //	}
 //	if (ImGui::TreeNode("----------density--------------"))
 //	{
-//		int particlesPerEmission = int(this->particlesPerEmission);
+//		int32_t particlesPerEmission = int32_t(this->particlesPerEmission);
 //		ImGui::DragInt(("particlePerEmission" + num).c_str(), &particlesPerEmission);
 //		if (particlesPerEmission < 0)particlesPerEmission = 0;
 //		this->particlesPerEmission = uint32_t(particlesPerEmission);
-//		int emissionDelay = int(this->emissionDelay);
+//		int32_t emissionDelay = int32_t(this->emissionDelay);
 //		ImGui::DragInt(("emissionDelay" + num).c_str(), &emissionDelay);
 //		if (emissionDelay < 1)emissionDelay = 1;
 //		this->emissionDelay = uint32_t(emissionDelay);
@@ -1914,7 +1914,7 @@
 //RenderData_Rect::RenderData_Rect()
 //{
 //	renderRects.push_back(this);
-//	this->ID = int(renderRects.size());
+//	this->ID = int32_t(renderRects.size());
 //}
 //
 //RenderData_Rect::~RenderData_Rect()
@@ -2001,7 +2001,7 @@
 //RenderData_Block::RenderData_Block()
 //{
 //	renderBlocks.push_back(this);
-//	this->ID = int(renderBlocks.size());
+//	this->ID = int32_t(renderBlocks.size());
 //
 //	// ===== WorldMatrix =====
 //	this->worldMatrixResource_ = Engine::Instance().CreateBufferResource(sizeof(Matrix4x4) * this->capacity);
@@ -2160,8 +2160,8 @@
 ////
 ////	ImGui::Begin(str.c_str());
 ////
-////	ImGui::Text("capacity : %d", static_cast<int>(capacity));
-////	ImGui::Text("currentSum : %d", static_cast<int>(currentSum));
+////	ImGui::Text("capacity : %d", static_cast<int32_t>(capacity));
+////	ImGui::Text("currentSum : %d", static_cast<int32_t>(currentSum));
 ////
 ////	if (ImGui::TreeNode("----------texture--------------"))
 ////	{
@@ -2195,7 +2195,7 @@
 ////
 ////		// ラベルを非表示にするために "##" プレフィックスで ID を与える
 ////		std::string dragId = std::string("##model") + num;
-////		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int*>(&this->model));
+////		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int32_t*>(&this->model));
 ////
 ////		ImGui::SameLine();
 ////
@@ -2203,7 +2203,7 @@
 ////
 ////		// クランプ
 ////		if (this->model < 0) this->model = 0;
-////		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
+////		if (this->model > int32_t(Game::Asset::GetModelCount() - 1)) this->model = int32_t(Game::Asset::GetModelCount() - 1);
 ////
 ////		ImGui::TreePop();
 ////	}

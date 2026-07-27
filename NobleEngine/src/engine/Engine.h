@@ -1,9 +1,5 @@
 #pragma once
-#include "definition/definition.h"
-#include <array>
-#include <vector>
-#include <string>
-#include <wrl/client.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <memory>
 
 class WindowManager;
@@ -31,7 +27,7 @@ public:
 	Engine& operator=(Engine&&) = delete;
 
 	// メインループ用
-	void Initialize(int width, int height, const std::wstring& title);
+	void Initialize(int32_t width, int32_t height, const std::wstring& title);
 	bool ProcessMessage();
 	void BeginFrame();
 	void EndFrame();

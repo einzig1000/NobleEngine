@@ -50,8 +50,9 @@ private:
 
 	std::vector<Particle> particles;
 	std::unique_ptr<RenderObject> particle_;
-	std::unique_ptr<ComputeObject> Compute_;
+	std::unique_ptr<ComputeObject> emitCompute_;
 	std::unique_ptr<ComputeObject> initializeCompute_;
+	std::unique_ptr<ComputeObject> updateCompute_;
 	int32_t particleSRVID_ = -1;
 	int32_t freeCounterSRVID_ = -1;
 

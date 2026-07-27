@@ -654,8 +654,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
 
     if (shaderError != nullptr && shaderError->GetStringLength() != 0)
     {
-		Log("シェーダーのコンパイルに警告・エラーが出ました。");
-        Log(shaderError->GetStringPointer());
+		Log("シェーダーのコンパイルに警告・エラーが出ました。%s", (const char*)shaderError->GetStringPointer());
         assert(false); // コンパイルエラーが発生した場合は停止
     }
 

@@ -276,7 +276,7 @@ TestPhase::TestPhase()
 
 	transform1_.scale = { 10.0f,10.0f,10.0f };
 	color1_ = Vector4{ 1.0f,1.0f,1.0f,1.0f };
-	for (int i = 0; i < 10; ++i)
+	for (size_t i = 0; i < 10; ++i)
 	{
 		transform2_[i].scale = { 10.0f,10.0f,10.0f };
 		transform2_[i].translate = { 0.0f, 0.0f, static_cast<float>(((i + 1) * -15)) };
@@ -343,7 +343,7 @@ void TestPhase::Update()
 	//Matrix4x4 viewProjection_main2 = Game::Camera::Getter::GetViewProjectionMatrix(1);
 
 	//std::vector<Matrix4x4> worldMatrices2;
-	//for (int i = 0; i < 10; ++i)
+	//for (size_t i = 0; i < 10; ++i)
 	//{
 	//	Matrix4x4 worldMatrix2 = Matrix4x4::MakeAffineMatrix(transform2_[i].scale, transform2_[i].rotate, transform2_[i].translate);
 	//	worldMatrices2.push_back(worldMatrix2);
@@ -587,7 +587,7 @@ void TestPhase::DrawImGui()
 
 			if (ImGui::TreeNode("cbvAndSrv_"))
 			{
-				for (int i = 0; i < 10; ++i)
+				for (size_t i = 0; i < 10; ++i)
 				{
 					ImGui::ColorEdit4(("color2_" + std::to_string(i)).c_str(), &color2_[i].x, 1);
 					ImGui::DragInt(("textureID" + std::to_string(i)).c_str(), &tex2_[i], 1, 0, 10);
@@ -724,7 +724,7 @@ void TestPhase::DrawImGui()
 		if (ImGui::BeginTabItem("Camera Test"))
 		{
 			static Vector3 cameraCenterTarget;
-			static int cameraCenterFrame = 120;
+			static int32_t cameraCenterFrame = 120;
 			ImGui::DragFloat3("camera center", &cameraCenterTarget.x, 0.1f);
 			ImGui::DragInt("camera center frame", &cameraCenterFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Center"))
@@ -733,7 +733,7 @@ void TestPhase::DrawImGui()
 			}
 
 			static Vector3 cameraRotateTarget;
-			static int cameraRotateFrame = 120;
+			static int32_t cameraRotateFrame = 120;
 			ImGui::DragFloat3("camera rotate", &cameraRotateTarget.x, 0.1f);
 			ImGui::DragInt("camera rotate frame", &cameraRotateFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Rotate"))
@@ -742,7 +742,7 @@ void TestPhase::DrawImGui()
 			}
 
 			static float cameraDistanceTarget = 0.0f;
-			static int cameraDistanceFrame = 120;
+			static int32_t cameraDistanceFrame = 120;
 			ImGui::DragFloat("camera distance", &cameraDistanceTarget, 0.1f);
 			ImGui::DragInt("camera distance frame", &cameraDistanceFrame, 1, 0, 600);
 			if (ImGui::Button("Set Camera Distance"))
@@ -810,7 +810,7 @@ void TestPhase::DrawImGui()
 			//struct KeyInfo
 			//{
 			//	const char* name;
-			//	int dik;
+			//	int32_t dik;
 			//};
 
 			//static const KeyInfo kKeys[] = {

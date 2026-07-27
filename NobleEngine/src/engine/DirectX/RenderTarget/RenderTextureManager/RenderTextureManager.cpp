@@ -27,9 +27,9 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
     rt->width = width;
     rt->height = height;
     rt->format = format;
-	rt->clearColor[0] = 0.53f;
-	rt->clearColor[1] = 0.53f;
-	rt->clearColor[2] = 0.53f;
+	rt->clearColor[0] = 0.11f;
+	rt->clearColor[1] = 0.11f;
+	rt->clearColor[2] = 0.11f;
 	rt->clearColor[3] = clearColorA;
 
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
@@ -80,7 +80,7 @@ bool RenderTextureManager::SaveTexture(const std::string& filePath, std::string 
 	// もし同じ名前のファイルが存在していたらtextureName2みたいにして保存する
 	if (std::filesystem::exists(fullPath))
 	{
-		int suffix = 2;
+		int32_t suffix = 2;
 		while (true)
 		{
 			fullPath = filePath + "/" + textureName + std::to_string(suffix) + ".png";

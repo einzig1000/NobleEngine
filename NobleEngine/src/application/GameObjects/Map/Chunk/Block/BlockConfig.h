@@ -12,6 +12,6 @@ public:
 
 private:
 	std::map<BlockID, BlockInfo> blockInfoMap_;
-
+	std::vector<Vector4uint> blockInfoTable_;
 };
 

@@ -24,7 +24,7 @@ void RenderTexturePreview::DrawImGui()
 
 	if (ImGui::BeginListBox("##renderTexture list"))
 	{
-		for (int i = 0; i < renderTargets.size(); ++i)
+		for (int32_t i = 0; i < renderTargets.size(); ++i)
 		{
 			ImGui::PushID(i);
 			ImGui::BeginGroup();
@@ -40,12 +40,12 @@ void RenderTexturePreview::DrawImGui()
 				if (isWidthLonger)
 				{
 					windowSize_.x = 512;
-					windowSize_.y = static_cast<int>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
+					windowSize_.y = static_cast<int32_t>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
 				}
 				else
 				{
 					windowSize_.y = 512;
-					windowSize_.x = static_cast<int>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
+					windowSize_.x = static_cast<int32_t>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
 				}
 			}
 			ImGui::EndGroup();

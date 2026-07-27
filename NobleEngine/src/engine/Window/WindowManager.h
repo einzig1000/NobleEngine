@@ -10,7 +10,7 @@ class MouseController;
 /// </summary>
 class WindowManager {
 public:
-    WindowManager(int width, int height, const std::wstring& title);
+    WindowManager(uint32_t width, uint32_t height, const std::wstring& title);
     ~WindowManager();
 
     void AttachMouseController(MouseController* mc);
@@ -56,5 +56,5 @@ private:
 	// マウスの生入力登録
     void RegisterMouseRawInput(HWND hwnd);
 	// メインウィンドウ生成
-    void CreateMainWindow(int width, int height, const std::wstring& title);
+    void CreateMainWindow(uint32_t width, uint32_t height, const std::wstring& title);
 };

@@ -286,6 +286,27 @@ struct Vector4int
     }
 };
 
+struct Vector4uint
+{
+    uint32_t x = 0, y = 0, z = 0, w = 0;
+    Vector4uint operator+(const Vector4uint& rhs) const
+    {
+        return Vector4uint{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+    }
+    Vector4uint operator-(const Vector4uint& rhs) const
+    {
+        return Vector4uint{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+    }
+    bool operator==(const Vector4uint& rhs) const
+    {
+        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+    }
+    bool operator!=(const Vector4uint& rhs) const
+    {
+        return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+    }
+};
+
 struct Vector4
 {
     float x = 0, y = 0, z = 0, w = 0;
@@ -353,9 +374,9 @@ struct Matrix3x3
     Matrix3x3 operator+(const Matrix3x3& rhs) const
     {
         Matrix3x3 result;
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 result.m[i][j] = m[i][j] + rhs.m[i][j];
             }
@@ -365,9 +386,9 @@ struct Matrix3x3
     Matrix3x3 operator-(const Matrix3x3& rhs) const
     {
         Matrix3x3 result;
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 result.m[i][j] = m[i][j] - rhs.m[i][j];
             }
@@ -377,9 +398,9 @@ struct Matrix3x3
     Matrix3x3 operator*(float scalar) const
     {
         Matrix3x3 result;
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 result.m[i][j] = m[i][j] * scalar;
             }
@@ -389,12 +410,12 @@ struct Matrix3x3
     Matrix3x3 operator*(const Matrix3x3& rhs) const
     {
         Matrix3x3 result;
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 result.m[i][j] = 0.0f;
-                for (int k = 0; k < 3; ++k)
+                for (size_t k = 0; k < 3; ++k)
                 {
                     result.m[i][j] += m[i][k] * rhs.m[k][j];
                 }
@@ -404,9 +425,9 @@ struct Matrix3x3
     }
     bool operator==(const Matrix3x3& rhs) const
     {
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 if (m[i][j] != rhs.m[i][j]) return false;
             }
@@ -431,9 +452,9 @@ struct Matrix4x4
     Matrix4x4 operator+(const Matrix4x4& rhs) const
     {
         Matrix4x4 result;
-        for (int j = 0; j < 4; ++j)
+        for (size_t j = 0; j < 4; ++j)
         {
-            for (int i = 0; i < 4; ++i)
+            for (size_t i = 0; i < 4; ++i)
             {
                 result.m[i][j] = m[i][j] + rhs.m[i][j];
             }
@@ -443,9 +464,9 @@ struct Matrix4x4
     Matrix4x4 operator-(const Matrix4x4& rhs) const
     {
         Matrix4x4 result;
-        for (int j = 0; j < 4; ++j)
+        for (size_t j = 0; j < 4; ++j)
         {
-            for (int i = 0; i < 4; ++i)
+            for (size_t i = 0; i < 4; ++i)
             {
                 result.m[i][j] = m[i][j] - rhs.m[i][j];
             }
@@ -455,9 +476,9 @@ struct Matrix4x4
     Matrix4x4 operator*(float scalar) const
     {
         Matrix4x4 result;
-        for (int j = 0; j < 4; ++j)
+        for (size_t j = 0; j < 4; ++j)
         {
-            for (int i = 0; i < 4; ++i)
+            for (size_t i = 0; i < 4; ++i)
             {
                 result.m[i][j] = m[i][j] * scalar;
             }
@@ -467,12 +488,12 @@ struct Matrix4x4
     Matrix4x4 operator*(const Matrix4x4& rhs) const
     {
         Matrix4x4 result;
-        for (int i = 0; i < 4; ++i)
+        for (size_t i = 0; i < 4; ++i)
         {
-            for (int j = 0; j < 4; ++j)
+            for (size_t j = 0; j < 4; ++j)
             {
                 result.m[i][j] = 0.0f;
-                for (int k = 0; k < 4; ++k)
+                for (size_t k = 0; k < 4; ++k)
                 {
                     result.m[i][j] += m[i][k] * rhs.m[k][j];
                 }
@@ -483,8 +504,8 @@ struct Matrix4x4
 
     bool operator==(const Matrix4x4& rhs) const
     {
-        for (int i = 0; i < 4; ++i)
-            for (int j = 0; j < 4; ++j)
+        for (size_t i = 0; i < 4; ++i)
+            for (size_t j = 0; j < 4; ++j)
                 if (m[i][j] != rhs.m[i][j]) return false;
         return true;
     }
@@ -1069,9 +1090,9 @@ std::string EnumToString(AABBFace e);
 struct CollisionPair
 {
     // 軽い方
-    int light = 0;
+    int32_t light = 0;
     // 重い方
-    int heavy = 0;
+    int32_t heavy = 0;
 
     bool operator==(const CollisionPair& rhs) const
     {
@@ -1141,9 +1162,9 @@ struct ParticleTarget
 
 struct ParticleDensity
 {
-    int particlesPerEmission = 1;   // 1フレで生む数
-    int emissionDelay = 10;         // 生成間隔フレーム
-    int liveMax = 300;              // 寿命フレーム(マイナスの時は不老)
+    int32_t particlesPerEmission = 1;   // 1フレで生む数
+    int32_t emissionDelay = 10;         // 生成間隔フレーム
+    int32_t liveMax = 300;              // 寿命フレーム(マイナスの時は不老)
     uint32_t frame = 0;             // 経過フレーム
 };
 
