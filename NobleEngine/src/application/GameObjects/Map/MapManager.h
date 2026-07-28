@@ -41,6 +41,8 @@ public:
 
 	// AABB内のブロックを破壊する
 	void DestroyBlockInAABB(const AABB& aabb);
+	// OBB内のブロックを破壊する
+	void DestroyBlockInOBB(const OBB& obb);
 
 	// ブロック設置
 	bool SetBlockAt(const lookAtBlock& lab, BlockID id);

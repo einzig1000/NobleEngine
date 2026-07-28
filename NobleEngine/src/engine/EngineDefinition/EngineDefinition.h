@@ -673,6 +673,17 @@ struct AABB
 	}
 };
 
+// OBB
+struct OBB
+{
+    Vector3 center;      // 中心座標
+    Vector3 axis[3];     // 各軸方向（正規化済み・直交）
+    Vector3 halfSize;    // 各軸方向の半径（辺の半分の長さ）
+
+    // ローカル空間のAABBとワールド行列からOBBを作る
+    static OBB MakeFromAABB(const AABB& localAABB, const Matrix4x4& worldMatrix);
+};
+
 // 線分
 struct Line
 {

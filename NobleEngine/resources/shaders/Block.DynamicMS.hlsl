@@ -1,3 +1,5 @@
+#include "Utilities/Utilities.hlsli"
+
 // ブロックIDを毎フレーム受け取り、その場で頂点を計算して描画するメッシュシェーダー(AS無し版)
 // 2x2x2ボクセルを1グループとして処理する。DispatchMeshは (グループ総数, 1, 1) の1次元で呼ぶ想定。
 
@@ -77,15 +79,6 @@ uint FlattenHalo(int3 localPos)
     return (uint) h.x + (uint) h.y * haloDim.x + (uint) h.z * haloDim.x * haloDim.y;
 }
 
-float4 UnpackColor(uint c)
-{
-    float r = ((c >> 24) & 0xFF) / 255.0f;
-    float g = ((c >> 16) & 0xFF) / 255.0f;
-    float b = ((c >> 8) & 0xFF) / 255.0f;
-    float a = (c & 0xFF) / 255.0f;
-    return float4(r, g, b, a);
-}
-
 [outputtopology("triangle")]
 [numthreads(8, 1, 1)]
 void main(
@@ -121,7 +114,7 @@ void main(
     //StructuredBuffer<uint> blockIds = ResourceDescriptorHeap[blockIdSrvIndex];
     uint blockId = blockIds[FlattenHalo(voxelPos)];
 
-    // 露出している面をビットマスクで求める(BlockID::Air == 0)
+    // 露出している面を求める
     uint faceMask = 0;
     if (blockId != 0)
     {
@@ -130,8 +123,8 @@ void main(
         {
             // 隣接ブロックのIDを取得
             uint neighborId = blockIds[FlattenHalo(voxelPos + kFaceDir[f])];
-            // 隣接ブロックが空気or透過ブロックなら、この面は露出している
-            bool neighborIsAirOrTransparent = (neighborId == 0) || (BlockInfoTable[neighborId].y != 0);
+            // 隣接ブロックが透過ブロックなら、この面は露出している
+            bool neighborIsAirOrTransparent = (BlockInfoTable[neighborId].y != 0);
             if (neighborIsAirOrTransparent)
                 faceMask |= (1u << f);
         }
@@ -169,6 +162,9 @@ void main(
     // ブロックの属性テーブルから色情報を取り出して float4(RGBA) に変換
     uint4 info = BlockInfoTable[blockId];
     float4 color = UnpackColor(info.x);
+    color.x += rand3dTo1d(voxelPos) * 0.1;
+    color.y += rand3dTo1d(voxelPos) * 0.1;
+    color.z += rand3dTo1d(voxelPos) * 0.1;
     //float4 color = float4(0.f, 0.f, 0.f, 1.0f);
 
     // 6面ループ

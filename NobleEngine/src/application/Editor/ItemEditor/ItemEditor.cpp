@@ -311,7 +311,7 @@ void ItemEditor::DrawImGui()
 
 	if (ImGui::Button("AllSave"))
 	{
-		std::vector<std::string> blockKeys(blockIDNames.begin(), blockIDNames.end());
+		std::vector<std::string> blockKeys(blockIDNames.begin(), blockIDNames.end() - 1);
 		JsonManager::AddParam("resources/json/BlockConfig.json", "/Keys", blockKeys);
 
 		for (int32_t i = 0; i < static_cast<int32_t>(BlockID::MAX); i++)
@@ -326,7 +326,7 @@ void ItemEditor::DrawImGui()
 			}
 		}
 
-		std::vector<std::string> toolKeys(toolIDNames.begin(), toolIDNames.end());
+		std::vector<std::string> toolKeys(toolIDNames.begin(), toolIDNames.end() - 1);
 		JsonManager::AddParam("resources/json/ToolConfig.json", "/Keys", toolKeys);
 
 		for (int32_t i = 0; i < static_cast<int32_t>(ToolID::MAX); i++)
@@ -343,24 +343,24 @@ void ItemEditor::DrawImGui()
 			}
 		}
 
-		std::vector<std::string> objectKeys(objectIDNames.begin(), objectIDNames.end());
+		std::vector<std::string> objectKeys(objectIDNames.begin(), objectIDNames.end() - 1);
 		JsonManager::AddParam("resources/json/ObjectConfig.json", "/Keys", objectKeys);
 
-		//for (int32_t i = 0; i < static_cast<int32_t>(ObjectID::MAX); i++)
-		//{
-		//	ObjectID objectID = static_cast<ObjectID>(i);
-		//	const ObjectInfo* info = App::Data::Item::Get(objectID);
-		//	if (info)
-		//	{
-		//		JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelID", info->modelID);
-		//		JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/textureID", info->textureID);
-		//		JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelPath", info->modelPath);
-		//		JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/texturePath", info->texturePath);
-		//	}
-		//}
+		for (int32_t i = 0; i < static_cast<int32_t>(ObjectID::MAX); i++)
+		{
+			ObjectID objectID = static_cast<ObjectID>(i);
+			const ObjectInfo* info = App::Data::Item::Get(objectID);
+			if (info)
+			{
+				JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelID", info->modelID);
+				JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/textureID", info->textureID);
+				JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelPath", info->modelPath);
+				JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/texturePath", info->texturePath);
+			}
+		}
 
 
-		std::vector<std::string> itemKeys(itemIDNames.begin(), itemIDNames.end());
+		std::vector<std::string> itemKeys(itemIDNames.begin(), itemIDNames.end() - 1);
 		JsonManager::AddParam("resources/json/ItemConfig.json", "/Keys", itemKeys);
 
 		for (int32_t i = 0; i < static_cast<int32_t>(ItemID::MAX); i++)

@@ -34,22 +34,23 @@ void ItemDataLoader::Load()
 	std::vector<std::string> toolKeys;
 	JsonManager::Load("resources/json/ToolConfig.json", "/Keys", toolKeys);
 
-	//for (const std::string& toolIDStr : toolKeys)
-	//{
-	//	ToolInfo info;
-	//	ToolID toolID = StringToEnum<ToolID>(toolIDStr);
-	//
-	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/durability", info.durability);
-	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
-	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/miningSpeed", info.miningSpeed);
-	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/modelPath", info.modelPath);
-	//	info.modelID = Game::Asset::Model::Load(info.modelPath);
-	//	info.aabb = Game::Asset::Model::GetData(info.modelID)->aabb;
-	//	JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/texturePath", info.texturePath);
-	//	info.textureID = Game::Asset::Texture::Load(info.texturePath);
-	//
-	//	bank_->SetToolInfo(toolID, info);
-	//}
+	for (const std::string& toolIDStr : toolKeys)
+	{
+		ToolInfo info;
+		info.miningSpeed = 333333333.0f;
+		ToolID toolID = StringToEnum<ToolID>(toolIDStr);
+
+		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/durability", info.durability);
+		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
+		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/miningSpeed", info.miningSpeed);
+		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/modelID", info.modelPath);
+		info.modelID = Game::Asset::Model::Load(info.modelPath);
+		info.aabb = Game::Asset::Model::GetData(info.modelID)->aabb;
+		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/textureID", info.texturePath);
+		info.textureID = Game::Asset::Texture::Load(info.texturePath);
+	
+		bank_->SetToolInfo(toolID, info);
+	}
 
 
 	std::vector<std::string> itemKeys;

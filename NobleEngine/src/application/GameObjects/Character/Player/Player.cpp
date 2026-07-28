@@ -63,10 +63,10 @@ void Player::Update(int32_t cameraID)
 	// 一旦常にブロックを破壊
 	if (Game::IO::Mouse::IsHeld(0))
 	{
-		const std::vector<AABB>& itemAABBs = GetHaveItemAABB();
-		for (const auto& aabb : itemAABBs)
+		const std::vector<OBB>& itemOBBs = GetHaveItemOBB();
+		for (const auto& obb : itemOBBs)
 		{
-			DestroyBlockInAABB(aabb);
+			DestroyBlockInOBB(obb);
 		}
 	}
 

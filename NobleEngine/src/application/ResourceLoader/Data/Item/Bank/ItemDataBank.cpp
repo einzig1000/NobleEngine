@@ -22,6 +22,11 @@ void ItemDataBank::SetToolInfo(ToolID id, const ToolInfo& info)
 	toolInfoMap_[id] = info;
 }
 
+void ItemDataBank::SetObjectInfo(ObjectID id, const ObjectInfo& info)
+{
+	objectInfoMap_[id] = info;
+}
+
 void ItemDataBank::CreateBlockInfoTable()
 {
 	blockInfoTable_.clear();
@@ -63,6 +68,16 @@ const ToolInfo* ItemDataBank::GetToolInfo(ToolID id)
 {
 	auto it = toolInfoMap_.find(id);
 	if (it != toolInfoMap_.end())
+	{
+		return &(it->second);
+	}
+	return nullptr;
+}
+
+const ObjectInfo* ItemDataBank::GetObjectInfo(ObjectID id)
+{
+	auto it = objectInfoMap_.find(id);
+	if (it != objectInfoMap_.end())
 	{
 		return &(it->second);
 	}

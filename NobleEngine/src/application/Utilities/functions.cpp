@@ -417,6 +417,100 @@ bool IsCollision(const AABB& aabb, const Segment& s)
     return true;
 }
 
+bool IsCollision(const OBB& obb1, const OBB& obb2)
+{
+    const float EPSILON = 1e-5f;
+
+    // obb2の各軸をobb1のローカル空間で見た内積(回転行列R)を作る
+    float R[3][3];
+    float AbsR[3][3];
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            R[i][j] = obb1.axis[i].Dot(obb2.axis[j]);
+            AbsR[i][j] = std::abs(R[i][j]) + EPSILON;
+        }
+    }
+
+    // obb1中心→obb2中心のベクトルをobb1のローカル空間に変換
+    Vector3 d = obb2.center - obb1.center;
+    Vector3 t = { d.Dot(obb1.axis[0]), d.Dot(obb1.axis[1]), d.Dot(obb1.axis[2]) };
+
+    float ra, rb;
+    float aHalf[3] = { obb1.halfSize.x, obb1.halfSize.y, obb1.halfSize.z };
+    float bHalf[3] = { obb2.halfSize.x, obb2.halfSize.y, obb2.halfSize.z };
+    float tArr[3] = { t.x, t.y, t.z };
+
+    // 分離軸 L = obb1のX,Y,Z軸
+    for (int i = 0; i < 3; ++i)
+    {
+        ra = aHalf[i];
+        rb = bHalf[0] * AbsR[i][0] + bHalf[1] * AbsR[i][1] + bHalf[2] * AbsR[i][2];
+        if (std::abs(tArr[i]) > ra + rb) return false;
+    }
+
+    // 分離軸 L = obb2のX,Y,Z軸
+    for (int i = 0; i < 3; ++i)
+    {
+        ra = aHalf[0] * AbsR[0][i] + aHalf[1] * AbsR[1][i] + aHalf[2] * AbsR[2][i];
+        rb = bHalf[i];
+        if (std::abs(tArr[0] * R[0][i] + tArr[1] * R[1][i] + tArr[2] * R[2][i]) > ra + rb) return false;
+    }
+
+    // 分離軸 L = obb1軸 × obb2軸（9パターン）
+    ra = aHalf[1] * AbsR[2][0] + aHalf[2] * AbsR[1][0];
+    rb = bHalf[1] * AbsR[0][2] + bHalf[2] * AbsR[0][1];
+    if (std::abs(tArr[2] * R[1][0] - tArr[1] * R[2][0]) > ra + rb) return false;
+
+    ra = aHalf[1] * AbsR[2][1] + aHalf[2] * AbsR[1][1];
+    rb = bHalf[0] * AbsR[0][2] + bHalf[2] * AbsR[0][0];
+    if (std::abs(tArr[2] * R[1][1] - tArr[1] * R[2][1]) > ra + rb) return false;
+
+    ra = aHalf[1] * AbsR[2][2] + aHalf[2] * AbsR[1][2];
+    rb = bHalf[0] * AbsR[0][1] + bHalf[1] * AbsR[0][0];
+    if (std::abs(tArr[2] * R[1][2] - tArr[1] * R[2][2]) > ra + rb) return false;
+
+    ra = aHalf[0] * AbsR[2][0] + aHalf[2] * AbsR[0][0];
+    rb = bHalf[1] * AbsR[1][2] + bHalf[2] * AbsR[1][1];
+    if (std::abs(tArr[0] * R[2][0] - tArr[2] * R[0][0]) > ra + rb) return false;
+
+    ra = aHalf[0] * AbsR[2][1] + aHalf[2] * AbsR[0][1];
+    rb = bHalf[0] * AbsR[1][2] + bHalf[2] * AbsR[1][0];
+    if (std::abs(tArr[0] * R[2][1] - tArr[2] * R[0][1]) > ra + rb) return false;
+
+    ra = aHalf[0] * AbsR[2][2] + aHalf[2] * AbsR[0][2];
+    rb = bHalf[0] * AbsR[1][1] + bHalf[1] * AbsR[1][0];
+    if (std::abs(tArr[0] * R[2][2] - tArr[2] * R[0][2]) > ra + rb) return false;
+
+    ra = aHalf[0] * AbsR[1][0] + aHalf[1] * AbsR[0][0];
+    rb = bHalf[1] * AbsR[2][2] + bHalf[2] * AbsR[2][1];
+    if (std::abs(tArr[1] * R[0][0] - tArr[0] * R[1][0]) > ra + rb) return false;
+
+    ra = aHalf[0] * AbsR[1][1] + aHalf[1] * AbsR[0][1];
+    rb = bHalf[0] * AbsR[2][2] + bHalf[2] * AbsR[2][0];
+    if (std::abs(tArr[1] * R[0][1] - tArr[0] * R[1][1]) > ra + rb) return false;
+
+    ra = aHalf[0] * AbsR[1][2] + aHalf[1] * AbsR[0][2];
+    rb = bHalf[0] * AbsR[2][1] + bHalf[1] * AbsR[2][0];
+    if (std::abs(tArr[1] * R[0][2] - tArr[0] * R[1][2]) > ra + rb) return false;
+
+    // すべての分離軸で分離できなければ衝突している
+    return true;
+}
+
+bool IsCollision(const OBB& obb, const AABB& aabb)
+{
+    OBB aabbAsObb;
+    aabbAsObb.center = aabb.center();
+    aabbAsObb.axis[0] = { 1.0f, 0.0f, 0.0f };
+    aabbAsObb.axis[1] = { 0.0f, 1.0f, 0.0f };
+    aabbAsObb.axis[2] = { 0.0f, 0.0f, 1.0f };
+    aabbAsObb.halfSize = (aabb.max - aabb.min) * 0.5f;
+
+    return IsCollision(obb, aabbAsObb);
+}
+
 //bool IsCollision(const Ray& ray, const std::vector<VertexData>& vertices, const RenderData_Model* data)
 //{
 //    //// まずAABBで大まかに判定

@@ -50,13 +50,44 @@ void BaseCharacter::ApplyMove()
 	Vector3 aabbMin = aabb.min;
 	aabbMin.y += Constexprs::kBlockSize * 0.5f;			// 足元の判定を少し上げる
 	aabb.min = translate_.value + aabbMin;
+	float dt = Game::Time::GetDeltaTime();
 	translate_.velocity += translate_.acceleration;		// 加速度を速度に反映
 	mapManager_->SweepAABB(aabb, translate_.velocity);	// mapManager_に希望移動量を申請し修正してもらう
 	translate_.value += translate_.velocity;			// 移動
 	worldMatrix_ = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
 	if (translate_.velocity.y == 0.0f)isGrounded_ = true;// 移動後の接地判定
 	else isGrounded_ = false;
+
+	if (isGrounded_)
+	{
+		ImGui::Begin("Info");
+		ImGui::Text("Grounded: true");
+		ImGui::End();
+	}
 }
+//void BaseCharacter::ApplyMove()
+//{
+//	AABB aabb = aabb_;									// ワールド座標系でのプレイヤーのあたり判定を計算
+//	aabb.max = translate_.value + aabb.max;
+//	Vector3 aabbMin = aabb.min;
+//	aabbMin.y += Constexprs::kBlockSize * 0.5f;			// 足元の判定を少し上げる
+//	aabb.min = translate_.value + aabbMin;
+//	float dt = Game::Time::GetDeltaTime();
+//	translate_.velocity += translate_.acceleration * dt;		// 加速度を速度に反映
+//	Vector3 movement = translate_.velocity * dt;   // 今フレームの移動量を取得
+//	mapManager_->SweepAABB(aabb, movement);	// mapManager_に希望移動量を申請し修正してもらう
+//	translate_.value += movement;			// 移動
+//	worldMatrix_ = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
+//	if (translate_.velocity.y == 0.0f)isGrounded_ = true;// 移動後の接地判定
+//	else isGrounded_ = false;
+//
+//	if (isGrounded_)
+//	{
+//		ImGui::Begin("Info");
+//		ImGui::Text("Grounded: true");
+//		ImGui::End();
+//	}
+//}
 
 void BaseCharacter::TakeDamage(int32_t damage)
 {
@@ -102,6 +133,11 @@ void BaseCharacter::SetBlock(BlockID id)
 void BaseCharacter::DestroyBlockInAABB(const AABB& aabb)
 {
 	mapManager_->DestroyBlockInAABB(aabb);
+}
+
+void BaseCharacter::DestroyBlockInOBB(const OBB& obb)
+{
+	mapManager_->DestroyBlockInOBB(obb);
 }
 
 void BaseCharacter::RegisterToMap()

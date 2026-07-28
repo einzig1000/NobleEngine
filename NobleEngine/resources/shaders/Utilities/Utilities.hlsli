@@ -49,3 +49,10 @@ float rand4dTo1d(float4 value)
     return random;
 }
 
+float4 rand3dTo4d(float3 value)
+{
+    float4 smallValue = sin(float4(value, 0.0f));
+    float4 random = smallValue * float4(12.9898, 78.233, 37.719, 24.123);
+    random = frac(sin(random) * float4(143758.5453, 143758.5453, 143758.5453, 143758.5453));
+    return random;
+}

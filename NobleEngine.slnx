@@ -2,9 +2,6 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
-  <Folder Name="/ソリューション項目/">
-    <File Path=".editorconfig" />
-  </Folder>
   <Project Path="NobleEngine/externals/DirectXTex/DirectXTex_Desktop_2022_Win10.vcxproj" Id="371b9fa9-4c90-4ac6-a123-aced756d6c77">
     <BuildDependency Project="NobleEngine/externals/imgui/imgui.vcxproj" />
   </Project>

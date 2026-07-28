@@ -57,6 +57,7 @@ public:
 	virtual void SetBlock(BlockID id);
 	// ブロック範囲破壊
 	virtual void DestroyBlockInAABB(const AABB& aabb);
+	virtual void DestroyBlockInOBB(const OBB& obb);
 	// マップに自身を登録
 	virtual void RegisterToMap();
 
@@ -74,6 +75,8 @@ public:
 	virtual ItemID GetHaveItem() const { return inventory_.GetCurrentSelectedItemID(); }
 	// 手に持っているアイテムのAABBを取得
 	virtual std::vector<AABB> GetHaveItemAABB() const { return haveItem_.GetAABB(); }
+	// 手に持っているアイテムのOBBを取得
+	virtual std::vector<OBB> GetHaveItemOBB() const { return haveItem_.GetOBB(); }
 
 
 protected:
@@ -84,7 +87,7 @@ protected:
 
 	int32_t c_viewCameraID_ = -1;	// 視線カメラID
 
-	float jumpPower_ = 0.3f;	// ジャンプ力
+	float jumpPower_ = 0.2f;	// ジャンプ力
 	float speed_ = 0.30f;		// 移動速度
 	int32_t HP_ = 20;			// 体力
 	int32_t maxHP_ = 20;		// 最大体力

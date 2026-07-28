@@ -63,9 +63,13 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 
 	blockIds_.resize((Constexprs::kChunkX + 2) * (Constexprs::kChunkY + 2) * (Constexprs::kChunkZ + 2), 0);
 
-	renderData_->instanceNum_ = static_cast<uint32_t>(4096);
+	//renderData_->instanceNum_ = static_cast<uint32_t>(4096);
+	renderData_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
 
 	CreateChunkData(param);
+
+
+	blockIdSrvIndex_ = Game::Resource::CreateDynamic();
 }
 
 Chunk::~Chunk()
@@ -767,8 +771,12 @@ void Chunk::Update(int32_t cameraID)
 			}
 		}
 
-		blockIdSrvIndex_ = Game::Resource::CreateStatic(blockIds_);
+		//blockIdSrvIndex_ = Game::Resource::CreateStatic(blockIds_);
 	}
+
+
+	Game::Resource::UpdateData(blockIdSrvIndex_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
+	chunkInfo_.blockIdSrvIndex = Game::Resource::GetSRV(blockIdSrvIndex_);
 
 
 	renderData_->SetCBufferData(0, ShaderType::MeshShader, &chunkInfo_);

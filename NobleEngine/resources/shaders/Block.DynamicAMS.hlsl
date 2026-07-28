@@ -95,14 +95,6 @@ void main(
     out vertices MSOutput verts[192]
 )
 {
-    // チャンクを2x2x2のグループに分割して処理する
-    // この2x2x2のかたまりがメッシュレットみたいなもの。
-    // 各スレッドで１かたまり担当する。
-    // 8スレッドが1グループを構成する。gidはチャンク内のグループ座標。
-    
-    // gid.x = チャンクを2x2x2のかたまりで分割した時の合計数(チャンクのボクセル数 / 8)
-    // gtid = 0〜7のスレッド番号。各スレッドが1ブロックを担当する。
-    
     // チャンクの各軸に何個の2x2x2のかたまりがあるか
     uint3 groupDim = chunkDim / 2;
     // チャンクをかたまり単位で分割した時の整数座標
@@ -118,93 +110,48 @@ void main(
     int3 voxelPos = groupOrigin + localOffset;
     
     // ブロックIDを取得
-    //StructuredBuffer<uint> blockIds = ResourceDescriptorHeap[blockIdSrvIndex];
     uint blockId = blockIds[FlattenHalo(voxelPos)];
-
-    // 露出している面をビットマスクで求める(BlockID::Air == 0)
-    uint faceMask = 0;
-    if (blockId != 0)
-    {
-        [unroll]
-        for (uint f = 0; f < 6; f++)
-        {
-            // 隣接ブロックのIDを取得
-            uint neighborId = blockIds[FlattenHalo(voxelPos + kFaceDir[f])];
-            // 隣接ブロックが空気or透過ブロックなら、この面は露出している
-            bool neighborIsAirOrTransparent = (neighborId == 0) || (BlockInfoTable[neighborId].y != 0);
-            if (neighborIsAirOrTransparent)
-                faceMask |= (1u << f);
-        }
-    }
-
-    faceMask = 63; // デバッグ用。全ての面を描画する
-    // 露出している面の数を数える  countbits(uint value) : 1の数を数える組み込み関数
-    gFaceCountPerThread[gtid] = countbits(faceMask);
-    // 同じ2x2x2かたまりに属してるスレッドが全部終わるまで待つ
-    GroupMemoryBarrierWithGroupSync();
-
-    // グループの中で一回だけ計算すればよい。
-    if (gtid == 0)
-    {
-        // 2x2x2かたまり内で必要な面の総数を計算する
-        uint offset = 0;
-        [unroll]
-        for (uint i = 0; i < 8; i++)
-        {
-            gFaceOffsetPerThread[i] = offset;
-            offset += gFaceCountPerThread[i];
-        }
-        // 総頂点数, 総プリミティブ数を送る
-        //SetMeshOutputCounts(offset * 4, offset * 2);
-    }
-    // gtid 1～7を待たせる
-    GroupMemoryBarrierWithGroupSync();
+    
     
     // 総頂点数, 総プリミティブ数を送る
-    uint totalFaceCount = gFaceOffsetPerThread[7] + gFaceCountPerThread[7];
-    SetMeshOutputCounts(totalFaceCount * 4, totalFaceCount * 2);
+    SetMeshOutputCounts(192, 96);
     
     // 自スレッドに割り当てられた書き込み開始面番号を取得
-    uint faceOut = gFaceOffsetPerThread[gtid];
+    uint faceOut = gtid * 6;
     // このブロックのワールド空間での原点座標（左下奥）を計算
     float3 worldVoxelOrigin = chunkWorldOrigin + float3(voxelPos) * blockSize;
     // ブロックの属性テーブルから色情報を取り出して float4(RGBA) に変換
     uint4 info = BlockInfoTable[blockId];
     float4 color = UnpackColor(info.x);
-    //float4 color = float4(0.f, 0.f, 0.f, 1.0f);
 
     // 6面ループ
     [unroll]
     for (uint f2 = 0; f2 < 6; f2++)
     {
-        // f2が露出している面なら、頂点を計算して書き込む
-        if (faceMask & (1u << f2))
+        // 頂点バッファの書き込み開始位置 (1面 = 4頂点)
+        uint vBase = faceOut * 4;
+        // ポリゴンバッファの書き込み開始位置 (1面 = 2三角形)
+        uint pBase = faceOut * 2;
+        // この面(f2)を構成する4つの頂点インデックス(0〜7)をテーブルから取得
+        uint4 corners = kFaceCorners[f2];
+
+        // 4頂点ループ
+        [unroll]
+        for (uint c = 0; c < 4; c++)
         {
-            // 頂点バッファの書き込み開始位置 (1面 = 4頂点)
-            uint vBase = faceOut * 4;
-            // ポリゴンバッファの書き込み開始位置 (1面 = 2三角形)
-            uint pBase = faceOut * 2;
-            // この面(f2)を構成する4つの頂点インデックス(0〜7)をテーブルから取得
-            uint4 corners = kFaceCorners[f2];
-
-            // 4頂点ループ
-            [unroll]
-            for (uint c = 0; c < 4; c++)
-            {
                 // 頂点のワールド座標 = ボクセルの原点 +(角のローカル位置 x 1マスのサイズ)
-                float3 worldPos = worldVoxelOrigin + kCubeCorners[corners[c]] * blockSize;
+            float3 worldPos = worldVoxelOrigin + kCubeCorners[corners[c]] * blockSize;
 
-                MSOutput vOut;
-                vOut.position = mul(float4(worldPos, 1.0f), wvp);
-                vOut.normal = kFaceNormal[f2];
-                vOut.color = color;
-                verts[vBase + c] = vOut;
-            }
-
-            tris[pBase + 0] = uint3(vBase, vBase + 2, vBase + 1);
-            tris[pBase + 1] = uint3(vBase, vBase + 3, vBase + 2);
-
-            faceOut++;
+            MSOutput vOut;
+            vOut.position = mul(float4(worldPos, 1.0f), wvp);
+            vOut.normal = kFaceNormal[f2];
+            vOut.color = color;
+            verts[vBase + c] = vOut;
         }
+
+        tris[pBase + 0] = uint3(vBase, vBase + 2, vBase + 1);
+        tris[pBase + 1] = uint3(vBase, vBase + 3, vBase + 2);
+
+        faceOut++;
     }
 }

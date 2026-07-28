@@ -297,8 +297,7 @@
     "鉄インゴット",
     "金インゴット",
     "ダイヤモンド",
-    "ビーコン",
-    "MAX"
+    "ビーコン"
   ],
   "Tool_Axe_of_Diamond": {
     "blockID": "MAX",
@@ -306,7 +305,7 @@
     "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "toolID": "MAX"
+    "toolID": "Axe_of_Diamond"
   },
   "Tool_Axe_of_Gold": {
     "blockID": "MAX",
@@ -314,7 +313,7 @@
     "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "toolID": "MAX"
+    "toolID": "Axe_of_Gold"
   },
   "Tool_Axe_of_Iron": {
     "blockID": "MAX",
@@ -322,7 +321,7 @@
     "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "toolID": "MAX"
+    "toolID": "Axe_of_Iron"
   },
   "Tool_Axe_of_Stone": {
     "blockID": "MAX",
@@ -330,7 +329,7 @@
     "modelPath": "resources/Minecraft/Item/tool/axe/axe.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/axe/axe.png",
-    "toolID": "MAX"
+    "toolID": "Axe_of_Stone"
   },
   "Tool_Axe_of_Wood": {
     "blockID": "MAX",
@@ -346,7 +345,7 @@
     "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "MAX"
+    "toolID": "Pickel_of_Diamond"
   },
   "Tool_Pickel_of_Gold": {
     "blockID": "MAX",
@@ -354,7 +353,7 @@
     "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "MAX"
+    "toolID": "Pickel_of_Gold"
   },
   "Tool_Pickel_of_Iron": {
     "blockID": "MAX",
@@ -362,7 +361,7 @@
     "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "MAX"
+    "toolID": "Pickel_of_Iron"
   },
   "Tool_Pickel_of_Stone": {
     "blockID": "MAX",
@@ -370,7 +369,7 @@
     "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "MAX"
+    "toolID": "Pickel_of_Stone"
   },
   "Tool_Pickel_of_Wood": {
     "blockID": "MAX",
@@ -378,7 +377,7 @@
     "modelPath": "resources/Minecraft/Item/tool/pickel/pickel.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "MAX"
+    "toolID": "Pickel_of_Wood"
   },
   "Tool_Sword_of_Diamond": {
     "blockID": "MAX",
@@ -386,7 +385,7 @@
     "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "toolID": "MAX"
+    "toolID": "Sword_of_Diamond"
   },
   "Tool_Sword_of_Gold": {
     "blockID": "MAX",
@@ -394,7 +393,7 @@
     "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "toolID": "MAX"
+    "toolID": "Sword_of_Gold"
   },
   "Tool_Sword_of_Iron": {
     "blockID": "MAX",
@@ -402,7 +401,7 @@
     "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "toolID": "MAX"
+    "toolID": "Sword_of_Iron"
   },
   "Tool_Sword_of_Stone": {
     "blockID": "MAX",
@@ -410,7 +409,7 @@
     "modelPath": "resources/Minecraft/Item/tool/sword/sword.obj",
     "objectID": "MAX",
     "texturePath": "resources/Minecraft/Item/tool/sword/sword.png",
-    "toolID": "MAX"
+    "toolID": "Sword_of_Stone"
   },
   "Tool_Sword_of_Wood": {
     "blockID": "MAX",
