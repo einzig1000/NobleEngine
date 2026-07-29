@@ -10,13 +10,13 @@ class BlockConfig;
 struct ChunkInfo
 {
 	// 隣接チャンク１ブロック分も含めたブロックID配列SRVスロット
-	uint32_t blockIdSrvIndex;
+	uint32_t blockIdSrvIndex = 0;
 	// チャンクのボクセル数 (Constexprs::kChunkX/Y/Z、各軸偶数である必要あり)
 	Vector3int chunkDim;
 	// このチャンクのワールド座標原点
 	Vector3 chunkWorldOrigin;
 	// ブロックサイズ (Constexprs::kBlockSize)
-	float blockSize;
+	float blockSize = Constexprs::kBlockSize;
 };
 
 class Chunk
@@ -46,7 +46,7 @@ public:
 private:
 
 	// AABB取得
-	AABB GetAABB(const Vector3int& index);
+	AABB GetAABB(const Vector3int& index) const;
 	// 座標取得
 	Vector3 LocalCenter(const Vector3int& index) const;
 
@@ -69,7 +69,7 @@ private:
 	std::vector<uint32_t> blockIds_;
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> renderData_;
-	bool instanceBufferDirty_ = false;
+	int32_t instanceBufferDirty_;
 
 	int32_t blockIdSrvIndex_ = -1;
 	int32_t blockInfoTableSrvIndex_ = -1;

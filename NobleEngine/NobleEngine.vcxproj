@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\ScreenDrawer\ScreenDrawer.cpp" />
     <ClCompile Include="src\application\Editor\ItemEditor\ItemEditor.cpp" />
     <ClCompile Include="src\application\Editor\Editor.cpp" />
     <ClCompile Include="src\application\Facade\App.cpp" />
@@ -138,6 +139,7 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\ScreenDrawer\ScreenDrawer.h" />
     <ClInclude Include="src\application\Editor\ItemEditor\ItemEditor.h" />
     <ClInclude Include="src\application\Editor\Editor.h" />
     <ClInclude Include="src\application\Facade\App.h" />

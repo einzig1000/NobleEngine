@@ -139,9 +139,7 @@ void Engine::EndFrame()
 	computeSystem_->DispatchComputeObjects();
 
 	// 描画処理
-	drawSystem_->SceneDraw();
-	drawSystem_->PostEffectDraw();
-	drawSystem_->PreScreenDraw();
+	drawSystem_->Execute();
 
 	dxManager_->BeginRenderPass(dxManager_->GetSwapChain()->GetCurrentRenderTarget(), true);
 	drawSystem_->ScreenDraw();

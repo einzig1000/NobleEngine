@@ -32,14 +32,17 @@ void Player::Initialize()
 	rotate_.acceleration = Vector3(0.0f, 0.0f, 0.0f);
 
 	RegisterToMap();
+
+	AddItem(ItemID::Tool_Pickel_of_Iron);
 }
 
 void Player::Update(int32_t cameraID)
 {
 	if (Game::IO::Key::IsJustPressed('Q'))
 	{
-		AddItem(ItemID::Tool_Pickel_of_Iron);
 	}
+
+	previousHP_ = HP_;
 
 	// 移動系入力処理
 	UpdateInput(cameraID);
@@ -63,10 +66,10 @@ void Player::Update(int32_t cameraID)
 	// 一旦常にブロックを破壊
 	if (Game::IO::Mouse::IsHeld(0))
 	{
-		const std::vector<AABB>& itemAABBs = GetHaveItemAABB();
-		for (const auto& aabb : itemAABBs)
+		const std::vector<OBB>& itemOBBs = GetHaveItemOBB();
+		for (const auto& obb : itemOBBs)
 		{
-			DestroyBlockInAABB(aabb);
+			DestroyBlockInOBB(obb);
 		}
 	}
 
@@ -110,6 +113,7 @@ void Player::DrawImGui()
 	ImGui::Begin("Player Info");
 	ImGui::DragFloat3("Position", &translate_.value.x, 1.0f);
 	ImGui::DragFloat3("Scale", &scale_.value.x, 0.1f);
+	ImGui::DragFloat3("Velocity", &translate_.velocity.x, 1.0f);
 	ImGui::End();
 }
 

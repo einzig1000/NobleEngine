@@ -56,5 +56,5 @@ private:
 	// マウスの生入力登録
     void RegisterMouseRawInput(HWND hwnd);
 	// メインウィンドウ生成
-    void CreateMainWindow(uint32_t width, uint32_t height, const std::wstring& title);
+    void CreateMainWindow(LONG width, LONG height, const std::wstring& title);
 };

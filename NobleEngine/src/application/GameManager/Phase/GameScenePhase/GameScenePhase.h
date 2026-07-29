@@ -8,6 +8,7 @@ class MapWorldCollider;
 class CameraController;
 class UIManager;
 class EnemyManager;
+class ScreenDrawer;
 
 class GameScenePhase :
 	public IPhase
@@ -24,13 +25,8 @@ public:
 
 private:
 
-	int32_t rt_3D_ = -1;	// マップとかプレイヤーが描画されるレンダーターゲット
-	int32_t rt_UI_ = -1;	// UIが描画されるレンダーターゲット
-
 	int32_t c_debug_ = -1;
 
-	std::unique_ptr<RenderObject> draw_3D_;
-	std::unique_ptr<RenderObject> draw_UI_;
 
 	// カメラ
 	std::unique_ptr<CameraController> cameraController_;
@@ -46,5 +42,8 @@ private:
 
 	// UIマネージャー
 	std::unique_ptr<UIManager> uiManager_;
+
+	// 描画マネージャ
+	std::unique_ptr<ScreenDrawer> screenDrawer_;
 
 };

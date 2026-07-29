@@ -63,9 +63,12 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 
 	blockIds_.resize((Constexprs::kChunkX + 2) * (Constexprs::kChunkY + 2) * (Constexprs::kChunkZ + 2), 0);
 
-	renderData_->instanceNum_ = static_cast<uint32_t>(4096);
+	//renderData_->instanceNum_ = static_cast<uint32_t>(4096);
+	renderData_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
 
 	CreateChunkData(param);
+
+	blockIdSrvIndex_ = Game::Resource::CreateDynamic();
 }
 
 Chunk::~Chunk()
@@ -86,7 +89,7 @@ void Chunk::CreateChunkData(const NoiseParameter& param)
 	//SetExposedAllBlocks();
 
 	// 初回なので無条件でメッシュ生成
-	instanceBufferDirty_ = true;
+	instanceBufferDirty_ = Constexprs::kFrameCount;
 }
 
 // Jsonから読み込まれたデータを元にチャンクデータを生成
@@ -734,11 +737,8 @@ void Chunk::Update(int32_t cameraID)
 	//}
 
 	// チャンクに更新が来ていたら
-	if (instanceBufferDirty_)
+	if (instanceBufferDirty_ == Constexprs::kFrameCount)
 	{
-		// フラグリセット
-		instanceBufferDirty_ = false;
-
 		int32_t sizeX = Constexprs::kChunkX + 2;
 		int32_t sizeY = Constexprs::kChunkY + 2;
 		int32_t sizeZ = Constexprs::kChunkZ + 2;
@@ -766,9 +766,15 @@ void Chunk::Update(int32_t cameraID)
 				}
 			}
 		}
-
-		blockIdSrvIndex_ = Game::Resource::CreateStatic(blockIds_);
 	}
+
+	if (instanceBufferDirty_ > 0)
+	{
+		instanceBufferDirty_--;
+		Game::Resource::UpdateData(blockIdSrvIndex_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
+	}
+
+	chunkInfo_.blockIdSrvIndex = Game::Resource::GetSRV(blockIdSrvIndex_);
 
 
 	renderData_->SetCBufferData(0, ShaderType::MeshShader, &chunkInfo_);
@@ -845,7 +851,7 @@ Block* Chunk::GetBlock(const Vector3int& index, bool checkNeighborChunk)
 	return targetChunk->GetBlock(localIndex);
 }
 
-AABB Chunk::GetAABB(const Vector3int& index)
+AABB Chunk::GetAABB(const Vector3int& index) const
 {
 	// チャンクのワールド原点
 	float chunkWorldX = chunkIndex_.x * Constexprs::kChunkX * Constexprs::kBlockSize;
@@ -885,5 +891,5 @@ void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id)
 
 	targetBlock->SetBlockID(id);
 
-	instanceBufferDirty_ = true;
+	instanceBufferDirty_ = Constexprs::kFrameCount;
 }

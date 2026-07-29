@@ -25,6 +25,10 @@ namespace App
 			{
 				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetToolInfo(id);
 			}
+			const ObjectInfo* Get(ObjectID id)
+			{
+				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetObjectInfo(id);
+			}
 
 			const int32_t GetBlockInfoTableSRVIndex()
 			{

@@ -50,12 +50,20 @@ void BaseCharacter::ApplyMove()
 	Vector3 aabbMin = aabb.min;
 	aabbMin.y += Constexprs::kBlockSize * 0.5f;			// 足元の判定を少し上げる
 	aabb.min = translate_.value + aabbMin;
+	float dt = Game::Time::GetDeltaTime();
 	translate_.velocity += translate_.acceleration;		// 加速度を速度に反映
-	mapManager_->SweepAABB(aabb, translate_.velocity);	// mapManager_に希望移動量を申請し修正してもらう
-	translate_.value += translate_.velocity;			// 移動
-	worldMatrix_ = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
-	if (translate_.velocity.y == 0.0f)isGrounded_ = true;// 移動後の接地判定
+	Vector3 movement = translate_.velocity;				// 移動量を計算
+	mapManager_->SweepAABB(aabb, movement);				// mapManager_に希望移動量を申請し修正してもらう
+	if (movement.y == 0.0f)isGrounded_ = true;			// 移動後の接地判定
 	else isGrounded_ = false;
+	translate_.value += movement;			// 移動
+	if (isGrounded_ && translate_.velocity.y < -0.2f)
+	{
+		TakeDamage(1);
+	}
+
+	translate_.velocity = movement;						// 修正された移動量を速度に反映
+	worldMatrix_ = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
 }
 
 void BaseCharacter::TakeDamage(int32_t damage)
@@ -102,6 +110,11 @@ void BaseCharacter::SetBlock(BlockID id)
 void BaseCharacter::DestroyBlockInAABB(const AABB& aabb)
 {
 	mapManager_->DestroyBlockInAABB(aabb);
+}
+
+void BaseCharacter::DestroyBlockInOBB(const OBB& obb)
+{
+	mapManager_->DestroyBlockInOBB(obb);
 }
 
 void BaseCharacter::RegisterToMap()

@@ -1,4 +1,32 @@
 {
+  "Axe_of_Diamond": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "textureID": "resources/Minecraft/Item/tool/axe/axe.png"
+  },
+  "Axe_of_Gold": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "textureID": "resources/Minecraft/Item/tool/axe/axe.png"
+  },
+  "Axe_of_Iron": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "textureID": "resources/Minecraft/Item/tool/axe/axe.png"
+  },
+  "Axe_of_Stone": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/axe/axe.obj",
+    "textureID": "resources/Minecraft/Item/tool/axe/axe.png"
+  },
   "Axe_of_Wood": {
     "attackPower": 1.0,
     "durability": 1.0,
@@ -21,7 +49,76 @@
     "Axe_of_Stone",
     "Axe_of_Iron",
     "Axe_of_Gold",
-    "Axe_of_Diamond",
-    "MAX"
-  ]
+    "Axe_of_Diamond"
+  ],
+  "Pickel_of_Diamond": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "textureID": "resources/Minecraft/Item/tool/pickel/pickel.png"
+  },
+  "Pickel_of_Gold": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "textureID": "resources/Minecraft/Item/tool/pickel/pickel.png"
+  },
+  "Pickel_of_Iron": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "textureID": "resources/Minecraft/Item/tool/pickel/pickel.png"
+  },
+  "Pickel_of_Stone": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "textureID": "resources/Minecraft/Item/tool/pickel/pickel.png"
+  },
+  "Pickel_of_Wood": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/pickel/pickel.obj",
+    "textureID": "resources/Minecraft/Item/tool/pickel/pickel.png"
+  },
+  "Sword_of_Diamond": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "textureID": "resources/Minecraft/Item/tool/sword/sword.png"
+  },
+  "Sword_of_Gold": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "textureID": "resources/Minecraft/Item/tool/sword/sword.png"
+  },
+  "Sword_of_Iron": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "textureID": "resources/Minecraft/Item/tool/sword/sword.png"
+  },
+  "Sword_of_Stone": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "textureID": "resources/Minecraft/Item/tool/sword/sword.png"
+  },
+  "Sword_of_Wood": {
+    "attackPower": 1.0,
+    "durability": 1.0,
+    "miningSpeed": 1.0,
+    "modelID": "resources/Minecraft/Item/tool/sword/sword.obj",
+    "textureID": "resources/Minecraft/Item/tool/sword/sword.png"
+  }
 }

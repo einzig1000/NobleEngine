@@ -4,27 +4,13 @@
 #include <GameObjects/Character/Player/Player.h>
 #include <GameObjects/Character/Enemy/EnemyManager.h>
 #include <GameObjects/Camera/CameraController.h>
+#include <GameObjects/ScreenDrawer/ScreenDrawer.h>
 #include <GameObjects/UI/UIManager.h>
 #include <fstream>
 
 GameScenePhase::GameScenePhase()
 {
-	rt_3D_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "3D");
-	rt_UI_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "UI");
 	c_debug_ = Game::Camera::AddCamera("DebugCamera");
-
-	draw_3D_ = std::make_unique<RenderObject>();
-	draw_3D_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//draw_3D_->psoConfig_.ps = "resources/shaders/FullScreen/RadialBlur.PS.hlsl";
-	draw_3D_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	draw_3D_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
-	draw_3D_->SetupFromShaders();
-
-	draw_UI_ = std::make_unique<RenderObject>();
-	draw_UI_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_UI_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	draw_UI_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
-	draw_UI_->SetupFromShaders();
 
 	// プレイヤー生成
 	player_ = std::make_unique<Player>();
@@ -36,9 +22,6 @@ GameScenePhase::GameScenePhase()
 	uiManager_ = std::make_unique<UIManager>();
 	// 敵マネージャー生成
 	//enemyManager_ = std::make_unique<EnemyManager>();
-
-	// マップ名とパスのマップ読み込み
-	map_->LoadNameAndPathMap("resources/Minecraft/Maps/MapNameAndPath.csv");
 
 	// カメラコントローラーにプレイヤーとマップマネージャーをセット
 	//cameraController_->SetPlayer(player_.get());
@@ -58,16 +41,10 @@ GameScenePhase::GameScenePhase()
 	uiManager_->SetPlayer(player_.get());
 	uiManager_->SetMapManager(map_.get());
 
-	// 物理システムにワールドコライダーをセット
-	//Game::Physics::AddWorldCollider(map_.get());
-	//Game::Physics::ClearDynamicAll();
+	screenDrawer_ = std::make_unique<ScreenDrawer>();
 
 
-	//CraftRecipeList::InitializeRecipes();
 	ResourceID::reload();
-
-
-
 }
 
 GameScenePhase::~GameScenePhase() {}
@@ -102,25 +79,29 @@ void GameScenePhase::Update()
 	// カメラ更新
 	//cameraController_->Update();
 
-
-	draw_3D_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_);
-	draw_UI_->SetCBufferData(0, ShaderType::PixelShader, &rt_UI_);
+	if (player_->JustDamaged())
+	{
+ 		screenDrawer_->TakeDamage();
+	}
+	screenDrawer_->Update(targetCameraID);
 }
 
 
 void GameScenePhase::Draw()
 {
-	// マップ描画
-	map_->Draw(rt_3D_);
-	// プレイヤー描画
-	player_->Draw(rt_3D_);
-	// 敵描画
-	//enemyManager_->Draw();
-	// UI描画
-	uiManager_->Draw(rt_UI_);
+	int32_t rt_3D = screenDrawer_->Get3DRenderTexture();
+	int32_t rt_UI = screenDrawer_->GetUIRenderTexture();
 
-	draw_3D_->ScreenDraw();
-	draw_UI_->ScreenDraw();
+	// マップ描画
+	map_->Draw(rt_3D);
+	// プレイヤー描画
+	player_->Draw(rt_3D);
+	// 敵描画
+	//enemyManager_->Draw(rt_3D);
+	// UI描画
+	uiManager_->Draw(rt_UI);
+
+	screenDrawer_->Draw();
 }
 
 void GameScenePhase::DrawImGui()
@@ -133,6 +114,8 @@ void GameScenePhase::DrawImGui()
 	//enemyManager_->DrawImGui();
 	// UIImGui描画
 	uiManager_->DrawImGui();
+
+	screenDrawer_->DrawImGui();
 
 	//ImGui::Begin("------debug info------");
 	//ImGui::Text("ESC : Quit Application");

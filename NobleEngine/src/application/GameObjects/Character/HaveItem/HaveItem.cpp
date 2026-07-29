@@ -1,6 +1,7 @@
 #include "HaveItem.h"
 #include <App.h>
 #include <Utilities/functions.h>
+#include <numbers>
 
 namespace
 {
@@ -39,6 +40,18 @@ namespace
 		}
 		return result;
 	}
+
+	std::vector<OBB> CreateOBB(const std::vector<AABB>& localAabbs, const Matrix4x4& worldMatrix)
+	{
+		std::vector<OBB> result;
+		result.reserve(localAabbs.size());
+
+		for (const auto& localAABB : localAabbs)
+		{
+			result.push_back(OBB::MakeFromAABB(localAABB, worldMatrix));
+		}
+		return result;
+	}
 }
 
 
@@ -49,7 +62,7 @@ HaveItem::HaveItem()
 	render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_->SetupFromShaders();
 
-	itemTransform_.translate.y = 2.0f;
+	itemTransform_.translate.y = 0.2f;
 }
 
 HaveItem::~HaveItem()
@@ -66,10 +79,14 @@ void HaveItem::Update(int32_t cameraID)
 		cameraDir.Normalize();
 		pivotTransform_.rotate.y = std::atan2(cameraDir.x, cameraDir.z);
 
+		if (Game::IO::Mouse::IsJustPressed(0))
+		{
+			pivotTransform_.rotate.z = Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1);
+		}
 
 		if (Game::IO::Mouse::IsHeld(0))
 		{
-			pivotTransform_.rotate.x += 0.1f;
+			pivotTransform_.rotate.x += 0.5f;
 		}
 
 		if (Game::IO::Mouse::IsJustReleased(0))
@@ -81,7 +98,7 @@ void HaveItem::Update(int32_t cameraID)
 		const ToolInfo* toolConfig = App::Data::Item::Get(toolID);
 
 		render_->modelID_ = toolConfig->modelID;
-		itemAABB_ = Game::Asset::Model::GetData(toolConfig->modelID)->aabb;
+		const std::vector<AABB>& localAABBs = Game::Asset::Model::GetData(toolConfig->modelID)->aabb;
 
 		Matrix4x4 itemWorld = Matrix4x4::MakeAffineMatrix(itemTransform_.scale, itemTransform_.rotate, itemTransform_.translate);
 		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(pivotTransform_.scale, pivotTransform_.rotate, pivotTransform_.translate);
@@ -95,32 +112,33 @@ void HaveItem::Update(int32_t cameraID)
 		render_->SetCBufferData(0, ShaderType::PixelShader, &color);
 		render_->SetCBufferData(1, ShaderType::PixelShader, &textureID);
 
-		itemAABB_ = CreateAABB(itemAABB_, itemWorld);
+		itemAABB_ = CreateAABB(localAABBs, itemWorld);
+		itemOBB_ = CreateOBB(localAABBs, itemWorld);
 	}
     else
     {
         render_->modelID_ = -1;
     }
-
-
-
 }
 
 void HaveItem::Draw(int32_t renderTextureID)
 {
 	if (render_->modelID_ >= 0)
 	{
-		render_->Draw(renderTextureID);
+		if (Game::IO::Mouse::IsHeld(0))
+		{
+			render_->Draw(renderTextureID);
+		}
 	}
 
-	//ImGui::Begin("HaveItem");
-	//ImGui::DragFloat3("Item Position", &itemTransform_.translate.x, 0.1f);
-	//ImGui::DragFloat3("Item Rotation", &itemTransform_.rotate.x, 0.01f);
-	//ImGui::DragFloat3("Item Scale", &itemTransform_.scale.x, 0.1f);
-	//ImGui::Separator();
-	//ImGui::DragFloat3("pivot Position", &pivotTransform_.translate.x, 0.1f);
-	//ImGui::DragFloat3("pivot Rotation", &pivotTransform_.rotate.x, 0.01f);
-	//ImGui::DragFloat3("pivot Scale", &pivotTransform_.scale.x, 0.1f);
+	ImGui::Begin("HaveItem");
+	ImGui::DragFloat3("Item Position", &itemTransform_.translate.x, 0.1f);
+	ImGui::DragFloat3("Item Rotation", &itemTransform_.rotate.x, 0.01f);
+	ImGui::DragFloat3("Item Scale", &itemTransform_.scale.x, 0.1f);
+	ImGui::Separator();
+	ImGui::DragFloat3("pivot Position", &pivotTransform_.translate.x, 0.1f);
+	ImGui::DragFloat3("pivot Rotation", &pivotTransform_.rotate.x, 0.01f);
+	ImGui::DragFloat3("pivot Scale", &pivotTransform_.scale.x, 0.1f);
 
-	//ImGui::End();
+	ImGui::End();
 }

@@ -16,12 +16,14 @@ int32_t LocalMod(int32_t a, int32_t n)
 
 MapManager::MapManager()
 {
-	drawRadius_.x = 1;
-	drawRadius_.y = 2;
-	drawRadius_.z = 1;
-	updateRadius_.x = 1;
-	updateRadius_.y = 2;
-	updateRadius_.z = 1;
+	drawRadius_.x = 3;
+	drawRadius_.y = 1;
+	drawRadius_.z = 3;
+	updateRadius_.x = 3;
+	updateRadius_.y = 1;
+	updateRadius_.z = 3;
+
+	SetSeed(123456);
 }
 
 MapManager::~MapManager(){}
@@ -75,10 +77,10 @@ void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 {
 	// ノイズパラメータ設定
 	noiseParam_.seed = seed;			// 俗に言うシード値
-	noiseParam_.scale = 1280.0f;			// 地形の粗さ（大きくすると緩やか）
+	noiseParam_.scale = 12.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = std::numeric_limits<int32_t>::max();		// マップの高さ
+	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkY;		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 
 	// mapNameToFilePath_ に新規マップ登録
@@ -90,10 +92,10 @@ void MapManager::SetSeed(uint32_t seed)
 {
 	// ノイズパラメータ設定
 	noiseParam_.seed = seed;			// 俗に言うシード値
-	noiseParam_.scale = 1280.0f;			// 地形の粗さ（大きくすると緩やか）
-	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
-	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = Constexprs::kChunkY;		// マップの高さ
+	noiseParam_.scale = 1200.0f;			// 地形の粗さ（大きくすると緩やか）
+	noiseParam_.octaves = 8;			// 反復回数 (大きくすると細かい起伏が増える)
+	noiseParam_.persistence = 0.7f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
+	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkY;		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 }
 
@@ -292,7 +294,7 @@ void MapManager::Update(int32_t cameraID)
 	}
 }
 
-void MapManager::Draw(int32_t renderTargetID)
+void MapManager::Draw(int32_t renderTargetID) const
 {	
 	// プレイヤー周囲描画
 	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
@@ -366,6 +368,50 @@ void MapManager::DestroyBlockInAABB(const AABB& aabb)
 
 				// 
 				SetBlockAt(chunkIndex, localIndex, BlockID::Air);
+			}
+		}
+	}
+}
+
+void MapManager::DestroyBlockInOBB(const OBB& obb)
+{
+	// OBBの各軸方向のhalfSizeを配列化
+	const float halfSizeArr[3] = { obb.halfSize.x, obb.halfSize.y, obb.halfSize.z };
+
+	// OBBを包み込む世界軸AABB（ブロード判定用）を求める
+	Vector3 worldExtent{};
+	for (int32_t i = 0; i < 3; ++i)
+	{
+		worldExtent.x += std::abs(obb.axis[i].x) * halfSizeArr[i];
+		worldExtent.y += std::abs(obb.axis[i].y) * halfSizeArr[i];
+		worldExtent.z += std::abs(obb.axis[i].z) * halfSizeArr[i];
+	}
+	const AABB broadAABB(obb.center - worldExtent, obb.center + worldExtent);
+
+	// ブロードAABBをブロック単位で走査する回数（境界の取りこぼし対策で+1）
+	const int32_t countX = std::max(1, static_cast<int32_t>(std::ceil((broadAABB.max.x - broadAABB.min.x) / Constexprs::kBlockSize)) + 1);
+	const int32_t countY = std::max(1, static_cast<int32_t>(std::ceil((broadAABB.max.y - broadAABB.min.y) / Constexprs::kBlockSize)) + 1);
+	const int32_t countZ = std::max(1, static_cast<int32_t>(std::ceil((broadAABB.max.z - broadAABB.min.z) / Constexprs::kBlockSize)) + 1);
+
+	for (int32_t x = 0; x < countX; ++x)
+	{
+		for (int32_t y = 0; y < countY; ++y)
+		{
+			for (int32_t z = 0; z < countZ; ++z)
+			{
+				const Vector3 checkPos = broadAABB.min + Vector3(x * Constexprs::kBlockSize, y * Constexprs::kBlockSize, z * Constexprs::kBlockSize);
+
+				const Vector3int chunkIndex = ChunkIndexByPosition(checkPos);
+				const Vector3int localIndex = BlockIndexByPosition(checkPos);
+
+				// グリッドに正しく整列したこのブロックのワールドAABBを取得
+				const AABB blockAABB = GetAABB(chunkIndex, localIndex);
+
+				// OBBと実際に交差しているブロックだけ壊す
+				if (IsCollision(obb, blockAABB))
+				{
+					SetBlockAt(chunkIndex, localIndex, BlockID::Air);
+				}
 			}
 		}
 	}
@@ -475,7 +521,7 @@ void MapManager::SweepAABB(const AABB& aabb, Vector3& movement)
 		static_cast<int32_t>(std::ceil(std::abs(movement.z) / Constexprs::kBlockSize))
 	);
 
-	AABB movedAABB = aabb;;// +movement;
+	AABB movedAABB = aabb;// +movement;
 
 	Vector3int ableToMove = Vector3int(0, 0, 0);
 
@@ -495,10 +541,9 @@ void MapManager::SweepAABB(const AABB& aabb, Vector3& movement)
 	movement.y = (movement.y > 0) ? std::min(movement.y, wallDist.y) : std::max(movement.y, -wallDist.y);
 	movement.z = (movement.z > 0) ? std::min(movement.z, wallDist.z) : std::max(movement.z, -wallDist.z);
 }
-int32_t MapManager::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount)
+int32_t MapManager::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount) const
 {
 	// AABBのサイズから各軸のブロック数を算出
-	// 端数や最小値などを考慮し、適宜計算式を調整してください
 	int32_t countX = std::max(1, static_cast<int32_t>((aabb.max.x - aabb.min.x) / Constexprs::kBlockSize));
 	int32_t countY = std::max(1, static_cast<int32_t>((aabb.max.y - aabb.min.y) / Constexprs::kBlockSize));
 	int32_t countZ = std::max(1, static_cast<int32_t>((aabb.max.z - aabb.min.z) / Constexprs::kBlockSize));

@@ -29,7 +29,7 @@ public:
 
 	void Initialize();
 	void Update(int32_t cameraID);
-	void Draw(int32_t renderTargetID);
+	void Draw(int32_t renderTargetID) const;
 	void DrawImGui();
 
 	void SetDrawRadius(const Vector3int& r) { drawRadius_ = r; }
@@ -41,6 +41,8 @@ public:
 
 	// AABB内のブロックを破壊する
 	void DestroyBlockInAABB(const AABB& aabb);
+	// OBB内のブロックを破壊する
+	void DestroyBlockInOBB(const OBB& obb);
 
 	// ブロック設置
 	bool SetBlockAt(const lookAtBlock& lab, BlockID id);
@@ -62,7 +64,7 @@ public:
 	/// <param name="face">衝突判定したい面</param>
 	/// <param name="layerCount">何層分進むか</param>
 	/// <returns>何層分進めたか</returns>
-	int32_t SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount);
+	int32_t SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount) const;
 
 
 	// 指定AABBにキャラがあるか

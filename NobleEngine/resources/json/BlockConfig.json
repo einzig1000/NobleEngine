@@ -30,7 +30,7 @@
     "isTransparent": false
   },
   "Grass": {
-    "color": 1593779455,
+    "color": 649268991,
     "durability": 1.0,
     "isTransparent": false
   },
@@ -50,8 +50,7 @@
     "Dirt",
     "Grass",
     "Wood",
-    "Leaf",
-    "MAX"
+    "Leaf"
   ],
   "Leaf": {
     "color": 699334911,
@@ -59,8 +58,8 @@
     "isTransparent": false
   },
   "Stone": {
-    "color": 774778623,
-    "durability": 10.0,
+    "color": 2475922431,
+    "durability": 1.0,
     "isTransparent": false
   },
   "Wood": {
