@@ -16,12 +16,12 @@ int32_t LocalMod(int32_t a, int32_t n)
 
 MapManager::MapManager()
 {
-	drawRadius_.x = 2;
-	drawRadius_.y = 2;
-	drawRadius_.z = 2;
-	updateRadius_.x = 2;
-	updateRadius_.y = 2;
-	updateRadius_.z = 2;
+	drawRadius_.x = 3;
+	drawRadius_.y = 1;
+	drawRadius_.z = 3;
+	updateRadius_.x = 3;
+	updateRadius_.y = 1;
+	updateRadius_.z = 3;
 
 	SetSeed(123456);
 }
@@ -80,7 +80,7 @@ void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 	noiseParam_.scale = 12.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = static_cast<float>(Constexprs::kChunkStackHeight * Constexprs::kChunkY);		// マップの高さ
+	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkY;		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 
 	// mapNameToFilePath_ に新規マップ登録
@@ -95,7 +95,7 @@ void MapManager::SetSeed(uint32_t seed)
 	noiseParam_.scale = 1200.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 8;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.7f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = static_cast<float>(Constexprs::kChunkStackHeight * Constexprs::kChunkY);		// マップの高さ
+	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkY;		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 }
 
@@ -294,7 +294,7 @@ void MapManager::Update(int32_t cameraID)
 	}
 }
 
-void MapManager::Draw(int32_t renderTargetID)
+void MapManager::Draw(int32_t renderTargetID) const
 {	
 	// プレイヤー周囲描画
 	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
@@ -541,7 +541,7 @@ void MapManager::SweepAABB(const AABB& aabb, Vector3& movement)
 	movement.y = (movement.y > 0) ? std::min(movement.y, wallDist.y) : std::max(movement.y, -wallDist.y);
 	movement.z = (movement.z > 0) ? std::min(movement.z, wallDist.z) : std::max(movement.z, -wallDist.z);
 }
-int32_t MapManager::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount)
+int32_t MapManager::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount) const
 {
 	// AABBのサイズから各軸のブロック数を算出
 	int32_t countX = std::max(1, static_cast<int32_t>((aabb.max.x - aabb.min.x) / Constexprs::kBlockSize));

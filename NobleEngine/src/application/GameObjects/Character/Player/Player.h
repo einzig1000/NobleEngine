@@ -23,6 +23,8 @@ public:
 	void UpdateInputSpeed();						// ダッシュ更新
 	void UpdateInputJump();						// ジャンプ更新
 
+	bool JustDamaged() const { return previousHP_ > HP_; }	// ダメージを受けた瞬間
+
 private:
 	// 速度
 	float normalSpeed_ = 0.30f;
@@ -31,5 +33,8 @@ private:
 	// ダッシュ関連
 	int32_t dashBufferTimer_ = 0;
 	bool dash_ = false;
+
+	// hp
+	float previousHP_ = 0.0f;
 };
 

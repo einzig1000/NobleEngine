@@ -60,7 +60,7 @@ void Test2Phase::Draw()
 	testParticle.Draw(rt_main_);
 	//testAnimation.Draw(rt_main_);
 
-	render_->ScreenDraw();
+	render_->Draw();
 }
 
 void Test2Phase::DrawImGui()

@@ -139,7 +139,7 @@ void WindowManager::RegisterMouseRawInput(HWND hwnd)
     ::RegisterRawInputDevices(&rid, 1, sizeof(rid));
 }
 
-void WindowManager::CreateMainWindow(uint32_t width, uint32_t height, const std::wstring& title) 
+void WindowManager::CreateMainWindow(LONG width, LONG height, const std::wstring& title)
 {
     // ウィンドウサイズを表す構造体にクライアント領域を入れる
     RECT wrc = { 0,0,width,height };

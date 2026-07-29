@@ -9,21 +9,12 @@ float gauss(float x, float y, float sigma)
     return exp(exponent) * rcp(denominator);
 }
 
-
 static const float2 kIndex3x3[3][3] =
 {
     { { -1.0f, -1.0f }, { 0.0f, -1.0f }, { 1.0f, -1.0f } },
     { { -1.0f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f } },
     { { -1.0f, 1.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } }
 };
-
-
-//static const float kKernel3x3[3][3] =
-//{
-//    { 1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f },
-//    { 1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f },
-//    { 1.0f / 9.0f, 1.0f / 9.0f, 1.0f / 9.0f }
-//};
 
 struct PSInput
 {
@@ -36,7 +27,7 @@ struct PSOutput
     float4 Color : SV_TARGET;
 };
 
-cbuffer TextureIndex : register(b1)
+cbuffer TextureIndex : register(b0)
 {
     int textureIndex;
 };

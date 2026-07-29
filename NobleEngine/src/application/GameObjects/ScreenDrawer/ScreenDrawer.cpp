@@ -1,0 +1,201 @@
+#include "ScreenDrawer.h"
+#include "ScreenDrawer.h"
+
+ScreenDrawer::ScreenDrawer()
+{
+	rt_3D_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "3D");
+	rt_3D_depth_ = Game::Asset::RenderTexture::GetRenderTextureDepthID("3D");
+	rt_UI_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "UI");
+	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
+
+	for (int i = 0; i < 5; i++)
+	{
+		rt_3D_Effect_.push_back(Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "3D_Effect" + std::to_string(i)));
+	}
+
+	int32_t m_plane = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+
+	draw_3D_Vignette_ = std::make_unique<RenderObject>();
+	draw_3D_Vignette_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	//draw_3D_Vignette_->psoConfig_.ps = "resources/shaders/FullScreen/RadialBlur.PS.hlsl";
+	draw_3D_Vignette_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	draw_3D_Vignette_->modelID_ = m_plane;
+	draw_3D_Vignette_->SetupFromShaders();
+
+	draw_3D_DepthBasedOutline_ = std::make_unique<RenderObject>();
+	draw_3D_DepthBasedOutline_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_DepthBasedOutline_->psoConfig_.ps = "resources/shaders/FullScreen/DepthBasedOutline.PS.hlsl";
+	draw_3D_DepthBasedOutline_->modelID_ = m_plane;
+	draw_3D_DepthBasedOutline_->SetupFromShaders();
+
+	draw_3D_GaussianFilter_[0] = std::make_unique<RenderObject>();
+	draw_3D_GaussianFilter_[0]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_GaussianFilter_[0]->psoConfig_.ps = "resources/shaders/FullScreen/GaussianFilterFirst.PS.hlsl";
+	draw_3D_GaussianFilter_[0]->modelID_ = m_plane;
+	draw_3D_GaussianFilter_[0]->SetupFromShaders();
+
+	draw_3D_GaussianFilter_[1] = std::make_unique<RenderObject>();
+	draw_3D_GaussianFilter_[1]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_GaussianFilter_[1]->psoConfig_.ps = "resources/shaders/FullScreen/GaussianFilterSecond.PS.hlsl";
+	draw_3D_GaussianFilter_[1]->modelID_ = m_plane;
+	draw_3D_GaussianFilter_[1]->SetupFromShaders();
+
+	draw_3D_GrayScale_ = std::make_unique<RenderObject>();
+	draw_3D_GrayScale_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_GrayScale_->psoConfig_.ps = "resources/shaders/FullScreen/GrayScale.PS.hlsl";
+	draw_3D_GrayScale_->modelID_ = m_plane;
+	draw_3D_GrayScale_->SetupFromShaders();
+
+	draw_UI_ = std::make_unique<RenderObject>();
+	draw_UI_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_UI_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_UI_->modelID_ = m_plane;
+	draw_UI_->SetupFromShaders();
+
+	draw_3D_ = std::make_unique<RenderObject>();
+	draw_3D_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_3D_->modelID_ = m_plane;
+	draw_3D_->SetupFromShaders();
+
+	draw_main_ = std::make_unique<RenderObject>();
+	draw_main_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_main_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_main_->modelID_ = m_plane;
+	draw_main_->SetupFromShaders();
+}
+
+ScreenDrawer::~ScreenDrawer()
+{}
+
+void ScreenDrawer::Update(int32_t cameraID)
+{
+	if (Game::IO::Key::IsJustPressed('Q'))
+	{
+		TakeDamage();
+	}
+	DamageEffectUpdate();
+
+	// アウトライン描画
+	// 書き込み先：rt_3D_Effect_[0]
+	// 参照元：rt_3D_、rt_3D_depth_
+	draw_3D_DepthBasedOutline_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_);
+	draw_3D_DepthBasedOutline_->SetCBufferData(1, ShaderType::PixelShader, &rt_3D_depth_);
+	Matrix4x4 projectionInverse = Game::Camera::Getter::GetProjectionMatrix(cameraID).Inverse();
+	draw_3D_DepthBasedOutline_->SetCBufferData(2, ShaderType::PixelShader, &projectionInverse);
+
+	// vignette描画
+	// 書き込み先：rt_3D_Effect_[1]
+	// 参照元：rt_3D_Effect_[0]
+	draw_3D_Vignette_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_[0]);
+	draw_3D_Vignette_->SetCBufferData(1, ShaderType::PixelShader, &vignette_Brightness);
+
+	// ガウシアンフィルタ描画
+	// 書き込み先：rt_3D_Effect_[2]
+	// 参照元：rt_3D_Effect_[1]
+	draw_3D_GaussianFilter_[0]->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_[1]);
+	draw_3D_GaussianFilter_[0]->SetCBufferData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
+
+	// ガウシアンフィルタ描画
+	// 書き込み先：rt_3D_Effect_[3]
+	// 参照元：rt_3D_Effect_[2]
+	draw_3D_GaussianFilter_[1]->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_[2]);
+	draw_3D_GaussianFilter_[1]->SetCBufferData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
+
+	// グレースケール描画
+	// 書き込み先：rt_3D_Effect_[4]
+	// 参照元：rt_3D_Effect_[3]
+	draw_3D_GrayScale_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_[3]);
+	draw_3D_GrayScale_->SetCBufferData(1, ShaderType::PixelShader, &grayScale_Scale);
+
+
+
+	// UI描画
+	// 書き込み先：rt_main_
+	// 参照元：rt_UI_
+	draw_UI_->SetCBufferData(0, ShaderType::PixelShader, &rt_UI_);
+
+	// 3D描画
+	// 書き込み先：rt_main_
+	// 参照元：rt_3D_Effect_
+	draw_3D_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_.back());
+
+	// メイン描画
+	// 書き込み先：エンジンのデフォルトレンダーターゲット
+	// 参照元：rt_main_
+	draw_main_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
+}
+
+void ScreenDrawer::Draw()
+{
+	// アウトライン描画
+	// 書き込み先：rt_3D_Effect_[0]
+	// 参照元：rt_3D_、rt_3D_depth_
+	draw_3D_DepthBasedOutline_->Draw(rt_3D_Effect_[0], { rt_3D_, rt_3D_depth_ });
+
+	// vignette描画
+	// 書き込み先：rt_3D_Effect_[1]
+	// 参照元：rt_3D_Effect_[0]
+	draw_3D_Vignette_->Draw(rt_3D_Effect_[1], { rt_3D_Effect_[0] });
+
+	// ガウシアンフィルタ描画
+	// 書き込み先：rt_3D_Effect_[2]
+	// 参照元：rt_3D_Effect_[1]
+	draw_3D_GaussianFilter_[0]->Draw(rt_3D_Effect_[2], {rt_3D_Effect_[1]});
+
+	// ガウシアンフィルタ描画
+	// 書き込み先：rt_3D_Effect_[3]
+	// 参照元：rt_3D_Effect_[2]
+	draw_3D_GaussianFilter_[1]->Draw(rt_3D_Effect_[3], { rt_3D_Effect_[2] });
+
+	// グレースケール描画
+	// 書き込み先：rt_3D_Effect_[4]
+	// 参照元：rt_3D_Effect_[3]
+	draw_3D_GrayScale_->Draw(rt_3D_Effect_[4], { rt_3D_Effect_[3] });
+
+
+	// UI描画
+	// 書き込み先：rt_main_
+	// 参照元：rt_UI_
+	draw_UI_->Draw(rt_main_, { rt_UI_ });
+	// 3D描画
+	// 書き込み先：rt_main_
+	// 参照元：rt_3D_Effect_
+	draw_3D_->Draw(rt_main_, { rt_3D_Effect_.back()});
+
+	// メイン描画
+	// 書き込み先：エンジンのデフォルトレンダーターゲット
+	// 参照元：rt_main_
+	draw_main_->Draw(-1, { rt_main_ });
+}
+
+void ScreenDrawer::DrawImGui()
+{
+	ImGui::Begin("ScreenDrawer");
+	ImGui::DragFloat("Vignette Brightness", &vignette_Brightness);
+	ImGui::DragFloat("GrayScale Scale", &grayScale_Scale, 0.01f);
+	ImGui::DragInt("GaussianFilter Radius", &gaussianFilter_Radius_, 1, 1, 100);
+	ImGui::End();
+}
+
+void ScreenDrawer::TakeDamage()
+{
+	frame = 3.0f;
+}
+
+void ScreenDrawer::DamageEffectUpdate()
+{
+	if (frame > 0)
+	{
+		frame -= 0.01f;
+		vignette_Brightness = Game::Math::Ease::EasingFloat(12.0f, 100000.0f, EaseType::IN_QUINT, (3.0f - frame) / 3.0f);
+		gaussianFilter_Radius_ = static_cast<int32_t>(Game::Math::Ease::EasingFloat(20.0f, 0.0f, EaseType::LINEAR, (3.0f - frame) / 3.0f));
+		grayScale_Scale = Game::Math::Ease::EasingFloat(1.0f, 0.0f, EaseType::LINEAR, (3.0f - frame) / 3.0f);
+	}
+	else
+	{
+		vignette_Brightness = 100000.0f;
+		gaussianFilter_Radius_ = 0;
+		grayScale_Scale = 0.0f;
+	}
+}

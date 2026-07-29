@@ -40,8 +40,6 @@
 #define PAD_BUTTON_MAX      0x0E
 
 
-
-
 #pragma region 基盤構造体
 
 struct Vector2int
@@ -749,7 +747,6 @@ enum class EaseType
     IN_BOUNCE,
     OUT_BOUNCE,
 };
-std::string EnumToString(EaseType e);
 
 template <typename t>
 struct EasingSet
@@ -1069,7 +1066,6 @@ enum class CollisionResult
     接触,
     衝突
 };
-std::string EnumToString(CollisionResult e);
 
 struct CollisionFlags
 {
@@ -1096,7 +1092,6 @@ enum class AABBFace
     YPlus = 4,    // y+
     YMinus = 5, // y-
 };
-std::string EnumToString(AABBFace e);
 
 struct CollisionPair
 {
@@ -1140,7 +1135,7 @@ struct EmitterSphere
 {
     Vector3 translate;  // 座標
     float radius = 1.0f;       // 射出半径
-    uint32_t count;     // 射出数
+    uint32_t count = 1;     // 射出数
 	float frequency = 1.0f;    // 射出頻度
 	float frequencyTime = 0.0f; // 射出頻度タイマ
 	uint32_t emit = 0;      // 射出するかどうか
@@ -1262,7 +1257,6 @@ enum class CameraMode_ORBIT_FPS
     ORBIT,
     FPS
 };
-std::string EnumToString(CameraMode_ORBIT_FPS e);
 
 #pragma endregion
 
@@ -1280,7 +1274,6 @@ enum class DirectionXY
     Down = 2,
     Up = 3,
 };
-std::string EnumToString(DirectionXY e);
 
 // 前後左右
 enum class DirectionXZ
@@ -1291,7 +1284,6 @@ enum class DirectionXZ
 	Back = 2,       // Z-
 	Front = 3,      // Z+
 };
-std::string EnumToString(DirectionXZ e);
 
 // 前後左右 + 斜め
 enum class DirectionXZ8Way
@@ -1306,7 +1298,6 @@ enum class DirectionXZ8Way
     Right = 6,
     FrontRight = 7,
 };
-std::string EnumToString(DirectionXZ8Way e);
 
 // 上下左右前後
 enum class DirectionXYZ
@@ -1319,7 +1310,6 @@ enum class DirectionXYZ
     Down = 4,
     Up = 5,
 };
-std::string EnumToString(DirectionXYZ e);
 
 #pragma endregion
 
@@ -1345,5 +1335,4 @@ enum class LineType
     BezierCurve,
     SplineCurve,
 };
-std::string EnumToString(LineType e);
 

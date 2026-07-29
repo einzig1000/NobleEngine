@@ -15,6 +15,12 @@ cbuffer TextureIndex : register(b0)
     int textureIndex;
 };
 
+// 明るさ補正 
+cbuffer Brightness : register(b1)
+{
+    float brightness;
+};
+
 Texture2D<float4> textures[] : register(t0);
 SamplerState gSampler : register(s0);
 
@@ -26,7 +32,7 @@ PSOutput main(PSInput input)
     // 周囲を0に、中心になるほど明るくする
     float2 correct = input.TexCoord * (1.0f - input.TexCoord.yx);
     // corretだけだと中心でも0.0625で暗すぎるので16倍する
-    float1 vignette = correct.x * correct.y * 16.0f;
+    float1 vignette = correct.x * correct.y * brightness;
     vignette = saturate(pow(vignette, 0.8f));
     output.Color.rgb *= vignette;
     

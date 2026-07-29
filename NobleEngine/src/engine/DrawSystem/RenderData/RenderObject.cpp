@@ -32,7 +32,6 @@ void RenderObject::SetupFromShaders()
 		// MS の CBV / SBV を反映
 		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_, cbvSizeOffset);
 	}
-
 	{
 		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
 		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(psPath.c_str(), L"ps_6_6");
@@ -47,7 +46,7 @@ void RenderObject::SetupFromShaders()
 	//	rootParamHashToIndexMap_[rootParams_[i].hash] = i;
 	//}
 	
-	// ハッシュの精度を確認するためしばらくこっちを使う。確信がもてたら下記コ―ドは削除し上記のコメントを解除する
+	// ハッシュの精度を確認するためしばらくこっちを使う。確信がもてたら下記コードは削除し上記のコメントを解除する
 	for (size_t i = 0; i < rootParams_.size(); ++i)
 	{
 		const auto& param = rootParams_[i];
@@ -98,18 +97,7 @@ void RenderObject::SetSBufferData(const uint32_t key, ShaderType shaderType, con
 }
 
 
-void RenderObject::Draw(int32_t renderTextureID) const
+void RenderObject::Draw(int32_t renderTargetID, std::vector<int32_t> deps) const
 {
-	Engine::Instance().GetDrawSystem()->AddSceneDrawList(this, renderTextureID);
-}
-
-// textureにレンダーテクスチャを利用している場合はこっち
-void RenderObject::PostEffectDraw(int32_t renderTextureID) const
-{
-	Engine::Instance().GetDrawSystem()->AddPostEffectDrawList(this, renderTextureID);
-}
-
-void RenderObject::ScreenDraw() const
-{
-	Engine::Instance().GetDrawSystem()->AddScreenDrawList(this);
+	Engine::Instance().GetDrawSystem()->AddDrawList(this, renderTargetID, deps);
 }

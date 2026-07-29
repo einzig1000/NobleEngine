@@ -3,7 +3,9 @@
 #include <ImGuiManager/ImGuiManager.h>
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
+#include <Utilities/Logger/Logger.h>
 #include <Engine.h>
+#include <queue>
 
 DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager)
 	:dxManager_(dxManager), assetManager_(assetManager)
@@ -34,9 +36,7 @@ void DrawSystem::Reset()
 	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
 	cbAllocators_[backBufferIndex].Reset();
 
-	sceneRenderObjects_.clear();
-	postEffectRenderObjects_.clear();
-	screenRenderObjects_.clear();
+	drawNodes_.clear();
 }
 
 ///// いつかRenderObjectリストをソートしたい
@@ -44,20 +44,81 @@ void DrawSystem::Reset()
 //② トポロジ
 //③ ルートシグネチャ
 
-
-void DrawSystem::AddSceneDrawList(const RenderObject* renderObject, int32_t renderTextureID)
+void DrawSystem::AddDrawList(const RenderObject* renderObject, int32_t RenderTargetID, const std::vector<int32_t>& deps)
 {
-	sceneRenderObjects_[renderTextureID].push_back(renderObject);
+	int32_t targetID = RenderTargetID;
+
+	if (targetID == -1)
+	{
+		targetID = rt_nobleScreenID_;
+	}
+
+	// RenderTargetIDに書き込むRenderObjectを保存
+	drawNodes_[targetID].objects.push_back(renderObject);
+	// 自身を書き込む前に書き込み終了していてほしいRenderTargetIDを保存
+	for (int32_t dep : deps)
+	{
+		drawNodes_[targetID].deps.insert(dep);
+	}
 }
 
-void DrawSystem::AddPostEffectDrawList(const RenderObject* renderObject, int32_t renderTextureID)
+std::vector<int32_t> DrawSystem::SortNodes()
 {
-	postEffectRenderObjects_[renderTextureID].push_back(renderObject);
-}
+	// inDegree[rtID] = このrtIDのRTがあと何個のRTの完了を待っているか
+	std::unordered_map<int32_t, int32_t> inDegree;
+	// dependents[rtID] = このrtIDのRTの書き込み終了を待っていたRTのid一覧
+	std::unordered_map<int32_t, std::vector<int32_t>> dependents;
+	// 全ノードの入次数を0で初期化
+	for (const auto& [rtID, node] : drawNodes_)
+	{
+		inDegree[rtID] = 0;
+	}
 
-void DrawSystem::AddScreenDrawList(const RenderObject* renderObject)
-{
-	screenRenderObjects_.push_back(renderObject);
+	// 実際に依存関係を数え上げ、逆引きテーブル(dependents)も同時に構築する
+	for (const auto& [rtID, node] : drawNodes_)
+	{
+		for (int32_t dep : node.deps)
+		{
+			// depが 今フレーム誰も書き込んでいないRT を指しているなら無視
+			if (!drawNodes_.contains(dep)) continue;
+
+			// depの書き込み終わったらrtIDをチェックしにいく という逆引きを登録
+			dependents[dep].push_back(rtID);
+			// rtIDは依存が1つ増えたので入次数を+1
+			inDegree[rtID]++;
+		}
+	}
+
+
+	std::queue<int32_t> ready;
+	for (const auto& [rtID, deg] : inDegree)
+	{
+		// 他RT参照が0のRTは無条件描画
+		if (deg == 0) ready.push(rtID);
+	}
+
+	// 実際の描画順
+	std::vector<int32_t> order;
+	while (!ready.empty())
+	{
+		int32_t rtID = ready.front();
+		ready.pop();
+		order.push_back(rtID);
+
+		// rtIDの描画予約が済んだため、rtIDに依存していたRTの入次数を-1する
+		for (int32_t next : dependents[rtID])
+		{
+			// その時依存が0になったRTは描画可能になるのでreadyに追加
+			if (--inDegree[next] == 0) ready.push(next);
+		}
+	}
+
+	if (order.size() != drawNodes_.size())
+	{
+		Log("DrawSystem: 依存グラフに循環があります。描画順序を解決できません。");
+		assert(false);
+	}
+	return order;
 }
 
 void DrawSystem::DrawObject(const RenderObject* renderObject)
@@ -105,12 +166,6 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 		const ModelData* obj = assetManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
 		if (!obj)return;
 		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-		//D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
-		//	obj->vertexBufferView,
-		//	obj->skinCluster.influenceBufferView
-		//};
-		// 5)頂点バッファをバインド
-		//cmdList->IASetVertexBuffers(0, 2, vbvs);
 
 		const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
 		if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
@@ -126,40 +181,21 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	}
 }
 
-void DrawSystem::SceneDraw()
+void DrawSystem::Execute()
 {
-	for (const auto& [rtID, renderObjects] : sceneRenderObjects_)
+	// 依存関係を満たす安全な描画順を取得
+	const auto order = SortNodes();
+
+	// その順番通りに、RTごとにBeginRenderPass→描画→EndRenderPassを繰り返す
+	for (int32_t rtID : order)
 	{
 		dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), true);
-		for (const auto* renderObject : renderObjects)
+		for (const auto* renderObject : drawNodes_[rtID].objects)
 		{
 			DrawObject(renderObject);
 		}
 		dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), true);
 	}
-}
-
-void DrawSystem::PostEffectDraw()
-{
-	for (const auto& [rtID, renderObjects] : postEffectRenderObjects_)
-	{
-		dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), false);
-		for (const auto* renderObject : renderObjects)
-		{
-			DrawObject(renderObject);
-		}
-		dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), false);
-	}
-}
-
-void DrawSystem::PreScreenDraw()
-{
-	dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true);
-	for (const auto* renderObject : screenRenderObjects_)
-	{
-		DrawObject(renderObject);
-	}
-	dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true);
 }
 
 void DrawSystem::ScreenDraw()
@@ -174,7 +210,6 @@ void DrawSystem::ScreenDraw()
 	ImGui::Begin("mainDisplay");
 	ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
 	ImGui::End();
-
 
 #endif // DEBUG
 }
