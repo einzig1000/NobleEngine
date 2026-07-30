@@ -1,4 +1,5 @@
 #include "TestAnimation.h"
+#include <Utilities/functions.h>
 #include <Game.h>
 
 TestAnimation::TestAnimation()
@@ -84,4 +85,57 @@ void TestAnimation::Draw(int32_t renderTextureID)
 {
 	render_->Draw(renderTextureID);
 	compute_->Dispatch();
+}
+
+Vector3 TestAnimation::GetVetexPos(int32_t index)
+{
+	const VertexInfluence& influence = vertexInfluences[index];
+	const Vector4& localPosition = vertices[index].position;
+
+	Vector4 skinnedPosition = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	for (int32_t i = 0; i < 4; ++i)
+	{
+		if (influence.weights[i] > 0.0f)
+		{
+			const Matrix4x4& skeletonSpaceMatrix = skinCluster_.mappedPalette[influence.jointIndices[i]].skeletonSpaceMatrix;
+			Vector4 transformed = Transform(localPosition, skeletonSpaceMatrix);
+
+			skinnedPosition.x += transformed.x * influence.weights[i];
+			skinnedPosition.y += transformed.y * influence.weights[i];
+			skinnedPosition.z += transformed.z * influence.weights[i];
+			skinnedPosition.w += transformed.w * influence.weights[i];
+		}
+	}
+
+	// animationMatrix_ が現在Identityのため、スケルトン空間 = ワールド空間になっている
+	return Vector3{ skinnedPosition.x, skinnedPosition.y, skinnedPosition.z };
+}
+
+int32_t TestAnimation::GetVertexIndexByJointName(const std::string& jointName)
+{
+	auto it = skeleton_.jointIndexByName.find(jointName);
+	if (it == skeleton_.jointIndexByName.end())
+	{
+		return -1; // 該当するジョイントが見つからない
+	}
+	int32_t jointIndex = it->second;
+
+	int32_t bestVertexIndex = -1;
+	float bestWeight = 0.0f;
+
+	for (size_t vertexIndex = 0; vertexIndex < vertexInfluences.size(); ++vertexIndex)
+	{
+		const VertexInfluence& influence = vertexInfluences[vertexIndex];
+		for (int32_t i = 0; i < 4; ++i)
+		{
+			if (influence.jointIndices[i] == jointIndex && influence.weights[i] > bestWeight)
+			{
+				bestWeight = influence.weights[i];
+				bestVertexIndex = int32_t(vertexIndex);
+			}
+		}
+	}
+
+	return bestVertexIndex; // 見つからなければ -1
 }

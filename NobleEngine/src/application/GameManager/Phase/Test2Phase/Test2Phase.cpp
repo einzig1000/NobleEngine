@@ -34,8 +34,16 @@ void Test2Phase::Update()
 {
 	Game::Camera::Update(c_main_);
 
+	static int index = 0;
+	ImGui::Begin("Test2Phase");
+	ImGui::DragInt("index", &index);
+	ImGui::End();
+
+	testAnimation.Update(c_main_);
+	//Vector3 pos = testAnimation.GetVetexPos(index);
+	Vector3 pos = testAnimation.GetVetexPos(testAnimation.GetVertexIndexByJointName("mixamorig:LeftHandMiddle1"));
+	testParticle.SetEmitterSpherePos(pos);
 	testParticle.Update(c_main_);
-	//testAnimation.Update(c_main_);
 
 	if (Game::IO::Key::IsJustPressed(VK_F11))
 	{
@@ -58,7 +66,7 @@ void Test2Phase::Update()
 void Test2Phase::Draw()
 {
 	testParticle.Draw(rt_main_);
-	//testAnimation.Draw(rt_main_);
+	testAnimation.Draw(rt_main_);
 
 	render_->Draw();
 }

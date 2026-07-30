@@ -253,7 +253,7 @@ TestParticle::TestParticle()
 	emitterSphere.frequency = 0.5f;
 	emitterSphere.frequencyTime = 0.0f;
 	emitterSphere.translate = { 0.0f, 0.0f, 0.0f };
-	emitterSphere.radius = 1.0f;
+	emitterSphere.radius = 0.1f;
 	emitterSphere.emit = 0;
 
 	particleSRVID_ = Game::Resource::CreateCompute(sizeof(Particle), 1024);
@@ -368,7 +368,6 @@ void TestParticle::Update(int32_t cameraID)
 		emitterSphere.emit = 0;
 	}
 
-
 	emitCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
 	emitCompute_->SetUAVData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
 	emitCompute_->SetUAVData(2, Game::Resource::GetUAV(freeListSRVID_));
@@ -405,4 +404,9 @@ void TestParticle::Draw(int32_t renderTextureID)
 	emitCompute_->Dispatch();
 	updateCompute_->Dispatch();
 	particle_->Draw(renderTextureID);
+}
+
+void TestParticle::SetEmitterSpherePos(Vector3 pos)
+{
+	emitterSphere.translate = pos;
 }

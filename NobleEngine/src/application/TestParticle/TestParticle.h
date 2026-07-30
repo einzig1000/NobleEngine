@@ -23,6 +23,8 @@ public:
 	void Update(int32_t cameraID);
 	void Draw(int32_t renderTextureID);
 
+	void SetEmitterSpherePos(Vector3 pos);
+
 private:
 	int32_t t_circle2;
 	int32_t t_uvChecker;
