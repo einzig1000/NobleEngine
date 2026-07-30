@@ -55,12 +55,13 @@ class RandomGenerator
 ConstantBuffer<EmitterSphere> gEmitter : register(b0);
 ConstantBuffer<Seed> gSeed : register(b1);
 RWStructuredBuffer<Particle> gParticles : register(u0);
-RWStructuredBuffer<uint> gFreeCounter : register(u1);
+RWStructuredBuffer<int32_t> gFreeListIndex : register(u1);
+RWStructuredBuffer<uint32_t> gFreeList : register(u2);
 
 // 今回スレッド数は1。複数のEmitterを扱い、同時に処理したいような場合は適宜スレッド数を増やすと良い
 [numthreads(1, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
-{
+{    
     if (gEmitter.emit != 0) // 射出許可が出たので射出
     {
         RandomGenerator generator;
@@ -68,21 +69,31 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         for (uint countIndex = 0; countIndex < gEmitter.count; ++countIndex)
         {
-            int particleindex;
-            InterlockedAdd(gFreeCounter[0], 1, particleindex);
             
-            if (particleindex < kMaxParticles)
+            int32_t freeListIndex;
+            //FreeListのIndexを1つ前に設定し、現在のIndexを取得する
+            InterlockedAdd(gFreeListIndex[0], -1, freeListIndex);
+            if (0 <= freeListIndex && freeListIndex < kMaxParticles)
             {
+                uint32_t particleIndex = gFreeList[freeListIndex];
                 // カウント分Particleを射出する
-                gParticles[particleindex].scale = generator.Generate3d();
-                gParticles[particleindex].translate = generator.Generate3d();
+                gParticles[particleIndex].scale = generator.Generate3d();
+                gParticles[particleIndex].translate = generator.Generate3d();
                 float3 randomDirection = generator.Generate3d();
                 randomDirection = randomDirection * 2.0f - 1.0f;
-                gParticles[particleindex].velocity = randomDirection * 0.1f;
-                gParticles[particleindex].color.rgb = generator.Generate3d();
-                gParticles[particleindex].color.a = 1.0f;
-                gParticles[particleindex].lifeTime = 5.0f;
+                gParticles[particleIndex].velocity = randomDirection * 0.1f;
+                gParticles[particleIndex].color.rgb = generator.Generate3d();
+                gParticles[particleIndex].color.a = 1.0f;
+                gParticles[particleIndex].lifeTime = 5.0f;
+                gParticles[particleIndex].currentTime = 0.0f;
 
+            }
+            else
+            {
+                //発生させられなかったので、減らしてしまった分もとに戻す。これを忘れると発生させられなかった分だけどんどんIndexが減ってしまう
+                InterlockedAdd(gFreeListIndex[0], 1);
+                //Emit中にParticleは消えないので、この後発生することはないためbreakして終わらせる
+                break;
             }
         }
     }

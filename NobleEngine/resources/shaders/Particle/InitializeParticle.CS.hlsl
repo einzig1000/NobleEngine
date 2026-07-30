@@ -13,7 +13,8 @@ struct Particle
 static const uint kMaxParticles = 1024;
 
 RWStructuredBuffer<Particle> gParticles : register(u0);
-RWStructuredBuffer<uint> gFreeCounter : register(u1);
+RWStructuredBuffer<int32_t> gFreeListIndex : register(u1);
+RWStructuredBuffer<uint32_t> gFreeList : register(u2);
 
 [numthreads(1024, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
@@ -22,11 +23,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (particleIndex < kMaxParticles)
     {
         gParticles[particleIndex] = (Particle) 0;
-        //gParticles[particleIndex].translate = float3(0.0f, 0.0f, 0.0f);
-        //gParticles[particleIndex].scale = float3(1.0f, 1.0f, 1.0f);
-        //gParticles[particleIndex].lifeTime = 0.0f;
-        //gParticles[particleIndex].velocity = float3(0.0f, 0.0f, 0.0f);
-        //gParticles[particleIndex].currentTime = 0.0f;
-        //gParticles[particleIndex].color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+        gFreeList[particleIndex] = particleIndex;
+    }
+    if (particleIndex == 0)
+    {
+        gFreeListIndex[0] = kMaxParticles - 1;
     }
 }
+        

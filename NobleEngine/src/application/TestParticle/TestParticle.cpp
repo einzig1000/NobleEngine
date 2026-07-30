@@ -257,7 +257,8 @@ TestParticle::TestParticle()
 	emitterSphere.emit = 0;
 
 	particleSRVID_ = Game::Resource::CreateCompute(sizeof(Particle), 1024);
-	freeCounterSRVID_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1);
+	freeListIndexSRVID_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1024);
+	freeListSRVID_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1024);
 
 	particle_ = std::make_unique<RenderObject>();
 	particle_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
@@ -272,23 +273,26 @@ TestParticle::TestParticle()
 	initializeCompute_->psoConfig_.cs = "resources/shaders/Particle/InitializeParticle.CS.hlsl";
 	initializeCompute_->SetupFromShaders();
 	initializeCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
-	initializeCompute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
+	initializeCompute_->SetUAVData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
+	initializeCompute_->SetUAVData(2, Game::Resource::GetUAV(freeListSRVID_));
 	initializeCompute_->RegisterOutput(particleSRVID_);
-	initializeCompute_->RegisterOutput(freeCounterSRVID_);
+	initializeCompute_->RegisterOutput(freeListIndexSRVID_);
+	initializeCompute_->RegisterOutput(freeListSRVID_);
 	initializeCompute_->Dispatch();
 
 	emitCompute_ = std::make_unique<ComputeObject>();
 	emitCompute_->psoConfig_.cs = "resources/shaders/Particle/EmitParticle.CS.hlsl";
 	emitCompute_->SetupFromShaders();
 	emitCompute_->RegisterOutput(particleSRVID_);
-	emitCompute_->RegisterOutput(freeCounterSRVID_);
+	emitCompute_->RegisterOutput(freeListIndexSRVID_);
+	emitCompute_->RegisterOutput(freeListSRVID_);
 
 	updateCompute_ = std::make_unique<ComputeObject>();
 	updateCompute_->psoConfig_.cs = "resources/shaders/Particle/UpdateParticle.CS.hlsl";
 	updateCompute_->SetupFromShaders();
 	updateCompute_->RegisterOutput(particleSRVID_);
-	updateCompute_->RegisterOutput(freeCounterSRVID_);
-
+	updateCompute_->RegisterOutput(freeListIndexSRVID_);
+	updateCompute_->RegisterOutput(freeListSRVID_);
 }
 
 TestParticle::~TestParticle()
@@ -366,20 +370,23 @@ void TestParticle::Update(int32_t cameraID)
 
 
 	emitCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
-	emitCompute_->SetUAVData(1, Game::Resource::GetUAV(freeCounterSRVID_));
+	emitCompute_->SetUAVData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
+	emitCompute_->SetUAVData(2, Game::Resource::GetUAV(freeListSRVID_));
 	emitCompute_->SetCBufferData(0, &emitterSphere);
 	Vector3 rand = { Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1) };
 	emitCompute_->SetCBufferData(1, &rand);
 
 	//updateCompute_->size.x = 1024;
 	updateCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
+	updateCompute_->SetUAVData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
+	updateCompute_->SetUAVData(2, Game::Resource::GetUAV(freeListSRVID_));
 	updateCompute_->SetCBufferData(0, &deltaTime);
 	
 	TransformationMatrix perView;
 	perView.WVP = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	perView.World = Game::Camera::Getter::GetBillboardMatrix(cameraID);
-	particle_->SetCBufferData(0, ShaderType::VertexShader, &perView);
 	particle_->SetSBufferData(0, ShaderType::VertexShader, Game::Resource::GetSRV(particleSRVID_));
+	particle_->SetCBufferData(0, ShaderType::VertexShader, &perView);
 }
 
 void TestParticle::Draw(int32_t renderTextureID)

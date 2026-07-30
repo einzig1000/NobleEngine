@@ -54,7 +54,8 @@ private:
 	std::unique_ptr<ComputeObject> initializeCompute_;
 	std::unique_ptr<ComputeObject> updateCompute_;
 	int32_t particleSRVID_ = -1;
-	int32_t freeCounterSRVID_ = -1;
+	int32_t freeListIndexSRVID_ = -1;
+	int32_t freeListSRVID_ = -1;
 
 
 
