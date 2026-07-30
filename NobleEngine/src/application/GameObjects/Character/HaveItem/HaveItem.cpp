@@ -87,6 +87,7 @@ void HaveItem::Update(int32_t cameraID)
 		if (Game::IO::Mouse::IsHeld(0))
 		{
 			pivotTransform_.rotate.x += 0.5f;
+			pivotTransform_.rotate.z += 0.01f;
 		}
 
 		if (Game::IO::Mouse::IsJustReleased(0))

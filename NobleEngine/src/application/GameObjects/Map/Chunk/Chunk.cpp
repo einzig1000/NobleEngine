@@ -404,6 +404,7 @@ void Chunk::SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor)
 {
 	if (direction == DirectionXYZ::None) return;
 	neighbors_[direction] = neighbor;
+	instanceBufferDirty_ == Constexprs::kFrameCount;
 	//if (neighbors_[direction])
 	//{
 	//	SetExposedNeighborBlocks(direction);

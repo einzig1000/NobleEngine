@@ -16,12 +16,12 @@ int32_t LocalMod(int32_t a, int32_t n)
 
 MapManager::MapManager()
 {
-	drawRadius_.x = 3;
+	drawRadius_.x = 2;
 	drawRadius_.y = 1;
-	drawRadius_.z = 3;
-	updateRadius_.x = 3;
+	drawRadius_.z = 2;
+	updateRadius_.x = 2;
 	updateRadius_.y = 1;
-	updateRadius_.z = 3;
+	updateRadius_.z = 2;
 
 	SetSeed(123456);
 }
