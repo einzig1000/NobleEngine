@@ -151,7 +151,7 @@ void Engine::EndFrame()
 	dxManager_->EndFrame();
 
 	// FPS制限
-	fixFPS_->UpdateFixFPS();
+	fixFPS_->Update();
 }
 void Engine::Quit()
 {

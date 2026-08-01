@@ -20,6 +20,10 @@ private:
 	TestAnimation testAnimation;
 
 	std::unique_ptr<RenderObject> render_;
+	std::unique_ptr<RenderObject> weapon_;
+	Vector3 scale_ = Vector3{ 55.0f,55.0f,55.0f };
+	Vector3 rotate_ = Vector3{ -1.310f, 0.0f, 0.0f };
+	Vector3 translate_ = Vector3{ 0.0f, 0.0f, 0.0f };
 
 	Vector3 cameraRotate_;
 

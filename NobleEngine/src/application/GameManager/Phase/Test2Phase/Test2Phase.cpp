@@ -19,6 +19,12 @@ Test2Phase::Test2Phase()
 	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
 	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
 	render_->SetupFromShaders();
+
+	weapon_ = std::make_unique<RenderObject>();
+	weapon_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	weapon_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	weapon_->modelID_ = Game::Asset::Model::Load("resources/Minecraft/Item/tool/sword/sword.obj");
+	weapon_->SetupFromShaders();
 }
 
 Test2Phase::~Test2Phase()
@@ -34,9 +40,11 @@ void Test2Phase::Update()
 {
 	Game::Camera::Update(c_main_);
 
-	static int index = 0;
 	ImGui::Begin("Test2Phase");
-	ImGui::DragInt("index", &index);
+
+	ImGui::DragFloat3("scale", &scale_.x, 0.01f);
+	ImGui::DragFloat3("rotate", &rotate_.x, 0.01f);
+	ImGui::DragFloat3("translate", &translate_.x, 0.01f);
 	ImGui::End();
 
 	testAnimation.Update(c_main_);
@@ -44,6 +52,21 @@ void Test2Phase::Update()
 	Vector3 pos = testAnimation.GetVetexPos(testAnimation.GetVertexIndexByJointName("mixamorig:LeftHandMiddle1"));
 	testParticle.SetEmitterSpherePos(pos);
 	testParticle.Update(c_main_);
+
+
+	Matrix4x4 handMatrix = testAnimation.GetJointMatrixByName("mixamorig:LeftHandMiddle1");
+
+	Matrix4x4 weaponLocalOffset_ = Matrix4x4::MakeAffineMatrix(scale_, rotate_, translate_);
+	Matrix4x4 weaponWorldMatrix = weaponLocalOffset_ * handMatrix;
+	Matrix4x4 weaponWVP = weaponWorldMatrix * Game::Camera::Getter::GetViewProjectionMatrix(c_main_);
+
+	Vector4 weaponColor = Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
+	int32_t weaponTexID = 1;
+
+	weapon_->SetCBufferData(0, ShaderType::PixelShader, &weaponColor);
+	weapon_->SetCBufferData(1, ShaderType::PixelShader, &weaponTexID);
+	weapon_->SetCBufferData(0, ShaderType::VertexShader, &weaponWVP);
+	weapon_->SetCBufferData(1, ShaderType::VertexShader, &weaponWorldMatrix);
 
 	if (Game::IO::Key::IsJustPressed(VK_F11))
 	{
@@ -67,6 +90,7 @@ void Test2Phase::Draw()
 {
 	testParticle.Draw(rt_main_);
 	testAnimation.Draw(rt_main_);
+	weapon_->Draw(rt_main_);
 
 	render_->Draw();
 }

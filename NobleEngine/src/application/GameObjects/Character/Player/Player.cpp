@@ -42,7 +42,7 @@ void Player::Update(int32_t cameraID)
 	{
 	}
 
-	previousHP_ = HP_;
+	previousHP_ = static_cast<float>(HP_);
 
 	// 移動系入力処理
 	UpdateInput(cameraID);

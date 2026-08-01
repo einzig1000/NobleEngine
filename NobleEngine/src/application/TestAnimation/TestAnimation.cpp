@@ -35,8 +35,6 @@ TestAnimation::TestAnimation()
 		vertexInfluences[i] = modelData->skinCluster.mappedInfluences[i];
 	}
 
-
-
 	resultSRVID_ = Game::Resource::CreateCompute(sizeof(VertexData), size_t(modelData->vertices.size()));
 
 	compute_->size.x = int32_t(modelData->vertices.size());
@@ -138,4 +136,17 @@ int32_t TestAnimation::GetVertexIndexByJointName(const std::string& jointName)
 	}
 
 	return bestVertexIndex; // 見つからなければ -1
+}
+
+Matrix4x4 TestAnimation::GetJointMatrixByName(const std::string& jointName)
+{
+	auto it = skeleton_.jointIndexByName.find(jointName);
+	if (it == skeleton_.jointIndexByName.end())
+	{
+		return Matrix4x4::MakeIdentity4x4(); // 見つからなければ単位行列
+	}
+	int32_t jointIndex = it->second;
+
+	// animationMatrix_ が現在Identityのため、スケルトン空間 = ワールド空間になっている
+	return skeleton_.joints[jointIndex].skeletonSpaceMatrix;
 }
