@@ -10,9 +10,9 @@ class BlockConfig;
 struct ChunkInfo
 {
 	// 隣接チャンク１ブロック分も含めたブロックID配列SRVスロット
-	uint32_t blockIdSrvIndex = 0;
+	//uint32_t blockIdSrvIndex = 0;
 	// チャンクのボクセル数 (Constexprs::kChunkX/Y/Z、各軸偶数である必要あり)
-	Vector3int chunkDim;
+	//Vector3int chunkDim;
 	// このチャンクのワールド座標原点
 	Vector3 chunkWorldOrigin;
 	// ブロックサイズ (Constexprs::kBlockSize)
@@ -68,10 +68,17 @@ private:
 	Block blocks_[Constexprs::kChunkX][Constexprs::kChunkY][Constexprs::kChunkZ];
 	std::vector<uint32_t> blockIds_;
 	// 描画オブジェクト
-	std::unique_ptr<RenderObject> renderData_;
+	std::unique_ptr<RenderObject> render_;
+	// 計算オブジェクト
+	std::unique_ptr<ComputeObject> compute_;
+
 	int32_t instanceBufferDirty_;
 
+	// このチャンクのブロックID配列SRVスロット
 	int32_t blockIdSrvIndex_ = -1;
-	int32_t blockInfoTableSrvIndex_ = -1;
+	// 焼き込み済み面データSRVスロット
+	int32_t bakedFaceBufferHandle_ = -1;
+	// グループごとの面数SRVスロット
+	int32_t faceCountBufferHandle_ = -1;
 };
 

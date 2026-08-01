@@ -26,7 +26,7 @@ EngineEditor::EngineEditor(
 
 	renderTexturePreview_ = std::make_unique<RenderTexturePreview>(dxManager);
 
-	timeEditor_ = std::make_unique<TimeEditor>(fixFPS);
+	timeEditor_ = std::make_unique<TimeEditor>(fixFPS, dxManager->GetFrameProfiler());
 }
 
 EngineEditor::~EngineEditor()

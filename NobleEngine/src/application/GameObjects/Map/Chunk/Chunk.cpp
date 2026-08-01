@@ -46,29 +46,41 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 {
 	// チャンク情報保存
 	chunkIndex_ = chunkIndex;
-	chunkInfo_.blockIdSrvIndex = 0;
-	chunkInfo_.chunkDim = Vector3int(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
+	//chunkInfo_.blockIdSrvIndex = 0;
+	//chunkInfo_.chunkDim = Vector3int(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
 	chunkInfo_.blockSize = Constexprs::kBlockSize;
 	chunkInfo_.chunkWorldOrigin = Vector3{
 		static_cast<float>(chunkIndex.x * Constexprs::kChunkX * Constexprs::kBlockSize * 0.5f),
 		static_cast<float>(chunkIndex.y * Constexprs::kChunkY * Constexprs::kBlockSize * 0.5f),
 		static_cast<float>(chunkIndex.z * Constexprs::kChunkZ * Constexprs::kBlockSize * 0.5f) };
 
+	// SRVスロット確保
+	constexpr uint32_t groupCount = (Constexprs::kChunkX / 2) * (Constexprs::kChunkY / 2) * (Constexprs::kChunkZ / 2);
+	constexpr uint32_t kMaxFacesPerGroup = 48;
+	bakedFaceBufferHandle_ = Game::Resource::CreateCompute(sizeof(uint32_t) * 3, groupCount * kMaxFacesPerGroup);
+	faceCountBufferHandle_ = Game::Resource::CreateCompute(sizeof(uint32_t), groupCount);
+	blockIdSrvIndex_ = Game::Resource::CreateDynamic();
+
 	// 描画オブジェクトの初期化
-	renderData_ = std::make_unique<RenderObject>();
-	renderData_->psoConfig_.ms = "resources/shaders/Block.DynamicMS.hlsl";
-	renderData_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
-	renderData_->psoConfig_.rasterizerID = RasterizerID::Solid_FrontCull;
-	renderData_->SetupFromShaders();
+	render_ = std::make_unique<RenderObject>();
+	render_->psoConfig_.ms = "resources/shaders/Block.Baked.MS.hlsl";
+	render_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
+	render_->psoConfig_.rasterizerID = RasterizerID::Solid_FrontCull;
+	render_->SetupFromShaders();
+	render_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
+
+	// 計算オブジェクトの初期化
+	compute_ = std::make_unique<ComputeObject>();
+	compute_->psoConfig_.cs = "resources/shaders/Block.CreateMesh.CS.hlsl";
+	compute_->SetupFromShaders();
+	compute_->size = { static_cast<int32_t>(groupCount), 1, 1 };
+	compute_->RegisterOutput(bakedFaceBufferHandle_);
+	compute_->RegisterOutput(faceCountBufferHandle_);
 
 	blockIds_.resize((Constexprs::kChunkX + 2) * (Constexprs::kChunkY + 2) * (Constexprs::kChunkZ + 2), 0);
 
-	//renderData_->instanceNum_ = static_cast<uint32_t>(4096);
-	renderData_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
 
 	CreateChunkData(param);
-
-	blockIdSrvIndex_ = Game::Resource::CreateDynamic();
 }
 
 Chunk::~Chunk()
@@ -404,11 +416,7 @@ void Chunk::SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor)
 {
 	if (direction == DirectionXYZ::None) return;
 	neighbors_[direction] = neighbor;
-	instanceBufferDirty_ == Constexprs::kFrameCount;
-	//if (neighbors_[direction])
-	//{
-	//	SetExposedNeighborBlocks(direction);
-	//}
+	instanceBufferDirty_ = Constexprs::kFrameCount;
 }
 // 隣接チャンクが存在するか(生成済か)
 bool Chunk::IsNeighborExist(DirectionXYZ direction)
@@ -717,81 +725,69 @@ bool Chunk::IsNeighborExist(DirectionXYZ direction)
 
 void Chunk::Update(int32_t cameraID)
 {
-	//// ブロック単位の更新
-	//for (int32_t x = 0; x < Constexprs::kChunkX; x++)
-	//{
-	//	for (int32_t y = 0; y < Constexprs::kChunkY; y++)
-	//	{
-	//		for (int32_t z = 0; z < Constexprs::kChunkZ; z++)
-	//		{
-	//			if (blocks_[x][y][z].GetBlockID() != BlockID::Air)
-	//			{
-	//				blocks_[x][y][z].Update();
-	//
-	//				if (blocks_[x][y][z].IsExposed())
-	//				{
-	//					// 色と破壊段階を描画データに反映(ほんとは変化があった時のみ呼ぶようにしたい)
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-
 	// チャンクに更新が来ていたら
-	if (instanceBufferDirty_ == Constexprs::kFrameCount)
+	if (instanceBufferDirty_ > 0)
 	{
-		int32_t sizeX = Constexprs::kChunkX + 2;
-		int32_t sizeY = Constexprs::kChunkY + 2;
-		int32_t sizeZ = Constexprs::kChunkZ + 2;
-
-		// Z -> Y -> X の順で一次元配列に変換する
-		for (int32_t z = 0; z < sizeZ; z++)
+		if (instanceBufferDirty_ == Constexprs::kFrameCount)
 		{
-			for (int32_t y = 0; y < sizeY; y++)
+			int32_t sizeX = Constexprs::kChunkX + 2;
+			int32_t sizeY = Constexprs::kChunkY + 2;
+			int32_t sizeZ = Constexprs::kChunkZ + 2;
+
+			// Z -> Y -> X の順で一次元配列に変換する
+			for (int32_t z = 0; z < sizeZ; z++)
 			{
-				for (int32_t x = 0; x < sizeX; x++)
+				for (int32_t y = 0; y < sizeY; y++)
 				{
-					int32_t index = x + (y * sizeX) + (z * sizeX * sizeY);
-
-					// ブロックIDを取得(隣接チャンクも探す)
-					BlockID blockID = BlockID::Bedrock;
-					Block* block = GetBlock(Vector3int(x - 1, y - 1, z - 1), true);
-
-					if (block != nullptr)
+					for (int32_t x = 0; x < sizeX; x++)
 					{
-						blockID = block->GetBlockID();
-					}
+						int32_t index = x + (y * sizeX) + (z * sizeX * sizeY);
 
-					// ブロックIDを代入
-					blockIds_[index] = static_cast<uint32_t>(blockID);
+						// ブロックIDを取得(隣接チャンクも探す)
+						BlockID blockID = BlockID::Bedrock;
+						Block* block = GetBlock(Vector3int(x - 1, y - 1, z - 1), true);
+
+						if (block != nullptr)
+						{
+							blockID = block->GetBlockID();
+						}
+
+						// ブロックIDを代入
+						blockIds_[index] = static_cast<uint32_t>(blockID);
+					}
 				}
 			}
 		}
-	}
 
-	if (instanceBufferDirty_ > 0)
-	{
-		instanceBufferDirty_--;
 		Game::Resource::UpdateData(blockIdSrvIndex_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
+
+		Vector3int chunkDim = Vector3int(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
+		compute_->SetCBufferData(0, &chunkDim);
+		Vector2int srvIndexTable = { Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()), Game::Resource::GetSRV(blockIdSrvIndex_) };
+		compute_->SetCBufferData(1, &srvIndexTable);
+		compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFaceBufferHandle_));
+		compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountBufferHandle_));
+		compute_->Dispatch();
+
+		instanceBufferDirty_--;
 	}
 
-	chunkInfo_.blockIdSrvIndex = Game::Resource::GetSRV(blockIdSrvIndex_);
-
-
-	renderData_->SetCBufferData(0, ShaderType::MeshShader, &chunkInfo_);
-
+	render_->SetCBufferData(0, ShaderType::MeshShader, &chunkInfo_);
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	Matrix4x4 world = Matrix4x4::MakeTranslateMatrix(chunkInfo_.chunkWorldOrigin);
 	Matrix4x4 wvp = world * viewPro;
-	renderData_->SetCBufferData(1, ShaderType::MeshShader, &wvp);
+	render_->SetCBufferData(1, ShaderType::MeshShader, &wvp);
 
-	renderData_->SetSBufferData(0, ShaderType::MeshShader, Game::Resource::GetSRV(blockIdSrvIndex_));
-	renderData_->SetSBufferData(1, ShaderType::MeshShader, Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()));
+	Vector3int srvIndex = 
+		Vector3int(Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()),
+			Game::Resource::GetSRV(bakedFaceBufferHandle_),
+			Game::Resource::GetSRV(faceCountBufferHandle_));
+	render_->SetCBufferData(2, ShaderType::MeshShader, &srvIndex);
 }
 
 void Chunk::Draw(int32_t renderTargetID)
 {
-	renderData_->Draw(renderTargetID);
+	render_->Draw(renderTargetID);
 }
 
 

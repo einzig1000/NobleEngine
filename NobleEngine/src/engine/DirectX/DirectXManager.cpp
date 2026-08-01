@@ -26,6 +26,7 @@ DirectXManager::DirectXManager(HWND hwnd)
     swapChainManager = std::make_unique<SwapChainManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), hwnd, descriptorHeapManager.get());
 	renderTextureManager = std::make_unique<RenderTextureManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), descriptorHeapManager.get());
     synchronizationManager = std::make_unique<SynchronizationManager>(deviceManager->GetDevice());
+    frameProfiler = std::make_unique<FrameProfiler>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue());
 
     Log("コンストラクタ実行成功 : DirectXManager");
 }
@@ -44,8 +45,15 @@ void DirectXManager::BeginFrame()
     // フレーム単位の GPU 完了待ち（このフレームで使う CommandAllocator が GPU によってまだ使われている場合は待つ）
     synchronizationManager->WaitForGPU(backBufferIndex);
 
+    // GPU計測結果の読み出し(2フレーム前の分) + CPU計測開始
+    frameProfiler->OnFrameSynced(backBufferIndex);
+    frameProfiler->BeginCpuScope();
+
     // コマンドリストをリセット
     commandContextManager->ResetCommandList(backBufferIndex);
+
+    // GPU計測区間の開始
+    frameProfiler->BeginGpuScope(commandContextManager->GetCommandList(backBufferIndex), backBufferIndex);
 
 	// SRV/UAV用のDescriptorHeapをセット
     ID3D12DescriptorHeap* descriptorHeaps[] = { descriptorHeapManager->GetSRV_UAVManager()->GetSRVDescriptorHeap() };
@@ -104,6 +112,10 @@ void DirectXManager::EndFrame()
 {
     // バックバッファのインデックスを取得
     UINT backBufferIndex = swapChainManager->GetCurrentBackBufferIndex();
+
+    // GPU計測区間の終了 + CPU計測終了
+    frameProfiler->EndGpuScope(commandContextManager->GetCommandList(backBufferIndex), backBufferIndex);
+    frameProfiler->EndCpuScope();
 
     // コマンドリストを確定・実行
     HRESULT hr = commandContextManager->GetCommandList(backBufferIndex)->Close();

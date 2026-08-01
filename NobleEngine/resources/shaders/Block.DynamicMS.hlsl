@@ -55,17 +55,16 @@ cbuffer ChunkInfo : register(b0)
     float blockSize;
 };
 
-cbuffer WVP : register(b1)
+cbuffer BlockInfoTableSrvIndex : register(b1)
+{
+    // ブロック情報テーブルのSRVスロット
+    uint blockInfoTableSrvIndex;
+};
+
+cbuffer WVP : register(b2)
 {
     float4x4 wvp;
 }
-
-StructuredBuffer<uint> blockIds : register(t0);
-
-// x: 16進数color                  BlockInfo::color
-// y: 透過ブロックかどうか         BlockInfo::isTransparent
-// z, w: きっといつか使う
-StructuredBuffer<uint4> BlockInfoTable : register(t1);
 
 // 2x2x2グループ内でのスレッド数と、そこから出る最大面数(8ボクセル×6面=48面)ぶんの領域
 groupshared uint gFaceCountPerThread[8];
@@ -88,6 +87,14 @@ void main(
     out vertices MSOutput verts[192]
 )
 {
+    // ブロックID配列
+    StructuredBuffer<uint> blockIds = ResourceDescriptorHeap[blockIdSrvIndex];
+    // ブロック情報テーブル
+    // x: 16進数color                  BlockInfo::color
+    // y: 透過ブロックかどうか         BlockInfo::isTransparent
+    // z, w: きっといつか使う
+    StructuredBuffer<uint4> blockInfoTable = ResourceDescriptorHeap[blockInfoTableSrvIndex];
+    
     // チャンクを2x2x2のグループに分割して処理する
     // この2x2x2のかたまりがメッシュレットみたいなもの。
     // 各スレッドで１かたまり担当する。
@@ -110,8 +117,9 @@ void main(
     // かたまりの基準位置 ＋ 自分のローカル位置 ＝ このスレッドが担当するブロックの整数座標
     int3 voxelPos = groupOrigin + localOffset;
     
+    
+    
     // ブロックIDを取得
-    //StructuredBuffer<uint> blockIds = ResourceDescriptorHeap[blockIdSrvIndex];
     uint blockId = blockIds[FlattenHalo(voxelPos)];
 
     // 露出している面を求める
@@ -124,7 +132,7 @@ void main(
             // 隣接ブロックのIDを取得
             uint neighborId = blockIds[FlattenHalo(voxelPos + kFaceDir[f])];
             // 隣接ブロックが透過ブロックなら、この面は露出している
-            bool neighborIsAirOrTransparent = (BlockInfoTable[neighborId].y != 0);
+            bool neighborIsAirOrTransparent = (blockInfoTable[neighborId].y != 0);
             if (neighborIsAirOrTransparent)
                 faceMask |= (1u << f);
         }
@@ -160,7 +168,7 @@ void main(
     // このブロックのワールド空間での原点座標（左下奥）を計算
     float3 worldVoxelOrigin = chunkWorldOrigin + float3(voxelPos) * blockSize;
     // ブロックの属性テーブルから色情報を取り出して float4(RGBA) に変換
-    uint4 info = BlockInfoTable[blockId];
+    uint4 info = blockInfoTable[blockId];
     float4 color = UnpackColor(info.x);
     color.x += rand3dTo1d(voxelPos) * 0.1;
     color.y += rand3dTo1d(voxelPos) * 0.1;

@@ -514,17 +514,17 @@ namespace Game
 	{
 		float GetDeltaTime()
 		{
-			return Engine::Instance().GetFixFPS()->GetDeltaTime();
+			return Engine::Instance().GetFixFPS()->GetClampedDeltaTimeMs();
+		}
+
+		float GetFrameRate()
+		{
+			return Engine::Instance().GetFixFPS()->GetClampedFPS();
 		}
 
 		uint32_t GetElapsedTime()
 		{
 			return Engine::Instance().GetFixFPS()->GetFrameCount();
-		}
-
-		float GetFrameRate()
-		{
-			return Engine::Instance().GetFixFPS()->GetAverageFPS();
 		}
 	}
 

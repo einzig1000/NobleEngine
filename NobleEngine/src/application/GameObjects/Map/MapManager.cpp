@@ -16,12 +16,12 @@ int32_t LocalMod(int32_t a, int32_t n)
 
 MapManager::MapManager()
 {
-	drawRadius_.x = 2;
+	drawRadius_.x = 1;
 	drawRadius_.y = 1;
-	drawRadius_.z = 2;
-	updateRadius_.x = 2;
+	drawRadius_.z = 1;
+	updateRadius_.x = 1;
 	updateRadius_.y = 1;
-	updateRadius_.z = 2;
+	updateRadius_.z = 1;
 
 	SetSeed(123456);
 }
@@ -159,26 +159,6 @@ void MapManager::EnsureChunkScheduled(const Vector3int& chunkPos)
 
 	// スケジュール済み集合にも登録
 	chunkScheduled_.insert(chunkPos);
-
-	//// chunkGenQueue_をプレイヤー位置から近い順にソートする
-	//std::vector<Vector3int> tempQueue;
-	//while (!chunkGenQueue_.empty())
-	//{
-	//	tempQueue.push_back(chunkGenQueue_.front());
-	//	chunkGenQueue_.pop();
-	//}
-	//Vector3int playerIndex = ChunkIndexByPosition(player_->data_.translate.value);
-	//std::sort(tempQueue.begin(), tempQueue.end(),
-	//	[playerIndex](const Vector2int& a, const Vector2int& b)
-	//	{
-	//		int32_t distA = (a.x - playerIndex.x) * (a.x - playerIndex.x) + (a.y - playerIndex.y) * (a.y - playerIndex.y);
-	//		int32_t distB = (b.x - playerIndex.x) * (b.x - playerIndex.x) + (b.y - playerIndex.y) * (b.y - playerIndex.y);
-	//		return distA < distB;
-	//	});
-	//for (const auto& pos : tempQueue)
-	//{
-	//	chunkGenQueue_.push(pos);
-	//}
 }
 
 // スケジュールに登録されたチャンクを1つ生成

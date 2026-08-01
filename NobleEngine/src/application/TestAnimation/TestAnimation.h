@@ -12,6 +12,10 @@ public:
 	void Initialize();
 	void Update(int32_t cameraID);
 	void Draw(int32_t renderTextureID);
+	Vector3 GetVetexPos(int32_t index);
+
+	int32_t GetVertexIndexByJointName(const std::string& jointName);
+	Matrix4x4 GetJointMatrixByName(const std::string& jointName);
 
 private:
 	std::unique_ptr<RenderObject> render_;

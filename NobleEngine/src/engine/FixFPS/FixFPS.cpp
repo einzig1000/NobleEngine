@@ -5,23 +5,10 @@
 FixFPS::FixFPS()
 {
 	previousTime_ = std::chrono::steady_clock::now();
-
-    deltaTime_ = 0.0f;
-
-	averageFPS_ = 0.0f;
-	realTimeFPS_ = 0.0f;
-
-    targetFPS_ = 60;
 }
 
-void FixFPS::UpdateFixFPS()
+void FixFPS::Update()
 {
-	double targetFrameTime = 1.0 / static_cast<double>(targetFPS_);
-
-    // {targetFPS_(基本60) / 1.0 秒} をマイクロ秒に変換 → 1フレーム = kFrame
-    const std::chrono::microseconds kFrame =
-        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<double>(targetFrameTime));
-
     // 現在の時間を取得
     std::chrono::steady_clock::time_point currentTime =
         std::chrono::steady_clock::now();
@@ -30,15 +17,16 @@ void FixFPS::UpdateFixFPS()
     std::chrono::microseconds elapsedTime =
         std::chrono::duration_cast<std::chrono::microseconds>(currentTime - previousTime_);
 
-	// このフレーム時間を継続出来るならＦＰＳはどこまでだせたかをmaxFPS_に格納
-	maxFPS_ = static_cast<float>(std::round(1.0 / (elapsedTime.count() * 1e-6)));
-    averageMaxFPS_ = (averageMaxFPS_ * 0.99f) + (maxFPS_ * 0.01f);
+	// 実際の経過時間から理論値FPSを計算
+    double deltaMs = std::chrono::duration<double, std::milli>(elapsedTime).count();
+    unclampedDeltaMs_ = static_cast<float>(deltaMs);
+    unclampedFPS_ = static_cast<float>(1000.0 / deltaMs);
 
     // 目標フレーム時間に満たないなら待機
-    if (elapsedTime < kFrame)
+    if (elapsedTime < targetFrameDuration_)
     {
         // 目標時間
-        const auto target = previousTime_ + kFrame;
+        const auto target = previousTime_ + targetFrameDuration_;
         // 睡眠時間を計算
         auto sleepDuration = std::chrono::duration_cast<std::chrono::microseconds>(target - currentTime);
         // sleepDurationが2000以上の場合のみスリープ
@@ -60,15 +48,22 @@ void FixFPS::UpdateFixFPS()
         currentTime = std::chrono::steady_clock::now();
     }
 
-    // 待機を含めた実フレーム時間で確定
-    deltaTime_ = std::chrono::duration<float>(currentTime - previousTime_).count();
-    if (deltaTime_ != 0)realTimeFPS_ = (1.0f / deltaTime_);
-    averageFPS_ = (averageFPS_ * 0.99f) + (realTimeFPS_ * 0.01f);
-	deltaTime_ = std::clamp(deltaTime_, 0.0f, 1.0f);
+    // 待機を含めた経過時間からFPSを計算
+    elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - previousTime_);
+    deltaMs = std::chrono::duration<double, std::milli>(elapsedTime).count();
+    clampedDeltaMs_ = static_cast<float>(deltaMs);
+    clampedFPS_ = static_cast<float>(1000.0 / deltaMs);
 
     // 前回時間を更新
     previousTime_ = currentTime;
 
     // フレームカウント更新
     frameCount_++;
+}
+
+void FixFPS::SetTargetFPS(int32_t targetFPS)
+{
+	targetFPS_ = targetFPS;
+	double targetFrameTime = 1.0 / static_cast<double>(targetFPS_);
+    targetFrameDuration_ = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<double>(targetFrameTime));
 }

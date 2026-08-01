@@ -23,6 +23,8 @@ public:
 	void Update(int32_t cameraID);
 	void Draw(int32_t renderTextureID);
 
+	void SetEmitterSpherePos(Vector3 pos);
+
 private:
 	int32_t t_circle2;
 	int32_t t_uvChecker;
@@ -54,7 +56,8 @@ private:
 	std::unique_ptr<ComputeObject> initializeCompute_;
 	std::unique_ptr<ComputeObject> updateCompute_;
 	int32_t particleSRVID_ = -1;
-	int32_t freeCounterSRVID_ = -1;
+	int32_t freeListIndexSRVID_ = -1;
+	int32_t freeListSRVID_ = -1;
 
 
 

@@ -9,6 +9,7 @@
 #include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
 #include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
 #include <DirectX/SynchronizationManager/SynchronizationManager.h>
+#include <DirectX/FrameProfiler/FrameProfiler.h>
 
 /// <summary>
 /// DirectX管理クラス
@@ -26,16 +27,18 @@ public:
     PipelineStateManager* GetPipelineStateManager() const { return pipelineStateManager.get(); }
     SynchronizationManager* GetSynchronizationManager() const { return synchronizationManager.get(); }
     RenderTextureManager* GetRenderTextureManager() const { return renderTextureManager.get(); }
+    FrameProfiler* GetFrameProfiler() const { return frameProfiler.get(); }
+
     // フレーム開始処理
     void BeginFrame();
+    // フレーム終了処理
+    void EndFrame();
 
     // 書き込みたいRenderTextureを指定してResourceのStateをD3D12_RESOURCE_STATE_RENDER_TARGETに遷移させる。
     void BeginRenderPass(RenderTarget* target, bool isDepthWrite);
     // SetRenderTargetで変えたResouruceのStateをD3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCEに遷移させる。
 	void EndRenderPass(RenderTarget* target, bool isDepthWrite, D3D12_RESOURCE_STATES nextState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-    // フレーム終了処理
-    void EndFrame();
     void Resize();
 
 private:
@@ -46,4 +49,5 @@ private:
     std::unique_ptr<DescriptorHeapManager> descriptorHeapManager;
     std::unique_ptr<SynchronizationManager> synchronizationManager;
 	std::unique_ptr<RenderTextureManager> renderTextureManager;
+    std::unique_ptr<FrameProfiler> frameProfiler;
 };
