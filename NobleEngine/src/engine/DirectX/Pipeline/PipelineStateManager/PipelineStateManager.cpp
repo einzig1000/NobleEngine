@@ -627,6 +627,15 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
         //L"-Od",					// 最適化を外しておく
         L"-Zpr",					// 目盛レイアウトは行優先
     };
+
+    //LPCWSTR arguments[] = {
+    //filePath.c_str(),
+    //L"-E", L"main",
+    //L"-T", profile,
+    //L"-Zpr",
+    //L"-I", L"resources/shaders",   // ← これを追加
+    //};
+
     // 実際にシェーダーをコンパイルする
     IDxcResult* shaderResult = nullptr;
     hr = dxcCompiler->Compile(

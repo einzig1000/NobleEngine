@@ -1,28 +1,6 @@
-static const int3 kFaceDir[6] =
-{
-    int3(1, 0, 0), int3(-1, 0, 0),
-    int3(0, 1, 0), int3(0, -1, 0),
-    int3(0, 0, 1), int3(0, 0, -1),
-};
+#include "Block.hlsli"
 
-// 1面ぶんの焼き込みデータ。頂点座標そのものではなく「どのボクセルのどの面か」だけを持つ
-// (ワールド座標はチャンク移動しない前提なのでMS側で毎回計算しても軽い)
-struct BakedFace
-{
-    uint packedVoxelPos; // x(8bit) | y(8bit)<<8 | z(8bit)<<16 のローカル座標(ハローなし、0~chunkDim-1)
-    uint faceIndex; // 0~5 (kFaceCorners/kFaceNormalへのインデックス)
-    uint blockId;
-};
-
-// 2x2x2グループ(8ボクセル)の最大露出面数 = 8 * 6
-static const uint kMaxFacesPerGroup = 48;
-
-cbuffer ChunkInfo : register(b0)
-{
-    uint3 chunkDim;
-};
-
-cbuffer SrvIndex : register(b1)
+cbuffer SrvIndex : register(b0)
 {
     // ブロック情報テーブルのSRVスロット
     uint blockInfoTableSrvIndex;
@@ -30,11 +8,17 @@ cbuffer SrvIndex : register(b1)
     uint blockIdSrvIndex;
 };
 
+cbuffer ChunkInfo : register(b1)
+{
+    uint3 chunkDim;
+};
+
 RWStructuredBuffer<BakedFace> outFaces : register(u0);
 RWStructuredBuffer<uint> outFaceCountPerGroup : register(u1);
 
 groupshared uint gFaceCountPerThread[8];
 groupshared uint gFaceOffsetPerThread[8];
+
 
 uint FlattenHalo(int3 localPos)
 {
@@ -48,6 +32,7 @@ void main(uint gtid : SV_GroupIndex, uint3 gid : SV_GroupID)
 {
     // ブロックID配列
     StructuredBuffer<uint> blockIds = ResourceDescriptorHeap[blockIdSrvIndex];
+    
     // ブロック情報テーブル
     // x: 16進数color                  BlockInfo::color
     // y: 透過ブロックかどうか         BlockInfo::isTransparent
@@ -80,7 +65,7 @@ void main(uint gtid : SV_GroupIndex, uint3 gid : SV_GroupID)
         for (uint f = 0; f < 6; f++)
         {
             // 隣接ブロックのIDを取得
-            uint neighborId = blockIds[FlattenHalo(voxelPos + kFaceDir[f])];
+            uint neighborId = blockIds[FlattenHalo(voxelPos + kFaceInfos[f].faceDir)];
             // 隣接ブロックが透過ブロックなら、この面は露出している
             bool neighborIsAirOrTransparent = (neighborId == 0) || (blockInfoTable[neighborId].y != 0);
             if (neighborIsAirOrTransparent)
@@ -88,7 +73,7 @@ void main(uint gtid : SV_GroupIndex, uint3 gid : SV_GroupID)
         }
     }
     
-    // 露出している面の数を数える  countbits(uint value) : 1の数を数える組み込み関数
+    // 各スレッド(各ブロック)の露出している面の数を数える  countbits(uint value) : 1の数を数える組み込み関数
     gFaceCountPerThread[gtid] = countbits(faceMask);
     // 同じ2x2x2かたまりに属してるスレッドが全部終わるまで待つ
     GroupMemoryBarrierWithGroupSync();
@@ -101,30 +86,37 @@ void main(uint gtid : SV_GroupIndex, uint3 gid : SV_GroupID)
         [unroll]
         for (uint i = 0; i < 8; i++)
         {
+            // 面配列の先頭から、ブロックごとの面の数を足し合わせてオフセットを計算する
             gFaceOffsetPerThread[i] = offset;
+            // offset += ブロック[i]の露出面数
             offset += gFaceCountPerThread[i];
         }
-        // このグループの総露出面数を記録。MS側が毎フレーム読みに来る。
+        // このグループの総露出面数を記録
         outFaceCountPerGroup[gid.x] = offset;
     }
     
     // gtid 1～7を待たせる
     GroupMemoryBarrierWithGroupSync();
 
+    // このスレッドが担当するブロックの面
     uint faceOut = gFaceOffsetPerThread[gtid];
+    // チャンク内全ブロックを通し番号で管理する
     uint outBase = gid.x * kMaxFacesPerGroup;
 
     [unroll]
-    for (uint f2 = 0; f2 < 6; f2++)
+    for (uint f = 0; f < 6; f++)
     {
-        if (faceMask & (1u << f2))
+        if (faceMask & (1u << f))
         {
             BakedFace face;
+            // ブロックの整数座標をuint型にパックする
             face.packedVoxelPos = (uint) voxelPos.x | ((uint) voxelPos.y << 8) | ((uint) voxelPos.z << 16);
-            face.faceIndex = f2;
+            // どの面かを記録(kFaceInfos[6]と対応)
+            face.faceIndex = f;
+            // ブロックIDを記録
             face.blockId = blockId;
 
-            // 48枠は2x2x2グループの理論上の最大露出面数と一致するため、範囲チェック不要でオーバーしない
+            // 各グループに48枠用意する。
             outFaces[outBase + faceOut] = face;
             faceOut++;
         }

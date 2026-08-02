@@ -761,10 +761,11 @@ void Chunk::Update(int32_t cameraID)
 
 		Game::Resource::UpdateData(blockIdSrvIndex_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
 
+		Vector2uint srvIndexTable = { Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()), Game::Resource::GetSRV(blockIdSrvIndex_) };
+		compute_->SetCBufferData(0, &srvIndexTable);
 		Vector3int chunkDim = Vector3int(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
-		compute_->SetCBufferData(0, &chunkDim);
-		Vector2int srvIndexTable = { Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()), Game::Resource::GetSRV(blockIdSrvIndex_) };
-		compute_->SetCBufferData(1, &srvIndexTable);
+		compute_->SetCBufferData(1, &chunkDim);
+
 		compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFaceBufferHandle_));
 		compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountBufferHandle_));
 		compute_->Dispatch();
@@ -772,17 +773,17 @@ void Chunk::Update(int32_t cameraID)
 		instanceBufferDirty_--;
 	}
 
-	render_->SetCBufferData(0, ShaderType::MeshShader, &chunkInfo_);
+	Vector3int srvIndex = Vector3int(
+		Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()),
+		Game::Resource::GetSRV(bakedFaceBufferHandle_),
+		Game::Resource::GetSRV(faceCountBufferHandle_));
+	render_->SetCBufferData(0, ShaderType::MeshShader, &srvIndex);
+	render_->SetCBufferData(1, ShaderType::MeshShader, &chunkInfo_);
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	Matrix4x4 world = Matrix4x4::MakeTranslateMatrix(chunkInfo_.chunkWorldOrigin);
 	Matrix4x4 wvp = world * viewPro;
-	render_->SetCBufferData(1, ShaderType::MeshShader, &wvp);
+	render_->SetCBufferData(2, ShaderType::MeshShader, &wvp);
 
-	Vector3int srvIndex = 
-		Vector3int(Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()),
-			Game::Resource::GetSRV(bakedFaceBufferHandle_),
-			Game::Resource::GetSRV(faceCountBufferHandle_));
-	render_->SetCBufferData(2, ShaderType::MeshShader, &srvIndex);
 }
 
 void Chunk::Draw(int32_t renderTargetID)
