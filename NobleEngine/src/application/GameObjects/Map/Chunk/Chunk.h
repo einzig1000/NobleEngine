@@ -9,10 +9,6 @@ class BlockConfig;
 
 struct ChunkInfo
 {
-	// 隣接チャンク１ブロック分も含めたブロックID配列SRVスロット
-	//uint32_t blockIdSrvIndex = 0;
-	// チャンクのボクセル数 (Constexprs::kChunkX/Y/Z、各軸偶数である必要あり)
-	//Vector3int chunkDim;
 	// このチャンクのワールド座標原点
 	Vector3 chunkWorldOrigin;
 	// ブロックサイズ (Constexprs::kBlockSize)
@@ -39,7 +35,6 @@ public:
 	/// <returns>ブロック</returns>
 	Block* GetBlock(const Vector3int& index, bool checkNeighborChunk = false);
 
-
 	// ブロック設置(置換)
 	void SetBlock(const Vector3int& localIndex, const BlockID id);
 
@@ -58,10 +53,10 @@ private:
 	void GenerateTrees(const NoiseParameter& param);// 木を生成
 
 private:
-	// 隣接チャンク
-	std::unordered_map<DirectionXYZ, Chunk*> neighbors_;
+	// 隣接チャンク static_cast<size_t>(DirectionXYZ)でアクセス
+	std::vector<Chunk*> neighbors_;
 
-	// チャンク座標
+	// チャンク情報
 	Vector3int chunkIndex_;
 	ChunkInfo chunkInfo_;
 	// ブロックデータ配列

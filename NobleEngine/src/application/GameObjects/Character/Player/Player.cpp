@@ -38,10 +38,6 @@ void Player::Initialize()
 
 void Player::Update(int32_t cameraID)
 {
-	if (Game::IO::Key::IsJustPressed('Q'))
-	{
-	}
-
 	previousHP_ = static_cast<float>(HP_);
 
 	// 移動系入力処理

@@ -105,7 +105,6 @@
     <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp" />
     <ClCompile Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.cpp" />
     <ClCompile Include="src\engine\DrawSystem\DrawSystem.cpp" />
-    <ClCompile Include="src\engine\DrawSystem\RenderData\RenderData.cpp" />
     <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp" />
     <ClCompile Include="src\engine\Engine.cpp" />
     <ClCompile Include="src\engine\Facade\Game.cpp" />
@@ -387,7 +386,6 @@
     <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h" />
     <ClInclude Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.h" />
     <ClInclude Include="src\engine\DrawSystem\DrawSystem.h" />
-    <ClInclude Include="src\engine\DrawSystem\RenderData\RenderData.h" />
     <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h" />
     <ClInclude Include="src\engine\Engine.h" />
     <ClInclude Include="src\engine\Facade\Game.h" />

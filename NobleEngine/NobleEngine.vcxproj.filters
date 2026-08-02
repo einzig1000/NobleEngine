@@ -69,9 +69,6 @@
     <ClCompile Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DrawSystem\RenderData\RenderData.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -453,9 +450,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\DrawSystem\RenderData\RenderData.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h">
