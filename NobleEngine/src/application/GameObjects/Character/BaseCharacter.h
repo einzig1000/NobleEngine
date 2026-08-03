@@ -13,7 +13,6 @@ class BaseCharacter
 {
 private:
 
-	UIManager* uiManager_ = nullptr;
 	MapManager* mapManager_ = nullptr;
 
 	ItemInventory inventory_;	// 所持アイテム管理
@@ -32,7 +31,6 @@ public:
 
 	virtual void Initialize() = 0;
 	virtual void SetMapManager(MapManager* mapManager) { mapManager_ = mapManager; }
-	virtual void SetUIManager(UIManager* uiManager) { uiManager_ = uiManager; }
 	virtual void Update(int32_t cameraID) = 0;
 	virtual void Draw(int32_t renderTextureID) = 0;
 	virtual void UpdateHaveItem(int32_t cameraID);			// 手に持っているアイテムの更新

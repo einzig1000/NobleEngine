@@ -12,14 +12,14 @@ GameScenePhase::GameScenePhase()
 {
 	c_debug_ = Game::Camera::AddCamera("DebugCamera");
 
+	// UIマネージャー生成
+	uiManager_ = std::make_unique<UIManager>();
 	// プレイヤー生成
 	player_ = std::make_unique<Player>();
 	// カメラコントローラー生成
 	cameraController_ = std::make_unique<CameraController>();
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
-	// UIマネージャー生成
-	uiManager_ = std::make_unique<UIManager>();
 	// 敵マネージャー生成
 	//enemyManager_ = std::make_unique<EnemyManager>();
 
@@ -30,16 +30,11 @@ GameScenePhase::GameScenePhase()
 
 	// プレイヤーにマップマネージャーをセット
 	player_->SetMapManager(map_.get());
-	player_->SetUIManager(uiManager_.get());
 
 	// 敵マネージャーにプレイヤーをセット
 	//enemyManager_->SetPlayer(player_.get());
 	//enemyManager_->SetMapManager(map_.get());
 	//enemyManager_->SetUIManager(uiManager_.get());
-
-	// UIマネージャーにプレイヤーとマップマネージャーをセット
-	uiManager_->SetPlayer(player_.get());
-	uiManager_->SetMapManager(map_.get());
 
 	screenDrawer_ = std::make_unique<ScreenDrawer>();
 
@@ -68,10 +63,13 @@ void GameScenePhase::Update()
 	int32_t targetCameraID = player_->GetCameraID();
 	Game::Camera::Update(targetCameraID);
 
-	// プレイヤー更新
-	player_->Update(targetCameraID);
-	// 敵マネージャー更新
-	//enemyManager_->Update();
+	if (uiManager_->IsGameplayActive())
+	{
+		// プレイヤー更新
+		player_->Update(targetCameraID);
+		// 敵マネージャー更新
+		//enemyManager_->Update(targetCameraID);
+	}
 	// マップ更新
 	map_->Update(targetCameraID);
 	// UI更新
@@ -116,18 +114,5 @@ void GameScenePhase::DrawImGui()
 	uiManager_->DrawImGui();
 
 	screenDrawer_->DrawImGui();
-
-	//ImGui::Begin("------debug info------");
-	//ImGui::Text("ESC : Quit Application");
-	//ImGui::Text("F1  : Hide Debug Info");
-	//ImGui::Text("F3  : Toggle Camera Release or Debug");
-	//ImGui::Text("F5  : Toggle Camera FirstPerson or ThirdPerson");
-	//ImGui::Text("F12 : Toggle Fullscreen");
-	//ImGui::Text("DeltaTime: %.3f ms", Game::Time::GetDeltaTime() * 1000.0f);
-	//ImGui::Text("FPS: %.1f ", Game::Time::GetFrameRate());
-	//ImGui::End();
 }
-
-
-
 

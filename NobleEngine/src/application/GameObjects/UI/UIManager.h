@@ -8,11 +8,6 @@
 class Player;
 class MapManager;
 
-/////////////// UIManagerが全エレメントを持って、各シーンに渡して共有する方法が綺麗では？
-
-
-
-
 class UIManager
 {
 public:
@@ -29,6 +24,9 @@ public:
 	void ChangeScreen(UIMode mode);
 
 	UIMode GetCurrentUIMode() const { return currentUIMode_; }
+
+	// 「何のモードか」ではなく「今何が許可されるか」を公開する
+	bool IsGameplayActive() const;   // プレイヤー/敵の行動を許可するか
 
 private:
 	UIMode currentUIMode_ = UIMode::None;

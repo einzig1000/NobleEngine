@@ -8,6 +8,7 @@ enum class UIMode
 	Inventory,	// インベントリ表示中
 	Crafting,	// クラフト画面
 	Pause,		// ポーズ画面
+	MiningMode,	// 採掘モード選択画面
 
 	Max
 };
@@ -19,5 +20,6 @@ enum class UIElementType
 	Hotbar,
 	Craft,
 	Pause,
+	MiningMode,
 	Max
 };

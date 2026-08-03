@@ -154,14 +154,14 @@ void ScreenDrawer::Draw()
 	draw_3D_GrayScale_->Draw(rt_3D_Effect_[4], { rt_3D_Effect_[3] });
 
 
-	// UI描画
-	// 書き込み先：rt_main_
-	// 参照元：rt_UI_
-	draw_UI_->Draw(rt_main_, { rt_UI_ });
 	// 3D描画
 	// 書き込み先：rt_main_
 	// 参照元：rt_3D_Effect_
 	draw_3D_->Draw(rt_main_, { rt_3D_Effect_.back()});
+	// UI描画
+	// 書き込み先：rt_main_
+	// 参照元：rt_UI_
+	draw_UI_->Draw(rt_main_, { rt_UI_ });
 
 	// メイン描画
 	// 書き込み先：エンジンのデフォルトレンダーターゲット

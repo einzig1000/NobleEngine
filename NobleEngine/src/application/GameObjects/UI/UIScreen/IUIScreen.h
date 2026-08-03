@@ -24,11 +24,6 @@ public:
 	// エレメントの追加
 	virtual void AddElement(IUIElement* element) { uiElements_.push_back(element); }
 
-	// プレイヤーセット
-	virtual void SetPlayer(Player* player) { player_ = player; }
-	// マップマネージャーセット
-	virtual void SetMapManager(MapManager* mapManager) { mapManager_ = mapManager; }
-
 	// 必要なエレメントの取得
 	virtual const std::vector<UIElementType>& GetRequiredElements() const { return elementTypes_; }
 
@@ -37,8 +32,5 @@ protected:
 	UIMode nextUIMode_ = UIMode::None;
 	std::vector<UIElementType> elementTypes_;	// この画面で使用するエレメントの種類
 	std::vector<IUIElement*> uiElements_;
-
-	Player* player_ = nullptr;
-	MapManager* mapManager_ = nullptr;
 };
 
