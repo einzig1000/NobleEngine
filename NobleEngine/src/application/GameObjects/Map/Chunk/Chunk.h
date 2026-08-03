@@ -2,10 +2,6 @@
 #include <Game.h>
 #include <Utilities/PerlinNoise.h>
 #include <DrawSystem/RenderData/RenderObject.h>
-#include <GameObjects/Map/Chunk/Block/Block.h>
-
-class BlockConfig;
-
 
 struct ChunkInfo
 {
@@ -32,8 +28,8 @@ public:
 	/// </summary>
 	/// <param name="index">thisから見たローカル座標</param>
 	/// <param name="checkNeighborChunk">隣接チャンクまで探索しにいくか</param>
-	/// <returns>ブロック</returns>
-	Block* GetBlock(const Vector3int& index, bool checkNeighborChunk = false);
+	/// <returns>ブロックID</returns>
+	BlockID* GetBlockID(const Vector3int& index, bool checkNeighborChunk = false);
 
 	// ブロック設置(置換)
 	void SetBlock(const Vector3int& localIndex, const BlockID id);
@@ -60,7 +56,7 @@ private:
 	Vector3int chunkIndex_;
 	ChunkInfo chunkInfo_;
 	// ブロックデータ配列
-	Block blocks_[Constexprs::kChunkX][Constexprs::kChunkY][Constexprs::kChunkZ];
+	BlockID blocks_[Constexprs::kChunkX][Constexprs::kChunkY][Constexprs::kChunkZ];
 	std::vector<uint32_t> blockIds_;
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> render_;

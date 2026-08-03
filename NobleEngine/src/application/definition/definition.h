@@ -535,7 +535,7 @@ struct EnumStringTraits<ObjectID>
 class Block;
 struct lookAtBlock
 {
-	Block* block = nullptr;
+	BlockID* blockID = nullptr;
 	Vector3int chunkIndex = { 0,0,0 };
 	Vector3int localIndex = { 0,0,0 };
 	AABBFace face = AABBFace::NONE;

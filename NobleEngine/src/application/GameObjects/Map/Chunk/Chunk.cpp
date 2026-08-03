@@ -124,7 +124,7 @@ void Chunk::CreateChunkDataFromJson()
 	//			DebugBreak();
 	//			continue;
 	//		}
-
+	//	
 	//		SetBlock(pos, blockID);
 	//	}
 	//}
@@ -228,7 +228,7 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 				for (int32_t i = 0; i < veinSize; ++i)
 				{
 					// Stone のみ置換（Bedrock/Dirt/Lawnは壊さない）
-					if (blocks_[x][y][z].GetBlockID() == BlockID::Stone)
+					if (blocks_[x][y][z] == BlockID::Stone)
 					{
 						SetBlock(Vector3int(x, y, z), oreId);
 					}
@@ -270,7 +270,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 		{
 			for (int32_t y = Constexprs::kChunkY - 1; y >= 0; --y)
 			{
-				if (blocks_[x][y][z].GetBlockID() == BlockID::Grass) return y;
+				if (blocks_[x][y][z] == BlockID::Grass) return y;
 			}
 			return -1;
 		};
@@ -281,7 +281,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 			if (y0 < 0 || y0 + height >= Constexprs::kChunkY) return false;
 			for (int32_t y = y0; y < y0 + height; ++y)
 			{
-				if (blocks_[x][y][z].GetBlockID() != BlockID::Air) return false;
+				if (blocks_[x][y][z] != BlockID::Air) return false;
 			}
 			return true;
 		};
@@ -346,7 +346,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 						if (dx0 * dx0 + dy0 * dy0 + dz0 * dz0 > leafRadius * leafRadius + 1) continue;
 
 						// 空気だけ葉にする（地形と幹を潰さない）
-						if (blocks_[lx][ly][lz].GetBlockID() == BlockID::Air)
+						if (blocks_[lx][ly][lz] == BlockID::Air)
 						{
 							SetBlock(Vector3int(lx, ly, lz), BlockID::Leaf);
 						}
@@ -451,11 +451,11 @@ void Chunk::Update(int32_t cameraID)
 
 						// ブロックIDを取得(隣接チャンクも探す)
 						BlockID blockID = BlockID::Bedrock;
-						Block* block = GetBlock(Vector3int(x - 1, y - 1, z - 1), true);
+						BlockID* block = GetBlockID(Vector3int(x - 1, y - 1, z - 1), true);
 
 						if (block != nullptr)
 						{
-							blockID = block->GetBlockID();
+							blockID = *block;
 						}
 
 						// ブロックIDを代入
@@ -498,7 +498,7 @@ void Chunk::Draw(int32_t renderTargetID)
 
 
 
-Block* Chunk::GetBlock(const Vector3int& index, bool checkNeighborChunk)
+BlockID* Chunk::GetBlockID(const Vector3int& index, bool checkNeighborChunk)
 {
 	// チャンク内
 	if (0 <= index.x && index.x < Constexprs::kChunkX &&
@@ -551,7 +551,7 @@ Block* Chunk::GetBlock(const Vector3int& index, bool checkNeighborChunk)
 	}
 	else targetChunk = this;
 
-	return targetChunk->GetBlock(localIndex);
+	return targetChunk->GetBlockID(localIndex);
 }
 
 AABB Chunk::GetAABB(const Vector3int& index) const
@@ -588,11 +588,11 @@ Vector3 Chunk::LocalCenter(const Vector3int& index) const
 
 void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id)
 {
-	Block* targetBlock = GetBlock(localIndex);
+	BlockID* targetBlock = GetBlockID(localIndex);
 
 	if (!targetBlock) return;
 
-	targetBlock->SetBlockID(id);
+	*targetBlock = id;
 
 	instanceBufferDirty_ = Constexprs::kFrameCount;
 }

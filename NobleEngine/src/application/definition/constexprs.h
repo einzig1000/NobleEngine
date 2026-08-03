@@ -13,5 +13,5 @@ namespace Constexprs
 	static constexpr float kBlockSize = 0.1f; // ブロックのサイズ
 
 	// 重力
-	static constexpr float GRAVITY = -0.02f;
+	static constexpr float GRAVITY = -0.005f;
 }

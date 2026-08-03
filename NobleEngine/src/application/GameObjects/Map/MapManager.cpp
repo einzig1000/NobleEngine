@@ -16,12 +16,12 @@ int32_t LocalMod(int32_t a, int32_t n)
 
 MapManager::MapManager()
 {
-	drawRadius_.x = 1;
+	drawRadius_.x = 2;
 	drawRadius_.y = 1;
-	drawRadius_.z = 1;
-	updateRadius_.x = 1;
+	drawRadius_.z = 2;
+	updateRadius_.x = 2;
 	updateRadius_.y = 1;
-	updateRadius_.z = 1;
+	updateRadius_.z = 2;
 
 	SetSeed(123456);
 }
@@ -405,8 +405,8 @@ bool MapManager::SetBlockAt(const Vector3int& chunkPos, const Vector3int& localI
 	if (!chunk) return false;
 
 	// 設置するブロック単位の空間を取得
-	Block* targetBlock = chunk->GetBlock(localIndex);
-	if (!targetBlock) return false;
+	BlockID* targetBlockID = chunk->GetBlockID(localIndex);
+	if (!targetBlockID) return false;
 
 	// キャラクターと重なってたら設置できない
 	const AABB placeAabb = GetAABB(chunkPos, localIndex);
@@ -601,11 +601,11 @@ int32_t MapManager::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCoun
 				if (!chunk) continue;
 
 				// ブロックを取得
-				Block* block = chunk->GetBlock(localIndex);
-				if (!block) continue;
+				BlockID* blockID = chunk->GetBlockID(localIndex);
+				if (!blockID) continue;
 
 				// 衝突判定
-				if (block->GetBlockID() != BlockID::Air)
+				if (*blockID != BlockID::Air)
 				{
 					return d;
 				}
@@ -623,8 +623,8 @@ bool MapManager::IsSolidAt(const Vector3& position) const
 	Chunk* chunk = GetChunk(chunkPos);
 	if (chunk)
 	{
-		Block* block = chunk->GetBlock(index);
-		if (block && block->GetBlockID() != BlockID::Air)
+		BlockID* blockID = chunk->GetBlockID(index);
+		if (blockID && *blockID != BlockID::Air)
 		{
 			return true;
 		}
@@ -673,7 +673,7 @@ bool MapManager::GetIsActive(const Vector3int& chunkPos, const Vector3int& index
 	Chunk* chunk = GetChunk(chunkPos);
 	if (chunk)
 	{
-		if (chunk->GetBlock(index)->GetBlockID() != BlockID::Air)
+		if (*chunk->GetBlockID(index) != BlockID::Air)
 		{
 			return true;
 		}
@@ -823,12 +823,12 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 				0 <= local.y && local.y < Constexprs::kChunkY &&
 				0 <= local.z && local.z < Constexprs::kChunkZ)
 			{
-				Block* block = chunk->GetBlock(local);
-				if (block && block->GetBlockID() != BlockID::Air)
+				BlockID* blockID = chunk->GetBlockID(local);
+				if (blockID && *blockID != BlockID::Air)
 				{
 					const AABB& aabb = GetAABB(chunkPos, local);
 
-					result.block = block;
+					result.blockID = blockID;
 					result.chunkIndex = chunkPos;
 					result.localIndex = local;
 					result.face = enterFace;
