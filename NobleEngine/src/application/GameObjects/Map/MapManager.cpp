@@ -9,9 +9,12 @@
 #include <algorithm>
 #include <limits>
 
-int32_t LocalMod(int32_t a, int32_t n)
+namespace
 {
-	return (a % n + n) % n;
+	int32_t LocalMod(int32_t a, int32_t n)
+	{
+		return (a % n + n) % n;
+	}
 }
 
 MapManager::MapManager()
@@ -268,14 +271,13 @@ void MapManager::Update(int32_t cameraID)
 				Vector3int chunkPos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
 				Chunk* chunk = GetChunk(chunkPos);
 				if (chunk) { chunk->Update(cameraID); }
-				else EnsureChunkScheduled(chunkPos);
 			}
 		}
 	}
 }
 
-void MapManager::Draw(int32_t renderTargetID) const
-{	
+void MapManager::Draw(int32_t renderTargetID)
+{
 	// プレイヤー周囲描画
 	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
 	{
@@ -288,9 +290,10 @@ void MapManager::Draw(int32_t renderTargetID) const
 					continue;
 				}
 
-				Vector3int chunkPos = Vector3int(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
+				Vector3int chunkPos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
 				Chunk* chunk = GetChunk(chunkPos);
 				if (chunk) { chunk->Draw(renderTargetID); }
+				else EnsureChunkScheduled(chunkPos);
 			}
 		}
 	}
@@ -325,8 +328,8 @@ void MapManager::DrawImGui()
 	ImGui::End();
 }
 
-// このAABBに含まれるブロックをすべて破壊(空気に置き換え)する
-void MapManager::DestroyBlockInAABB(const AABB& aabb)
+// 指定範囲のブロックを一括で置き換える
+void MapManager::ReplaceBlockInAABB(const AABB& aabb, BlockID id)
 {
 	int32_t countX = std::max(1, static_cast<int32_t>((aabb.max.x - aabb.min.x) / Constexprs::kBlockSize));
 	int32_t countY = std::max(1, static_cast<int32_t>((aabb.max.y - aabb.min.y) / Constexprs::kBlockSize));
@@ -347,18 +350,15 @@ void MapManager::DestroyBlockInAABB(const AABB& aabb)
 				Vector3int localIndex = BlockIndexByPosition(checkPos);
 
 				// 
-				SetBlockAt(chunkIndex, localIndex, BlockID::Air);
+				ReplaceBlock(chunkIndex, localIndex, id);
 			}
 		}
 	}
 }
-
-void MapManager::DestroyBlockInOBB(const OBB& obb)
+void MapManager::ReplaceBlockInOBB(const OBB& obb, BlockID id)
 {
-	// OBBの各軸方向のhalfSizeを配列化
 	const float halfSizeArr[3] = { obb.halfSize.x, obb.halfSize.y, obb.halfSize.z };
 
-	// OBBを包み込む世界軸AABB（ブロード判定用）を求める
 	Vector3 worldExtent{};
 	for (int32_t i = 0; i < 3; ++i)
 	{
@@ -384,21 +384,49 @@ void MapManager::DestroyBlockInOBB(const OBB& obb)
 				const Vector3int chunkIndex = ChunkIndexByPosition(checkPos);
 				const Vector3int localIndex = BlockIndexByPosition(checkPos);
 
-				// グリッドに正しく整列したこのブロックのワールドAABBを取得
 				const AABB blockAABB = GetAABB(chunkIndex, localIndex);
 
-				// OBBと実際に交差しているブロックだけ壊す
 				if (IsCollision(obb, blockAABB))
 				{
-					SetBlockAt(chunkIndex, localIndex, BlockID::Air);
+					ReplaceBlock(chunkIndex, localIndex, id);
+				}
+			}
+		}
+	}
+}
+void MapManager::ReplaceBlockInSphere(const Sphere& sphere, BlockID id)
+{
+	const Vector3 extent(sphere.radius, sphere.radius, sphere.radius);
+	const AABB broadAABB(sphere.center - extent, sphere.center + extent);
+
+	const int32_t countX = std::max(1, static_cast<int32_t>(std::ceil((broadAABB.max.x - broadAABB.min.x) / Constexprs::kBlockSize)) + 1);
+	const int32_t countY = std::max(1, static_cast<int32_t>(std::ceil((broadAABB.max.y - broadAABB.min.y) / Constexprs::kBlockSize)) + 1);
+	const int32_t countZ = std::max(1, static_cast<int32_t>(std::ceil((broadAABB.max.z - broadAABB.min.z) / Constexprs::kBlockSize)) + 1);
+
+	for (int32_t x = 0; x < countX; ++x)
+	{
+		for (int32_t y = 0; y < countY; ++y)
+		{
+			for (int32_t z = 0; z < countZ; ++z)
+			{
+				const Vector3 checkPos = broadAABB.min + Vector3(x * Constexprs::kBlockSize, y * Constexprs::kBlockSize, z * Constexprs::kBlockSize);
+
+				const Vector3int chunkIndex = ChunkIndexByPosition(checkPos);
+				const Vector3int localIndex = BlockIndexByPosition(checkPos);
+
+				const Sphere blockSphere = GetSphere(chunkIndex, localIndex);
+
+				if (IsCollision(sphere, blockSphere))
+				{
+					ReplaceBlock(chunkIndex, localIndex, id);
 				}
 			}
 		}
 	}
 }
 
-// 指定位置にブロックを設置
-bool MapManager::SetBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id)
+// 指定位置のブロックを置き換える
+bool MapManager::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id)
 {
 	// 設置するチャンクを取得
 	Chunk* chunk = GetChunk(chunkPos);
@@ -417,7 +445,7 @@ bool MapManager::SetBlockAt(const Vector3int& chunkPos, const Vector3int& localI
 
 	return true;
 }
-bool MapManager::SetBlockAt(const lookAtBlock& lab, BlockID id)
+bool MapManager::ReplaceBlock(const lookAtBlock& lab, BlockID id)
 {
 	// 向きが不明ならreturn
 	if (lab.face == AABBFace::NONE) return false;
@@ -484,11 +512,11 @@ bool MapManager::SetBlockAt(const lookAtBlock& lab, BlockID id)
 		localIndex.z -= Constexprs::kChunkZ;
 	}
 
-	return SetBlockAt(chunkPos, localIndex, id);
+	return ReplaceBlock(chunkPos, localIndex, id);
 }
-bool MapManager::SetBlockAt(const Vector3& position, BlockID id)
+bool MapManager::ReplaceBlock(const Vector3& position, BlockID id)
 {
-	return SetBlockAt(ChunkIndexByPosition(position), BlockIndexByPosition(position), id);
+	return ReplaceBlock(ChunkIndexByPosition(position), BlockIndexByPosition(position), id);
 }
 
 
@@ -616,22 +644,6 @@ int32_t MapManager::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCoun
 	return layerCount;
 }
 
-bool MapManager::IsSolidAt(const Vector3& position) const
-{
-	Vector3int chunkPos = ChunkIndexByPosition(position);
-	Vector3int index = BlockIndexByPosition(position);
-	Chunk* chunk = GetChunk(chunkPos);
-	if (chunk)
-	{
-		BlockID* blockID = chunk->GetBlockID(index);
-		if (blockID && *blockID != BlockID::Air)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 
 bool MapManager::IsOverlappingAnyCharacter(const AABB& aabb) const
 {
@@ -644,6 +656,8 @@ bool MapManager::IsOverlappingAnyCharacter(const AABB& aabb) const
 	//}
 	return false;
 }
+
+
 
 AABB MapManager::GetAABB(const Vector3int& chunkPos, const Vector3int& index) const
 {
@@ -668,26 +682,19 @@ AABB MapManager::GetAABB(const Vector3& position) const
 	Vector3int index = BlockIndexByPosition(position);
 	return GetAABB(chunkPos, index);
 }
-bool MapManager::GetIsActive(const Vector3int& chunkPos, const Vector3int& index) const
+Sphere MapManager::GetSphere(const Vector3int& chunkPos, const Vector3int& index) const
 {
-	Chunk* chunk = GetChunk(chunkPos);
-	if (chunk)
-	{
-		if (*chunk->GetBlockID(index) != BlockID::Air)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-bool MapManager::GetIsActive(const Vector3& position) const
-{
-	Vector3int chunkPos = ChunkIndexByPosition(position);
-	Vector3int index = BlockIndexByPosition(position);
-	return GetIsActive(chunkPos, index);
+	const AABB blockAABB = GetAABB(chunkPos, index);
+
+	Sphere sphere{};
+	sphere.center = blockAABB.center();
+	sphere.radius = (Constexprs::kBlockSize + Constexprs::kBlockSize * 0.2f) * 0.5f;
+
+	return sphere;
 }
 
-// position が今どのチャンクに属しているか  例：position=(34, 0, 50) -> chunkIndex=(1, 2)
+
+// position が今どのチャンクに属しているか  例：position=(34, 23, 50) -> blockIndex=(2, 3, 2)
 Vector3int MapManager::ChunkIndexByPosition(const Vector3& position) const
 {
 	int32_t bx = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
@@ -700,28 +707,20 @@ Vector3int MapManager::ChunkIndexByPosition(const Vector3& position) const
 	chunk.z = static_cast<int32_t>(std::floor((float)bz / Constexprs::kChunkZ));
 	return chunk;
 }
-
 // position が今チャンク内どのブロックに属しているか(どんな時も0～CHUNK_SIZE-1の範囲に収まる)  例：position=(34, 0, 50) -> localIndex=(2, 0, 2)
 Vector3int MapManager::BlockIndexByPosition(const Vector3& position) const
 {
-	Vector3int wb = WorldBlockIndexByPosition(position);
+	Vector3int worldBlockIndex;
+	worldBlockIndex.x = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
+	worldBlockIndex.y = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize));
+	worldBlockIndex.z = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize));
 
 	Vector3int local;
-	local.x = LocalMod(wb.x, Constexprs::kChunkX);
-	local.y = LocalMod(wb.y, Constexprs::kChunkY);
-	local.z = LocalMod(wb.z, Constexprs::kChunkZ);
-
-	local.y = std::clamp(local.y, 0, Constexprs::kChunkY - 1);
+	local.x = LocalMod(worldBlockIndex.x, Constexprs::kChunkX);
+	local.y = LocalMod(worldBlockIndex.y, Constexprs::kChunkY);
+	local.z = LocalMod(worldBlockIndex.z, Constexprs::kChunkZ);
 
 	return local;
-}
-
-Vector3int MapManager::WorldBlockIndexByPosition(const Vector3& position) const
-{
-	int32_t bx = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
-	int32_t by = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize));
-	int32_t bz = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize));
-	return Vector3int(bx, by, bz);
 }
 
 
@@ -1048,4 +1047,14 @@ std::optional<Vector3> MapManager::GetPositionByCrossedRay(const Ray& ray) const
 	}
 
 	return closestPoint;
+}
+
+
+void MapManager::RegisterCharacter(BaseCharacter* c)
+{
+	Characters_.push_back(c);
+}
+void MapManager::UnregisterCharacter(BaseCharacter* c)
+{
+	Characters_.erase(std::remove(Characters_.begin(), Characters_.end(), c), Characters_.end());
 }
