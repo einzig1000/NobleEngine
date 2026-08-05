@@ -1,4 +1,4 @@
-#include "Utilities/Utilities.hlsli"
+#include "../Utilities/Utilities.hlsli"
 
 // ブロックIDを毎フレーム受け取り、その場で頂点を計算して描画するメッシュシェーダー(AS無し版)
 // 2x2x2ボクセルを1グループとして処理する。DispatchMeshは (グループ総数, 1, 1) の1次元で呼ぶ想定。

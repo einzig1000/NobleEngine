@@ -116,6 +116,8 @@ private:
 	// マップネーム
 	std::string currentMapName_;
 
+	// リアルタイム描画数
+	int32_t drawCount_ = 0;
 
 	// パラメータ
 	Vector3int drawRadius_;    // 描画半径（チャンク単位）

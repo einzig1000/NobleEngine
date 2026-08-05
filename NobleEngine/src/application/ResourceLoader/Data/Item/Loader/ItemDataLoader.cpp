@@ -19,8 +19,16 @@ void ItemDataLoader::Load()
 
 	for (const std::string& blockIDStr : blockKeys)
 	{
+		auto e = magic_enum::enum_cast<BlockID>(blockIDStr);
+		if (!e.has_value())
+		{
+			__debugbreak();
+			continue;
+		}
+
 		BlockInfo info;
-		info.ID = StringToEnum<BlockID>(blockIDStr);
+
+		info.ID = e.value();
 
 		JsonManager::Load("resources/json/BlockConfig.json", "/" + blockIDStr + "/color", info.color);
 		JsonManager::Load("resources/json/BlockConfig.json", "/" + blockIDStr + "/durability", info.durability);
@@ -36,9 +44,15 @@ void ItemDataLoader::Load()
 
 	for (const std::string& toolIDStr : toolKeys)
 	{
+		auto e = magic_enum::enum_cast<ToolID>(toolIDStr);
+		if (!e.has_value())
+		{
+			__debugbreak();
+			continue;
+		}
+
 		ToolInfo info;
-		info.miningSpeed = 333333333.0f;
-		ToolID toolID = StringToEnum<ToolID>(toolIDStr);
+		ToolID toolID = e.value();
 
 		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/durability", info.durability);
 		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
@@ -58,8 +72,15 @@ void ItemDataLoader::Load()
 
 	for (const std::string& itemIDStr : itemKeys)
 	{
+		auto e = magic_enum::enum_cast<ItemID>(itemIDStr);
+		if (!e.has_value())
+		{
+			__debugbreak();
+			continue;
+		}
+
 		ItemInfo info;
-		info.id = StringToEnum<ItemID>(itemIDStr);
+		info.id = e.value();
 
 		std::string itemGenreStr;
 		std::string blockIDStr;
@@ -71,10 +92,39 @@ void ItemDataLoader::Load()
 		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/toolID", toolIDStr);
 		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/objectID", objectIDStr);
 
-		info.genre = StringToEnum<ItemGenre>(itemGenreStr);
-		info.blockID = StringToEnum<BlockID>(blockIDStr);
-		info.objectID = StringToEnum<ObjectID>(objectIDStr);
-		info.toolID = StringToEnum<ToolID>(toolIDStr);
+		auto genreEnum = magic_enum::enum_cast<ItemGenre>(itemGenreStr);
+		if (!genreEnum.has_value())
+		{
+			info.genre = ItemGenre::MAX;
+		}
+		else
+		{
+			info.genre = genreEnum.value();
+		}
+
+		auto blockEnum = magic_enum::enum_cast<BlockID>(blockIDStr);
+		if (!blockEnum.has_value())
+		{
+			__debugbreak();
+			continue;
+		}
+		info.blockID = blockEnum.value();
+
+		auto objectEnum = magic_enum::enum_cast<ObjectID>(objectIDStr);
+		if (!objectEnum.has_value())
+		{
+			__debugbreak();
+			continue;
+		}
+		info.objectID = objectEnum.value();
+
+		auto toolEnum = magic_enum::enum_cast<ToolID>(toolIDStr);
+		if (!toolEnum.has_value())
+		{
+			__debugbreak();
+			continue;
+		}
+		info.toolID = toolEnum.value();
 
 		bank_->SetItemInfo(info.id, info);
 	}

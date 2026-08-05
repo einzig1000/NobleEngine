@@ -1,5 +1,5 @@
 #include "Block.hlsli"
-#include "Utilities/Utilities.hlsli"
+#include "../../Utilities/Utilities.hlsli"
 
 struct MSOutput
 {
@@ -49,6 +49,8 @@ void main(
     
     // グループごとの露出面数
     StructuredBuffer<uint> faceCountPerGroup = ResourceDescriptorHeap[bakedFaceCountPerGroupSrvIndex];
+    
+    
     
     // このグループの露出面数取得
     uint faceCount = faceCountPerGroup[gid.x];

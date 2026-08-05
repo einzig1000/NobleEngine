@@ -25,7 +25,7 @@ private:
 	Vector4 color_ = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	EulerTransforms transforms_;
 
-	ItemGenre genre_ = ItemGenre::None;
+	ItemGenre genre_ = ItemGenre::MAX;
 	ToolID toolID_ = ToolID::MAX;
 	ToolInfo toolInfo{};
 	BlockID blockID_ = BlockID::MAX;

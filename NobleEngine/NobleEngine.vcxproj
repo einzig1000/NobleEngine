@@ -425,6 +425,12 @@
     <ClInclude Include="src\engine\Editor\TimeEditor\TimeEditor.h" />
     <ClInclude Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\shaders\Block\versionInfo.md">
+      <SubType>
+      </SubType>
+    </None>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

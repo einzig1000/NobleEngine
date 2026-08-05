@@ -65,15 +65,18 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 
 	// 描画オブジェクトの初期化
 	render_ = std::make_unique<RenderObject>();
-	render_->psoConfig_.ms = "resources/shaders/Block.Baked.MS.hlsl";
-	render_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
+	render_->psoConfig_.ms = "resources/shaders/Block/2.4.0/Block.MS.hlsl";
+	render_->psoConfig_.ps = "resources/shaders/Block/1.1.0/Block.PS.hlsl";
+	render_->psoConfig_.as = "resources/shaders/Block/2.4.0/Block.AS.hlsl";
 	render_->psoConfig_.rasterizerID = RasterizerID::Solid_FrontCull;
 	render_->SetupFromShaders();
-	render_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
+	constexpr uint32_t kASGroupSize = 32;
+	render_->instanceNum_ = (groupCount + kASGroupSize - 1) / kASGroupSize;
+	//render_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
 
 	// 計算オブジェクトの初期化
 	compute_ = std::make_unique<ComputeObject>();
-	compute_->psoConfig_.cs = "resources/shaders/Block.CreateMesh.CS.hlsl";
+	compute_->psoConfig_.cs = "resources/shaders/Block/2.3.0/Block.CreateMesh.CS.hlsl";
 	compute_->SetupFromShaders();
 	compute_->size = { static_cast<int32_t>(groupCount), 1, 1 };
 	compute_->RegisterOutput(bakedFaceBufferHandle_);
@@ -479,6 +482,8 @@ void Chunk::Update(int32_t cameraID)
 		instanceBufferDirty_--;
 	}
 
+	uint32_t asSrvIndex = Game::Resource::GetSRV(faceCountBufferHandle_);
+	render_->SetCBufferData(0, ShaderType::AmplificationShader, &asSrvIndex);
 	Vector3int srvIndex = Vector3int(
 		Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()),
 		Game::Resource::GetSRV(bakedFaceBufferHandle_),

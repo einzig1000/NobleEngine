@@ -1251,4 +1251,7 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\shaders\Block\versionInfo.md" />
+  </ItemGroup>
 </Project>

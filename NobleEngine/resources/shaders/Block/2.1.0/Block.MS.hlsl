@@ -95,6 +95,9 @@ void main(
     out vertices MSOutput verts[192]
 )
 {
+    // 総頂点数, 総プリミティブ数を送る
+    SetMeshOutputCounts(192, 96);
+    
     // チャンクの各軸に何個の2x2x2のかたまりがあるか
     uint3 groupDim = chunkDim / 2;
     // チャンクをかたまり単位で分割した時の整数座標
@@ -109,18 +112,12 @@ void main(
     // かたまりの基準位置 ＋ 自分のローカル位置 ＝ このスレッドが担当するブロックの整数座標
     int3 voxelPos = groupOrigin + localOffset;
     
-    // ブロックIDを取得
-    uint blockId = blockIds[FlattenHalo(voxelPos)];
-    
-    
-    // 総頂点数, 総プリミティブ数を送る
-    SetMeshOutputCounts(192, 96);
-    
     // 自スレッドに割り当てられた書き込み開始面番号を取得
     uint faceOut = gtid * 6;
     // このブロックのワールド空間での原点座標（左下奥）を計算
     float3 worldVoxelOrigin = chunkWorldOrigin + float3(voxelPos) * blockSize;
     // ブロックの属性テーブルから色情報を取り出して float4(RGBA) に変換
+    uint blockId = blockIds[FlattenHalo(voxelPos)];
     uint4 info = BlockInfoTable[blockId];
     float4 color = UnpackColor(info.x);
 
@@ -139,7 +136,7 @@ void main(
         [unroll]
         for (uint c = 0; c < 4; c++)
         {
-                // 頂点のワールド座標 = ボクセルの原点 +(角のローカル位置 x 1マスのサイズ)
+            // 頂点のワールド座標 = ボクセルの原点 +(角のローカル位置 x 1マスのサイズ)
             float3 worldPos = worldVoxelOrigin + kCubeCorners[corners[c]] * blockSize;
 
             MSOutput vOut;

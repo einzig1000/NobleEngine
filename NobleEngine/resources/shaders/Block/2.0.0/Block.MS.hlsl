@@ -1,4 +1,4 @@
-#include "Utilities/Utilities.hlsli"
+#include "../Utilities/Utilities.hlsli"
 
 struct MSOutput
 {
