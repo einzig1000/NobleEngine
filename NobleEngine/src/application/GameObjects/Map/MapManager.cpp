@@ -19,12 +19,29 @@ namespace
 
 MapManager::MapManager()
 {
-	drawRadius_.x = 4;
+	drawRadius_.x = 3;
 	drawRadius_.y = 1;
-	drawRadius_.z = 4;
-	updateRadius_.x = 4;
+	drawRadius_.z = 3;
+	updateRadius_.x = drawRadius_.x;
 	updateRadius_.y = 1;
-	updateRadius_.z = 4;
+	updateRadius_.z = drawRadius_.z;
+
+	for (int32_t dx = -10; dx <= 10; ++dx)
+	{
+		for (int32_t dy = -10; dy <= 10; ++dy)
+		{
+			for (int32_t dz = -10; dz <= 10; ++dz)
+			{
+				if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+				{
+					continue;
+				}
+
+				Vector3int chunkPos(dx, dy, dz);
+				EnsureChunkScheduled(chunkPos);
+			}
+		}
+	}
 
 	SetSeed(123456);
 }
@@ -119,7 +136,19 @@ void MapManager::DrawImGui()
 }
 
 
-// マップ名とファイルパスの対応表読み込み/保存 (マップ自体のデータは含まれていない)
+// マップのシード値を設定する
+void MapManager::SetSeed(uint32_t seed)
+{
+	// ノイズパラメータ設定
+	noiseParam_.seed = seed;			// 俗に言うシード値
+	noiseParam_.scale = 1200.0f;			// 地形の粗さ（大きくすると緩やか）
+	noiseParam_.octaves = 8;			// 反復回数 (大きくすると細かい起伏が増える)
+	noiseParam_.persistence = 0.7f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
+	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkY;		// マップの高さ
+	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
+}
+
+// マップ読込/保存/生成
 void MapManager::LoadNameAndPathMap(const std::string& filePath)
 {
 	std::string csvFilePath = filePath;
@@ -156,7 +185,6 @@ void MapManager::SaveNameAndPathMap(const std::string& filePath)
 		file << name << "," << path << "\n";
 	}
 }
-// 新規マップ作成
 void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 {
 	// ノイズパラメータ設定
@@ -171,7 +199,6 @@ void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 	mapNameToFilePath_[mapName] = "resources/Minecraft/Maps/" + mapName + ".json";
 	currentMapFilePath_ = "resources/Minecraft/Maps/" + mapName + ".json";
 }
-// マップ読み込み
 void MapManager::LoadMap(const std::string& mapName)
 {
 	// 相互参照を切る
@@ -202,7 +229,6 @@ void MapManager::LoadMap(const std::string& mapName)
 	//JsonManager json;
 	//json.LoadFromJson(*this, currentMapFilePath_);
 }
-// マップ保存
 void MapManager::SaveMap()
 {
 	//JsonManager json;
@@ -212,22 +238,105 @@ void MapManager::SaveMap()
 	SaveNameAndPathMap("resources/Minecraft/Maps/MapNameAndPath.csv");
 }
 
-
-
-
-// マップのシード値を設定する
-void MapManager::SetSeed(uint32_t seed)
+// チャンク取得/生成
+Chunk* MapManager::GetChunk(const Vector3int& chunkPos) const
 {
-	// ノイズパラメータ設定
-	noiseParam_.seed = seed;			// 俗に言うシード値
-	noiseParam_.scale = 1200.0f;			// 地形の粗さ（大きくすると緩やか）
-	noiseParam_.octaves = 8;			// 反復回数 (大きくすると細かい起伏が増える)
-	noiseParam_.persistence = 0.7f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkY;		// マップの高さ
-	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
+	auto it = chunks.find(chunkPos);
+	if (it == chunks.end()) { return nullptr; }
+	return it->second.get();
 }
+void MapManager::EnsureChunkScheduled(const Vector3int& chunkPos)
+{
+	// チャンクが既に作成されているならreturn
+	if (chunkCreated_.find(chunkPos) != chunkCreated_.end()) return;
+	// 既にスケジュール済みならreturn
+	if (chunkScheduled_.find(chunkPos) != chunkScheduled_.end()) return;
 
+	// スケジュール済み集合にも登録
+	chunkScheduled_.insert(chunkPos);
+}
+void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
+{
+	// スケジュールキューが空ではないなら作成
+	if (!chunkScheduled_.empty())
+	{
+		// 近い順にソートする
+		std::vector<Vector3int> tempQueue(chunkScheduled_.begin(), chunkScheduled_.end());
+		std::sort(tempQueue.begin(), tempQueue.end(),
+			[cameraChunkPos](const Vector3int& a, const Vector3int& b)
+			{
+				int32_t distA = (a.x - cameraChunkPos.x) * (a.x - cameraChunkPos.x) + (a.y - cameraChunkPos.y) * (a.y - cameraChunkPos.y) + (a.z - cameraChunkPos.z) * (a.z - cameraChunkPos.z);
+				int32_t distB = (b.x - cameraChunkPos.x) * (b.x - cameraChunkPos.x) + (b.y - cameraChunkPos.y) * (b.y - cameraChunkPos.y) + (b.z - cameraChunkPos.z) * (b.z - cameraChunkPos.z);
+				return distA < distB;
+			});
 
+		// キューから取り出し
+		Vector3int pos = tempQueue.front();
+		chunkScheduled_.erase(pos);
+
+		// 一応存在確認
+		if (GetChunk(pos) != nullptr)
+		{
+			// 生成済み集合に登録
+			chunkCreated_.insert(pos);
+			return;
+		}
+
+		// 新規生成
+		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(noiseParam_, pos);
+
+		// 隣接チャンク設定
+		static constexpr Vector3int dirOffsets[6] =
+		{
+			Vector3int(-1, 0, 0),	// Left
+			Vector3int(1, 0, 0),	// Right
+			Vector3int(0, 0, -1),	// Back
+			Vector3int(0, 0, 1),	// Front
+			Vector3int(0, -1, 0),	// Down
+			Vector3int(0, 1, 0)		// Up
+		};
+
+		static constexpr DirectionXYZ dirArr[6] =
+		{
+			DirectionXYZ::Left,
+			DirectionXYZ::Right,
+			DirectionXYZ::Back,
+			DirectionXYZ::Front,
+			DirectionXYZ::Down,
+			DirectionXYZ::Up,
+		};
+
+		static constexpr DirectionXYZ opposite[6] =
+		{
+			DirectionXYZ::Right,// Left  の反対
+			DirectionXYZ::Left,	// Right の反対
+			DirectionXYZ::Front,// Back  の反対
+			DirectionXYZ::Back,	// Front の反対
+			DirectionXYZ::Up,	// Down  の反対
+			DirectionXYZ::Down,	// Up    の反対
+		};
+
+		for (int32_t dir = 0; dir < 6; ++dir)
+		{
+			Chunk* neighbor = GetChunk(pos + dirOffsets[dir]);
+
+			// 自分→隣（隣が無ければnullptrでOK）
+			chunk->SetNeighborChunk(dirArr[dir], neighbor);
+
+			// 隣→自分（隣がある時だけ）
+			if (neighbor)
+			{
+				neighbor->SetNeighborChunk(opposite[dir], chunk.get());
+			}
+		}
+
+		// チャンク登録
+		chunks[pos] = std::move(chunk);
+
+		// 生成済み集合に登録
+		chunkCreated_.insert(pos);
+	}
+}
 
 // 指定範囲のブロックを一括で置き換える
 void MapManager::ReplaceBlockInAABB(const AABB& aabb, BlockID id)
@@ -483,113 +592,7 @@ Vector3int MapManager::BlockIndexByPosition(const Vector3& position) const
 	return local;
 }
 
-
-
-
-// チャンク取得
-Chunk* MapManager::GetChunk(const Vector3int& chunkPos) const
-{
-	auto it = chunks.find(chunkPos);
-	if (it == chunks.end()) { return nullptr; }
-	return it->second.get();
-}
-
-// スケジュールに登録
-void MapManager::EnsureChunkScheduled(const Vector3int& chunkPos)
-{
-	// チャンクが既に作成されているならreturn
-	if (chunkCreated_.find(chunkPos) != chunkCreated_.end()) return;
-	// 既にスケジュール済みならreturn
-	if (chunkScheduled_.find(chunkPos) != chunkScheduled_.end()) return;
-
-	// スケジュール済み集合にも登録
-	chunkScheduled_.insert(chunkPos);
-}
-
-// スケジュールに登録されたチャンクを1つ生成
-void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
-{
-	// スケジュールキューが空ではないなら作成
-	if (!chunkScheduled_.empty())
-	{
-		// 近い順にソートする
-		std::vector<Vector3int> tempQueue(chunkScheduled_.begin(), chunkScheduled_.end());
-		std::sort(tempQueue.begin(), tempQueue.end(),
-			[cameraChunkPos](const Vector3int& a, const Vector3int& b)
-			{
-				int32_t distA = (a.x - cameraChunkPos.x) * (a.x - cameraChunkPos.x) + (a.y - cameraChunkPos.y) * (a.y - cameraChunkPos.y) + (a.z - cameraChunkPos.z) * (a.z - cameraChunkPos.z);
-				int32_t distB = (b.x - cameraChunkPos.x) * (b.x - cameraChunkPos.x) + (b.y - cameraChunkPos.y) * (b.y - cameraChunkPos.y) + (b.z - cameraChunkPos.z) * (b.z - cameraChunkPos.z);
-				return distA < distB;
-			});
-
-		// キューから取り出し
-		Vector3int pos = tempQueue.front();
-		chunkScheduled_.erase(pos);
-
-		// 一応存在確認
-		if (GetChunk(pos) != nullptr)
-		{
-			// 生成済み集合に登録
-			chunkCreated_.insert(pos);
-			return;
-		}
-
-		// 新規生成
-		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(noiseParam_, pos);
-
-		// 隣接チャンク設定
-		static constexpr Vector3int dirOffsets[6] =
-		{
-			Vector3int(-1, 0, 0),	// Left
-			Vector3int(1, 0, 0),	// Right
-			Vector3int(0, 0, -1),	// Back
-			Vector3int(0, 0, 1),	// Front
-			Vector3int(0, -1, 0),	// Down
-			Vector3int(0, 1, 0)		// Up
-		};
-
-		static constexpr DirectionXYZ dirArr[6] =
-		{
-			DirectionXYZ::Left,
-			DirectionXYZ::Right,
-			DirectionXYZ::Back,
-			DirectionXYZ::Front,
-			DirectionXYZ::Down,
-			DirectionXYZ::Up,
-		};
-
-		static constexpr DirectionXYZ opposite[6] =
-		{
-			DirectionXYZ::Right,// Left  の反対
-			DirectionXYZ::Left,	// Right の反対
-			DirectionXYZ::Front,// Back  の反対
-			DirectionXYZ::Back,	// Front の反対
-			DirectionXYZ::Up,	// Down  の反対
-			DirectionXYZ::Down,	// Up    の反対
-		};
-
-		for (int32_t dir = 0; dir < 6; ++dir)
-		{
-			Chunk* neighbor = GetChunk(pos + dirOffsets[dir]);
-
-			// 自分→隣（隣が無ければnullptrでOK）
-			chunk->SetNeighborChunk(dirArr[dir], neighbor);
-
-			// 隣→自分（隣がある時だけ）
-			if (neighbor)
-			{
-				neighbor->SetNeighborChunk(opposite[dir], chunk.get());
-			}
-		}
-
-		// チャンク登録
-		chunks[pos] = std::move(chunk);
-
-		// 生成済み集合に登録
-		chunkCreated_.insert(pos);
-	}
-}
-
+// AABBとブロックの衝突判定
 void MapManager::SweepAABB(const AABB& aabb, Vector3& movement)
 {
 	// 何層分判定するか
@@ -714,7 +717,7 @@ int32_t MapManager::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCoun
 	return layerCount;
 }
 
-
+// AABBとマップ上のキャラの衝突判定(いずれSweepAABB形式に変えるか統合する)
 bool MapManager::IsOverlappingAnyCharacter(const AABB& aabb) const
 {
 	//for (BaseCharacter* c : Characters_)
@@ -727,10 +730,7 @@ bool MapManager::IsOverlappingAnyCharacter(const AABB& aabb) const
 	return false;
 }
 
-
-
-
-// レイとブロックの交差判定（衝突ブロックを返す）
+// 視線とブロックの衝突判定
 std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, const float maxDistance) const
 {
 	lookAtBlock result;
@@ -920,7 +920,6 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 
 	return std::nullopt;
 }
-
 RayHitResult MapManager::GetFirstHitByRay(const Ray& ray, float maxDistance, const BaseCharacter* ignore) const
 {
 	RayHitResult best{};
@@ -972,7 +971,6 @@ RayHitResult MapManager::GetFirstHitByRay(const Ray& ray, float maxDistance, con
 	//
 	return best;
 }
-// レイとブロックの交差判定（衝突座標を返す）
 std::optional<Vector3> MapManager::GetPositionByCrossedRay(const Ray& ray) const
 {
 	AABB aabb = GetAABB(ray.origin);
@@ -1055,7 +1053,7 @@ std::optional<Vector3> MapManager::GetPositionByCrossedRay(const Ray& ray) const
 	return closestPoint;
 }
 
-
+// キャラクター登録/解除
 void MapManager::RegisterCharacter(BaseCharacter* c)
 {
 	Characters_.push_back(c);

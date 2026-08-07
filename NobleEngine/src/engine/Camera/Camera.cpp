@@ -354,38 +354,38 @@ void Camera::CreateFrustumPlanes()
 
 bool Camera::InCamera(const AABB& aabb)
 {
-    Vector3 points[8];
+	Vector3 points[8];
 
-    points[0] = Vector3{ aabb.min.x, aabb.min.y, aabb.min.z };
-    points[1] = Vector3{ aabb.max.x, aabb.min.y, aabb.min.z };
-    points[2] = Vector3{ aabb.max.x, aabb.max.y, aabb.min.z };
-    points[3] = Vector3{ aabb.min.x, aabb.max.y, aabb.min.z };
-    points[4] = Vector3{ aabb.min.x, aabb.min.y, aabb.max.z };
-    points[5] = Vector3{ aabb.max.x, aabb.min.y, aabb.max.z };
-    points[6] = Vector3{ aabb.max.x, aabb.max.y, aabb.max.z };
-    points[7] = Vector3{ aabb.min.x, aabb.max.y, aabb.max.z };
+	points[0] = Vector3{ aabb.min.x, aabb.min.y, aabb.min.z };
+	points[1] = Vector3{ aabb.max.x, aabb.min.y, aabb.min.z };
+	points[2] = Vector3{ aabb.max.x, aabb.max.y, aabb.min.z };
+	points[3] = Vector3{ aabb.min.x, aabb.max.y, aabb.min.z };
+	points[4] = Vector3{ aabb.min.x, aabb.min.y, aabb.max.z };
+	points[5] = Vector3{ aabb.max.x, aabb.min.y, aabb.max.z };
+	points[6] = Vector3{ aabb.max.x, aabb.max.y, aabb.max.z };
+	points[7] = Vector3{ aabb.min.x, aabb.max.y, aabb.max.z };
 
-    // 6つの各平面に対してテスト
-    for (const auto& plane : frustumPlanes_)
-    {
-        int32_t inCount = 0;
-        // AABBのすべての頂点が平面の裏側にあるかチェック
-        for (int32_t i = 0; i < 8; ++i)
-        {
-            float dist = plane.normal.Dot(points[i]) + plane.distance;
-            if (dist >= 0)
-            {
-                inCount++;
-            }
-        }
-        // すべての頂点が平面の裏側にある場合は、AABBは視錐台の外
-        if (inCount == 0)
-        {
-            return false;
-        }
-    }
+	// 6つの各平面に対してテスト
+	for (const auto& plane : frustumPlanes_)
+	{
+		int32_t inCount = 0;
+		// AABBのすべての頂点が平面の裏側にあるかチェック
+		for (int32_t i = 0; i < 8; ++i)
+		{
+			float dist = plane.normal.Dot(points[i]) + plane.distance;
+			if (dist >= 0)
+			{
+				inCount++;
+			}
+		}
+		// すべての頂点が平面の裏側にある場合は、AABBは視錐台の外
+		if (inCount == 0)
+		{
+			return false;
+		}
+	}
 
-    return true; // どの平面の外側にもない場合は、視錐台内にあると判定
+	return true; // どの平面の外側にもない場合は、視錐台内にあると判定
 }
 
 // 実際に動かす

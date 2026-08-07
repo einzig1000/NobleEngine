@@ -278,14 +278,14 @@ namespace Game
 			/// </summary>
 			/// <pram name="cameraID">カメラID</param>
 			/// <returns>マウスのワールド座標</returns>
-			Vector3 Get3DPosition(int32_t cameraID = 0);
+			Vector3 Get3DPosition(int32_t cameraID);
 
 			/// <summary>
 			/// マウスのワールド座標レイ取得
 			/// </summary>
 			/// <pram name="cameraID">カメラID</param>
 			/// <returns>マウスのワールド座標レイ</returns>
-			Ray GetRay(int32_t cameraID = 0);
+			Ray GetRay(int32_t cameraID);
 
 			/// <summary>
 			/// マウスホイールの回転量取得
@@ -440,21 +440,21 @@ namespace Game
 		namespace Getter
 		{
 			/// <returns>カメラが向いてる座標</returns>
-			Vector3 GetCenter(int32_t cameraID = 0);
+			Vector3 GetCenter(int32_t cameraID);
 			/// <returns>カメラのワールド座標</returns>
-			Vector3 GetTranslate(int32_t cameraID = 0);
+			Vector3 GetTranslate(int32_t cameraID);
 			/// <returns>カメラのCenterまでの距離</returns>
-			float GetDistance(int32_t cameraID = 0);
+			float GetDistance(int32_t cameraID);
 			/// <returns>カメラのビュープロジェクション行列</returns>
-			Matrix4x4 GetViewProjectionMatrix(int32_t cameraID = 0);
+			Matrix4x4 GetViewProjectionMatrix(int32_t cameraID);
 			/// <returns>カメラの正射影プロジェクション行列</returns>
-			Matrix4x4 GetOrthoProjectionMatrix(int32_t cameraID = 0);
+			Matrix4x4 GetOrthoProjectionMatrix(int32_t cameraID);
 			/// <returns>カメラのビュー行列</returns>
-			Matrix4x4 GetViewMatrix(int32_t cameraID = 0);
+			Matrix4x4 GetViewMatrix(int32_t cameraID);
 			/// <returns>カメラのプロジェクション行列</returns>
-			Matrix4x4 GetProjectionMatrix(int32_t cameraID = 0);
+			Matrix4x4 GetProjectionMatrix(int32_t cameraID);
 			/// <returns>カメラのビルボード行列</returns>
-			Matrix4x4 GetBillboardMatrix(int32_t cameraID = 0);
+			Matrix4x4 GetBillboardMatrix(int32_t cameraID);
 		};
 
 		namespace Setter
@@ -465,7 +465,7 @@ namespace Game
 			/// <param name="target">目標座標</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetCenter(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetCenter(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			///	カメラの回転量変更
@@ -473,7 +473,7 @@ namespace Game
 			/// <param name="target">目標回転量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetRotate(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetRotate(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			///  カメラの回転中心からの距離(ズーム量)変更
@@ -481,7 +481,7 @@ namespace Game
 			/// <param name="target">目標ズーム量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetDistance(float target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetDistance(float target, int32_t spendFrame, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			/// カメラのスクリーンサイズ変更
@@ -490,7 +490,7 @@ namespace Game
 			/// <param name="spendFrame">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetScreenSize(Vector2 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetScreenSize(Vector2 target, int32_t spendFrame, EaseType easetype, int32_t cameraID);
 			
 			/// <summary>
 			/// カメラのfovY変更
@@ -499,18 +499,18 @@ namespace Game
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetFovTarget(float target, int32_t duration, EaseType easetype, int32_t cameraID = 0);
+			void SetFovTarget(float target, int32_t duration, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			/// カメラコントロールの有効無効設定
 			/// </summary>
-			void SetEnableControl(bool enable, int32_t cameraID = 0);
+			void SetEnableControl(bool enable, int32_t cameraID);
 
 			/// <summary>
 			/// カメラモード(オービット or FPS)切り替え
 			/// </summary>
 			/// <param name="mode">カメラモード</param>
-			void SetCameraMode(CameraMode_ORBIT_FPS mode, int32_t cameraID = 0);
+			void SetCameraMode(CameraMode_ORBIT_FPS mode, int32_t cameraID);
 		}
 
 		namespace Shake
@@ -527,23 +527,23 @@ namespace Game
 			/// 今シェイクしているか
 			/// </summary>
 			/// <returns>今シェイクしているか</returns>
-			bool IsShaking(int32_t cameraID = 0);
+			bool IsShaking(int32_t cameraID);
 
 			/// <summary>
 			/// シェイク停止
 			/// </summary>
-			void Stop(int32_t cameraID = 0);
+			void Stop(int32_t cameraID);
 		}
 
 		int32_t AddCamera(const std::string& name = "");
-		void Update(int32_t cameraID = 0);
+		void Update(int32_t cameraID);
 
 		/// <summary>
 		/// 描画範囲内にAABBがあるか
 		/// </summary>
 		/// <param name="aabb">検索対象のAABB</param>
 		/// <returns>結果</returns>
-		bool InCamera(const AABB& aabb, int32_t cameraID = 0);
+		bool InCamera(const AABB& aabb, int32_t cameraID);
 	};
 
 	namespace Utilities
