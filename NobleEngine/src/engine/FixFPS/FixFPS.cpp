@@ -1,10 +1,11 @@
 #include "FixFPS/FixFPS.h"
 #include <thread>
-#include <algorithm>
 
 FixFPS::FixFPS()
 {
 	previousTime_ = std::chrono::steady_clock::now();
+
+	SetTargetFPS(60);
 }
 
 void FixFPS::Update()

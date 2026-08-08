@@ -13,7 +13,6 @@ class BaseCharacter
 {
 private:
 
-	UIManager* uiManager_ = nullptr;
 	MapManager* mapManager_ = nullptr;
 
 	ItemInventory inventory_;	// 所持アイテム管理
@@ -32,7 +31,6 @@ public:
 
 	virtual void Initialize() = 0;
 	virtual void SetMapManager(MapManager* mapManager) { mapManager_ = mapManager; }
-	virtual void SetUIManager(UIManager* uiManager) { uiManager_ = uiManager; }
 	virtual void Update(int32_t cameraID) = 0;
 	virtual void Draw(int32_t renderTextureID) = 0;
 	virtual void UpdateHaveItem(int32_t cameraID);			// 手に持っているアイテムの更新
@@ -87,8 +85,8 @@ protected:
 
 	int32_t c_viewCameraID_ = -1;	// 視線カメラID
 
-	float jumpPower_ = 0.2f;	// ジャンプ力
-	float speed_ = 0.30f;		// 移動速度
+	float jumpPower_ = 0.1f;	// ジャンプ力
+	float speed_ = 0.10f;		// 移動速度
 	int32_t HP_ = 20;			// 体力
 	int32_t maxHP_ = 20;		// 最大体力
 	int32_t defense_ = 0;		// 防御力

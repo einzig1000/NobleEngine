@@ -26,33 +26,31 @@ cbuffer radius : register(b1)
 {
     int radius; // ぼかし半径
 }
+cbuffer TexelSize : register(b2)
+{
+    float2 texelSize; // テクセルサイズ
+}
 
 Texture2D<float4> textures[] : register(t0);
 SamplerState gSampler : register(s0);
 
 PSOutput main(PSInput input)
 {
-    float2 size;
-    textures[textureIndex].GetDimensions(size.x, size.y);
-    float2 texel = rcp(size);
-
-    // radiusからsigmaを自動算出（n/3はカーネル端まで滑らかに減衰させる経験則）
     float sigma = max(float(radius) / 3.0f, 0.0001f);
 
-    float3 sum = float3(0.0f, 0.0f, 0.0f);
+    float4 sum = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float weightSum = 0.0f;
 
     [loop]
     for (int i = -radius; i <= radius; ++i)
     {
         float w = gauss1D(float(i), sigma);
-        float2 uv = input.TexCoord + float2(0.0f, texel.y * i);
-        sum += textures[textureIndex].Sample(gSampler, uv).rgb * w;
+        float2 uv = input.TexCoord + float2(0.0f, texelSize.y * i);
+        sum += textures[textureIndex].Sample(gSampler, uv) * w;
         weightSum += w;
     }
 
     PSOutput output;
-    output.Color.rgb = sum * rcp(weightSum);
-    output.Color.a = 1.0f;
+    output.Color = sum * rcp(weightSum);
     return output;
 }

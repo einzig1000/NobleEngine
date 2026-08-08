@@ -31,15 +31,16 @@ enum class CharacterID
 
 enum class ItemGenre
 {
-	None = 0,
 	// 防具
-	Armor = 1,
+	Armor,
 	// ツール
-	Tool = 2,
+	Tool,
 	// ブロック
-	Block = 3,
+	Block,
 	// オブジェクト(かまどとかチェスト)
-	Object = 4,
+	Object,
+
+	MAX
 };
 
 
@@ -229,7 +230,7 @@ struct ItemInfo
 	// アイテムID
 	ItemID id = ItemID::MAX;
 	// アイテムジャンル
-	ItemGenre genre = ItemGenre::None;
+	ItemGenre genre = ItemGenre::MAX;
 
 	// ブロックとして扱う時のデータ
 	BlockID blockID = BlockID::MAX;
@@ -240,302 +241,9 @@ struct ItemInfo
 };
 
 
-
-
-
-// 宣言だけ。未対応のEnumで使うとコンパイルエラーになる
-template <class Enum>
-struct EnumStringTraits;
-
-template <class Enum>
-std::string EnumToString(Enum value)
-{
-	return EnumStringTraits<Enum>::ToString(value);
-}
-
-template <class Enum>
-Enum StringToEnum(std::string_view str)
-{
-	return EnumStringTraits<Enum>::FromString(str);
-}
-
-template <>
-struct EnumStringTraits<BlockID>
-{
-	static std::string ToString(BlockID id)
-	{
-		switch (id)
-		{
-		case BlockID::Air:		return "Air";	break;
-		case BlockID::Stone:	return "Stone"; break;
-		case BlockID::Iron:		return "Iron"; break;
-		case BlockID::Gold:		return "Gold"; break;
-		case BlockID::Diamond:	return "Diamond"; break;
-		case BlockID::Bedrock:	return "Bedrock"; break;
-		case BlockID::Glass:	return "Glass"; break;
-		case BlockID::Dirt:		return "Dirt"; break;
-		case BlockID::Grass:	return "Grass"; break;
-		case BlockID::Wood:		return "wood"; break;
-		case BlockID::Leaf:		return "Leaf"; break;
-		case BlockID::MAX:		return "unknown"; break;
-		}
-
-		return "unknown";
-	}
-	static BlockID FromString(std::string_view str)
-	{
-		if (str == "Air")		return BlockID::Air;
-		if (str == "Stone")		return BlockID::Stone;
-		if (str == "Iron")		return BlockID::Iron;
-		if (str == "Gold")		return BlockID::Gold;
-		if (str == "Diamond")	return BlockID::Diamond;
-		if (str == "Bedrock")	return BlockID::Bedrock;
-		if (str == "Glass")		return BlockID::Glass;
-		if (str == "Dirt")		return BlockID::Dirt;
-		if (str == "Grass")		return BlockID::Grass;
-		if (str == "wood")		return BlockID::Wood;
-		if (str == "Leaf")		return BlockID::Leaf;
-
-		return BlockID::MAX;
-	}
-};
-
-template <>
-struct EnumStringTraits<ToolID>
-{
-	static std::string ToString(ToolID id)
-	{
-		switch (id)
-		{
-		case ToolID::MAX:				return "None"; break;
-		case ToolID::Sword_of_Wood:		return "Sword_of_Wood"; break;
-		case ToolID::Sword_of_Stone:	return "Sword_of_Stone"; break;
-		case ToolID::Sword_of_Iron:		return "Sword_of_Iron"; break;
-		case ToolID::Sword_of_Gold:		return "Sword_of_Gold"; break;
-		case ToolID::Sword_of_Diamond:	return "Sword_of_Diamond"; break;
-		case ToolID::Pickel_of_Wood:	return "Pickel_of_Wood"; break;
-		case ToolID::Pickel_of_Stone:	return "Pickel_of_Stone"; break;
-		case ToolID::Pickel_of_Iron:	return "Pickel_of_Iron"; break;
-		case ToolID::Pickel_of_Gold:	return "Pickel_of_Gold"; break;
-		case ToolID::Pickel_of_Diamond:	return "Pickel_of_Diamond"; break;
-		case ToolID::Axe_of_Wood:		return "Axe_of_Wood"; break;
-		case ToolID::Axe_of_Stone:		return "Axe_of_Stone"; break;
-		case ToolID::Axe_of_Iron:		return "Axe_of_Iron"; break;
-		case ToolID::Axe_of_Gold:		return "Axe_of_Gold"; break;
-		case ToolID::Axe_of_Diamond:	return "Axe_of_Diamond"; break;
-		default:
-			break;
-		}
-		return "unknown";
-	}
-
-	static ToolID FromString(std::string_view str)
-	{
-		if (str == "None")				return ToolID::MAX;
-		if (str == "Sword_of_Wood")		return ToolID::Sword_of_Wood;
-		if (str == "Sword_of_Stone")	return ToolID::Sword_of_Stone;
-		if (str == "Sword_of_Iron")		return ToolID::Sword_of_Iron;
-		if (str == "Sword_of_Gold")		return ToolID::Sword_of_Gold;
-		if (str == "Sword_of_Diamond")	return ToolID::Sword_of_Diamond;
-		if (str == "Pickel_of_Wood")	return ToolID::Pickel_of_Wood;
-		if (str == "Pickel_of_Stone")	return ToolID::Pickel_of_Stone;
-		if (str == "Pickel_of_Iron")	return ToolID::Pickel_of_Iron;
-		if (str == "Pickel_of_Gold")		return ToolID::Pickel_of_Gold;
-		if (str == "Pickel_of_Diamond")	return ToolID::Pickel_of_Diamond;
-		if (str == "Axe_of_Wood")		return ToolID::Axe_of_Wood;
-		if (str == "Axe_of_Stone")		return ToolID::Axe_of_Stone;
-		if (str == "Axe_of_Iron")		return ToolID::Axe_of_Iron;
-		if (str == "Axe_of_Gold")		return ToolID::Axe_of_Gold;
-		if (str == "Axe_of_Diamond")		return ToolID::Axe_of_Diamond;
-		return ToolID::MAX;
-	}
-};
-
-
-template <>
-struct EnumStringTraits<ItemID>
-{
-	static std::string ToString(ItemID id)
-	{
-		switch (id)
-		{
-		case ItemID::MAX:
-		case ItemID::Tool_Sword_of_Wood:		return "Tool_Sword_of_Wood";	break;
-		case ItemID::Tool_Sword_of_Stone:		return "Tool_Sword_of_Stone";	break;
-		case ItemID::Tool_Sword_of_Iron:		return "Tool_Sword_of_Iron";	break;
-		case ItemID::Tool_Sword_of_Gold:		return "Tool_Sword_of_Gold";	break;
-		case ItemID::Tool_Sword_of_Diamond:		return "Tool_Sword_of_Diamond";	break;
-		case ItemID::Tool_Pickel_of_Wood:		return "Tool_Pickel_of_Wood";	break;
-		case ItemID::Tool_Pickel_of_Stone:		return "Tool_Pickel_of_Stone";	break;
-		case ItemID::Tool_Pickel_of_Iron:		return "Tool_Pickel_of_Iron";	break;
-		case ItemID::Tool_Pickel_of_Gold:		return "Tool_Pickel_of_Gold";	break;
-		case ItemID::Tool_Pickel_of_Diamond:	return "Tool_Pickel_of_Diamond";	break;
-		case ItemID::Tool_Axe_of_Wood:			return "Tool_Axe_of_Wood";	break;
-		case ItemID::Tool_Axe_of_Stone:			return "Tool_Axe_of_Stone";	break;
-		case ItemID::Tool_Axe_of_Iron:			return "Tool_Axe_of_Iron";	break;
-		case ItemID::Tool_Axe_of_Gold:			return "Tool_Axe_of_Gold";	break;
-		case ItemID::Tool_Axe_of_Diamond:		return "Tool_Axe_of_Diamond";	break;
-		case ItemID::Armor_Head_of_Wood:		return "Armor_Head_of_Wood";	break;
-		case ItemID::Armor_Head_of_Stone:		return "Armor_Head_of_Stone";	break;
-		case ItemID::Armor_Head_of_Iron:		return "Armor_Head_of_Iron";	break;
-		case ItemID::Armor_Head_of_Gold:		return "Armor_Head_of_Gold";	break;
-		case ItemID::Armor_Head_of_Diamond:		return "Armor_Head_of_Diamond";	break;
-		case ItemID::Armor_Leg_of_Wood:			return "Armor_Leg_of_Wood";	break;
-		case ItemID::Armor_Leg_of_Stone:		return "Armor_Leg_of_Stone";	break;
-		case ItemID::Armor_Leg_of_Iron:			return "Armor_Leg_of_Iron";	break;
-		case ItemID::Armor_Leg_of_Gold:			return "Armor_Leg_of_Gold";	break;
-		case ItemID::Armor_Leg_of_Diamond:		return "Armor_Leg_of_Diamond";	break;
-		case ItemID::Armor_Shoes_of_Wood:		return "Armor_Shoes_of_Wood";	break;
-		case ItemID::Armor_Shoes_of_Stone:		return "Armor_Shoes_of_Stone";	break;
-		case ItemID::Armor_Shoes_of_Iron:		return "Armor_Shoes_of_Iron";	break;
-		case ItemID::Armor_Shoes_of_Gold:		return "Armor_Shoes_of_Gold";	break;
-		case ItemID::Armor_Shoes_of_Diamond:	return "Armor_Shoes_of_Diamond";	break;
-		case ItemID::Armor_Body_of_Wood:		return "Armor_Body_of_Wood";	break;
-		case ItemID::Armor_Body_of_Stone:		return "Armor_Body_of_Stone";	break;
-		case ItemID::Armor_Body_of_Iron:		return "Armor_Body_of_Iron";	break;
-		case ItemID::Armor_Body_of_Gold:		return "Armor_Body_of_Gold";	break;
-		case ItemID::Armor_Body_of_Diamond:		return "Armor_Body_of_Diamond";	break;
-		case ItemID::Block_Air:					return "Block_Air";	break;
-		case ItemID::Block_Stone:				return "Block_Stone";	break;
-		case ItemID::Block_Iron:				return "Block_Iron";	break;
-		case ItemID::Block_Gold:				return "Block_Gold";	break;
-		case ItemID::Block_Diamond:				return "Block_Diamond";	break;
-		case ItemID::Block_Bedrock:				return "Block_Bedrock";	break;
-		case ItemID::Block_Glass:				return "Block_Glass";	break;
-		case ItemID::Block_Dirt:				return "Block_Dirt";	break;
-		case ItemID::Block_Grass:				return "Block_Grass";	break;
-		case ItemID::Block_Wood:				return "Block_Wood";	break;
-		case ItemID::Block_Leaf:				return "Block_Leaf";	break;
-		case ItemID::鉄インゴット:				return "鉄インゴット";	break;
-		case ItemID::金インゴット:				return "金インゴット";	break;
-		case ItemID::ダイヤモンド:				return "ダイヤモンド";	break;
-		case ItemID::ビーコン:					return "ビーコン";	break;
-		default:
-			break;
-		}
-
-		return "unknown";
-	}
-	static ItemID FromString(std::string_view str)
-	{
-		if (str == "None")						return ItemID::MAX;
-		if (str == "Tool_Sword_of_Wood")		return ItemID::Tool_Sword_of_Wood;
-		if (str == "Tool_Sword_of_Stone")		return ItemID::Tool_Sword_of_Stone;
-		if (str == "Tool_Sword_of_Iron")		return ItemID::Tool_Sword_of_Iron;
-		if (str == "Tool_Sword_of_Gold")		return ItemID::Tool_Sword_of_Gold;
-		if (str == "Tool_Sword_of_Diamond")		return ItemID::Tool_Sword_of_Diamond;
-
-		if (str == "Tool_Pickel_of_Wood")		return ItemID::Tool_Pickel_of_Wood;
-		if (str == "Tool_Pickel_of_Stone")		return ItemID::Tool_Pickel_of_Stone;
-		if (str == "Tool_Pickel_of_Iron")		return ItemID::Tool_Pickel_of_Iron;
-		if (str == "Tool_Pickel_of_Gold")		return ItemID::Tool_Pickel_of_Gold;
-		if (str == "Tool_Pickel_of_Diamond")	return ItemID::Tool_Pickel_of_Diamond;
-
-		if (str == "Tool_Axe_of_Wood")			return ItemID::Tool_Axe_of_Wood;
-		if (str == "Tool_Axe_of_Stone")			return ItemID::Tool_Axe_of_Stone;
-		if (str == "Tool_Axe_of_Iron")			return ItemID::Tool_Axe_of_Iron;
-		if (str == "Tool_Axe_of_Gold")			return ItemID::Tool_Axe_of_Gold;
-		if (str == "Tool_Axe_of_Diamond")		return ItemID::Tool_Axe_of_Diamond;
-
-		if (str == "Armor_Head_of_Wood")		return ItemID::Armor_Head_of_Wood;
-		if (str == "Armor_Head_of_Stone")		return ItemID::Armor_Head_of_Stone;
-		if (str == "Armor_Head_of_Iron")		return ItemID::Armor_Head_of_Iron;
-		if (str == "Armor_Head_of_Gold")		return ItemID::Armor_Head_of_Gold;
-		if (str == "Armor_Head_of_Diamond")		return ItemID::Armor_Head_of_Diamond;
-
-		if (str == "Armor_Leg_of_Wood")			return ItemID::Armor_Leg_of_Wood;
-		if (str == "Armor_Leg_of_Stone")		return ItemID::Armor_Leg_of_Stone;
-		if (str == "Armor_Leg_of_Iron")			return ItemID::Armor_Leg_of_Iron;
-		if (str == "Armor_Leg_of_Gold")			return ItemID::Armor_Leg_of_Gold;
-		if (str == "Armor_Leg_of_Diamond")		return ItemID::Armor_Leg_of_Diamond;
-
-		if (str == "Armor_Shoes_of_Wood")		return ItemID::Armor_Shoes_of_Wood;
-		if (str == "Armor_Shoes_of_Stone")		return ItemID::Armor_Shoes_of_Stone;
-		if (str == "Armor_Shoes_of_Iron")		return ItemID::Armor_Shoes_of_Iron;
-		if (str == "Armor_Shoes_of_Gold")		return ItemID::Armor_Shoes_of_Gold;
-		if (str == "Armor_Shoes_of_Diamond")	return ItemID::Armor_Shoes_of_Diamond;
-
-		if (str == "Armor_Body_of_Wood")		return ItemID::Armor_Body_of_Wood;
-		if (str == "Armor_Body_of_Stone")		return ItemID::Armor_Body_of_Stone;
-		if (str == "Armor_Body_of_Iron")		return ItemID::Armor_Body_of_Iron;
-		if (str == "Armor_Body_of_Gold")		return ItemID::Armor_Body_of_Gold;
-		if (str == "Armor_Body_of_Diamond")		return ItemID::Armor_Body_of_Diamond;
-
-		if (str == "Block_Air")					return ItemID::Block_Air;
-		if (str == "Block_Stone")				return ItemID::Block_Stone;
-		if (str == "Block_Iron")				return ItemID::Block_Iron;
-		if (str == "Block_Gold")				return ItemID::Block_Gold;
-		if (str == "Block_Diamond")				return ItemID::Block_Diamond;
-		if (str == "Block_Bedrock")				return ItemID::Block_Bedrock;
-		if (str == "Block_Glass")				return ItemID::Block_Glass;
-		if (str == "Block_Dirt")				return ItemID::Block_Dirt;
-		if (str == "Block_Grass")				return ItemID::Block_Grass;
-		if (str == "Block_Wood")				return ItemID::Block_Wood;
-		if (str == "Block_Leaf")				return ItemID::Block_Leaf;
-
-		if (str == "鉄インゴット")				return ItemID::鉄インゴット;
-		if (str == "金インゴット")				return ItemID::金インゴット;
-		if (str == "ダイヤモンド")				return ItemID::ダイヤモンド;
-		if (str == "ビーコン")					return ItemID::ビーコン;
-
-		return ItemID::MAX;
-	}
-};
-
-template<>
-struct EnumStringTraits<ItemGenre>
-{
-	static std::string_view ToString(ItemGenre value)
-	{
-		switch (value)
-		{
-		case ItemGenre::None:			return "None";		break;
-		case ItemGenre::Armor:			return "Armor";		break;
-		case ItemGenre::Tool:			return "Tool";		break;
-		case ItemGenre::Block:			return "Block";		break;
-		case ItemGenre::Object:			return "Object";	break;
-		default:
-			break;
-		}
-		return "unknown";
-	}
-	static ItemGenre FromString(std::string_view str)
-	{
-		if (str == "Armor")		return ItemGenre::Armor;
-		if (str == "Tool")		return ItemGenre::Tool;
-		if (str == "Block")		return ItemGenre::Block;
-		if (str == "Object")	return ItemGenre::Object;
-		return ItemGenre::None;
-	}
-
-};
-
-template<>
-struct EnumStringTraits<ObjectID>
-{
-	static std::string_view ToString(ObjectID value)
-	{
-		switch (value)
-		{
-		case ObjectID::Chest:	return "None";		break;
-		case ObjectID::kamado:	return "Furnace";	break;
-		default:
-			break;
-		}
-		return "unknown";
-	}
-	static ObjectID FromString(std::string_view str)
-	{
-		if (str == "kamado")	return ObjectID::kamado;
-		if (str == "Chest")	return ObjectID::Chest;
-		return ObjectID::MAX;
-	}
-};
-
-class Block;
 struct lookAtBlock
 {
-	Block* block = nullptr;
+	BlockID* blockID = nullptr;
 	Vector3int chunkIndex = { 0,0,0 };
 	Vector3int localIndex = { 0,0,0 };
 	AABBFace face = AABBFace::NONE;

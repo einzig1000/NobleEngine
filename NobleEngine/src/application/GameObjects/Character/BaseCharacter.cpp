@@ -109,12 +109,12 @@ void BaseCharacter::SetBlock(BlockID id)
 
 void BaseCharacter::DestroyBlockInAABB(const AABB& aabb)
 {
-	mapManager_->DestroyBlockInAABB(aabb);
+	mapManager_->ReplaceBlockInAABB(aabb, BlockID::Air);
 }
 
 void BaseCharacter::DestroyBlockInOBB(const OBB& obb)
 {
-	mapManager_->DestroyBlockInOBB(obb);
+	mapManager_->ReplaceBlockInOBB(obb, BlockID::Air);
 }
 
 void BaseCharacter::RegisterToMap()

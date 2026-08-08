@@ -2,7 +2,6 @@
 === FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Engine.cpp ===
 ========================================
 #include "Engine.h"
-//#include <Utilities/functions.h>
 #include <Window/WindowManager.h>
 #include <DirectX/DirectXManager.h>
 #include <DrawSystem/DrawSystem.h>
@@ -53,7 +52,7 @@ Engine& Engine::Instance()
 }
 
 // 初期化用
-void Engine::Initialize(int width, int height, const std::wstring& title)
+void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title)
 {
 	// COM の初期化
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -143,9 +142,7 @@ void Engine::EndFrame()
 	computeSystem_->DispatchComputeObjects();
 
 	// 描画処理
-	drawSystem_->SceneDraw();
-	drawSystem_->PostEffectDraw();
-	drawSystem_->PreScreenDraw();
+	drawSystem_->Execute();
 
 	dxManager_->BeginRenderPass(dxManager_->GetSwapChain()->GetCurrentRenderTarget(), true);
 	drawSystem_->ScreenDraw();
@@ -157,7 +154,7 @@ void Engine::EndFrame()
 	dxManager_->EndFrame();
 
 	// FPS制限
-	fixFPS_->UpdateFixFPS();
+	fixFPS_->Update();
 }
 void Engine::Quit()
 {
@@ -206,11 +203,7 @@ void Engine::Finalize()
 === FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\Engine.h ===
 ========================================
 #pragma once
-#include "definition/definition.h"
-#include <array>
-#include <vector>
-#include <string>
-#include <wrl/client.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <memory>
 
 class WindowManager;
@@ -238,7 +231,7 @@ public:
 	Engine& operator=(Engine&&) = delete;
 
 	// メインループ用
-	void Initialize(int width, int height, const std::wstring& title);
+	void Initialize(int32_t width, int32_t height, const std::wstring& title);
 	bool ProcessMessage();
 	void BeginFrame();
 	void EndFrame();
@@ -2327,7 +2320,7 @@ SkinCluster ModelLoader::CreateSkinCluster(const ModelData* modelData)
 			for (const auto& vertexWeight : jointWeightData.vertexWeights)
 			{
 				VertexInfluence& influence = skinCluster.mappedInfluences[vertexWeight.vertexIndex];
-				for (int i = 0; i < 4; ++i)
+				for (size_t i = 0; i < 4; ++i)
 				{
 					if (influence.weights[i] == 0.0f)
 					{
@@ -3969,6 +3962,7 @@ DirectXManager::DirectXManager(HWND hwnd)
     swapChainManager = std::make_unique<SwapChainManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), hwnd, descriptorHeapManager.get());
 	renderTextureManager = std::make_unique<RenderTextureManager>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue(), descriptorHeapManager.get());
     synchronizationManager = std::make_unique<SynchronizationManager>(deviceManager->GetDevice());
+    frameProfiler = std::make_unique<FrameProfiler>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue());
 
     Log("コンストラクタ実行成功 : DirectXManager");
 }
@@ -3987,8 +3981,15 @@ void DirectXManager::BeginFrame()
     // フレーム単位の GPU 完了待ち（このフレームで使う CommandAllocator が GPU によってまだ使われている場合は待つ）
     synchronizationManager->WaitForGPU(backBufferIndex);
 
+    // GPU計測結果の読み出し(2フレーム前の分) + CPU計測開始
+    frameProfiler->OnFrameSynced(backBufferIndex);
+    frameProfiler->BeginCpuScope();
+
     // コマンドリストをリセット
     commandContextManager->ResetCommandList(backBufferIndex);
+
+    // GPU計測区間の開始
+    frameProfiler->BeginGpuScope(commandContextManager->GetCommandList(backBufferIndex), backBufferIndex);
 
 	// SRV/UAV用のDescriptorHeapをセット
     ID3D12DescriptorHeap* descriptorHeaps[] = { descriptorHeapManager->GetSRV_UAVManager()->GetSRVDescriptorHeap() };
@@ -4048,6 +4049,10 @@ void DirectXManager::EndFrame()
     // バックバッファのインデックスを取得
     UINT backBufferIndex = swapChainManager->GetCurrentBackBufferIndex();
 
+    // GPU計測区間の終了 + CPU計測終了
+    frameProfiler->EndGpuScope(commandContextManager->GetCommandList(backBufferIndex), backBufferIndex);
+    frameProfiler->EndCpuScope();
+
     // コマンドリストを確定・実行
     HRESULT hr = commandContextManager->GetCommandList(backBufferIndex)->Close();
     if (FAILED(hr))
@@ -4089,6 +4094,7 @@ void DirectXManager::Resize()
 #include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
 #include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
 #include <DirectX/SynchronizationManager/SynchronizationManager.h>
+#include <DirectX/FrameProfiler/FrameProfiler.h>
 
 /// <summary>
 /// DirectX管理クラス
@@ -4106,16 +4112,18 @@ public:
     PipelineStateManager* GetPipelineStateManager() const { return pipelineStateManager.get(); }
     SynchronizationManager* GetSynchronizationManager() const { return synchronizationManager.get(); }
     RenderTextureManager* GetRenderTextureManager() const { return renderTextureManager.get(); }
+    FrameProfiler* GetFrameProfiler() const { return frameProfiler.get(); }
+
     // フレーム開始処理
     void BeginFrame();
+    // フレーム終了処理
+    void EndFrame();
 
     // 書き込みたいRenderTextureを指定してResourceのStateをD3D12_RESOURCE_STATE_RENDER_TARGETに遷移させる。
     void BeginRenderPass(RenderTarget* target, bool isDepthWrite);
     // SetRenderTargetで変えたResouruceのStateをD3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCEに遷移させる。
 	void EndRenderPass(RenderTarget* target, bool isDepthWrite, D3D12_RESOURCE_STATES nextState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-    // フレーム終了処理
-    void EndFrame();
     void Resize();
 
 private:
@@ -4126,6 +4134,7 @@ private:
     std::unique_ptr<DescriptorHeapManager> descriptorHeapManager;
     std::unique_ptr<SynchronizationManager> synchronizationManager;
 	std::unique_ptr<RenderTextureManager> renderTextureManager;
+    std::unique_ptr<FrameProfiler> frameProfiler;
 };
 
 
@@ -4904,6 +4913,155 @@ private:
 
 
 ========================================
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\DirectX\FrameProfiler\FrameProfiler.cpp ===
+========================================
+#include "FrameProfiler.h"
+
+FrameProfiler::FrameProfiler(ID3D12Device2* device, ID3D12CommandQueue* commandQueue)
+{
+    // GPUタイムスタンプの周波数(1秒あたりのtick数)を取得。tick→秒の変換に使う
+    HRESULT hr = commandQueue->GetTimestampFrequency(&gpuFrequency_);
+    assert(SUCCEEDED(hr));
+
+    // フレームバッファ枚数(kFrameCount)分 × 2発(開始/終了)のタイムスタンプクエリ
+    D3D12_QUERY_HEAP_DESC queryHeapDesc{};
+    queryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+    queryHeapDesc.Count = Constexprs::kFrameCount * kQueriesPerFrame;
+    hr = device->CreateQueryHeap(&queryHeapDesc, IID_PPV_ARGS(&queryHeap_));
+    assert(SUCCEEDED(hr));
+
+    // クエリ結果の読み出し先(READBACKヒープ)
+    D3D12_RESOURCE_DESC resourceDesc{};
+    resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    resourceDesc.Width = sizeof(uint64_t) * Constexprs::kFrameCount * kQueriesPerFrame;
+    resourceDesc.Height = 1;
+    resourceDesc.DepthOrArraySize = 1;
+    resourceDesc.MipLevels = 1;
+    resourceDesc.SampleDesc.Count = 1;
+    resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+    D3D12_HEAP_PROPERTIES heapProps{};
+    heapProps.Type = D3D12_HEAP_TYPE_READBACK;
+
+    hr = device->CreateCommittedResource(
+        &heapProps, D3D12_HEAP_FLAG_NONE, &resourceDesc,
+        D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+        IID_PPV_ARGS(&readbackBuffer_));
+    assert(SUCCEEDED(hr));
+    readbackBuffer_->SetName(L"FrameProfiler::readbackBuffer_");
+
+    // READBACKバッファはCPUから読むだけなので永続的にMapしっぱなしでOK
+    D3D12_RANGE readRange{ 0, 0 }; // 初回はまだ何も書かれていないのでrange={0,0}
+    readbackBuffer_->Map(0, &readRange, &mappedReadback_);
+}
+
+FrameProfiler::~FrameProfiler()
+{}
+
+void FrameProfiler::OnFrameSynced(UINT frameIndex)
+{
+    // WaitForGPU(frameIndex)が完了した直後
+    const uint64_t* ticks = reinterpret_cast<const uint64_t*>(
+        static_cast<const uint8_t*>(mappedReadback_) + sizeof(uint64_t) * kQueriesPerFrame * frameIndex);
+
+    const uint64_t begin = ticks[0];
+    const uint64_t end = ticks[1];
+
+    // まだ一度もこのframeIndexで書き込んでいない場合はbegin/endが両方0なのでスキップ
+    if (end > begin)
+    {
+        const double seconds = double(end - begin) / double(gpuFrequency_);
+        gpuDeltaTimeMs_ = static_cast<float>(seconds * 1000.0);
+    }
+}
+
+void FrameProfiler::BeginGpuScope(ID3D12GraphicsCommandList6* cmdList, UINT frameIndex)
+{
+    cmdList->EndQuery(queryHeap_.Get(), D3D12_QUERY_TYPE_TIMESTAMP, frameIndex * kQueriesPerFrame + 0);
+}
+
+void FrameProfiler::EndGpuScope(ID3D12GraphicsCommandList6* cmdList, UINT frameIndex)
+{
+    cmdList->EndQuery(queryHeap_.Get(), D3D12_QUERY_TYPE_TIMESTAMP, frameIndex * kQueriesPerFrame + 1);
+
+    // クエリ結果をREADBACKバッファへコピー。
+    // 実際にCPUから読めるのは、次回このframeIndexが回ってきてWaitForGPUした後(OnFrameSynced)。
+    cmdList->ResolveQueryData(
+        queryHeap_.Get(), D3D12_QUERY_TYPE_TIMESTAMP,
+        frameIndex * kQueriesPerFrame, kQueriesPerFrame,
+        readbackBuffer_.Get(), sizeof(uint64_t) * kQueriesPerFrame * frameIndex);
+}
+
+void FrameProfiler::BeginCpuScope()
+{
+    cpuBeginTime_ = std::chrono::steady_clock::now();
+}
+
+void FrameProfiler::EndCpuScope()
+{
+    const auto now = std::chrono::steady_clock::now();
+    cpuDeltaTimeMs_ = std::chrono::duration<float, std::milli>(now - cpuBeginTime_).count();
+}
+
+
+
+========================================
+=== FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\DirectX\FrameProfiler\FrameProfiler.h ===
+========================================
+#pragma once
+#include <d3d12.h>
+#include <wrl.h>
+#include <chrono>
+#include <cstdint>
+#include <cassert>
+#include <EngineDefinition/EngineConstexprs.h>
+
+// フレームごとのCPU/GPU処理時間を計測するクラス。
+// GPU計測はID3D12QueryHeap(TIMESTAMP)を使い、WaitForGPUで同期が取れているタイミングで
+// kFrameCount分前に書き込んだ結果を読み出す(新たなフェンス待ちを追加しない)。
+// CPU計測はstd::chronoで、GPU待ち・FixFPSのFPS制限sleepを含まない
+// 「純粋なCPU作業時間(コマンド構築等)」を測る。
+class FrameProfiler
+{
+public:
+    FrameProfiler(ID3D12Device2* device, ID3D12CommandQueue* commandQueue);
+    ~FrameProfiler();
+
+    // BeginFrame内、WaitForGPU(frameIndex)の直後に呼ぶ
+    void OnFrameSynced(UINT frameIndex);
+
+    // BeginFrame内、コマンドリストのリセット直後に呼ぶ(GPU計測区間の開始)
+    void BeginGpuScope(ID3D12GraphicsCommandList6* cmdList, UINT frameIndex);
+    // EndFrame内、Close()の直前に呼ぶ(GPU計測区間の終了+結果のResolve)
+    void EndGpuScope(ID3D12GraphicsCommandList6* cmdList, UINT frameIndex);
+
+    // BeginFrame内、WaitForGPU直後(OnFrameSyncedと同じ位置)に呼ぶ
+    void BeginCpuScope();
+    // EndFrame内、Close()の直前に呼ぶ
+    void EndCpuScope();
+
+    float GetCpuDeltaTimeMs() const { return cpuDeltaTimeMs_; }
+    float GetGpuDeltaTimeMs() const { return gpuDeltaTimeMs_; }
+    float GetCpuFPS() const { return cpuDeltaTimeMs_ > 0.0f ? 1000.0f / cpuDeltaTimeMs_ : 0.0f; }
+    float GetGpuFPS() const { return gpuDeltaTimeMs_ > 0.0f ? 1000.0f / gpuDeltaTimeMs_ : 0.0f; }
+
+private:
+    static constexpr uint32_t kQueriesPerFrame = 2; // 開始/終了の2発
+
+    Microsoft::WRL::ComPtr<ID3D12QueryHeap> queryHeap_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> readbackBuffer_;
+    void* mappedReadback_ = nullptr;
+
+    uint64_t gpuFrequency_ = 1;
+
+    std::chrono::steady_clock::time_point cpuBeginTime_{};
+    float cpuDeltaTimeMs_ = 0.0f;
+    float gpuDeltaTimeMs_ = 0.0f;
+};
+
+
+
+========================================
 === FILE: C:\Users\K024G\Desktop\A_CG2\NobleEngine\NobleEngine\src\engine\DirectX\Pipeline\RenderPipelineTypes.h ===
 ========================================
 #pragma once
@@ -5675,10 +5833,19 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
         filePath.c_str(),			// コンパイル対象のhlslファイル名
         L"-E", L"main",				// エントリーポイントの指定。基本的にmain
         L"-T", profile,				// ShaderProfileの設定
-        L"-Zi", L"-Qembed_debug",	// デバック用の情報を埋め込む
-        L"-Od",						// 最適化を外しておく
+        //L"-Zi", L"-Qembed_debug",	// デバック用の情報を埋め込む
+        //L"-Od",					// 最適化を外しておく
         L"-Zpr",					// 目盛レイアウトは行優先
     };
+
+    //LPCWSTR arguments[] = {
+    //filePath.c_str(),
+    //L"-E", L"main",
+    //L"-T", profile,
+    //L"-Zpr",
+    //L"-I", L"resources/shaders",   // ← これを追加
+    //};
+
     // 実際にシェーダーをコンパイルする
     IDxcResult* shaderResult = nullptr;
     hr = dxcCompiler->Compile(
@@ -5706,8 +5873,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
 
     if (shaderError != nullptr && shaderError->GetStringLength() != 0)
     {
-		Log("シェーダーのコンパイルに警告・エラーが出ました。");
-        Log(shaderError->GetStringPointer());
+		Log("シェーダーのコンパイルに警告・エラーが出ました。%s", (const char*)shaderError->GetStringPointer());
         assert(false); // コンパイルエラーが発生した場合は停止
     }
 
@@ -6158,9 +6324,10 @@ struct RenderTarget
 	D3D12_RECT scissorRect{};
 	D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON;
 	D3D12_RESOURCE_STATES dsvState = D3D12_RESOURCE_STATE_COMMON;
-	float clearColor[4] = { 0.53f, 0.53f, 0.53f, 1.0f };
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	std::string name;
 };
+
 
 
 
@@ -6196,9 +6363,9 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
     rt->width = width;
     rt->height = height;
     rt->format = format;
-	rt->clearColor[0] = 0.53f;
-	rt->clearColor[1] = 0.53f;
-	rt->clearColor[2] = 0.53f;
+	rt->clearColor[0] = 0.11f;
+	rt->clearColor[1] = 0.11f;
+	rt->clearColor[2] = 0.11f;
 	rt->clearColor[3] = clearColorA;
 
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
@@ -6249,7 +6416,7 @@ bool RenderTextureManager::SaveTexture(const std::string& filePath, std::string 
 	// もし同じ名前のファイルが存在していたらtextureName2みたいにして保存する
 	if (std::filesystem::exists(fullPath))
 	{
-		int suffix = 2;
+		int32_t suffix = 2;
 		while (true)
 		{
 			fullPath = filePath + "/" + textureName + std::to_string(suffix) + ".png";
@@ -6488,7 +6655,7 @@ void SwapChainManager::InitializeRenderTargetView(ID3D12Device2* device)
     rtvDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     rtvDesc_.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
-    for (int i = 0; i < 2; ++i)
+    for (size_t i = 0; i < 2; ++i)
     {
         if (rtvAllocations_[i].index == UINT32_MAX)
         {
@@ -6572,7 +6739,7 @@ void SwapChainManager::Resize(ID3D12Device2* device, ID3D12CommandQueue* command
     hr = swapChain_->GetBuffer(1, IID_PPV_ARGS(&swapChainResources_[1]));
     assert(SUCCEEDED(hr));
 
-    for (int i = 0; i < 2; ++i)
+    for (size_t i = 0; i < 2; ++i)
     {
         if (rtvAllocations_[i].index == UINT32_MAX)
         {
@@ -7203,7 +7370,9 @@ private:
 #include <ImGuiManager/ImGuiManager.h>
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
+#include <Utilities/Logger/Logger.h>
 #include <Engine.h>
+#include <queue>
 
 DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager)
 	:dxManager_(dxManager), assetManager_(assetManager)
@@ -7234,9 +7403,7 @@ void DrawSystem::Reset()
 	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
 	cbAllocators_[backBufferIndex].Reset();
 
-	sceneRenderObjects_.clear();
-	postEffectRenderObjects_.clear();
-	screenRenderObjects_.clear();
+	drawNodes_.clear();
 }
 
 ///// いつかRenderObjectリストをソートしたい
@@ -7244,20 +7411,81 @@ void DrawSystem::Reset()
 //② トポロジ
 //③ ルートシグネチャ
 
-
-void DrawSystem::AddSceneDrawList(const RenderObject* renderObject, int32_t renderTextureID)
+void DrawSystem::AddDrawList(const RenderObject* renderObject, int32_t RenderTargetID, const std::vector<int32_t>& deps)
 {
-	sceneRenderObjects_[renderTextureID].push_back(renderObject);
+	int32_t targetID = RenderTargetID;
+
+	if (targetID == -1)
+	{
+		targetID = rt_nobleScreenID_;
+	}
+
+	// RenderTargetIDに書き込むRenderObjectを保存
+	drawNodes_[targetID].objects.push_back(renderObject);
+	// 自身を書き込む前に書き込み終了していてほしいRenderTargetIDを保存
+	for (int32_t dep : deps)
+	{
+		drawNodes_[targetID].deps.insert(dep);
+	}
 }
 
-void DrawSystem::AddPostEffectDrawList(const RenderObject* renderObject, int32_t renderTextureID)
+std::vector<int32_t> DrawSystem::SortNodes()
 {
-	postEffectRenderObjects_[renderTextureID].push_back(renderObject);
-}
+	// inDegree[rtID] = このrtIDのRTがあと何個のRTの完了を待っているか
+	std::unordered_map<int32_t, int32_t> inDegree;
+	// dependents[rtID] = このrtIDのRTの書き込み終了を待っていたRTのid一覧
+	std::unordered_map<int32_t, std::vector<int32_t>> dependents;
+	// 全ノードの入次数を0で初期化
+	for (const auto& [rtID, node] : drawNodes_)
+	{
+		inDegree[rtID] = 0;
+	}
 
-void DrawSystem::AddScreenDrawList(const RenderObject* renderObject)
-{
-	screenRenderObjects_.push_back(renderObject);
+	// 実際に依存関係を数え上げ、逆引きテーブル(dependents)も同時に構築する
+	for (const auto& [rtID, node] : drawNodes_)
+	{
+		for (int32_t dep : node.deps)
+		{
+			// depが 今フレーム誰も書き込んでいないRT を指しているなら無視
+			if (!drawNodes_.contains(dep)) continue;
+
+			// depの書き込み終わったらrtIDをチェックしにいく という逆引きを登録
+			dependents[dep].push_back(rtID);
+			// rtIDは依存が1つ増えたので入次数を+1
+			inDegree[rtID]++;
+		}
+	}
+
+
+	std::queue<int32_t> ready;
+	for (const auto& [rtID, deg] : inDegree)
+	{
+		// 他RT参照が0のRTは無条件描画
+		if (deg == 0) ready.push(rtID);
+	}
+
+	// 実際の描画順
+	std::vector<int32_t> order;
+	while (!ready.empty())
+	{
+		int32_t rtID = ready.front();
+		ready.pop();
+		order.push_back(rtID);
+
+		// rtIDの描画予約が済んだため、rtIDに依存していたRTの入次数を-1する
+		for (int32_t next : dependents[rtID])
+		{
+			// その時依存が0になったRTは描画可能になるのでreadyに追加
+			if (--inDegree[next] == 0) ready.push(next);
+		}
+	}
+
+	if (order.size() != drawNodes_.size())
+	{
+		Log("DrawSystem: 依存グラフに循環があります。描画順序を解決できません。");
+		assert(false);
+	}
+	return order;
 }
 
 void DrawSystem::DrawObject(const RenderObject* renderObject)
@@ -7305,12 +7533,6 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 		const ModelData* obj = assetManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
 		if (!obj)return;
 		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-		//D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
-		//	obj->vertexBufferView,
-		//	obj->skinCluster.influenceBufferView
-		//};
-		// 5)頂点バッファをバインド
-		//cmdList->IASetVertexBuffers(0, 2, vbvs);
 
 		const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
 		if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
@@ -7326,12 +7548,16 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	}
 }
 
-void DrawSystem::SceneDraw()
+void DrawSystem::Execute()
 {
-	for (const auto& [rtID, renderObjects] : sceneRenderObjects_)
+	// 依存関係を満たす安全な描画順を取得
+	const auto order = SortNodes();
+
+	// その順番通りに、RTごとにBeginRenderPass→描画→EndRenderPassを繰り返す
+	for (int32_t rtID : order)
 	{
 		dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), true);
-		for (const auto* renderObject : renderObjects)
+		for (const auto* renderObject : drawNodes_[rtID].objects)
 		{
 			DrawObject(renderObject);
 		}
@@ -7339,34 +7565,11 @@ void DrawSystem::SceneDraw()
 	}
 }
 
-void DrawSystem::PostEffectDraw()
-{
-	for (const auto& [rtID, renderObjects] : postEffectRenderObjects_)
-	{
-		dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), false);
-		for (const auto* renderObject : renderObjects)
-		{
-			DrawObject(renderObject);
-		}
-		dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), false);
-	}
-}
-
-void DrawSystem::PreScreenDraw()
-{
-	dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true);
-	for (const auto* renderObject : screenRenderObjects_)
-	{
-		DrawObject(renderObject);
-	}
-	dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_), true);
-}
-
 void DrawSystem::ScreenDraw()
 {
 	screenRenderObject_->modelID_ = assetManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
-	//DrawObject(screenRenderObject_.get());
+	DrawObject(screenRenderObject_.get());
 
 // デバッグモードの時は、PreScreenDrawで描画した内容をImGuiのウィンドウに表示する
 #ifdef _DEBUG
@@ -7374,7 +7577,6 @@ void DrawSystem::ScreenDraw()
 	ImGui::Begin("mainDisplay");
 	ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
 	ImGui::End();
-
 
 #endif // DEBUG
 }
@@ -7389,7 +7591,16 @@ void DrawSystem::ScreenDraw()
 #include <EngineDefinition/EngineConstexprs.h>
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <RootBinding/FrameCbAllocator/FrameCbAllocator.h>
+#include <cstdint>
+#include <vector>
 #include <memory>
+#include <set>
+
+struct DrawNode
+{
+	std::vector<const RenderObject*> objects;	// このRTに書き込むオブジェクト群
+	std::set<int32_t> deps;						// このRTに書き込む前に描画完了していてほしいRT群
+};
 
 class DirectXManager;
 class AssetManager;
@@ -7403,18 +7614,16 @@ public:
 	DrawSystem(DirectXManager* dxManager, AssetManager* assetManager);
 	~DrawSystem();
 	void Reset();
-	// 指定したレンダーテクスチャに書き込むフェーズ
-	void SceneDraw();
-	// 書き込み終わったレンダーテクスチャにポストエフェクトをかけるフェーズ
-	void PostEffectDraw();
-	// 加工が終わったレンダーテクスチャを利用して最終レンダーテクスチャに書き込むフェーズ
-	void PreScreenDraw();
 	// 最終レンダーテクスチャをバックバッファに書き込むフェーズ
 	void ScreenDraw();
 
-	void AddSceneDrawList(const RenderObject* renderObject, int32_t renderTextureID);
-	void AddPostEffectDrawList(const RenderObject* renderObject, int32_t renderTextureID);
-	void AddScreenDrawList(const RenderObject* renderObject);
+	void AddDrawList(const RenderObject* renderObject, int32_t RenderTargetID, const std::vector<int32_t>& deps);
+	void Execute(); // 旧SceneDraw/PostEffectDraw/PreScreenDrawをこれ1つに統合
+
+private:
+	std::vector<int32_t> SortNodes(); // トポロジカルソート＋循環検出
+	// <書き込み先RenderTextureID, DrawNode>マップ
+	std::unordered_map<int32_t, DrawNode> drawNodes_{};
 
 private:
 	DirectXManager* dxManager_ = nullptr;
@@ -7424,9 +7633,9 @@ private:
 	void DrawObject(const RenderObject* renderObject);
 
 	// <書き込み先RenderTextureID & 描画オブジェクト配列> マップ
-	std::unordered_map<int32_t, std::vector<const RenderObject*>> sceneRenderObjects_{};
-	std::unordered_map<int32_t, std::vector<const RenderObject*>> postEffectRenderObjects_{};
-	std::vector<const RenderObject*> screenRenderObjects_{};
+	//std::unordered_map<int32_t, std::vector<const RenderObject*>> sceneRenderObjects_{};
+	//std::unordered_map<int32_t, std::vector<const RenderObject*>> postEffectRenderObjects_{};
+	//std::vector<const RenderObject*> screenRenderObjects_{};
 
 	// NobleScreen用のRenderObject
 	std::unique_ptr<RenderObject> screenRenderObject_ = nullptr;
@@ -7463,7 +7672,7 @@ private:
 //RenderData_Model::RenderData_Model()
 //{
 //	renderModels.push_back(this);
-//	this->ID = int(renderModels.size());
+//	this->ID = int32_t(renderModels.size());
 //	this->parentModel = nullptr;
 //}
 //
@@ -7608,7 +7817,7 @@ private:
 //		size_t textureCount = Game::Asset::GetTextureCount();
 //	
 //		//static const char* items[] = { "default", "additional" };
-//		//int current_item = static_cast<int>();
+//		//int32_t current_item = static_cast<int32_t>();
 //		//if (ImGui::Combo((num + "texture.mode").c_str(), &current_item, items, IM_ARRAYSIZE(items)))
 //		//{
 //		//	options.dirLight.mode = static_cast<>(current_item);
@@ -7644,7 +7853,7 @@ private:
 //
 //		// ラベルを非表示にするために "##" プレフィックスで ID を与える
 //		std::string dragId = std::string("##model") + num;
-//		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int*>(&this->model));
+//		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int32_t*>(&this->model));
 //
 //		ImGui::SameLine();
 //
@@ -7652,7 +7861,7 @@ private:
 //
 //		// クランプ
 //		if (this->model < 0) this->model = 0;
-//		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
+//		if (this->model > int32_t(Game::Asset::GetModelCount() - 1)) this->model = int32_t(Game::Asset::GetModelCount() - 1);
 //
 //		ImGui::TreePop();
 //	}
@@ -7667,7 +7876,7 @@ private:
 //	{
 //		// 表示名を実際のモードに合わせる
 //		static const char* items[] = { "None", "Normal", "Add", "Sub", "Mul", "Screen", "Wireframe" };
-//		int current_item = static_cast<int>(options.blendMode);
+//		int32_t current_item = static_cast<int32_t>(options.blendMode);
 //		if (ImGui::Combo((num + "blendMode").c_str(), &current_item, items, IM_ARRAYSIZE(items)))
 //		{
 //			options.blendMode = static_cast<BlendMode>(current_item);
@@ -7684,7 +7893,7 @@ private:
 //			ImGui::DragFloat((num + "dirLight.intensity").c_str(), &options.dirLight.intensity, 0.01f, 0.0f, 1.0f);
 //
 //			static const char* items[] = { "None", "Lambert", "HalfLambert" };
-//			int current_item = static_cast<int>(options.dirLight.mode);
+//			int32_t current_item = static_cast<int32_t>(options.dirLight.mode);
 //			if (ImGui::Combo((num + "dirLight.mode").c_str(), &current_item, items, IM_ARRAYSIZE(items)))
 //			{
 //				options.dirLight.mode = static_cast<LightMode>(current_item);
@@ -7774,8 +7983,8 @@ private:
 //		// 5) 結果を transforms.World に格納
 //		XMFLOAT4X4 tmp;
 //		DirectX::XMStoreFloat4x4(&tmp, world);
-//		for (int i = 0; i < 4; ++i)
-//			for (int j = 0; j < 4; ++j)
+//		for (int32_t i = 0; i < 4; ++i)
+//			for (int32_t j = 0; j < 4; ++j)
 //				this->localWorldMatrix.m[i][j] = tmp.m[i][j];
 //	}
 //
@@ -7913,8 +8122,8 @@ private:
 //			// 5) 結果を transforms.World に格納
 //			XMFLOAT4X4 tmp;
 //			DirectX::XMStoreFloat4x4(&tmp, world);
-//			for (int i = 0; i < 4; ++i)
-//				for (int j = 0; j < 4; ++j)
+//			for (int32_t i = 0; i < 4; ++i)
+//				for (int32_t j = 0; j < 4; ++j)
 //					this->localWorldMatrix.m[i][j] = tmp.m[i][j];
 //		}
 //	}
@@ -8007,8 +8216,8 @@ private:
 //	// 5) 結果を transforms.World に格納
 //	XMFLOAT4X4 tmp;
 //	DirectX::XMStoreFloat4x4(&tmp, world);
-//	for (int i = 0; i < 4; ++i)
-//		for (int j = 0; j < 4; ++j)
+//	for (int32_t i = 0; i < 4; ++i)
+//		for (int32_t j = 0; j < 4; ++j)
 //			this->localWorldMatrix.m[i][j] = tmp.m[i][j];
 //}
 //
@@ -8093,7 +8302,7 @@ private:
 ////				Vector3 depth = this->aabbs[j].GetCollisionDepth(target.aabbs[i]);
 ////
 ////				// 衝突ペア・深度の保存
-////				result.AABBpair = CollisionPair{ static_cast<int>(i), static_cast<int>(j) };
+////				result.AABBpair = CollisionPair{ static_cast<int32_t>(i), static_cast<int32_t>(j) };
 ////				result.depth = -depth;
 ////				if (this->mass < target.mass)
 ////				{
@@ -8131,7 +8340,7 @@ private:
 //
 //			// 一番浅い軸を探す
 //			float pen = overlap.x;
-//			int axis = 0; // 0:x, 1:y, 2:z
+//			int32_t axis = 0; // 0:x, 1:y, 2:z
 //			if (overlap.y < pen) { pen = overlap.y; axis = 1; }
 //			if (overlap.z < pen) { pen = overlap.z; axis = 2; }
 //
@@ -8155,7 +8364,7 @@ private:
 //			if (pen < bestPen) {
 //				bestPen = pen;
 //				found = true;
-//				best.AABBpair = CollisionPair{ static_cast<int>(i), static_cast<int>(j) };
+//				best.AABBpair = CollisionPair{ static_cast<int32_t>(i), static_cast<int32_t>(j) };
 //				best.depth = overlap;
 //				best.face = faces;
 //			}
@@ -8186,7 +8395,7 @@ private:
 //RenderData_Sprite::RenderData_Sprite()
 //{
 //	renderSprites.push_back(this);
-//	this->ID = int(renderSprites.size());
+//	this->ID = int32_t(renderSprites.size());
 //}
 //
 //RenderData_Sprite::~RenderData_Sprite()
@@ -8276,7 +8485,7 @@ private:
 //	{
 //		const char* items[] =
 //		{ "Center","CenterLeft","CenterRight","CenterTop","CenterDown","LeftTop","RightTop","LeftDown","RightDown" };
-//		int item_current = int(this->anchor);
+//		int32_t item_current = int32_t(this->anchor);
 //		ImGui::Combo((num + "Anchor").c_str(), &item_current, items, IM_ARRAYSIZE(items));
 //		{
 //			if (item_current == 0)anchor = Anchor::Center;
@@ -8309,7 +8518,7 @@ private:
 //RenderData_Triangle::RenderData_Triangle()
 //{
 //	renderTriangles.push_back(this);
-//	this->ID = int(renderTriangles.size());
+//	this->ID = int32_t(renderTriangles.size());
 //}
 //
 //RenderData_Triangle::~RenderData_Triangle()
@@ -8403,7 +8612,7 @@ private:
 //RenderData_Line::RenderData_Line()
 //{
 //	renderLines.push_back(this);
-//	this->ID = int(renderLines.size());
+//	this->ID = int32_t(renderLines.size());
 //	this->points.push_back(Vector3{ 0.0f,0.0f,0.0f });
 //}
 //
@@ -8454,7 +8663,7 @@ private:
 //	{
 //		const char* items[] =
 //		{ "Line","BezierCurve", "SplineCurve" };
-//		int item_current = int(this->lineType);
+//		int32_t item_current = int32_t(this->lineType);
 //		ImGui::Combo((num + "LineType").c_str(), &item_current, items, IM_ARRAYSIZE(items));
 //		{
 //			if (item_current == 0)lineType = LineType::Line;
@@ -8466,7 +8675,7 @@ private:
 //	}
 //	if (ImGui::TreeNode("----------kSubdivision---------"))
 //	{
-//		ImGui::DragInt((num + " : kSubdivision").c_str(), (int*)&kSubdivision, 1, 1, 100);
+//		ImGui::DragInt((num + " : kSubdivision").c_str(), (int32_t*)&kSubdivision, 1, 1, 100);
 //
 //		ImGui::TreePop();
 //	}
@@ -8507,7 +8716,7 @@ private:
 //RenderData_Particle::RenderData_Particle()
 //{
 //	renderParticles.push_back(this);
-//	this->ID = int(renderParticles.size());
+//	this->ID = int32_t(renderParticles.size());
 //
 //	instancingResource_ =
 //		Engine::Instance().CreateBufferResource(
@@ -8707,7 +8916,7 @@ private:
 //		}
 //		else
 //		{
-//			int i = RandomInt(1, 6);
+//			int32_t i = RandomInt(1, 6);
 //			if (i == 1 || i == 2)
 //			{
 //				if (i == 1)
@@ -9117,8 +9326,8 @@ private:
 //
 //	ImGui::Begin(str->c_str());
 //
-//	ImGui::Text("capacity : %d", static_cast<int>(capacity));
-//	ImGui::Text("currentSum : %d", static_cast<int>(currentSum));
+//	ImGui::Text("capacity : %d", static_cast<int32_t>(capacity));
+//	ImGui::Text("currentSum : %d", static_cast<int32_t>(currentSum));
 //
 //	if (ImGui::TreeNode("----------Emitter--------------"))
 //	{
@@ -9284,7 +9493,7 @@ private:
 //
 //		// ラベルを非表示にするために "##" プレフィックスで ID を与える
 //		std::string dragId = std::string("##model") + num;
-//		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int*>(&this->model));
+//		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int32_t*>(&this->model));
 //
 //		ImGui::SameLine();
 //
@@ -9292,17 +9501,17 @@ private:
 //
 //		// クランプ
 //		if (this->model < 0) this->model = 0;
-//		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
+//		if (this->model > int32_t(Game::Asset::GetModelCount() - 1)) this->model = int32_t(Game::Asset::GetModelCount() - 1);
 //
 //		ImGui::TreePop();
 //	}
 //	if (ImGui::TreeNode("----------density--------------"))
 //	{
-//		int particlesPerEmission = int(this->particlesPerEmission);
+//		int32_t particlesPerEmission = int32_t(this->particlesPerEmission);
 //		ImGui::DragInt(("particlePerEmission" + num).c_str(), &particlesPerEmission);
 //		if (particlesPerEmission < 0)particlesPerEmission = 0;
 //		this->particlesPerEmission = uint32_t(particlesPerEmission);
-//		int emissionDelay = int(this->emissionDelay);
+//		int32_t emissionDelay = int32_t(this->emissionDelay);
 //		ImGui::DragInt(("emissionDelay" + num).c_str(), &emissionDelay);
 //		if (emissionDelay < 1)emissionDelay = 1;
 //		this->emissionDelay = uint32_t(emissionDelay);
@@ -9357,7 +9566,7 @@ private:
 //RenderData_Rect::RenderData_Rect()
 //{
 //	renderRects.push_back(this);
-//	this->ID = int(renderRects.size());
+//	this->ID = int32_t(renderRects.size());
 //}
 //
 //RenderData_Rect::~RenderData_Rect()
@@ -9444,7 +9653,7 @@ private:
 //RenderData_Block::RenderData_Block()
 //{
 //	renderBlocks.push_back(this);
-//	this->ID = int(renderBlocks.size());
+//	this->ID = int32_t(renderBlocks.size());
 //
 //	// ===== WorldMatrix =====
 //	this->worldMatrixResource_ = Engine::Instance().CreateBufferResource(sizeof(Matrix4x4) * this->capacity);
@@ -9603,8 +9812,8 @@ private:
 ////
 ////	ImGui::Begin(str.c_str());
 ////
-////	ImGui::Text("capacity : %d", static_cast<int>(capacity));
-////	ImGui::Text("currentSum : %d", static_cast<int>(currentSum));
+////	ImGui::Text("capacity : %d", static_cast<int32_t>(capacity));
+////	ImGui::Text("currentSum : %d", static_cast<int32_t>(currentSum));
 ////
 ////	if (ImGui::TreeNode("----------texture--------------"))
 ////	{
@@ -9638,7 +9847,7 @@ private:
 ////
 ////		// ラベルを非表示にするために "##" プレフィックスで ID を与える
 ////		std::string dragId = std::string("##model") + num;
-////		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int*>(&this->model));
+////		ImGui::DragInt(dragId.c_str(), reinterpret_cast<int32_t*>(&this->model));
 ////
 ////		ImGui::SameLine();
 ////
@@ -9646,7 +9855,7 @@ private:
 ////
 ////		// クランプ
 ////		if (this->model < 0) this->model = 0;
-////		if (this->model > int(Game::Asset::GetModelCount() - 1)) this->model = int(Game::Asset::GetModelCount() - 1);
+////		if (this->model > int32_t(Game::Asset::GetModelCount() - 1)) this->model = int32_t(Game::Asset::GetModelCount() - 1);
 ////
 ////		ImGui::TreePop();
 ////	}
@@ -9743,7 +9952,7 @@ private:
 //    // 画面内に存在するか
 //    bool inPicture = false;
 //    // マウスとの衝突判定
-//    int isCollisionMouseRay = -1; // -1:非衝突, 0:最初に衝突, 1:2番目
+//    int32_t isCollisionMouseRay = -1; // -1:非衝突, 0:最初に衝突, 1:2番目
 //
 //
 //    // 他のオブジェクトとの衝突判定
@@ -9793,16 +10002,16 @@ private:
 //    Matrix4x4 SetWorldMatrix();
 //
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //
 //
 //    // 初期化済みフラグ
 //    bool initialized = false;
 //
 //    // 衝突フラグ
-//    unsigned int CollisionFlags = 0x00000000;
+//    unsigned int32_t CollisionFlags = 0x00000000;
 //    // 前フレームの衝突フラグ
-//    unsigned int preCollisionFlags = 0x00000000;
+//    unsigned int32_t preCollisionFlags = 0x00000000;
 //    // 衝突したときの反発係数
 //    const float restitution = 0.0f;
 //
@@ -9850,7 +10059,7 @@ private:
 //    // マウスと衝突してるか？
 //    bool isCollisionMouseRay = false;
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //    std::optional<std::string> name;
 //
 //    void Draw();
@@ -9885,7 +10094,7 @@ private:
 //    // 描画オプション
 //    DrawOptions options;
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //    std::optional<std::string> name;
 //
 //    void Draw();
@@ -9924,7 +10133,7 @@ private:
 //    // 描画オプション
 //    DrawOptions options;
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //    std::optional<std::string> name;
 //
 //    void Draw();
@@ -9945,7 +10154,7 @@ private:
 //    // 点([0]は使用負荷)
 //    std::vector<Vector3> points;
 //    // ID
-//    int ID = 0;
+//    int32_t ID = 0;
 //    std::optional<std::string> name;
 //    // 色
 //    uint32_t color = 0xFFFFFFFF;
@@ -10041,7 +10250,7 @@ private:
 //    /// 現在存在するパーティクル数
 //    uint32_t currentSum = 0;
 //
-//    int ID = 0;
+//    int32_t ID = 0;
 //
 //    uint32_t frame = 0;                 // 経過フレーム
 //
@@ -10155,7 +10364,7 @@ private:
 //	// 空きスロット管理
 //    std::vector<uint32_t> freeSlots_;
 //
-//    int ID = 0;
+//    int32_t ID = 0;
 //
 //	static std::vector<RenderData_Block*> renderBlocks;
 //};
@@ -10199,7 +10408,6 @@ void RenderObject::SetupFromShaders()
 		// MS の CBV / SBV を反映
 		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_, cbvSizeOffset);
 	}
-
 	{
 		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
 		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(psPath.c_str(), L"ps_6_6");
@@ -10214,7 +10422,7 @@ void RenderObject::SetupFromShaders()
 	//	rootParamHashToIndexMap_[rootParams_[i].hash] = i;
 	//}
 	
-	// ハッシュの精度を確認するためしばらくこっちを使う。確信がもてたら下記コ―ドは削除し上記のコメントを解除する
+	// ハッシュの精度を確認するためしばらくこっちを使う。確信がもてたら下記コードは削除し上記のコメントを解除する
 	for (size_t i = 0; i < rootParams_.size(); ++i)
 	{
 		const auto& param = rootParams_[i];
@@ -10265,20 +10473,9 @@ void RenderObject::SetSBufferData(const uint32_t key, ShaderType shaderType, con
 }
 
 
-void RenderObject::Draw(int32_t renderTextureID) const
+void RenderObject::Draw(int32_t renderTargetID, std::vector<int32_t> deps) const
 {
-	Engine::Instance().GetDrawSystem()->AddSceneDrawList(this, renderTextureID);
-}
-
-// textureにレンダーテクスチャを利用している場合はこっち
-void RenderObject::PostEffectDraw(int32_t renderTextureID) const
-{
-	Engine::Instance().GetDrawSystem()->AddPostEffectDrawList(this, renderTextureID);
-}
-
-void RenderObject::ScreenDraw() const
-{
-	Engine::Instance().GetDrawSystem()->AddScreenDrawList(this);
+	Engine::Instance().GetDrawSystem()->AddDrawList(this, renderTargetID, deps);
 }
 
 
@@ -10293,18 +10490,19 @@ void RenderObject::ScreenDraw() const
 #include <EngineDefinition/EngineConstexprs.h>
 
 /// <summary>
-// ・PSO 設定（どのシェーダ・どのブレンド・どのラスタライザか）
+// ・PSO 設定（どのシェーダー・どのブレンド・どのラスタライザか）
 // ・ルートパラメータ（CBV / SRV）とその中身
 // だけを持つ描画オブジェクト。描画に必要な情報はここに集約するイメージ。
 /// </summary>
 class RenderObject
 {
 public:
-	// いずれ統合予定
-	// この時点で引数にrenderTextureID n が書き終わるまで待つみたいなのを持たせて
-	void Draw(int32_t renderTextureID) const;
-	void PostEffectDraw(int32_t renderTextureID) const;
-	void ScreenDraw() const;
+	/// <summary>
+	/// 描画コール
+	/// </summary>
+	/// <param name="renderTargetID">このオブジェクトを描画するRTのID</param>
+	/// <param name="deps">描画前に完了している必要があるRTのID一覧</param>
+	void Draw(int32_t renderTargetID = -1, std::vector<int32_t> deps = {}) const;
 
 	void SetupFromShaders();
 
@@ -10319,12 +10517,16 @@ public:
 	GraphicsPSOConfig psoConfig_{};
 	// インスタンス数
 	uint32_t instanceNum_ = 1;
-
+	// モデルID
 	int32_t modelID_ = -1;
+
+	std::string name_ = "RenderObject";
 
 private:
 	// RootParameterにいれるものリスト。CBVもSRVもここで管理する
 	std::vector<RootParam> rootParams_{};
+
+	// ハッシュをキーにして紐づける
 	std::unordered_map<uint32_t, size_t> rootParamHashToIndexMap_{};
 
 	// CBV用のストレージ。uint8_tのただのバイト列で保持。読みとる時はreinterpret_castで型を戻すイメージ。すべての情報を型に依存せずまとめて管理するためのもの。
@@ -10364,7 +10566,7 @@ EngineEditor::EngineEditor(
 
 	renderTexturePreview_ = std::make_unique<RenderTexturePreview>(dxManager);
 
-	timeEditor_ = std::make_unique<TimeEditor>(fixFPS);
+	timeEditor_ = std::make_unique<TimeEditor>(fixFPS, dxManager->GetFrameProfiler());
 }
 
 EngineEditor::~EngineEditor()
@@ -10521,7 +10723,7 @@ void ModelPreview::DrawImGui()
 
 	if (ImGui::BeginListBox("##model list"))
 	{
-		for (int i = 0; i < (int)bank_->GetModelList().size(); ++i)
+		for (int32_t i = 0; i < (int32_t)bank_->GetModelList().size(); ++i)
 		{
 			ImGui::PushID(i);
 			ImGui::BeginGroup();
@@ -10545,9 +10747,15 @@ void ModelPreview::DrawImGui()
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
 		{
 			IM_ASSERT(payload->DataSize == sizeof(int32_t));
-			textureID = *(const int32_t*)payload->Data;
+			textureID = *reinterpret_cast<const int32_t*>(payload->Data);
 		}
 		ImGui::EndDragDropTarget();
+	}
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+	{
+		ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
+		ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
+		ImGui::EndDragDropSource();
 	}
 
 	ImGui::End();
@@ -10570,12 +10778,20 @@ void ModelPreview::DrawImGui()
 
 		ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), ImVec2(512, 512));
 		
+
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
+			ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
+			ImGui::EndDragDropSource();
+		}
+
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
 			{
 				IM_ASSERT(payload->DataSize == sizeof(int32_t));
-				textureID = *(const int32_t*)payload->Data;
+				textureID = *reinterpret_cast<const int32_t*>(payload->Data);
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -10680,7 +10896,7 @@ void RenderTexturePreview::DrawImGui()
 
 	if (ImGui::BeginListBox("##renderTexture list"))
 	{
-		for (int i = 0; i < renderTargets.size(); ++i)
+		for (int32_t i = 0; i < renderTargets.size(); ++i)
 		{
 			ImGui::PushID(i);
 			ImGui::BeginGroup();
@@ -10696,12 +10912,12 @@ void RenderTexturePreview::DrawImGui()
 				if (isWidthLonger)
 				{
 					windowSize_.x = 512;
-					windowSize_.y = static_cast<int>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
+					windowSize_.y = static_cast<int32_t>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
 				}
 				else
 				{
 					windowSize_.y = 512;
-					windowSize_.x = static_cast<int>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
+					windowSize_.x = static_cast<int32_t>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
 				}
 			}
 			ImGui::EndGroup();
@@ -10818,12 +11034,12 @@ void TexturePreview::DrawImGui()
 				if (isWidthLonger)
 				{
 					windowSize_.x = 512;
-					windowSize_.y = static_cast<int>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
+					windowSize_.y = static_cast<int32_t>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
 				}
 				else
 				{
 					windowSize_.y = 512;
-					windowSize_.x = static_cast<int>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
+					windowSize_.x = static_cast<int32_t>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
 				}
 			}
 			ImGui::EndGroup();
@@ -10903,9 +11119,10 @@ private:
 #include "TimeEditor.h"
 #include <FixFPS/FixFPS.h>
 #include <ImGuiManager/ImGuiManager.h>
+#include <DirectX/FrameProfiler/FrameProfiler.h>
 
-TimeEditor::TimeEditor(FixFPS* fixFPS)
-	: fixFPS_(fixFPS)
+TimeEditor::TimeEditor(FixFPS* fixFPS, FrameProfiler* frameProfiler)
+	: fixFPS_(fixFPS), frameProfiler_(frameProfiler)
 {}
 
 TimeEditor::~TimeEditor()
@@ -10913,13 +11130,18 @@ TimeEditor::~TimeEditor()
 
 void TimeEditor::DrawImGui()
 {
-	ImGui::Begin("Time Editor");
-	ImGui::Text("FPS		: %.1f ", fixFPS_->GetRealFPS());
-	ImGui::Text("Max FPS	: %.1f ", fixFPS_->GetMaxFPS());
-	ImGui::Text("Frame Count: %d", fixFPS_->GetFrameCount());
-	ImGui::DragInt("Target FPS", &fixFPS_->GetTargetFpsPtr(), 1.0f, 12, 60);
-
-	ImGui::End();
+    ImGui::Begin("Time Editor");
+    ImGui::Text("Clamped FPS    : %5.1f  (%4.1f ms)", fixFPS_->GetClampedFPS(), fixFPS_->GetClampedDeltaTimeMs());
+    ImGui::Text("Unclamped FPS  : %5.1f  (%4.1f ms)", fixFPS_->GetUnclampedFPS(), fixFPS_->GetUnclampedDeltaTimeMs());
+    ImGui::Text("CPU FPS        : %5.1f  (%4.1f ms)", frameProfiler_->GetCpuFPS(), frameProfiler_->GetCpuDeltaTimeMs());
+    ImGui::Text("GPU FPS        : %5.1f  (%4.1f ms)", frameProfiler_->GetGpuFPS(), frameProfiler_->GetGpuDeltaTimeMs());
+    ImGui::Text("Frame Count    : %d", fixFPS_->GetFrameCount());
+	static int32_t targetFPS = 60;
+    if (ImGui::DragInt("Target FPS", &targetFPS, 1.0f, 12, 60))
+    {
+        fixFPS_->SetTargetFPS(targetFPS);
+    }
+    ImGui::End();
 }
 
 
@@ -10930,16 +11152,18 @@ void TimeEditor::DrawImGui()
 #pragma once
 
 class FixFPS;
+class FrameProfiler;
 
 class TimeEditor
 {
 public:
-	TimeEditor(FixFPS* fixFPS);
+	TimeEditor(FixFPS* fixFPS, FrameProfiler* frameProfiler);
 	~TimeEditor();
 	void DrawImGui();
 
 private:
 	FixFPS* fixFPS_ = nullptr;
+	FrameProfiler* frameProfiler_ = nullptr;
 
 };
 
@@ -11157,9 +11381,9 @@ Matrix4x4 Matrix4x4::Transpose() const
 {
     Matrix4x4 Return{};
 
-    for (int i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
-        for (int j = 0; j < 4; ++j)
+        for (size_t j = 0; j < 4; ++j)
         {
             Return.m[i][j] = m[j][i];
         }
@@ -11172,7 +11396,7 @@ Matrix4x4 Matrix4x4::MakeIdentity4x4()
 {
     Matrix4x4 Return{};
 
-    for (int i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
         Return.m[i][i] = 1.0f;
     }
@@ -11630,227 +11854,268 @@ Vector3 AABB::GetCollisionDepth(const AABB& other)const
 
 #pragma endregion
 
+#pragma region OBB
 
-std::string EnumToString(EaseType e)
+OBB OBB::MakeFromAABB(const AABB& localAABB, const Matrix4x4& worldMatrix)
 {
-    switch (e)
-    {
-    case EaseType::LINEAR:
-        return "LINEAR";
-    case EaseType::IN_SINE:
-        return "IN_SINE";
-    case EaseType::OUT_SINE:
-        return "OUT_SINE";
-    case EaseType::IN_OUT_SINE:
-        return "IN_OUT_SINE";
-    case EaseType::IN_QUAD:
-        return "IN_QUAD";
-    case EaseType::OUT_QUAD:
-        return "OUT_QUAD";
-    case EaseType::IN_OUT_QUAD:
-        return "IN_OUT_QUAD";
-    case EaseType::IN_CUBIC:
-        return "IN_CUBIC";
-    case EaseType::OUT_CUBIC:
-        return "OUT_CUBIC";
-    case EaseType::IN_OUT_CUBIC:
-        return "IN_OUT_CUBIC";
-    case EaseType::IN_QUART:
-        return "IN_QUART";
-    case EaseType::OUT_QUART:
-        return "OUT_QUART";
-    case EaseType::IN_OUT_QUART:
-        return "IN_OUT_QUART";
-    case EaseType::IN_QUINT:
-        return "IN_QUINT";
-    case EaseType::OUT_QUINT:
-        return "OUT_QUINT";
-    case EaseType::IN_OUT_QUINT:
-        return "IN_OUT_QUINT";
-    case EaseType::IN_EXPO:
-        return "IN_EXPO";
-    case EaseType::OUT_EXPO:
-        return "OUT_EXPO";
-    case EaseType::IN_OUT_EXPO:
-        return "IN_OUT_EXPO";
-    case EaseType::IN_CIRC:
-        return "IN_CIRC";
-    case EaseType::OUT_CIRC:
-        return "OUT_CIRC";
-    case EaseType::IN_OUT_CIRC:
-        return "IN_OUT_CIRC";
-    case EaseType::IN_BACK:
-        return "IN_BACK";
-    case EaseType::OUT_BACK:
-        return "OUT_BACK";
-    case EaseType::IN_OUT_BACK:
-        return "IN_OUT_BACK";
-    case EaseType::IN_ELASTIC:
-        return "IN_ELASTIC";
-    case EaseType::OUT_ELASTIC:
-        return "OUT_ELASTIC";
-    case EaseType::IN_OUT_ELASTIC:
-        return "IN_OUT_ELASTIC";
-    case EaseType::IN_BOUNCE:
-        return "IN_BOUNCE";
-    case EaseType::OUT_BOUNCE:
-        return "OUT_BOUNCE";
-    default:
-        return "Unknown";
-    }
+    OBB obb;
+
+    // 行列の1〜3行目 ＝ ワールド空間での各ローカル軸方向 × スケール（行ベクトル規約）
+    Vector3 rowX = { worldMatrix.m[0][0], worldMatrix.m[0][1], worldMatrix.m[0][2] };
+    Vector3 rowY = { worldMatrix.m[1][0], worldMatrix.m[1][1], worldMatrix.m[1][2] };
+    Vector3 rowZ = { worldMatrix.m[2][0], worldMatrix.m[2][1], worldMatrix.m[2][2] };
+
+    // 各行の長さ＝スケール成分
+    float scaleX = rowX.Length();
+    float scaleY = rowY.Length();
+    float scaleZ = rowZ.Length();
+
+    // スケールを抜いた純粋な回転軸（0除算対策込み）
+    obb.axis[0] = (scaleX > 0.00001f) ? (rowX / scaleX) : Vector3{ 1.0f, 0.0f, 0.0f };
+    obb.axis[1] = (scaleY > 0.00001f) ? (rowY / scaleY) : Vector3{ 0.0f, 1.0f, 0.0f };
+    obb.axis[2] = (scaleZ > 0.00001f) ? (rowZ / scaleZ) : Vector3{ 0.0f, 0.0f, 1.0f };
+
+    // ローカルAABBの半径にスケールを掛けてワールドでの半径にする
+    Vector3 localHalfSize = (localAABB.max - localAABB.min) * 0.5f;
+    obb.halfSize = {
+        localHalfSize.x * scaleX,
+        localHalfSize.y * scaleY,
+        localHalfSize.z * scaleZ,
+    };
+
+    // ローカルAABBの中心をワールド空間へ変換（アフィン行列前提でw=1固定）
+    Vector3 localCenter = localAABB.center();
+    obb.center.x = localCenter.x * worldMatrix.m[0][0] + localCenter.y * worldMatrix.m[1][0] + localCenter.z * worldMatrix.m[2][0] + worldMatrix.m[3][0];
+    obb.center.y = localCenter.x * worldMatrix.m[0][1] + localCenter.y * worldMatrix.m[1][1] + localCenter.z * worldMatrix.m[2][1] + worldMatrix.m[3][1];
+    obb.center.z = localCenter.x * worldMatrix.m[0][2] + localCenter.y * worldMatrix.m[1][2] + localCenter.z * worldMatrix.m[2][2] + worldMatrix.m[3][2];
+
+    return obb;
 }
 
-std::string EnumToString(CollisionResult e)
-{
-    switch (e)
-    {
-    case CollisionResult::非衝突:
-        return "非衝突";
-    case CollisionResult::接触:
-        return "接触";
-    case CollisionResult::衝突:
-        return "衝突";
-    default:
-        return "Unknown";
-    }
-}
+#pragma endregion
 
-std::string EnumToString(AABBFace e)
-{
-    switch (e)
-    {
-    case AABBFace::NONE:
-        return "NONE";
-    case AABBFace::XPlus:
-        return "XPlus";
-    case AABBFace::XMinus:
-        return "XMinus";
-    case AABBFace::YMinus:
-        return "YMinus";
-    case AABBFace::YPlus:
-        return "YPlus";
-    case AABBFace::ZMinus:
-        return "ZMinus";
-    case AABBFace::ZPlus:
-        return "ZPlus";
-    default:
-        return "Unknown";
-    }
-}
 
-std::string EnumToString(CameraMode_ORBIT_FPS e)
-{
-    switch (e)
-    {
-    case CameraMode_ORBIT_FPS::ORBIT:   return "ORBIT";
-    case CameraMode_ORBIT_FPS::FPS:     return "FPS";
-    default:
-			return "Unknown";
-    }
-}
-
-std::string EnumToString(DirectionXY e)
-{
-    switch (e)
-    {
-    case DirectionXY::None:
-        return "None";
-    case DirectionXY::Left:
-        return "Left";
-    case DirectionXY::Right:
-        return "Right";
-    case DirectionXY::Down:
-        return "Down";
-    case DirectionXY::Up:
-        return "Up";
-    default:
-        return "Unknown";
-    }
-}
-
-std::string EnumToString(DirectionXZ e)
-{
-    switch (e)
-    {
-    case DirectionXZ::None:
-        return "None";
-    case DirectionXZ::Left:
-        return "Left";
-    case DirectionXZ::Right:
-        return "Right";
-    case DirectionXZ::Back:
-        return "Back";
-    case DirectionXZ::Front:
-        return "Front";
-    default:
-        return "Unknown";
-    }
-}
-
-std::string EnumToString(DirectionXZ8Way e)
-{
-    switch (e)
-    {
-    case DirectionXZ8Way::None:
-        return "None";
-    case DirectionXZ8Way::Front:
-        return "Front";
-    case DirectionXZ8Way::FrontLeft:
-        return "FrontLeft";
-    case DirectionXZ8Way::Left:
-        return "Left";
-    case DirectionXZ8Way::BackLeft:
-        return "BackLeft";
-    case DirectionXZ8Way::Back:
-        return "Back";
-    case DirectionXZ8Way::BackRight:
-        return "BackRight";
-    case DirectionXZ8Way::Right:
-        return "Right";
-    case DirectionXZ8Way::FrontRight:
-        return "FrontRight";
-    default:
-        return "Unknown";
-    }
-}
-
-std::string EnumToString(DirectionXYZ e)
-{
-    switch (e)
-    {
-    case DirectionXYZ::None:
-        return "None";
-    case DirectionXYZ::Left:
-        return "Left";
-    case DirectionXYZ::Right:
-        return "Right";
-    case DirectionXYZ::Back:
-        return "Back";
-    case DirectionXYZ::Front:
-        return "Front";
-    case DirectionXYZ::Down:
-        return "Down";
-    case DirectionXYZ::Up:
-        return "Up";
-    default:
-        return "Unknown";
-    }
-}
-
-std::string EnumToString(LineType e)
-{
-    switch (e)
-    {
-    case LineType::Line:
-        return "Line";
-    case LineType::BezierCurve:
-        return "BezierCurve";
-    case LineType::SplineCurve:
-        return "SplineCurve";
-    default:
-        return "Unknown";
-    }
-}
+//
+//std::string EnumToString(EaseType e)
+//{
+//    switch (e)
+//    {
+//    case EaseType::LINEAR:
+//        return "LINEAR";
+//    case EaseType::IN_SINE:
+//        return "IN_SINE";
+//    case EaseType::OUT_SINE:
+//        return "OUT_SINE";
+//    case EaseType::IN_OUT_SINE:
+//        return "IN_OUT_SINE";
+//    case EaseType::IN_QUAD:
+//        return "IN_QUAD";
+//    case EaseType::OUT_QUAD:
+//        return "OUT_QUAD";
+//    case EaseType::IN_OUT_QUAD:
+//        return "IN_OUT_QUAD";
+//    case EaseType::IN_CUBIC:
+//        return "IN_CUBIC";
+//    case EaseType::OUT_CUBIC:
+//        return "OUT_CUBIC";
+//    case EaseType::IN_OUT_CUBIC:
+//        return "IN_OUT_CUBIC";
+//    case EaseType::IN_QUART:
+//        return "IN_QUART";
+//    case EaseType::OUT_QUART:
+//        return "OUT_QUART";
+//    case EaseType::IN_OUT_QUART:
+//        return "IN_OUT_QUART";
+//    case EaseType::IN_QUINT:
+//        return "IN_QUINT";
+//    case EaseType::OUT_QUINT:
+//        return "OUT_QUINT";
+//    case EaseType::IN_OUT_QUINT:
+//        return "IN_OUT_QUINT";
+//    case EaseType::IN_EXPO:
+//        return "IN_EXPO";
+//    case EaseType::OUT_EXPO:
+//        return "OUT_EXPO";
+//    case EaseType::IN_OUT_EXPO:
+//        return "IN_OUT_EXPO";
+//    case EaseType::IN_CIRC:
+//        return "IN_CIRC";
+//    case EaseType::OUT_CIRC:
+//        return "OUT_CIRC";
+//    case EaseType::IN_OUT_CIRC:
+//        return "IN_OUT_CIRC";
+//    case EaseType::IN_BACK:
+//        return "IN_BACK";
+//    case EaseType::OUT_BACK:
+//        return "OUT_BACK";
+//    case EaseType::IN_OUT_BACK:
+//        return "IN_OUT_BACK";
+//    case EaseType::IN_ELASTIC:
+//        return "IN_ELASTIC";
+//    case EaseType::OUT_ELASTIC:
+//        return "OUT_ELASTIC";
+//    case EaseType::IN_OUT_ELASTIC:
+//        return "IN_OUT_ELASTIC";
+//    case EaseType::IN_BOUNCE:
+//        return "IN_BOUNCE";
+//    case EaseType::OUT_BOUNCE:
+//        return "OUT_BOUNCE";
+//    default:
+//        return "Unknown";
+//    }
+//}
+//
+//std::string EnumToString(CollisionResult e)
+//{
+//    switch (e)
+//    {
+//    case CollisionResult::非衝突:
+//        return "非衝突";
+//    case CollisionResult::接触:
+//        return "接触";
+//    case CollisionResult::衝突:
+//        return "衝突";
+//    default:
+//        return "Unknown";
+//    }
+//}
+//
+//std::string EnumToString(AABBFace e)
+//{
+//    switch (e)
+//    {
+//    case AABBFace::NONE:
+//        return "NONE";
+//    case AABBFace::XPlus:
+//        return "XPlus";
+//    case AABBFace::XMinus:
+//        return "XMinus";
+//    case AABBFace::YMinus:
+//        return "YMinus";
+//    case AABBFace::YPlus:
+//        return "YPlus";
+//    case AABBFace::ZMinus:
+//        return "ZMinus";
+//    case AABBFace::ZPlus:
+//        return "ZPlus";
+//    default:
+//        return "Unknown";
+//    }
+//}
+//
+//std::string EnumToString(CameraMode_ORBIT_FPS e)
+//{
+//    switch (e)
+//    {
+//    case CameraMode_ORBIT_FPS::ORBIT:   return "ORBIT";
+//    case CameraMode_ORBIT_FPS::FPS:     return "FPS";
+//    default:
+//			return "Unknown";
+//    }
+//}
+//
+//std::string EnumToString(DirectionXY e)
+//{
+//    switch (e)
+//    {
+//    case DirectionXY::None:
+//        return "None";
+//    case DirectionXY::Left:
+//        return "Left";
+//    case DirectionXY::Right:
+//        return "Right";
+//    case DirectionXY::Down:
+//        return "Down";
+//    case DirectionXY::Up:
+//        return "Up";
+//    default:
+//        return "Unknown";
+//    }
+//}
+//
+//std::string EnumToString(DirectionXZ e)
+//{
+//    switch (e)
+//    {
+//    case DirectionXZ::None:
+//        return "None";
+//    case DirectionXZ::Left:
+//        return "Left";
+//    case DirectionXZ::Right:
+//        return "Right";
+//    case DirectionXZ::Back:
+//        return "Back";
+//    case DirectionXZ::Front:
+//        return "Front";
+//    default:
+//        return "Unknown";
+//    }
+//}
+//
+//std::string EnumToString(DirectionXZ8Way e)
+//{
+//    switch (e)
+//    {
+//    case DirectionXZ8Way::None:
+//        return "None";
+//    case DirectionXZ8Way::Front:
+//        return "Front";
+//    case DirectionXZ8Way::FrontLeft:
+//        return "FrontLeft";
+//    case DirectionXZ8Way::Left:
+//        return "Left";
+//    case DirectionXZ8Way::BackLeft:
+//        return "BackLeft";
+//    case DirectionXZ8Way::Back:
+//        return "Back";
+//    case DirectionXZ8Way::BackRight:
+//        return "BackRight";
+//    case DirectionXZ8Way::Right:
+//        return "Right";
+//    case DirectionXZ8Way::FrontRight:
+//        return "FrontRight";
+//    default:
+//        return "Unknown";
+//    }
+//}
+//
+//std::string EnumToString(DirectionXYZ e)
+//{
+//    switch (e)
+//    {
+//    case DirectionXYZ::None:
+//        return "None";
+//    case DirectionXYZ::Left:
+//        return "Left";
+//    case DirectionXYZ::Right:
+//        return "Right";
+//    case DirectionXYZ::Back:
+//        return "Back";
+//    case DirectionXYZ::Front:
+//        return "Front";
+//    case DirectionXYZ::Down:
+//        return "Down";
+//    case DirectionXYZ::Up:
+//        return "Up";
+//    default:
+//        return "Unknown";
+//    }
+//}
+//
+//std::string EnumToString(LineType e)
+//{
+//    switch (e)
+//    {
+//    case LineType::Line:
+//        return "Line";
+//    case LineType::BezierCurve:
+//        return "BezierCurve";
+//    case LineType::SplineCurve:
+//        return "SplineCurve";
+//    default:
+//        return "Unknown";
+//    }
+//}
 
 
 
@@ -11899,47 +12164,7 @@ std::string EnumToString(LineType e)
 #define PAD_BUTTON_MAX      0x0E
 
 
-
-
 #pragma region 基盤構造体
-
-struct Vector2int
-{
-    int32_t x = 0, y = 0;
-    Vector2int operator+(const Vector2int& rhs) const
-    {
-        return Vector2int{ x + rhs.x, y + rhs.y };
-    }
-    Vector2int operator-(const Vector2int& rhs) const
-    {
-        return Vector2int{ x - rhs.x, y - rhs.y };
-    }
-    bool operator==(const Vector2int& rhs) const
-    {
-        return x == rhs.x && y == rhs.y;
-    }
-    bool operator!=(const Vector2int& rhs) const
-    {
-        return x != rhs.x || y != rhs.y;
-    }
-    bool operator<(const Vector2int& rhs) const
-    {
-        if (y != rhs.y)
-        {
-            return y < rhs.y;
-        }
-        return x < rhs.x;
-    }
-};
-struct Vector2intHash
-{
-    std::size_t operator()(const Vector2int& v) const noexcept
-    {
-        uint64_t x = static_cast<uint64_t>(v.x);
-        uint64_t y = static_cast<uint64_t>(v.y);
-        return (x * 73856093) ^ (y * 19349663);
-    }
-};
 
 struct Vector2
 {
@@ -11997,35 +12222,61 @@ struct Vector2
     // 内積
     float Dot(const Vector2& rhs) const;
 };
-
-struct Vector3int
+struct Vector2int
 {
-    int32_t x = 0, y = 0, z = 0;
-    Vector3int operator+(const Vector3int& rhs) const
+    int32_t x = 0, y = 0;
+    Vector2int operator+(const Vector2int& rhs) const
     {
-        return Vector3int{ x + rhs.x, y + rhs.y, z + rhs.z };
+        return Vector2int{ x + rhs.x, y + rhs.y };
     }
-    Vector3int operator-(const Vector3int& rhs) const
+    Vector2int operator-(const Vector2int& rhs) const
     {
-        return Vector3int{ x - rhs.x, y - rhs.y, z - rhs.z };
+        return Vector2int{ x - rhs.x, y - rhs.y };
     }
-    bool operator==(const Vector3int& rhs) const
+    bool operator==(const Vector2int& rhs) const
     {
-        return x == rhs.x && y == rhs.y && z == rhs.z;
+        return x == rhs.x && y == rhs.y;
     }
-    bool operator!=(const Vector3int& rhs) const
+    bool operator!=(const Vector2int& rhs) const
     {
-        return x != rhs.x || y != rhs.y || z != rhs.z;
+        return x != rhs.x || y != rhs.y;
+    }
+    bool operator<(const Vector2int& rhs) const
+    {
+        if (y != rhs.y)
+        {
+            return y < rhs.y;
+        }
+        return x < rhs.x;
     }
 };
-struct Vector3intHash
+struct Vector2intHash
 {
-	std::size_t operator()(const Vector3int& v) const noexcept
+    std::size_t operator()(const Vector2int& v) const noexcept
+    {
+        uint64_t x = static_cast<uint64_t>(v.x);
+        uint64_t y = static_cast<uint64_t>(v.y);
+        return (x * 73856093) ^ (y * 19349663);
+    }
+};
+struct Vector2uint
+{
+	uint32_t x = 0, y = 0;
+	Vector2uint operator+(const Vector2uint& rhs) const
 	{
-		uint64_t x = static_cast<uint64_t>(v.x);
-		uint64_t y = static_cast<uint64_t>(v.y);
-		uint64_t z = static_cast<uint64_t>(v.z);
-		return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+		return Vector2uint{ x + rhs.x, y + rhs.y };
+	}
+	Vector2uint operator-(const Vector2uint& rhs) const
+	{
+		return Vector2uint{ x - rhs.x, y - rhs.y };
+	}
+	bool operator==(const Vector2uint& rhs) const
+	{
+		return x == rhs.x && y == rhs.y;
+	}
+	bool operator!=(const Vector2uint& rhs) const
+	{
+		return x != rhs.x || y != rhs.y;
 	}
 };
 
@@ -12123,26 +12374,55 @@ struct Vector3
 	// ベクトルをQuaternionで回転させた結果のベクトルを返す
     Vector3 RotateByQuaternion(const Quaternion& q) const;
 };
-
-struct Vector4int
+struct Vector3int
 {
-    int32_t x = 0, y = 0, z = 0, w = 0;
-    Vector4int operator+(const Vector4int& rhs) const
+    int32_t x = 0, y = 0, z = 0;
+    Vector3int operator+(const Vector3int& rhs) const
     {
-        return Vector4int{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+        return Vector3int{ x + rhs.x, y + rhs.y, z + rhs.z };
     }
-    Vector4int operator-(const Vector4int& rhs) const
+    Vector3int operator-(const Vector3int& rhs) const
     {
-        return Vector4int{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+        return Vector3int{ x - rhs.x, y - rhs.y, z - rhs.z };
     }
-    bool operator==(const Vector4int& rhs) const
+    bool operator==(const Vector3int& rhs) const
     {
-        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+        return x == rhs.x && y == rhs.y && z == rhs.z;
     }
-    bool operator!=(const Vector4int& rhs) const
+    bool operator!=(const Vector3int& rhs) const
     {
-        return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+        return x != rhs.x || y != rhs.y || z != rhs.z;
     }
+};
+struct Vector3intHash
+{
+	std::size_t operator()(const Vector3int& v) const noexcept
+	{
+		uint64_t x = static_cast<uint64_t>(v.x);
+		uint64_t y = static_cast<uint64_t>(v.y);
+		uint64_t z = static_cast<uint64_t>(v.z);
+		return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+	}
+};
+struct Vector3uint
+{
+	uint32_t x = 0, y = 0, z = 0;
+	Vector3uint operator+(const Vector3uint& rhs) const
+	{
+		return Vector3uint{ x + rhs.x, y + rhs.y, z + rhs.z };
+	}
+	Vector3uint operator-(const Vector3uint& rhs) const
+	{
+		return Vector3uint{ x - rhs.x, y - rhs.y, z - rhs.z };
+	}
+	bool operator==(const Vector3uint& rhs) const
+	{
+		return x == rhs.x && y == rhs.y && z == rhs.z;
+	}
+	bool operator!=(const Vector3uint& rhs) const
+	{
+		return x != rhs.x || y != rhs.y || z != rhs.z;
+	}
 };
 
 struct Vector4
@@ -12201,6 +12481,46 @@ struct Vector4
     // 内積
     float Dot(const Vector4& rhs) const;
 };
+struct Vector4int
+{
+    int32_t x = 0, y = 0, z = 0, w = 0;
+    Vector4int operator+(const Vector4int& rhs) const
+    {
+        return Vector4int{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+    }
+    Vector4int operator-(const Vector4int& rhs) const
+    {
+        return Vector4int{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+    }
+    bool operator==(const Vector4int& rhs) const
+    {
+        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+    }
+    bool operator!=(const Vector4int& rhs) const
+    {
+        return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+    }
+};
+struct Vector4uint
+{
+    uint32_t x = 0, y = 0, z = 0, w = 0;
+    Vector4uint operator+(const Vector4uint& rhs) const
+    {
+        return Vector4uint{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+    }
+    Vector4uint operator-(const Vector4uint& rhs) const
+    {
+        return Vector4uint{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+    }
+    bool operator==(const Vector4uint& rhs) const
+    {
+        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+    }
+    bool operator!=(const Vector4uint& rhs) const
+    {
+        return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+    }
+};
 
 struct Matrix3x3
 {
@@ -12212,9 +12532,9 @@ struct Matrix3x3
     Matrix3x3 operator+(const Matrix3x3& rhs) const
     {
         Matrix3x3 result;
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 result.m[i][j] = m[i][j] + rhs.m[i][j];
             }
@@ -12224,9 +12544,9 @@ struct Matrix3x3
     Matrix3x3 operator-(const Matrix3x3& rhs) const
     {
         Matrix3x3 result;
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 result.m[i][j] = m[i][j] - rhs.m[i][j];
             }
@@ -12236,9 +12556,9 @@ struct Matrix3x3
     Matrix3x3 operator*(float scalar) const
     {
         Matrix3x3 result;
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 result.m[i][j] = m[i][j] * scalar;
             }
@@ -12248,12 +12568,12 @@ struct Matrix3x3
     Matrix3x3 operator*(const Matrix3x3& rhs) const
     {
         Matrix3x3 result;
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 result.m[i][j] = 0.0f;
-                for (int k = 0; k < 3; ++k)
+                for (size_t k = 0; k < 3; ++k)
                 {
                     result.m[i][j] += m[i][k] * rhs.m[k][j];
                 }
@@ -12263,9 +12583,9 @@ struct Matrix3x3
     }
     bool operator==(const Matrix3x3& rhs) const
     {
-        for (int i = 0; i < 3; ++i)
+        for (size_t i = 0; i < 3; ++i)
         {
-            for (int j = 0; j < 3; ++j)
+            for (size_t j = 0; j < 3; ++j)
             {
                 if (m[i][j] != rhs.m[i][j]) return false;
             }
@@ -12278,7 +12598,6 @@ struct Matrix3x3
     }
 
 };
-
 struct Matrix4x4
 {
     float m[4][4] = {
@@ -12290,9 +12609,9 @@ struct Matrix4x4
     Matrix4x4 operator+(const Matrix4x4& rhs) const
     {
         Matrix4x4 result;
-        for (int j = 0; j < 4; ++j)
+        for (size_t j = 0; j < 4; ++j)
         {
-            for (int i = 0; i < 4; ++i)
+            for (size_t i = 0; i < 4; ++i)
             {
                 result.m[i][j] = m[i][j] + rhs.m[i][j];
             }
@@ -12302,9 +12621,9 @@ struct Matrix4x4
     Matrix4x4 operator-(const Matrix4x4& rhs) const
     {
         Matrix4x4 result;
-        for (int j = 0; j < 4; ++j)
+        for (size_t j = 0; j < 4; ++j)
         {
-            for (int i = 0; i < 4; ++i)
+            for (size_t i = 0; i < 4; ++i)
             {
                 result.m[i][j] = m[i][j] - rhs.m[i][j];
             }
@@ -12314,9 +12633,9 @@ struct Matrix4x4
     Matrix4x4 operator*(float scalar) const
     {
         Matrix4x4 result;
-        for (int j = 0; j < 4; ++j)
+        for (size_t j = 0; j < 4; ++j)
         {
-            for (int i = 0; i < 4; ++i)
+            for (size_t i = 0; i < 4; ++i)
             {
                 result.m[i][j] = m[i][j] * scalar;
             }
@@ -12326,12 +12645,12 @@ struct Matrix4x4
     Matrix4x4 operator*(const Matrix4x4& rhs) const
     {
         Matrix4x4 result;
-        for (int i = 0; i < 4; ++i)
+        for (size_t i = 0; i < 4; ++i)
         {
-            for (int j = 0; j < 4; ++j)
+            for (size_t j = 0; j < 4; ++j)
             {
                 result.m[i][j] = 0.0f;
-                for (int k = 0; k < 4; ++k)
+                for (size_t k = 0; k < 4; ++k)
                 {
                     result.m[i][j] += m[i][k] * rhs.m[k][j];
                 }
@@ -12342,8 +12661,8 @@ struct Matrix4x4
 
     bool operator==(const Matrix4x4& rhs) const
     {
-        for (int i = 0; i < 4; ++i)
-            for (int j = 0; j < 4; ++j)
+        for (size_t i = 0; i < 4; ++i)
+            for (size_t j = 0; j < 4; ++j)
                 if (m[i][j] != rhs.m[i][j]) return false;
         return true;
     }
@@ -12511,6 +12830,17 @@ struct AABB
 	}
 };
 
+// OBB
+struct OBB
+{
+    Vector3 center;      // 中心座標
+    Vector3 axis[3];     // 各軸方向（正規化済み・直交）
+    Vector3 halfSize;    // 各軸方向の半径（辺の半分の長さ）
+
+    // ローカル空間のAABBとワールド行列からOBBを作る
+    static OBB MakeFromAABB(const AABB& localAABB, const Matrix4x4& worldMatrix);
+};
+
 // 線分
 struct Line
 {
@@ -12576,7 +12906,6 @@ enum class EaseType
     IN_BOUNCE,
     OUT_BOUNCE,
 };
-std::string EnumToString(EaseType e);
 
 template <typename t>
 struct EasingSet
@@ -12896,7 +13225,6 @@ enum class CollisionResult
     接触,
     衝突
 };
-std::string EnumToString(CollisionResult e);
 
 struct CollisionFlags
 {
@@ -12923,14 +13251,13 @@ enum class AABBFace
     YPlus = 4,    // y+
     YMinus = 5, // y-
 };
-std::string EnumToString(AABBFace e);
 
 struct CollisionPair
 {
     // 軽い方
-    int light = 0;
+    int32_t light = 0;
     // 重い方
-    int heavy = 0;
+    int32_t heavy = 0;
 
     bool operator==(const CollisionPair& rhs) const
     {
@@ -12967,7 +13294,7 @@ struct EmitterSphere
 {
     Vector3 translate;  // 座標
     float radius = 1.0f;       // 射出半径
-    uint32_t count;     // 射出数
+    uint32_t count = 1;     // 射出数
 	float frequency = 1.0f;    // 射出頻度
 	float frequencyTime = 0.0f; // 射出頻度タイマ
 	uint32_t emit = 0;      // 射出するかどうか
@@ -13000,9 +13327,9 @@ struct ParticleTarget
 
 struct ParticleDensity
 {
-    int particlesPerEmission = 1;   // 1フレで生む数
-    int emissionDelay = 10;         // 生成間隔フレーム
-    int liveMax = 300;              // 寿命フレーム(マイナスの時は不老)
+    int32_t particlesPerEmission = 1;   // 1フレで生む数
+    int32_t emissionDelay = 10;         // 生成間隔フレーム
+    int32_t liveMax = 300;              // 寿命フレーム(マイナスの時は不老)
     uint32_t frame = 0;             // 経過フレーム
 };
 
@@ -13089,7 +13416,6 @@ enum class CameraMode_ORBIT_FPS
     ORBIT,
     FPS
 };
-std::string EnumToString(CameraMode_ORBIT_FPS e);
 
 #pragma endregion
 
@@ -13107,7 +13433,6 @@ enum class DirectionXY
     Down = 2,
     Up = 3,
 };
-std::string EnumToString(DirectionXY e);
 
 // 前後左右
 enum class DirectionXZ
@@ -13118,7 +13443,6 @@ enum class DirectionXZ
 	Back = 2,       // Z-
 	Front = 3,      // Z+
 };
-std::string EnumToString(DirectionXZ e);
 
 // 前後左右 + 斜め
 enum class DirectionXZ8Way
@@ -13133,7 +13457,6 @@ enum class DirectionXZ8Way
     Right = 6,
     FrontRight = 7,
 };
-std::string EnumToString(DirectionXZ8Way e);
 
 // 上下左右前後
 enum class DirectionXYZ
@@ -13146,7 +13469,6 @@ enum class DirectionXYZ
     Down = 4,
     Up = 5,
 };
-std::string EnumToString(DirectionXYZ e);
 
 #pragma endregion
 
@@ -13172,7 +13494,6 @@ enum class LineType
     BezierCurve,
     SplineCurve,
 };
-std::string EnumToString(LineType e);
 
 
 
@@ -13268,11 +13589,11 @@ namespace Game
 
 		namespace RenderTexture
 		{
-			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string textureName)
+			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& textureName)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
 			}
-			bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color)
+			bool SaveRenderTextureToFile(const std::string& filePath, const std::string& textureName, bool color)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveTexture(filePath, textureName, color);
 			}
@@ -13280,17 +13601,21 @@ namespace Game
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->SaveAllRenderTextures(filePath, color);
 			}
-			int32_t GetRenderTextureID(const std::string textureName)
+			int32_t GetRenderTextureID(const std::string& textureName)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.index;
 			}
-			int32_t GetRenderTextureDepthID(const std::string textureName)
+			int32_t GetRenderTextureDepthID(const std::string& textureName)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->depthsrvAlloc.index;
 			}
-			UINT64 GetRenderTexture(const std::string textureName)
+			UINT64 GetRenderTextureGPUPtr(const std::string& textureName)
 			{
 				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(textureName)->colorsrvAlloc.gpu.ptr;
+			}
+			UINT64 GetRenderTextureGPUPtr(int32_t renderTextureID)
+			{
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->Get(renderTextureID)->colorsrvAlloc.gpu.ptr;
 			}
 		}
 	}
@@ -13372,19 +13697,19 @@ namespace Game
 				return Engine::Instance().GetIOManager()->GetMouseController()->GetRay(cameraID);
 			}
 
-			bool IsHeld(int i)
+			bool IsHeld(int32_t i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->IsHeld(i);
 			}
-			bool IsJustPressed(int i)
+			bool IsJustPressed(int32_t i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->IsJustPressed(i);
 			}
-			bool IsJustReleased(int i)
+			bool IsJustReleased(int32_t i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->IsJustReleased(i);
 			}
-			uint32_t HoldFrames(int i)
+			uint32_t HoldFrames(int32_t i)
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->HoldFrames(i);
 			}
@@ -13425,7 +13750,7 @@ namespace Game
 			{
 				return Engine::Instance().GetIOManager()->GetKeyboardController()->HoldFrames(key);
 			}
-			int TestTapLong(int n, BYTE key)
+			int32_t TestTapLong(int32_t n, BYTE key)
 			{
 				return Engine::Instance().GetIOManager()->GetKeyboardController()->TestTapLong(n, key);
 			}
@@ -13433,39 +13758,39 @@ namespace Game
 
 		namespace Pad
 		{
-			bool IsHeld(int padIndex, BYTE button)
+			bool IsHeld(int32_t padIndex, BYTE button)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->IsHeld(padIndex, button);
 			}
-			bool IsJustPressed(int padIndex, BYTE button)
+			bool IsJustPressed(int32_t padIndex, BYTE button)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->IsJustPressed(padIndex, button);
 			}
-			bool IsJustReleased(int padIndex, BYTE button)
+			bool IsJustReleased(int32_t padIndex, BYTE button)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->IsJustReleased(padIndex, button);
 			}
-			uint32_t HoldFrames(int padIndex, BYTE button)
+			uint32_t HoldFrames(int32_t padIndex, BYTE button)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->HoldFrames(padIndex, button);
 			}
-			Vector2 GetLeftStick(int padIndex)
+			Vector2 GetLeftStick(int32_t padIndex)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->GetLeftStick(padIndex);
 			}
-			Vector2 GetRightStick(int padIndex)
+			Vector2 GetRightStick(int32_t padIndex)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->GetRightStick(padIndex);
 			}
-			float GetLeftTrigger(int padIndex)
+			float GetLeftTrigger(int32_t padIndex)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->GetLeftTrigger(padIndex);
 			}
-			float GetRightTrigger(int padIndex)
+			float GetRightTrigger(int32_t padIndex)
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->GetRightTrigger(padIndex);
 			}
-			void SetVibration(int padIndex, float leftMotor, float rightMotor)
+			void SetVibration(int32_t padIndex, float leftMotor, float rightMotor)
 			{
 				Engine::Instance().GetIOManager()->GetPadController()->SetVibration(padIndex, leftMotor, rightMotor);
 			}
@@ -13533,27 +13858,27 @@ namespace Game
 
 		namespace Setter
 		{
-			void SetCenter(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			void SetCenter(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCenterTarget(target, spendFrame, easetype);
 			}
 
-			void SetRotate(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			void SetRotate(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetRotateTarget(target, spendFrame, easetype);
 			}
 
-			void SetDistance(float target, int spendFrame, EaseType easetype, int32_t cameraID)
+			void SetDistance(float target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetDistanceTarget(target, spendFrame, easetype);
 			}
 
-			void SetScreenSize(Vector2 target, int spendFrame, EaseType easetype, int32_t cameraID)
+			void SetScreenSize(Vector2 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetScreenSizeTarget(target, spendFrame, easetype);
 			}
 
-			void SetFovTarget(float target, int duration, EaseType easetype, int32_t cameraID)
+			void SetFovTarget(float target, int32_t duration, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetFovTarget(target, duration, easetype);
 			}
@@ -13607,11 +13932,11 @@ namespace Game
 
 		namespace Rand
 		{
-			float RandFloat(float min, float max, int decimalPlaces)
+			float RandFloat(float min, float max, int32_t decimalPlaces)
 			{
 				return Random::RandomFloat(min, max, decimalPlaces);
 			}
-			int RandInt(int min, int max)
+			int32_t RandInt(int32_t min, int32_t max)
 			{
 				return Random::RandomInt(min, max);
 			}
@@ -13692,17 +14017,17 @@ namespace Game
 	{
 		float GetDeltaTime()
 		{
-			return Engine::Instance().GetFixFPS()->GetDeltaTime();
+			return Engine::Instance().GetFixFPS()->GetClampedDeltaTimeMs();
+		}
+
+		float GetFrameRate()
+		{
+			return Engine::Instance().GetFixFPS()->GetClampedFPS();
 		}
 
 		uint32_t GetElapsedTime()
 		{
 			return Engine::Instance().GetFixFPS()->GetFrameCount();
-		}
-
-		float GetFrameRate()
-		{
-			return Engine::Instance().GetFixFPS()->GetAverageFPS();
 		}
 	}
 
@@ -13887,7 +14212,7 @@ namespace Game
 			/// <param name="height">縦幅</param>
 			/// <param name="label">識別用のラベル</param>
 			/// <returns>テクスチャID</returns>
-			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string label);
+			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& label);
 
 			/// <summary>
 			/// レンダーテクスチャをファイルに保存する
@@ -13896,7 +14221,7 @@ namespace Game
 			/// <param name="textureName">保存するレンダーテクスチャの名前</param>
 			/// <param name="color">カラーかどうか</param>
 			/// <returns>保存に成功したかどうか</returns>
-			bool SaveRenderTextureToFile(const std::string& filePath, std::string textureName, bool color = true);
+			bool SaveRenderTextureToFile(const std::string& filePath, const std::string& textureName, bool color = true);
 
 			/// <summary>
 			/// 全てのレンダーテクスチャをファイルに保存する
@@ -13911,21 +14236,28 @@ namespace Game
 			/// </summary>
 			/// <param name="textureName">テクスチャ名</param>
 			/// <returns>テクスチャID</returns>
-			int32_t GetRenderTextureID(const std::string textureName);
+			int32_t GetRenderTextureID(const std::string& textureName);
 
 			/// <summary>
 			/// 深度レンダーテクスチャID取得
 			/// </summary>
 			/// <param name="textureName">テクスチャ名</param>
 			/// <returns>深度テクスチャID</returns>
-			int32_t GetRenderTextureDepthID(const std::string textureName);
+			int32_t GetRenderTextureDepthID(const std::string& textureName);
 
 			/// <summary>
 			/// レンダーテクスチャgpuポインタ取得
 			/// </summary>
 			/// <param name="textureName">テクスチャ名</param>
 			/// <returns>GPUポインタ</returns>
-			UINT64 GetRenderTexture(const std::string textureName);
+			UINT64 GetRenderTextureGPUPtr(const std::string& textureName);
+
+			/// <summary>
+			/// レンダーテクスチャgpuポインタ取得
+			/// </summary>
+			/// <param name="renderTextureID">レンダーテクスチャID</param>
+			/// <returns>GPUポインタ</returns>
+			UINT64 GetRenderTextureGPUPtr(int32_t renderTextureID);
 		}
 	};
 
@@ -14065,28 +14397,28 @@ namespace Game
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
 			/// <returns>現在押されているか</returns>
-			bool IsHeld(int i);
+			bool IsHeld(int32_t i);
 
 			/// <summary>
 			/// マウスボタンの入力取得(押した瞬間)
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
 			/// <returns>押した瞬間か</returns>
-			bool IsJustPressed(int i);
+			bool IsJustPressed(int32_t i);
 
 			/// <summary>
 			/// マウスボタンの入力取得(離した瞬間)
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
 			/// <returns>離した瞬間か</returns>
-			bool IsJustReleased(int i);
+			bool IsJustReleased(int32_t i);
 
 			/// <summary>
 			/// マウスボタンの入力取得(押されてからの経過フレーム数)
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
 			/// <returns>押されてからの経過フレーム数</returns>
-			uint32_t HoldFrames(int i);
+			uint32_t HoldFrames(int32_t i);
 
 			// カーソルの表示・非表示切り替え
 			void ToggleMouseCursorVisible();
@@ -14126,7 +14458,7 @@ namespace Game
 			/// <param name="n">nフレーム以上で長押しと判定</param>
 			/// <param name="key">キー</param>
 			/// <returns>0: なし  1:単押し  2:長押し</returns>
-			int TestTapLong(int n, BYTE key);
+			int32_t TestTapLong(int32_t n, BYTE key);
 		};
 
 		namespace Pad
@@ -14136,56 +14468,56 @@ namespace Game
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			bool IsHeld(int padIndex, BYTE button);
+			bool IsHeld(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// ゲームパッドの入力取得(押した瞬間)
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			bool IsJustPressed(int padIndex, BYTE button);
+			bool IsJustPressed(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// ゲームパッドの入力取得(離した瞬間)
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			bool IsJustReleased(int padIndex, BYTE button);
+			bool IsJustReleased(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// ゲームパッドの入力取得(押されてからの経過フレーム数)
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			uint32_t HoldFrames(int padIndex, BYTE button);
+			uint32_t HoldFrames(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// 左スティックの入力取得
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <returns> -1.0f ～ 1.0f </returns>
-			Vector2 GetLeftStick(int padIndex);
+			Vector2 GetLeftStick(int32_t padIndex);
 
 			/// <summary>
 			/// 右スティックの入力取得
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <returns> -1.0f ～ 1.0f </returns>
-			Vector2 GetRightStick(int padIndex);
+			Vector2 GetRightStick(int32_t padIndex);
 
 			/// <summary>
 			/// 左トリガーの入力取得
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <returns> 0.0f ～ 1.0f </returns>
-			float GetLeftTrigger(int padIndex);
+			float GetLeftTrigger(int32_t padIndex);
 
 			/// <summary>
 			/// 右トリガーの入力取得
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <returns> 0.0f ～ 1.0f </returns>
-			float GetRightTrigger(int padIndex);
+			float GetRightTrigger(int32_t padIndex);
 
 			/// <summary>
 			/// ゲームパッド振動設定
@@ -14193,7 +14525,7 @@ namespace Game
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="leftMotor"> 左モーター強度(0.0f ～ 1.0f) </param>
 			/// <param name="rightMotor"> 右モーター強度(0.0f ～ 1.0f) </param>
-			void SetVibration(int padIndex, float leftMotor, float rightMotor);
+			void SetVibration(int32_t padIndex, float leftMotor, float rightMotor);
 
 			/// <summary>
 			/// 接続されているゲームパッドの数取得
@@ -14232,7 +14564,7 @@ namespace Game
 			/// <param name="target">目標座標</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetCenter(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetCenter(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
 
 			/// <summary>
 			///	カメラの回転量変更
@@ -14240,7 +14572,7 @@ namespace Game
 			/// <param name="target">目標回転量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetRotate(Vector3 target, int spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetRotate(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
 
 			/// <summary>
 			///  カメラの回転中心からの距離(ズーム量)変更
@@ -14248,7 +14580,7 @@ namespace Game
 			/// <param name="target">目標ズーム量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetDistance(float target, int spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetDistance(float target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
 
 			/// <summary>
 			/// カメラのスクリーンサイズ変更
@@ -14257,7 +14589,7 @@ namespace Game
 			/// <param name="spendFrame">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetScreenSize(Vector2 target, int spendFrame, EaseType easetype, int32_t cameraID = 0);
+			void SetScreenSize(Vector2 target, int32_t spendFrame, EaseType easetype, int32_t cameraID = 0);
 			
 			/// <summary>
 			/// カメラのfovY変更
@@ -14266,7 +14598,7 @@ namespace Game
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetFovTarget(float target, int duration, EaseType easetype, int32_t cameraID = 0);
+			void SetFovTarget(float target, int32_t duration, EaseType easetype, int32_t cameraID = 0);
 
 			/// <summary>
 			/// カメラコントロールの有効無効設定
@@ -14352,7 +14684,7 @@ namespace Game
 			/// <param name="max"> 最大値 </param>
 			/// <param name="decimalPlaces"> 小数点以下の桁数 </param>
 			/// <returns> 乱数 </returns>
-			float RandFloat(float min, float max, int decimalPlaces);
+			float RandFloat(float min, float max, int32_t decimalPlaces);
 
 			/// <summary>
 			/// 指定範囲の整数乱数取得
@@ -14360,7 +14692,7 @@ namespace Game
 			/// <param name="min"> 最小値 </param>
 			/// <param name="max"> 最大値 </param>
 			/// <returns> 乱数 </returns>
-			int RandInt(int min, int max);
+			int32_t RandInt(int32_t min, int32_t max);
 		}
 
 		namespace Converter
@@ -14486,28 +14818,16 @@ namespace Game
 ========================================
 #include "FixFPS/FixFPS.h"
 #include <thread>
-#include <algorithm>
 
 FixFPS::FixFPS()
 {
 	previousTime_ = std::chrono::steady_clock::now();
 
-    deltaTime_ = 0.0f;
-
-	averageFPS_ = 0.0f;
-	realTimeFPS_ = 0.0f;
-
-    targetFPS_ = 60;
+	SetTargetFPS(60);
 }
 
-void FixFPS::UpdateFixFPS()
+void FixFPS::Update()
 {
-	double targetFrameTime = 1.0 / static_cast<double>(targetFPS_);
-
-    // {targetFPS_(基本60) / 1.0 秒} をマイクロ秒に変換 → 1フレーム = kFrame
-    const std::chrono::microseconds kFrame =
-        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<double>(targetFrameTime));
-
     // 現在の時間を取得
     std::chrono::steady_clock::time_point currentTime =
         std::chrono::steady_clock::now();
@@ -14516,15 +14836,16 @@ void FixFPS::UpdateFixFPS()
     std::chrono::microseconds elapsedTime =
         std::chrono::duration_cast<std::chrono::microseconds>(currentTime - previousTime_);
 
-	// このフレーム時間を継続出来るならＦＰＳはどこまでだせたかをmaxFPS_に格納
-	maxFPS_ = static_cast<float>(std::round(1.0 / (elapsedTime.count() * 1e-6)));
-    averageMaxFPS_ = (averageMaxFPS_ * 0.99f) + (maxFPS_ * 0.01f);
+	// 実際の経過時間から理論値FPSを計算
+    double deltaMs = std::chrono::duration<double, std::milli>(elapsedTime).count();
+    unclampedDeltaMs_ = static_cast<float>(deltaMs);
+    unclampedFPS_ = static_cast<float>(1000.0 / deltaMs);
 
     // 目標フレーム時間に満たないなら待機
-    if (elapsedTime < kFrame)
+    if (elapsedTime < targetFrameDuration_)
     {
         // 目標時間
-        const auto target = previousTime_ + kFrame;
+        const auto target = previousTime_ + targetFrameDuration_;
         // 睡眠時間を計算
         auto sleepDuration = std::chrono::duration_cast<std::chrono::microseconds>(target - currentTime);
         // sleepDurationが2000以上の場合のみスリープ
@@ -14546,17 +14867,24 @@ void FixFPS::UpdateFixFPS()
         currentTime = std::chrono::steady_clock::now();
     }
 
-    // 待機を含めた実フレーム時間で確定
-    deltaTime_ = std::chrono::duration<float>(currentTime - previousTime_).count();
-    if (deltaTime_ != 0)realTimeFPS_ = (1.0f / deltaTime_);
-    averageFPS_ = (averageFPS_ * 0.99f) + (realTimeFPS_ * 0.01f);
-	deltaTime_ = std::clamp(deltaTime_, 0.0f, 1.0f);
+    // 待機を含めた経過時間からFPSを計算
+    elapsedTime = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - previousTime_);
+    deltaMs = std::chrono::duration<double, std::milli>(elapsedTime).count();
+    clampedDeltaMs_ = static_cast<float>(deltaMs);
+    clampedFPS_ = static_cast<float>(1000.0 / deltaMs);
 
     // 前回時間を更新
     previousTime_ = currentTime;
 
     // フレームカウント更新
     frameCount_++;
+}
+
+void FixFPS::SetTargetFPS(int32_t targetFPS)
+{
+	targetFPS_ = targetFPS;
+	double targetFrameTime = 1.0 / static_cast<double>(targetFPS_);
+    targetFrameDuration_ = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<double>(targetFrameTime));
 }
 
 
@@ -14574,26 +14902,27 @@ class FixFPS
 {
 public:
 	FixFPS();
-	void UpdateFixFPS();
-	float GetDeltaTime() const { return deltaTime_; }
-	float GetRealFPS() const { return realTimeFPS_; }
-	float GetAverageFPS() const { return averageFPS_; }
-	void SetFPS(int32_t targetFPS) { targetFPS_ = targetFPS; }
-	int32_t& GetTargetFpsPtr() { return targetFPS_; }
+	void Update();
+
+	float GetClampedDeltaTimeMs() const { return clampedDeltaMs_; }
+	float GetClampedFPS() const { return clampedFPS_; }
+	float GetUnclampedFPS() const { return unclampedFPS_; }
+	float GetUnclampedDeltaTimeMs() const { return unclampedDeltaMs_; }
+	void SetTargetFPS(int32_t targetFPS);
 	uint32_t GetFrameCount() const { return frameCount_; }
-	float GetMaxFPS() const { return maxFPS_; }
 
 private:
 	std::chrono::steady_clock::time_point previousTime_;
-	int32_t targetFPS_;
-	float maxFPS_ = 0;
-	float averageMaxFPS_ = 0;
-
-	float deltaTime_;
-
-	float averageFPS_;
-	float realTimeFPS_;
-
+	// 目標FPS
+	int32_t targetFPS_ = 60;
+	std::chrono::microseconds targetFrameDuration_;
+	// 実際のFPS
+	float clampedFPS_ = 0.0f;
+	float clampedDeltaMs_ = 0.0f;
+	// 理論値FPS
+	float unclampedFPS_ = 0.0f;
+	float unclampedDeltaMs_ = 0.0f;
+	// 起動後経過時間
 	uint32_t frameCount_ = 0;
 };
 
@@ -14710,7 +15039,7 @@ public:
 private:
 	DirectXManager* dxManager_ = nullptr;
 	WindowManager* windowManager_ = nullptr;
-	bool isDraw_ = true;
+	bool isDraw_ = false;
 };
 
 
@@ -14993,7 +15322,7 @@ Ray MouseController::GetRay(int32_t cameraID)
 }
 
 // 今押しているか  i: 0=左ボタン、1=右ボタン、2=中ボタン
-bool MouseController::IsHeld(int i)
+bool MouseController::IsHeld(int32_t i)
 {
     switch (i)
     {
@@ -15009,7 +15338,7 @@ bool MouseController::IsHeld(int i)
 }
 
 // 押した瞬間（今フレームで押された） i: 0=左ボタン、1=右ボタン、2=中ボタン
-bool MouseController::IsJustPressed(int i)
+bool MouseController::IsJustPressed(int32_t i)
 {
     switch (i)
     {
@@ -15025,7 +15354,7 @@ bool MouseController::IsJustPressed(int i)
 }
 
 // 離した瞬間（今フレームで離れた） i: 0=左ボタン、1=右ボタン、2=中ボタン
-bool MouseController::IsJustReleased(int i)
+bool MouseController::IsJustReleased(int32_t i)
 {
     switch (i)
     {
@@ -15041,7 +15370,7 @@ bool MouseController::IsJustReleased(int i)
 }
 
 // 押されてからの経過フレーム数 i: 0=左ボタン、1=右ボタン、2=中ボタン
-uint32_t MouseController::HoldFrames(int i)
+uint32_t MouseController::HoldFrames(int32_t i)
 {
     switch (i)
     {
@@ -15187,7 +15516,7 @@ void MouseController::UpdateSensitivity()
 
 
 // 相対移動の蓄積
-void MouseController::OnRawMouseDelta(int dx, int dy)
+void MouseController::OnRawMouseDelta(int32_t dx, int32_t dy)
 {
     rawDelta_.x += static_cast<float>(dx);
     rawDelta_.y += static_cast<float>(dy);
@@ -15217,9 +15546,9 @@ public:
 	void SetSensitivity(float sensitivity) { mouseSensitivity_ = sensitivity; }	// マウス感度設定
 
 	// 相対移動の蓄積
-	void OnRawMouseDelta(int dx, int dy);	
+	void OnRawMouseDelta(int32_t dx, int32_t dy);	
 	// ホイール回転量の蓄積
-	void OnMouseWheelDelta(int delta) { wheelDelta_ += delta; }
+	void OnMouseWheelDelta(int32_t delta) { wheelDelta_ += delta; }
 
 	int32_t GetWheelDelta() const { return wheelDelta_; }		// マウスホイール回転量取得
 	Vector2 GetRawDelta() const { return rawDelta_; }			// マウス相対移動を取得
@@ -15227,10 +15556,10 @@ public:
 	Vector3 GetWorldPosition(int32_t cameraID = 0);				// マウス3D座標取得
 	Ray GetRay(int32_t cameraID = 0);							// マウスレイ取得
 
-	bool IsHeld(int i);			// 今押しているか
-	bool IsJustPressed(int i);	// 押した瞬間（今フレームで押された）
-	bool IsJustReleased(int i);	// 離した瞬間（今フレームで離れた）
-	uint32_t HoldFrames(int i);	// 押されてからの経過フレーム数
+	bool IsHeld(int32_t i);			// 今押しているか
+	bool IsJustPressed(int32_t i);	// 押した瞬間（今フレームで押された）
+	bool IsJustReleased(int32_t i);	// 離した瞬間（今フレームで離れた）
+	uint32_t HoldFrames(int32_t i);	// 押されてからの経過フレーム数
 
 	void ToggleMouseCursorVisible();
 	void ShowCursor(bool visible);
@@ -15291,11 +15620,11 @@ PadController::PadController()
         std::memset(leftStickY, 0, sizeof(leftStickY));
         std::memset(rightStickX, 0, sizeof(rightStickX));
         std::memset(rightStickY, 0, sizeof(rightStickY));
-        for (int i = 0; i < 4; ++i)
+        for (size_t i = 0; i < 4; ++i)
         {
             leftStickDir[i] = { 0.0f, 0.0f };
             rightStickDir[i] = { 0.0f, 0.0f };
-            for (int b = 0; b < PAD_BUTTON_MAX; ++b)
+            for (size_t b = 0; b < PAD_BUTTON_MAX; ++b)
             {
                 padStates[i][b].curr = false;
                 padStates[i][b].prev = false;
@@ -15371,7 +15700,7 @@ void PadController::Update()
         else
         {
             isConnect[i] = false;
-            for (int button = 0; button < PAD_BUTTON_MAX; ++button)
+            for (int32_t button = 0; button < PAD_BUTTON_MAX; ++button)
             {
                 PadButtonState& ps = padStates[i][button];
                 ps.prev = ps.curr;
@@ -15389,63 +15718,63 @@ void PadController::Update()
     }
 }
 
-bool PadController::IsHeld(int padIndex, BYTE button) const
+bool PadController::IsHeld(int32_t padIndex, BYTE button) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
-    int btn = std::clamp(int(button), 0, PAD_BUTTON_MAX - 1);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
 	return padStates[stateIndex][btn].curr;
 }
 
-bool PadController::IsJustPressed(int padIndex, BYTE button) const
+bool PadController::IsJustPressed(int32_t padIndex, BYTE button) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
-    int btn = std::clamp(int(button), 0, PAD_BUTTON_MAX - 1);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
 	return (!padStates[stateIndex][btn].prev && padStates[stateIndex][btn].curr);
 }
 
-bool PadController::IsJustReleased(int padIndex, BYTE button) const
+bool PadController::IsJustReleased(int32_t padIndex, BYTE button) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
-    int btn = std::clamp(int(button), 0, PAD_BUTTON_MAX - 1);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
     return (padStates[stateIndex][btn].prev && !padStates[stateIndex][btn].curr);
 }
 
-uint32_t PadController::HoldFrames(int padIndex, BYTE button) const
+uint32_t PadController::HoldFrames(int32_t padIndex, BYTE button) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
-    int btn = std::clamp(int(button), 0, PAD_BUTTON_MAX - 1);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
     return padStates[stateIndex][btn].holdFrames;
 }
 
-Vector2 PadController::GetLeftStick(int padIndex) const
+Vector2 PadController::GetLeftStick(int32_t padIndex) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
 	return leftStickDir[stateIndex];
 }
 
-Vector2 PadController::GetRightStick(int padIndex) const
+Vector2 PadController::GetRightStick(int32_t padIndex) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
     return rightStickDir[stateIndex];
 }
 
-float PadController::GetLeftTrigger(int padIndex) const
+float PadController::GetLeftTrigger(int32_t padIndex) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
 	float value = static_cast<float>(leftTrigger[stateIndex]) / 255.0f;
 	return value;
 }
 
-float PadController::GetRightTrigger(int padIndex) const
+float PadController::GetRightTrigger(int32_t padIndex) const
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
     float value = static_cast<float>(rightTrigger[stateIndex]) / 255.0f;
 	return value;
 }
 
-void PadController::SetVibration(int padIndex, float leftMotor, float rightMotor)
+void PadController::SetVibration(int32_t padIndex, float leftMotor, float rightMotor)
 {
-    int stateIndex = std::clamp(padIndex, 0, 3);
+    int32_t stateIndex = std::clamp(padIndex, 0, 3);
 
     leftMotor = std::clamp(leftMotor, 0.0f, 1.0f);
     rightMotor = std::clamp(rightMotor, 0.0f, 1.0f);
@@ -15461,8 +15790,8 @@ void PadController::SetVibration(int padIndex, float leftMotor, float rightMotor
 
 int32_t PadController::GetConnectedPadNum() const
 {
-    int sum = 0;
-    for (int i = 0; i < 4; ++i)
+    int32_t sum = 0;
+    for (int32_t i = 0; i < 4; ++i)
     {
         if (isConnect[i])
         {
@@ -15494,19 +15823,19 @@ public:
 
     void Update();
 
-	bool IsHeld(int padIndex, BYTE button) const;
-	bool IsJustPressed(int padIndex, BYTE button) const;
-	bool IsJustReleased(int padIndex, BYTE button) const;
+	bool IsHeld(int32_t padIndex, BYTE button) const;
+	bool IsJustPressed(int32_t padIndex, BYTE button) const;
+	bool IsJustReleased(int32_t padIndex, BYTE button) const;
 
-    uint32_t HoldFrames(int padIndex, BYTE button) const;	// 押されてからの経過フレーム数
-	Vector2 GetLeftStick(int padIndex) const;	    // 左スティックの値取得 (-1.0f ～ 1.0f)
-	Vector2 GetRightStick(int padIndex) const;	// 右スティックの値取得 (-1.0f ～ 1.0f)
+    uint32_t HoldFrames(int32_t padIndex, BYTE button) const;	// 押されてからの経過フレーム数
+	Vector2 GetLeftStick(int32_t padIndex) const;	    // 左スティックの値取得 (-1.0f ～ 1.0f)
+	Vector2 GetRightStick(int32_t padIndex) const;	// 右スティックの値取得 (-1.0f ～ 1.0f)
 
     // トリガーの値取得（0.0f ～ 1.0f）
-    float GetLeftTrigger(int padIndex) const;
-    float GetRightTrigger(int padIndex) const;
+    float GetLeftTrigger(int32_t padIndex) const;
+    float GetRightTrigger(int32_t padIndex) const;
     // ゲームパッド振動
-    void SetVibration(int padIndex, float leftMotor, float rightMotor);
+    void SetVibration(int32_t padIndex, float leftMotor, float rightMotor);
 
     int32_t GetConnectedPadNum() const;
 
@@ -15928,6 +16257,7 @@ private:
 
 	// TextureLoaderにもmodelLOaderにもある中間リソース　いつか統合。毎フレーム解放
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> pendingIntermediates_{};
+
 };
 
 
@@ -16024,7 +16354,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-WindowManager::WindowManager(int width, int height, const std::wstring& title)
+WindowManager::WindowManager(uint32_t width, uint32_t height, const std::wstring& title)
 {
 	winWidth_ = width;
 	winHeight_ = height;
@@ -16078,7 +16408,7 @@ void WindowManager::RegisterMouseRawInput(HWND hwnd)
     ::RegisterRawInputDevices(&rid, 1, sizeof(rid));
 }
 
-void WindowManager::CreateMainWindow(int width, int height, const std::wstring& title) 
+void WindowManager::CreateMainWindow(LONG width, LONG height, const std::wstring& title)
 {
     // ウィンドウサイズを表す構造体にクライアント領域を入れる
     RECT wrc = { 0,0,width,height };
@@ -16216,7 +16546,7 @@ class MouseController;
 /// </summary>
 class WindowManager {
 public:
-    WindowManager(int width, int height, const std::wstring& title);
+    WindowManager(uint32_t width, uint32_t height, const std::wstring& title);
     ~WindowManager();
 
     void AttachMouseController(MouseController* mc);
@@ -16262,7 +16592,7 @@ private:
 	// マウスの生入力登録
     void RegisterMouseRawInput(HWND hwnd);
 	// メインウィンドウ生成
-    void CreateMainWindow(int width, int height, const std::wstring& title);
+    void CreateMainWindow(LONG width, LONG height, const std::wstring& title);
 };
 
 

@@ -3,11 +3,13 @@
 #include "UIScreen/InventoryScreen/InventoryScreen.h"
 #include "UIScreen/CraftScreen/CraftScreen.h"
 #include "UIScreen/PauseScreen/PauseScreen.h"
+#include "UIScreen/MiningModeScreen/MiningModeScreen.h"
 
 #include "UIElement/Craft/Craft.h"
 #include "UIElement/Hotbar/Hotbar.h"
 #include "UIElement/Inventory/Inventory.h"
 #include "UIElement/Pause/Pause.h"
+#include "UIElement/MiningMode/MiningMode.h"
 
 
 UIManager::UIManager()
@@ -16,11 +18,13 @@ UIManager::UIManager()
 	elements_[UIElementType::Craft] = std::make_unique<Craft>();
 	elements_[UIElementType::Pause] = std::make_unique<Pause>();
 	elements_[UIElementType::Hotbar] = std::make_unique<Hotbar>();
+	elements_[UIElementType::MiningMode] = std::make_unique<MiningMode>();
 
 	screens_[UIMode::Playing] = std::make_unique<PlayingScreen>();
 	screens_[UIMode::Inventory] = std::make_unique<InventoryScreen>();
 	screens_[UIMode::Crafting] = std::make_unique<CraftScreen>();
 	screens_[UIMode::Pause] = std::make_unique<PauseScreen>();
+	screens_[UIMode::MiningMode] = std::make_unique<MiningModeScreen>();
 
 	for (auto& screen : screens_)
 	{
@@ -35,21 +39,6 @@ UIManager::UIManager()
 	}
 }
 
-void UIManager::SetPlayer(Player* player)
-{
-	for (auto& screen : screens_)
-	{
-		screen.second->SetPlayer(player);
-	}
-}
-
-void UIManager::SetMapManager(MapManager * mapManager)
-{
-	for (auto& screen : screens_)
-	{
-		screen.second->SetMapManager(mapManager);
-	}
-}
 
 UIManager::~UIManager(){}
 
@@ -94,4 +83,18 @@ void UIManager::ChangeScreen(UIMode mode)
 	{
 		currentScreen_->Initialize();
 	}
+}
+
+bool UIManager::IsGameplayActive() const
+{
+	switch (currentUIMode_)
+	{
+	case UIMode::Playing:			return true;		break;
+	case UIMode::Inventory:			return false;		break;
+	case UIMode::Crafting:			return false;		break;
+	case UIMode::Pause:				return false;		break;
+	case UIMode::MiningMode:		return false;		break;
+	}
+
+	return true;
 }

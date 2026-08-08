@@ -6,7 +6,7 @@
     <BuildDependency Project="NobleEngine/externals/imgui/imgui.vcxproj" />
   </Project>
   <Project Path="NobleEngine/externals/imgui/imgui.vcxproj" Id="92509875-1de9-4d22-b0ac-921e3b992ad6" />
-  <Project Path="NobleEngine/NobleEngine.vcxproj" Id="fe937ad5-f3af-4aae-8c46-2c0155852ee8">
+  <Project Path="NobleEngine/NobleEngine.vcxproj" Id="fe937ad5-f3af-4aae-8c46-2c0155852ee8" DefaultStartup="true">
     <BuildDependency Project="NobleEngine/externals/DirectXTex/DirectXTex_Desktop_2022_Win10.vcxproj" />
     <BuildDependency Project="NobleEngine/externals/imgui/imgui.vcxproj" />
   </Project>

@@ -1,5 +1,4 @@
 #pragma once
-#include <Game.h>
 #include <GameObjects/UI/UIElement/IUIElement.h>
 
 class Hotbar : public IUIElement

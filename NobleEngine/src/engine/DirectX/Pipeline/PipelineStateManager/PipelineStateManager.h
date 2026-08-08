@@ -13,6 +13,7 @@ struct CD3DX12PipelineStateStream
     CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
     CD3DX12_PIPELINE_STATE_STREAM_VS VS;                                   // VS用
     CD3DX12_PIPELINE_STATE_STREAM_MS pMS;                                  // MS用
+	CD3DX12_PIPELINE_STATE_STREAM_AS pAS;                                  // AS用
     CD3DX12_PIPELINE_STATE_STREAM_PS pPS;                                  // 共通
     CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;                // VS用
     CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;// VS用

@@ -36,6 +36,10 @@ void PlayingScreen::Update(int32_t cameraID)
 	{
 		nextUIMode_ = UIMode::Inventory;
 	}
+	if (Game::IO::Key::IsJustPressed('F'))
+	{
+		nextUIMode_ = UIMode::MiningMode;
+	}
 	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
 	{
 		nextUIMode_ = UIMode::Pause;

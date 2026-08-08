@@ -63,6 +63,7 @@ HaveItem::HaveItem()
 	render_->SetupFromShaders();
 
 	itemTransform_.translate.y = 0.2f;
+	itemTransform_.scale = { 0.5f, 0.5f, 0.5f };
 }
 
 HaveItem::~HaveItem()

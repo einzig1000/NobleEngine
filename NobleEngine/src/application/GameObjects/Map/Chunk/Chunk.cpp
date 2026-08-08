@@ -1,8 +1,8 @@
 #include <GameObjects/Map/Chunk/Chunk.h>
 #include <GameObjects/Map/Chunk/Block/Block.h>
-#include <GameObjects/Map/Chunk/Block/BlockConfig.h>
 #include <Utilities/Json/JsonManager.h>
 #include <Utilities/Logger/Logger.h>
+#include <Utilities/functions.h>
 #include <externals/DungeonTemplateLibrary/DTL.hpp>
 #include <externals/FastNoiseLite/FastNoiseLite.h>
 #include <App.h>
@@ -40,19 +40,56 @@ namespace
 		std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 		return dist(rng);
 	}
+
+	AABB CreateAABB(const AABB& aabb, const Matrix4x4& worldMatrix)
+	{
+		AABB result;
+
+		// ローカルAABBの8頂点
+		Vector3 corners[8] = {
+			{aabb.min.x, aabb.min.y, aabb.min.z},
+			{aabb.max.x, aabb.min.y, aabb.min.z},
+			{aabb.min.x, aabb.max.y, aabb.min.z},
+			{aabb.max.x, aabb.max.y, aabb.min.z},
+			{aabb.min.x, aabb.min.y, aabb.max.z},
+			{aabb.max.x, aabb.min.y, aabb.max.z},
+			{aabb.min.x, aabb.max.y, aabb.max.z},
+			{aabb.max.x, aabb.max.y, aabb.max.z},
+		};
+
+		// 8頂点をワールド空間に変換
+		Vector3 worldMin = Transform(corners[0], worldMatrix);
+		Vector3 worldMax = worldMin;
+		for (int32_t i = 1; i < 8; ++i)
+		{
+			Vector3 v = Transform(corners[i], worldMatrix);
+			worldMin.x = std::min(worldMin.x, v.x);
+			worldMin.y = std::min(worldMin.y, v.y);
+			worldMin.z = std::min(worldMin.z, v.z);
+			worldMax.x = std::max(worldMax.x, v.x);
+			worldMax.y = std::max(worldMax.y, v.y);
+			worldMax.z = std::max(worldMax.z, v.z);
+		}
+		result = AABB(worldMin, worldMax);
+
+		return result;
+	}
 }
 
 Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 {
 	// チャンク情報保存
 	chunkIndex_ = chunkIndex;
-	//chunkInfo_.blockIdSrvIndex = 0;
-	//chunkInfo_.chunkDim = Vector3int(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
 	chunkInfo_.blockSize = Constexprs::kBlockSize;
+	Vector3 chunkSize = Vector3{
+		static_cast<float>(Constexprs::kChunkX) * Constexprs::kBlockSize,
+		static_cast<float>(Constexprs::kChunkY) * Constexprs::kBlockSize,
+		static_cast<float>(Constexprs::kChunkZ) * Constexprs::kBlockSize };
 	chunkInfo_.chunkWorldOrigin = Vector3{
-		static_cast<float>(chunkIndex.x * Constexprs::kChunkX * Constexprs::kBlockSize * 0.5f),
-		static_cast<float>(chunkIndex.y * Constexprs::kChunkY * Constexprs::kBlockSize * 0.5f),
-		static_cast<float>(chunkIndex.z * Constexprs::kChunkZ * Constexprs::kBlockSize * 0.5f) };
+		static_cast<float>(chunkIndex.x) * chunkSize.x,
+		static_cast<float>(chunkIndex.y) * chunkSize.y,
+		static_cast<float>(chunkIndex.z) * chunkSize.z };
+	chunkAABB_ = AABB(chunkInfo_.chunkWorldOrigin, chunkInfo_.chunkWorldOrigin + chunkSize);
 
 	// SRVスロット確保
 	constexpr uint32_t groupCount = (Constexprs::kChunkX / 2) * (Constexprs::kChunkY / 2) * (Constexprs::kChunkZ / 2);
@@ -63,22 +100,26 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 
 	// 描画オブジェクトの初期化
 	render_ = std::make_unique<RenderObject>();
-	render_->psoConfig_.ms = "resources/shaders/Block.Baked.MS.hlsl";
-	render_->psoConfig_.ps = "resources/shaders/Block.PS.hlsl";
+	render_->psoConfig_.ms = "resources/shaders/Block/2.4.0/Block.MS.hlsl";
+	render_->psoConfig_.ps = "resources/shaders/Block/2.0.0/Block.PS.hlsl";
+	render_->psoConfig_.as = "resources/shaders/Block/2.5.0/Block.AS.hlsl";
 	render_->psoConfig_.rasterizerID = RasterizerID::Solid_FrontCull;
 	render_->SetupFromShaders();
-	render_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
+	constexpr uint32_t kASGroupSize = 32;
+	render_->instanceNum_ = (groupCount + kASGroupSize - 1) / kASGroupSize;
+	//render_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
 
 	// 計算オブジェクトの初期化
 	compute_ = std::make_unique<ComputeObject>();
-	compute_->psoConfig_.cs = "resources/shaders/Block.CreateMesh.CS.hlsl";
+	compute_->psoConfig_.cs = "resources/shaders/Block/2.3.0/Block.CreateMesh.CS.hlsl";
 	compute_->SetupFromShaders();
 	compute_->size = { static_cast<int32_t>(groupCount), 1, 1 };
 	compute_->RegisterOutput(bakedFaceBufferHandle_);
 	compute_->RegisterOutput(faceCountBufferHandle_);
 
-	blockIds_.resize((Constexprs::kChunkX + 2) * (Constexprs::kChunkY + 2) * (Constexprs::kChunkZ + 2), 0);
+	blockIds_.resize((Constexprs::kChunkX + 2) * (Constexprs::kChunkY + 2) * (Constexprs::kChunkZ + 2), 1);
 
+	neighbors_.resize(static_cast<size_t>(DirectionXYZ::Up) + 1, nullptr);
 
 	CreateChunkData(param);
 }
@@ -97,11 +138,8 @@ void Chunk::CreateChunkData(const NoiseParameter& param)
 	// 新規生成の場合							(ノイズに沿ってチャンクデータを生成)
 	CreateChunkDataNewly(param);
 
-	// 配置後のブロックの露出状態を更新
-	//SetExposedAllBlocks();
-
 	// 初回なので無条件でメッシュ生成
-	instanceBufferDirty_ = Constexprs::kFrameCount;
+	blockIdsDirty_ = true;
 }
 
 // Jsonから読み込まれたデータを元にチャンクデータを生成
@@ -121,7 +159,7 @@ void Chunk::CreateChunkDataFromJson()
 	//			DebugBreak();
 	//			continue;
 	//		}
-
+	//	
 	//		SetBlock(pos, blockID);
 	//	}
 	//}
@@ -133,6 +171,10 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 	// 事前に定数を計算
 	const float invScale = 1.0f / param.scale;
 	const int32_t maxY = param.height - 1;
+
+	int32_t sizeX = Constexprs::kChunkX + 2;
+	int32_t sizeY = Constexprs::kChunkY + 2;
+	int32_t sizeZ = Constexprs::kChunkZ + 2;
 
 	// チャンク内すべてのブロック生成
 	for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
@@ -225,7 +267,7 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 				for (int32_t i = 0; i < veinSize; ++i)
 				{
 					// Stone のみ置換（Bedrock/Dirt/Lawnは壊さない）
-					if (blocks_[x][y][z].GetBlockID() == BlockID::Stone)
+					if (blocks_[x][y][z] == BlockID::Stone)
 					{
 						SetBlock(Vector3int(x, y, z), oreId);
 					}
@@ -267,7 +309,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 		{
 			for (int32_t y = Constexprs::kChunkY - 1; y >= 0; --y)
 			{
-				if (blocks_[x][y][z].GetBlockID() == BlockID::Grass) return y;
+				if (blocks_[x][y][z] == BlockID::Grass) return y;
 			}
 			return -1;
 		};
@@ -278,7 +320,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 			if (y0 < 0 || y0 + height >= Constexprs::kChunkY) return false;
 			for (int32_t y = y0; y < y0 + height; ++y)
 			{
-				if (blocks_[x][y][z].GetBlockID() != BlockID::Air) return false;
+				if (blocks_[x][y][z] != BlockID::Air) return false;
 			}
 			return true;
 		};
@@ -343,7 +385,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 						if (dx0 * dx0 + dy0 * dy0 + dz0 * dz0 > leafRadius * leafRadius + 1) continue;
 
 						// 空気だけ葉にする（地形と幹を潰さない）
-						if (blocks_[lx][ly][lz].GetBlockID() == BlockID::Air)
+						if (blocks_[lx][ly][lz] == BlockID::Air)
 						{
 							SetBlock(Vector3int(lx, ly, lz), BlockID::Leaf);
 						}
@@ -415,384 +457,109 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 void Chunk::SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor)
 {
 	if (direction == DirectionXYZ::None) return;
-	neighbors_[direction] = neighbor;
-	instanceBufferDirty_ = Constexprs::kFrameCount;
+	neighbors_[static_cast<size_t>(direction)] = neighbor;
+
+	if (neighbor)
+	{
+		switch (direction)
+		{
+		case DirectionXYZ::Left:
+		case DirectionXYZ::Right:
+		{
+			const int32_t haloX = (direction == DirectionXYZ::Left) ? -1 : Constexprs::kChunkX;
+			const int32_t neighborX = (direction == DirectionXYZ::Left) ? Constexprs::kChunkX - 1 : 0;
+			for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
+				for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
+					SetBlockIDs(Vector3int(haloX, y, z), neighbor->blocks_[neighborX][y][z]);
+			break;
+		}
+		case DirectionXYZ::Back:
+		case DirectionXYZ::Front:
+		{
+			const int32_t haloZ = (direction == DirectionXYZ::Back) ? -1 : Constexprs::kChunkZ;
+			const int32_t neighborZ = (direction == DirectionXYZ::Back) ? Constexprs::kChunkZ - 1 : 0;
+			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
+				for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
+					SetBlockIDs(Vector3int(x, y, haloZ), neighbor->blocks_[x][y][neighborZ]);
+			break;
+		}
+		case DirectionXYZ::Down:
+		case DirectionXYZ::Up:
+		{
+			const int32_t haloY = (direction == DirectionXYZ::Down) ? -1 : Constexprs::kChunkY;
+			const int32_t neighborY = (direction == DirectionXYZ::Down) ? Constexprs::kChunkY - 1 : 0;
+			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
+				for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
+					SetBlockIDs(Vector3int(x, haloY, z), neighbor->blocks_[x][neighborY][z]);
+			break;
+		}
+		default:
+			break;
+		}
+	}
 }
 // 隣接チャンクが存在するか(生成済か)
 bool Chunk::IsNeighborExist(DirectionXYZ direction)
 {
-	return neighbors_[direction] != nullptr;
+	return neighbors_[static_cast<size_t>(direction)] != nullptr;
 }
-
-#pragma endregion
-
-#pragma region 露出状態計算
-
-//// localIndexのブロックの露出状態を更新
-//void Chunk::RefreshExposeAt(const Vector3int& localIndex)
-//{
-//	Block* targetBlock = GetBlock(localIndex);
-//	if (!targetBlock) return;
-//
-//	const int32_t preExposed = targetBlock->GetExposedFace();
-//	ComputeExposed(localIndex);
-//	const int32_t postExposed = targetBlock->GetExposedFace();
-//
-//	if (preExposed != postExposed) instanceBufferDirty_ = true;
-//}
-//// localIndexのブロックの露出状態を判定
-//int32_t Chunk::ComputeExposed(const Vector3int& localIndex)
-//{
-//	Block* self = GetBlock(localIndex);
-//	if (!self) return false;
-//	if (self->GetBlockID() == BlockID::Air) return false;
-//
-//	// 6方向のオフセット 前,後,左,右,上,下
-//	static const int32_t dx[6] = { 0,  0, 1, -1, 0,  0 };
-//	static const int32_t dz[6] = { 1, -1, 0,  0, 0,  0 };
-//	static const int32_t dy[6] = { 0,  0, 0,  0, 1, -1 };
-//
-//	for (int32_t i = 0; i < 6; i++)
-//	{
-//		bool exposed = false;
-//
-//		Vector3int neighborIndex(localIndex.x + dx[i], localIndex.y + dy[i], localIndex.z + dz[i]);
-//		Block* neighborBlock = GetBlock(neighborIndex, true);
-//
-//		// 隣接ブロックが非存在 || 隣接ブロックが透過ブロック なら露出判定
-//		if (!neighborBlock || ItemConfig::Instance().GetBlockInfo(neighborBlock->GetBlockID()).isTransparent)
-//		{
-//			exposed = true;
-//		}
-//
-//		self->SetExposedFace(static_cast<AABBFace>(i), exposed);
-//	}
-//
-//	return self->GetExposedFace();
-//}
-//
-//// チャンク内の全てのブロックの露出状態を更新
-//void Chunk::SetExposedAllBlocks()
-//{
-//	for (int32_t x = 0; x < Constexprs::kChunkX; x++)
-//	{
-//		for (int32_t y = 0; y < Constexprs::kChunkY; y++)
-//		{
-//			for (int32_t z = 0; z < Constexprs::kChunkZ; z++)
-//			{
-//				RefreshExposeAt(Vector3int(x, y, z));
-//			}
-//		}
-//	}
-//}
-//// localIndexの隣接６ブロックの露出状態を更新
-//void Chunk::SetExposedAroundBlocks(const Vector3int& localIndex)
-//{
-//	Chunk* targetChunk = nullptr;
-//
-//	// 6方向オフセット
-//	static const int32_t dx[7] = { 0, -1, 1, 0, 0, 0, 0 };
-//	static const int32_t dz[7] = { 0, 0, 0, 0, 0, -1, 1 };
-//	static const int32_t dy[7] = { 0, 0, 0, -1, 1, 0, 0 };
-//
-//	// 6方向ブロック+自身を更新
-//	for (int32_t i = 0; i < 7; ++i)
-//	{
-//		Vector3int index(localIndex.x + dx[i], localIndex.y + dy[i], localIndex.z + dz[i]);
-//
-//		if (index.y < 0 || index.y >= Constexprs::kChunkY) continue;
-//
-//		if (index.x < 0)
-//		{
-//			targetChunk = neighbors_[DirectionXYZ::Left];
-//			if (!targetChunk) continue;
-//			index.x += Constexprs::kChunkX; // -1 -> Constexprs::kChunkX-1
-//		}
-//		else if (index.x >= Constexprs::kChunkX)
-//		{
-//			targetChunk = neighbors_[DirectionXYZ::Right];
-//			if (!targetChunk) continue;
-//			index.x -= Constexprs::kChunkX; // Constexprs::kChunkX -> 0
-//		}
-//		else if (index.z < 0)
-//		{
-//			targetChunk = neighbors_[DirectionXYZ::Back];
-//			if (!targetChunk) continue;
-//			index.z += Constexprs::kChunkZ; // -1 -> Constexprs::kChunkZ-1
-//		}
-//		else if (index.z >= Constexprs::kChunkZ)
-//		{
-//			targetChunk = neighbors_[DirectionXYZ::Front];
-//			if (!targetChunk) continue;
-//			index.z -= Constexprs::kChunkZ; // Constexprs::kChunkZ -> 0
-//		}
-//		else if (index.y < 0)
-//		{
-//			targetChunk = neighbors_[DirectionXYZ::Down];
-//			if (!targetChunk) continue;
-//			index.y += Constexprs::kChunkY; // -1 -> Constexprs::kChunkY-1
-//		}
-//		else if (index.y >= Constexprs::kChunkY)
-//		{
-//			targetChunk = neighbors_[DirectionXYZ::Up];
-//			if (!targetChunk) continue;
-//			index.y -= Constexprs::kChunkY; // Constexprs::kChunkY -> 0
-//		}
-//		else targetChunk = this;
-//
-//		targetChunk->RefreshExposeAt(index);
-//	}
-//}
-//// チャンク境界ブロックの露出状態を更新
-//void Chunk::SetExposedNeighborBlocks(const DirectionXYZ direction)
-//{
-//	switch (direction)
-//	{
-//	case DirectionXYZ::Left: // -X
-//		for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
-//		{
-//			for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
-//			{
-//				RefreshExposeAt(Vector3int(0, y, z));	
-//				RefreshExposeAt(Vector3int(1, y, z));
-//			}
-//		}
-//		break;
-//	case DirectionXYZ::Right: // +X
-//		for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
-//		{
-//			for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
-//			{
-//				RefreshExposeAt(Vector3int(Constexprs::kChunkX - 1, y, z));
-//				RefreshExposeAt(Vector3int(Constexprs::kChunkX - 2, y, z));
-//			}
-//		}
-//		break;
-//	case DirectionXYZ::Back: // -Z
-//		for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
-//		{
-//			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
-//			{
-//				RefreshExposeAt(Vector3int(x, y, 0));
-//				RefreshExposeAt(Vector3int(x, y, 1));
-//			}
-//		}
-//		break;
-//	case DirectionXYZ::Front: // +Z
-//		for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
-//		{
-//			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
-//			{
-//				RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 1));
-//				RefreshExposeAt(Vector3int(x, y, Constexprs::kChunkZ - 2));
-//			}
-//		}
-//		break;
-//	case DirectionXYZ::Down: // -Y
-//		for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
-//		{
-//			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
-//			{
-//				RefreshExposeAt(Vector3int(x, 0, z));
-//				RefreshExposeAt(Vector3int(x, 1, z));
-//			}
-//		}
-//		break;
-//	case DirectionXYZ::Up: // +Y
-//		for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
-//		{
-//			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
-//			{
-//				RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 1, z));
-//				RefreshExposeAt(Vector3int(x, Constexprs::kChunkY - 2, z));
-//			}
-//		}
-//		break;
-//	default:
-//		break;
-//	}
-//}
-
-#pragma endregion
-
-#pragma region メッシュ
-
-//void Chunk::RefreshMeshData()
-//{
-//	vertices_.clear();
-//	vertexColors_.clear();
-//
-//	// 全ブロック走査して露出しているブロックの頂点を追加していく
-//	for (int32_t x = 0; x < Constexprs::kChunkX; x++)
-//	{
-//		for (int32_t y = 0; y < Constexprs::kChunkY; y++)
-//		{
-//			for (int32_t z = 0; z < Constexprs::kChunkZ; z++)
-//			{
-//				// ブロックが露出している
-//				if (blocks_[x][y][z].IsExposed())
-//				{
-//					Pushvertex(&blocks_[x][y][z]);
-//				}
-//			}
-//		}
-//	}
-//}
-//
-//void Chunk::Pushvertex(const Block* block)
-//{
-//	// AABBFace の並びを定義
-//	static const AABBFace kFaces[6] = {
-//		AABBFace::ZPlus,
-//		AABBFace::ZMinus,
-//		AABBFace::XPlus,
-//		AABBFace::XMinus,
-//		AABBFace::YPlus,
-//		AABBFace::YMinus
-//	};
-//
-//	// 立方体各頂点の中心からのオフセット
-//	static const Vector3 kCubeOffset[8] = {
-//		{-0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize}, // 0
-//		{ 0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize}, // 1
-//		{ 0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize}, // 2
-//		{-0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize}, // 3
-//		{-0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize}, // 4
-//		{ 0.5f * Constexprs::kBlockSize, -0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize}, // 5
-//		{ 0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize}, // 6
-//		{-0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize,  0.5f * Constexprs::kBlockSize}  // 7
-//	};
-//
-//	// 立方体各面の法線ベクトル
-//	static const Vector3 kFaceNormals[6] = {
-//		{ 0.0f,  0.0f,  1.0f}, // +Z (前)
-//		{ 0.0f,  0.0f, -1.0f}, // -Z (後)
-//		{ 1.0f,  0.0f,  0.0f}, // +X (右)
-//		{-1.0f,  0.0f,  0.0f}, // -X (左)
-//		{ 0.0f,  1.0f,  0.0f}, // +Y (上)
-//		{ 0.0f, -1.0f,  0.0f}  // -Y (下)
-//	};
-//
-//	// 立方体各面を構成する4つの頂点番号
-//	static const int32_t kFaceQuadVertices[6][4] = {
-//		{ 5, 4, 7, 6 }, // +Z
-//		{ 2, 3, 0, 1 }, // -Z
-//		{ 1, 5, 6, 2 }, // +X
-//		{ 4, 0, 3, 7 }, // -X
-//		{ 6, 7, 3, 2 }, // +Y
-//		{ 1, 0, 4, 5 }  // -Y
-//	};
-//	// 適当なUV
-//	static const Vector2 kQuadUVs[4] = {
-//		{0.0f, 0.0f},
-//		{1.0f, 0.0f},
-//		{1.0f, 1.0f},
-//		{0.0f, 1.0f}
-//	};
-//
-//	// 5. 四角形の4頂点 [0, 1, 2, 3] から、三角形2つ（6頂点）を展開するためのインデックス順
-//	static const int32_t kTrianglePattern[6] = { 0, 1, 2, 0, 2, 3 };
-//
-//	// 前z+、後z-、左x+、右x-、上y+、下y-
-//	for (int32_t face = 0; face < 6; ++face)
-//	{
-//		// 見えない面はスキップ
-//		if (!block->IsExposed(static_cast<AABBFace>(face))) continue;
-//
-//		// この面を構成する「4つの頂点データ」をテーブルから計算
-//		VertexData quadVertices[4]{};
-//		for (int32_t v = 0; v < 4; ++v)
-//		{
-//			int32_t vertexIndex = kFaceQuadVertices[face][v];
-//
-//			// 位置の計算: ブロックの中心座標 + (ローカル相対座標 * ブロックサイズ)
-//			Vector3 position = block->position_ + kCubeOffset[vertexIndex];
-//			quadVertices[v].position = Vector4(position.x, position.y, position.z, 1.0f);
-//			quadVertices[v].normal = kFaceNormals[face];
-//			quadVertices[v].texcoord = kQuadUVs[v];
-//		}
-//
-//		// 4つの頂点から Triangle List（6頂点分）を生成してメイン配列に push_back
-//		for (int32_t i = 0; i < 6; ++i)
-//		{
-//			vertices_.push_back(quadVertices[kTrianglePattern[i]]);
-//			vertexColors_.push_back(blockConfig_.GetBlockInfo(block->GetBlockID()).color);
-//		}
-//	}
-//}
 
 #pragma endregion
 
 void Chunk::Update(int32_t cameraID)
 {
 	// チャンクに更新が来ていたら
-	if (instanceBufferDirty_ > 0)
+	if (blockIdsDirty_)
 	{
-		if (instanceBufferDirty_ == Constexprs::kFrameCount)
-		{
-			int32_t sizeX = Constexprs::kChunkX + 2;
-			int32_t sizeY = Constexprs::kChunkY + 2;
-			int32_t sizeZ = Constexprs::kChunkZ + 2;
-
-			// Z -> Y -> X の順で一次元配列に変換する
-			for (int32_t z = 0; z < sizeZ; z++)
-			{
-				for (int32_t y = 0; y < sizeY; y++)
-				{
-					for (int32_t x = 0; x < sizeX; x++)
-					{
-						int32_t index = x + (y * sizeX) + (z * sizeX * sizeY);
-
-						// ブロックIDを取得(隣接チャンクも探す)
-						BlockID blockID = BlockID::Bedrock;
-						Block* block = GetBlock(Vector3int(x - 1, y - 1, z - 1), true);
-
-						if (block != nullptr)
-						{
-							blockID = block->GetBlockID();
-						}
-
-						// ブロックIDを代入
-						blockIds_[index] = static_cast<uint32_t>(blockID);
-					}
-				}
-			}
-		}
-
-		Game::Resource::UpdateData(blockIdSrvIndex_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
-
-		Vector3int chunkDim = Vector3int(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
-		compute_->SetCBufferData(0, &chunkDim);
-		Vector2int srvIndexTable = { Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()), Game::Resource::GetSRV(blockIdSrvIndex_) };
-		compute_->SetCBufferData(1, &srvIndexTable);
-		compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFaceBufferHandle_));
-		compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountBufferHandle_));
-		compute_->Dispatch();
-
-		instanceBufferDirty_--;
+		UpdateBlockIds();
 	}
 
-	render_->SetCBufferData(0, ShaderType::MeshShader, &chunkInfo_);
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-	Matrix4x4 world = Matrix4x4::MakeTranslateMatrix(chunkInfo_.chunkWorldOrigin);
-	Matrix4x4 wvp = world * viewPro;
-	render_->SetCBufferData(1, ShaderType::MeshShader, &wvp);
 
-	Vector3int srvIndex = 
-		Vector3int(Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()),
-			Game::Resource::GetSRV(bakedFaceBufferHandle_),
-			Game::Resource::GetSRV(faceCountBufferHandle_));
-	render_->SetCBufferData(2, ShaderType::MeshShader, &srvIndex);
+	uint32_t asSrvIndexTable = Game::Resource::GetSRV(faceCountBufferHandle_);
+	render_->SetCBufferData(0, ShaderType::AmplificationShader, &asSrvIndexTable);
+	render_->SetCBufferData(1, ShaderType::AmplificationShader, &chunkInfo_);
+	render_->SetCBufferData(2, ShaderType::AmplificationShader, &viewPro);
+
+	Vector3int msSrvIndexTable = Vector3int(
+		Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()),
+		Game::Resource::GetSRV(bakedFaceBufferHandle_),
+		Game::Resource::GetSRV(faceCountBufferHandle_));
+	render_->SetCBufferData(0, ShaderType::MeshShader, &msSrvIndexTable);
+	render_->SetCBufferData(1, ShaderType::MeshShader, &chunkInfo_);
+	render_->SetCBufferData(2, ShaderType::MeshShader, &viewPro);
+	
+	inCamera_ = Game::Camera::InCamera(chunkAABB_, cameraID);
+}
+void Chunk::UpdateBlockIds()
+{
+	Game::Resource::UpdateData(blockIdSrvIndex_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
+
+	Vector2uint csSrvIndexTable = { Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()), Game::Resource::GetSRV(blockIdSrvIndex_) };
+	compute_->SetCBufferData(0, &csSrvIndexTable);
+	Vector3int chunkDim = Vector3int(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
+	compute_->SetCBufferData(1, &chunkDim);
+
+	compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFaceBufferHandle_));
+	compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountBufferHandle_));
+	compute_->Dispatch();
+
+	blockIdsDirty_ = false;
 }
 
 void Chunk::Draw(int32_t renderTargetID)
 {
-	render_->Draw(renderTargetID);
+	if (inCamera_)
+	{
+		render_->Draw(renderTargetID);
+	}
 }
 
-
-
-Block* Chunk::GetBlock(const Vector3int& index, bool checkNeighborChunk)
+BlockID* Chunk::GetBlockID(const Vector3int& pos)
+{
+	return &blocks_[pos.x][pos.y][pos.z];
+}
+BlockID* Chunk::GetBlockIDHelloNeighbor(const Vector3int& index)
 {
 	// チャンク内
 	if (0 <= index.x && index.x < Constexprs::kChunkX &&
@@ -802,91 +569,94 @@ Block* Chunk::GetBlock(const Vector3int& index, bool checkNeighborChunk)
 		return &blocks_[index.x][index.y][index.z];
 	}
 
-	if (!checkNeighborChunk) return nullptr;
-
 	Chunk* targetChunk = nullptr;
 	Vector3int localIndex = index;
 
 	if (localIndex.x < 0)
 	{
-		targetChunk = neighbors_[DirectionXYZ::Left];
+		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Left)];
 		if (!targetChunk) return nullptr;
 		localIndex.x += Constexprs::kChunkX; // -1 -> Constexprs::kChunkX-1
 	}
 	else if (localIndex.x >= Constexprs::kChunkX)
 	{
-		targetChunk = neighbors_[DirectionXYZ::Right];
+		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Right)];
 		if (!targetChunk) return nullptr;
 		localIndex.x -= Constexprs::kChunkX; // Constexprs::kChunkX -> 0
 	}
 	else if (localIndex.z < 0)
 	{
-		targetChunk = neighbors_[DirectionXYZ::Back];
+		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Back)];
 		if (!targetChunk) return nullptr;
 		localIndex.z += Constexprs::kChunkZ; // -1 -> Constexprs::kChunkZ-1
 	}
 	else if (localIndex.z >= Constexprs::kChunkZ)
 	{
-		targetChunk = neighbors_[DirectionXYZ::Front];
+		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Front)];
 		if (!targetChunk) return nullptr;
 		localIndex.z -= Constexprs::kChunkZ; // Constexprs::kChunkZ -> 0
 	}
 	else if (localIndex.y < 0)
 	{
-		targetChunk = neighbors_[DirectionXYZ::Down];
+		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Down)];
 		if (!targetChunk) return nullptr;
 		localIndex.y += Constexprs::kChunkY; // -1 -> Constexprs::kChunkY-1
 	}
 	else if (localIndex.y >= Constexprs::kChunkY)
 	{
-		targetChunk = neighbors_[DirectionXYZ::Up];
+		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Up)];
 		if (!targetChunk) return nullptr;
 		localIndex.y -= Constexprs::kChunkY; // Constexprs::kChunkY -> 0
 	}
 	else targetChunk = this;
 
-	return targetChunk->GetBlock(localIndex);
-}
-
-AABB Chunk::GetAABB(const Vector3int& index) const
-{
-	// チャンクのワールド原点
-	float chunkWorldX = chunkIndex_.x * Constexprs::kChunkX * Constexprs::kBlockSize;
-	float chunkWorldY = chunkIndex_.y * Constexprs::kChunkY * Constexprs::kBlockSize;
-	float chunkWorldZ = chunkIndex_.z * Constexprs::kChunkZ * Constexprs::kBlockSize;
-
-	// ブロックのワールド座標
-	float worldX = chunkWorldX + index.x * Constexprs::kBlockSize;
-	float worldY = chunkWorldY + index.y * Constexprs::kBlockSize;
-	float worldZ = chunkWorldZ + index.z * Constexprs::kBlockSize;
-
-	Vector3 mint(worldX, worldY, worldZ);
-	Vector3 maxt(worldX + Constexprs::kBlockSize, worldY + Constexprs::kBlockSize, worldZ + Constexprs::kBlockSize);
-
-	return AABB(mint, maxt);
-}
-
-Vector3 Chunk::LocalCenter(const Vector3int& index) const
-{
-	const float half = Constexprs::kBlockSize * 0.5f;
-	const float baseX = chunkIndex_.x * Constexprs::kChunkX * Constexprs::kBlockSize + half;
-	const float baseY = chunkIndex_.y * Constexprs::kChunkY * Constexprs::kBlockSize + half;
-	const float baseZ = chunkIndex_.z * Constexprs::kChunkZ * Constexprs::kBlockSize + half;
-
-	const float cx = baseX + index.x * Constexprs::kBlockSize;
-	const float cy = baseY + index.y * Constexprs::kBlockSize;
-	const float cz = baseZ + index.z * Constexprs::kBlockSize;
-
-	return Vector3(cx, cy, cz);
+	return targetChunk->GetBlockID(localIndex);
 }
 
 void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id)
 {
-	Block* targetBlock = GetBlock(localIndex);
+	// チャンク更新フラグ
+	blockIdsDirty_ = true;
 
-	if (!targetBlock) return;
+	// 3次元配列に入れる
+	blocks_[localIndex.x][localIndex.y][localIndex.z] = id;
+	// 1次元配列に入れる
+	SetBlockIDs(localIndex, id);
 
-	targetBlock->SetBlockID(id);
+	// マップ端のブロックを更新した場合隣接チャンクも更新する
+	if (localIndex.x == 0)                       PushToNeighborHalo(DirectionXYZ::Left, localIndex, id);
+	if (localIndex.x == Constexprs::kChunkX - 1) PushToNeighborHalo(DirectionXYZ::Right, localIndex, id);
+	if (localIndex.z == 0)                       PushToNeighborHalo(DirectionXYZ::Back, localIndex, id);
+	if (localIndex.z == Constexprs::kChunkZ - 1) PushToNeighborHalo(DirectionXYZ::Front, localIndex, id);
+	if (localIndex.y == 0)                       PushToNeighborHalo(DirectionXYZ::Down, localIndex, id);
+	if (localIndex.y == Constexprs::kChunkY - 1) PushToNeighborHalo(DirectionXYZ::Up, localIndex, id);
+}
+void Chunk::SetBlockIDs(const Vector3int& localIndex, BlockID id)
+{
+	const int32_t sizeX = Constexprs::kChunkX + 2;
+	const int32_t sizeY = Constexprs::kChunkY + 2;
+	const int32_t index = (localIndex.x + 1) + ((localIndex.y + 1) * sizeX) + ((localIndex.z + 1) * sizeX * sizeY);
+	blockIds_[index] = static_cast<uint32_t>(id);
+	blockIdsDirty_ = true;
+}
 
-	instanceBufferDirty_ = Constexprs::kFrameCount;
+void Chunk::PushToNeighborHalo(DirectionXYZ direction, const Vector3int& localIndex, BlockID id)
+{
+	Chunk* neighbor = neighbors_[static_cast<size_t>(direction)];
+	if (!neighbor) return;
+
+	// 隣接チャンクから見た時のローカル座標に変換する
+	Vector3int neighborLocal = localIndex;
+	switch (direction)
+	{
+	case DirectionXYZ::Left:  neighborLocal.x = Constexprs::kChunkX; break;
+	case DirectionXYZ::Right: neighborLocal.x = -1;                  break;
+	case DirectionXYZ::Back:  neighborLocal.z = Constexprs::kChunkZ; break;
+	case DirectionXYZ::Front: neighborLocal.z = -1;                  break;
+	case DirectionXYZ::Down:  neighborLocal.y = Constexprs::kChunkY; break;
+	case DirectionXYZ::Up:    neighborLocal.y = -1;                  break;
+	default: return;
+	}
+
+	neighbor->SetBlockIDs(neighborLocal, id);
 }

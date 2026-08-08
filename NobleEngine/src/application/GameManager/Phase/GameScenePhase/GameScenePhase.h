@@ -9,6 +9,7 @@ class CameraController;
 class UIManager;
 class EnemyManager;
 class ScreenDrawer;
+class SkyBox;
 
 class GameScenePhase :
 	public IPhase
@@ -39,6 +40,7 @@ private:
 
 	// マップ
 	std::unique_ptr<MapManager> map_;
+	std::unique_ptr<SkyBox> skyBox_;
 
 	// UIマネージャー
 	std::unique_ptr<UIManager> uiManager_;

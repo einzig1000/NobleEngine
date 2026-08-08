@@ -42,44 +42,6 @@
 
 #pragma region 基盤構造体
 
-struct Vector2int
-{
-    int32_t x = 0, y = 0;
-    Vector2int operator+(const Vector2int& rhs) const
-    {
-        return Vector2int{ x + rhs.x, y + rhs.y };
-    }
-    Vector2int operator-(const Vector2int& rhs) const
-    {
-        return Vector2int{ x - rhs.x, y - rhs.y };
-    }
-    bool operator==(const Vector2int& rhs) const
-    {
-        return x == rhs.x && y == rhs.y;
-    }
-    bool operator!=(const Vector2int& rhs) const
-    {
-        return x != rhs.x || y != rhs.y;
-    }
-    bool operator<(const Vector2int& rhs) const
-    {
-        if (y != rhs.y)
-        {
-            return y < rhs.y;
-        }
-        return x < rhs.x;
-    }
-};
-struct Vector2intHash
-{
-    std::size_t operator()(const Vector2int& v) const noexcept
-    {
-        uint64_t x = static_cast<uint64_t>(v.x);
-        uint64_t y = static_cast<uint64_t>(v.y);
-        return (x * 73856093) ^ (y * 19349663);
-    }
-};
-
 struct Vector2
 {
     float x = 0, y = 0;
@@ -136,35 +98,61 @@ struct Vector2
     // 内積
     float Dot(const Vector2& rhs) const;
 };
-
-struct Vector3int
+struct Vector2int
 {
-    int32_t x = 0, y = 0, z = 0;
-    Vector3int operator+(const Vector3int& rhs) const
+    int32_t x = 0, y = 0;
+    Vector2int operator+(const Vector2int& rhs) const
     {
-        return Vector3int{ x + rhs.x, y + rhs.y, z + rhs.z };
+        return Vector2int{ x + rhs.x, y + rhs.y };
     }
-    Vector3int operator-(const Vector3int& rhs) const
+    Vector2int operator-(const Vector2int& rhs) const
     {
-        return Vector3int{ x - rhs.x, y - rhs.y, z - rhs.z };
+        return Vector2int{ x - rhs.x, y - rhs.y };
     }
-    bool operator==(const Vector3int& rhs) const
+    bool operator==(const Vector2int& rhs) const
     {
-        return x == rhs.x && y == rhs.y && z == rhs.z;
+        return x == rhs.x && y == rhs.y;
     }
-    bool operator!=(const Vector3int& rhs) const
+    bool operator!=(const Vector2int& rhs) const
     {
-        return x != rhs.x || y != rhs.y || z != rhs.z;
+        return x != rhs.x || y != rhs.y;
+    }
+    bool operator<(const Vector2int& rhs) const
+    {
+        if (y != rhs.y)
+        {
+            return y < rhs.y;
+        }
+        return x < rhs.x;
     }
 };
-struct Vector3intHash
+struct Vector2intHash
 {
-	std::size_t operator()(const Vector3int& v) const noexcept
+    std::size_t operator()(const Vector2int& v) const noexcept
+    {
+        uint64_t x = static_cast<uint64_t>(v.x);
+        uint64_t y = static_cast<uint64_t>(v.y);
+        return (x * 73856093) ^ (y * 19349663);
+    }
+};
+struct Vector2uint
+{
+	uint32_t x = 0, y = 0;
+	Vector2uint operator+(const Vector2uint& rhs) const
 	{
-		uint64_t x = static_cast<uint64_t>(v.x);
-		uint64_t y = static_cast<uint64_t>(v.y);
-		uint64_t z = static_cast<uint64_t>(v.z);
-		return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+		return Vector2uint{ x + rhs.x, y + rhs.y };
+	}
+	Vector2uint operator-(const Vector2uint& rhs) const
+	{
+		return Vector2uint{ x - rhs.x, y - rhs.y };
+	}
+	bool operator==(const Vector2uint& rhs) const
+	{
+		return x == rhs.x && y == rhs.y;
+	}
+	bool operator!=(const Vector2uint& rhs) const
+	{
+		return x != rhs.x || y != rhs.y;
 	}
 };
 
@@ -262,47 +250,55 @@ struct Vector3
 	// ベクトルをQuaternionで回転させた結果のベクトルを返す
     Vector3 RotateByQuaternion(const Quaternion& q) const;
 };
-
-struct Vector4int
+struct Vector3int
 {
-    int32_t x = 0, y = 0, z = 0, w = 0;
-    Vector4int operator+(const Vector4int& rhs) const
+    int32_t x = 0, y = 0, z = 0;
+    Vector3int operator+(const Vector3int& rhs) const
     {
-        return Vector4int{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+        return Vector3int{ x + rhs.x, y + rhs.y, z + rhs.z };
     }
-    Vector4int operator-(const Vector4int& rhs) const
+    Vector3int operator-(const Vector3int& rhs) const
     {
-        return Vector4int{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+        return Vector3int{ x - rhs.x, y - rhs.y, z - rhs.z };
     }
-    bool operator==(const Vector4int& rhs) const
+    bool operator==(const Vector3int& rhs) const
     {
-        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+        return x == rhs.x && y == rhs.y && z == rhs.z;
     }
-    bool operator!=(const Vector4int& rhs) const
+    bool operator!=(const Vector3int& rhs) const
     {
-        return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+        return x != rhs.x || y != rhs.y || z != rhs.z;
     }
 };
-
-struct Vector4uint
+struct Vector3intHash
 {
-    uint32_t x = 0, y = 0, z = 0, w = 0;
-    Vector4uint operator+(const Vector4uint& rhs) const
-    {
-        return Vector4uint{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
-    }
-    Vector4uint operator-(const Vector4uint& rhs) const
-    {
-        return Vector4uint{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
-    }
-    bool operator==(const Vector4uint& rhs) const
-    {
-        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
-    }
-    bool operator!=(const Vector4uint& rhs) const
-    {
-        return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
-    }
+	std::size_t operator()(const Vector3int& v) const noexcept
+	{
+		uint64_t x = static_cast<uint64_t>(v.x);
+		uint64_t y = static_cast<uint64_t>(v.y);
+		uint64_t z = static_cast<uint64_t>(v.z);
+		return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+	}
+};
+struct Vector3uint
+{
+	uint32_t x = 0, y = 0, z = 0;
+	Vector3uint operator+(const Vector3uint& rhs) const
+	{
+		return Vector3uint{ x + rhs.x, y + rhs.y, z + rhs.z };
+	}
+	Vector3uint operator-(const Vector3uint& rhs) const
+	{
+		return Vector3uint{ x - rhs.x, y - rhs.y, z - rhs.z };
+	}
+	bool operator==(const Vector3uint& rhs) const
+	{
+		return x == rhs.x && y == rhs.y && z == rhs.z;
+	}
+	bool operator!=(const Vector3uint& rhs) const
+	{
+		return x != rhs.x || y != rhs.y || z != rhs.z;
+	}
 };
 
 struct Vector4
@@ -360,6 +356,46 @@ struct Vector4
     Vector4 Normalized() const;
     // 内積
     float Dot(const Vector4& rhs) const;
+};
+struct Vector4int
+{
+    int32_t x = 0, y = 0, z = 0, w = 0;
+    Vector4int operator+(const Vector4int& rhs) const
+    {
+        return Vector4int{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+    }
+    Vector4int operator-(const Vector4int& rhs) const
+    {
+        return Vector4int{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+    }
+    bool operator==(const Vector4int& rhs) const
+    {
+        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+    }
+    bool operator!=(const Vector4int& rhs) const
+    {
+        return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+    }
+};
+struct Vector4uint
+{
+    uint32_t x = 0, y = 0, z = 0, w = 0;
+    Vector4uint operator+(const Vector4uint& rhs) const
+    {
+        return Vector4uint{ x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w };
+    }
+    Vector4uint operator-(const Vector4uint& rhs) const
+    {
+        return Vector4uint{ x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w };
+    }
+    bool operator==(const Vector4uint& rhs) const
+    {
+        return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+    }
+    bool operator!=(const Vector4uint& rhs) const
+    {
+        return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+    }
 };
 
 struct Matrix3x3
@@ -438,7 +474,6 @@ struct Matrix3x3
     }
 
 };
-
 struct Matrix4x4
 {
     float m[4][4] = {

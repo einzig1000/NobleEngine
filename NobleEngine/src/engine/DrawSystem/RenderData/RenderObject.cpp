@@ -16,12 +16,20 @@ void RenderObject::SetupFromShaders()
 
 	uint32_t cbvSizeOffset = 0;
 
+	if (psoConfig_.as != "unknown")
+	{
+		std::wstring asPath = StringConverter::Convert(psoConfig_.as);
+		auto asBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(asPath.c_str(), L"as_6_6");
+
+		// ASのルートパラメータを取得
+		ShaderReflection::BuildRootParamsFromShader(asBlob.Get(), ShaderType::AmplificationShader, rootParams_, cbvSizeOffset);
+	}
 	if (psoConfig_.vs != "unknown")
 	{
 		std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
 		auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(vsPath.c_str(), L"vs_6_6");
 
-		// VS の CBV / SBV を反映
+		// VSのルートパラメータを取得
 		ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_, cbvSizeOffset);
 	}
 	else if (psoConfig_.ms != "unknown")
@@ -29,24 +37,21 @@ void RenderObject::SetupFromShaders()
 		std::wstring msPath = StringConverter::Convert(psoConfig_.ms);
 		auto msBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(msPath.c_str(), L"ms_6_6");
 
-		// MS の CBV / SBV を反映
+		// MSのルートパラメータを取得
 		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_, cbvSizeOffset);
 	}
 	{
 		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
 		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(psPath.c_str(), L"ps_6_6");
 
-		// PS の CBV / SBV を反映
+		// PSのルートパラメータを取得
 		ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_, cbvSizeOffset);
 	}
 
-	//// CPU側のストレージを確保
-	//for (size_t i = 0; i < rootParams_.size(); ++i)
-	//{
-	//	rootParamHashToIndexMap_[rootParams_[i].hash] = i;
-	//}
 	
-	// ハッシュの精度を確認するためしばらくこっちを使う。確信がもてたら下記コードは削除し上記のコメントを解除する
+#ifdef _DEBUG
+
+	// ハッシュの精度を確認するためしばらくこっちを使う。確信がもてたらチェックなしに移行
 	for (size_t i = 0; i < rootParams_.size(); ++i)
 	{
 		const auto& param = rootParams_[i];
@@ -59,6 +64,15 @@ void RenderObject::SetupFromShaders()
 			rootParamHashToIndexMap_[param.hash] = i;
 		}
 	}
+
+#else
+
+	for (size_t i = 0; i < rootParams_.size(); ++i)
+	{
+		rootParamHashToIndexMap_[rootParams_[i].hash] = i;
+	}
+
+#endif
 
 	cpuStorage_.resize(cbvSizeOffset);
 }

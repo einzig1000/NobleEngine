@@ -102,7 +102,7 @@ void ItemEditor::DrawImGui()
 	// 現在の情報描画
 	switch (genre_)
 	{
-	case ItemGenre::None:
+	case ItemGenre::MAX:
 	{
 		break;
 	}

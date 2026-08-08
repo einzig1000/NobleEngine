@@ -11,6 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Miner\Miner.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\MiningModeScreen\MiningModeScreen.cpp" />
     <ClCompile Include="src\engine\DirectX\FrameProfiler\FrameProfiler.cpp" />
     <ClCompile Include="src\application\GameObjects\ScreenDrawer\ScreenDrawer.cpp" />
     <ClCompile Include="src\application\Editor\ItemEditor\ItemEditor.cpp" />
@@ -105,7 +109,6 @@
     <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp" />
     <ClCompile Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.cpp" />
     <ClCompile Include="src\engine\DrawSystem\DrawSystem.cpp" />
-    <ClCompile Include="src\engine\DrawSystem\RenderData\RenderData.cpp" />
     <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp" />
     <ClCompile Include="src\engine\Engine.cpp" />
     <ClCompile Include="src\engine\Facade\Game.cpp" />
@@ -140,6 +143,10 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Miner\Miner.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\MiningModeScreen\MiningModeScreen.h" />
     <ClInclude Include="src\engine\DirectX\FrameProfiler\FrameProfiler.h" />
     <ClInclude Include="src\application\GameObjects\ScreenDrawer\ScreenDrawer.h" />
     <ClInclude Include="src\application\Editor\ItemEditor\ItemEditor.h" />
@@ -387,7 +394,6 @@
     <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h" />
     <ClInclude Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.h" />
     <ClInclude Include="src\engine\DrawSystem\DrawSystem.h" />
-    <ClInclude Include="src\engine\DrawSystem\RenderData\RenderData.h" />
     <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h" />
     <ClInclude Include="src\engine\Engine.h" />
     <ClInclude Include="src\engine\Facade\Game.h" />
@@ -420,6 +426,12 @@
     <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h" />
     <ClInclude Include="src\engine\Editor\TimeEditor\TimeEditor.h" />
     <ClInclude Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\shaders\Block\versionInfo.md">
+      <SubType>
+      </SubType>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>

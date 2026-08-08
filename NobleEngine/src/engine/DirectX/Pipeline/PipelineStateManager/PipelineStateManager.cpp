@@ -533,6 +533,13 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
 
     if (isMeshShader)
     {
+        if (cfg.as != "unknown")
+        {
+            std::wstring asPath = StringConverter::Convert(cfg.as);
+            auto asBlob = GetShaderBlob(asPath.c_str(), L"as_6_6");
+            stream.pAS = CD3DX12_SHADER_BYTECODE(asBlob->GetBufferPointer(), asBlob->GetBufferSize());
+        }
+
         std::wstring msPath = StringConverter::Convert(cfg.ms);
         auto msBlob = GetShaderBlob(msPath.c_str(), L"ms_6_6");
         stream.pMS = CD3DX12_SHADER_BYTECODE(msBlob->GetBufferPointer(), msBlob->GetBufferSize());
@@ -627,6 +634,15 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
         //L"-Od",					// 最適化を外しておく
         L"-Zpr",					// 目盛レイアウトは行優先
     };
+
+    //LPCWSTR arguments[] = {
+    //filePath.c_str(),
+    //L"-E", L"main",
+    //L"-T", profile,
+    //L"-Zpr",
+    //L"-I", L"resources/shaders",   // ← これを追加
+    //};
+
     // 実際にシェーダーをコンパイルする
     IDxcResult* shaderResult = nullptr;
     hr = dxcCompiler->Compile(
@@ -700,6 +716,8 @@ D3D12_SHADER_VISIBILITY PipelineStateManager::GetShaderVisibilityFromShaderType(
         return D3D12_SHADER_VISIBILITY_PIXEL;
     case ShaderType::MeshShader:
         return D3D12_SHADER_VISIBILITY_MESH;
+	case ShaderType::AmplificationShader:
+		return D3D12_SHADER_VISIBILITY_AMPLIFICATION;
 	case ShaderType::ComputeShader:
 		return D3D12_SHADER_VISIBILITY_ALL;
 

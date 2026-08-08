@@ -1,12 +1,10 @@
 #pragma once
 #include <string>
 #include <Game.h>
-#include <queue>
 #include <unordered_set>
 #include <memory>
 #include <Utilities/PerlinNoise.h>
 #include <definition/definition.h>
-#include <DrawSystem/RenderData/RenderObject.h>
 
 class Block;
 class Chunk;
@@ -29,25 +27,35 @@ public:
 
 	void Initialize();
 	void Update(int32_t cameraID);
-	void Draw(int32_t renderTargetID) const;
+	void Draw(int32_t renderTargetID);
 	void DrawImGui();
 
+
+	// チャンクの更新/描画範囲を設定する
 	void SetDrawRadius(const Vector3int& r) { drawRadius_ = r; }
 	void SetUpdateRadius(const Vector3int& r) { updateRadius_ = r; }
 
-	// ブロック破壊
-	void DestroyBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex);
-	void AddDropItemAt(const Vector3& position, ItemID id);
+	// マップのシード値を設定する
+	void SetSeed(uint32_t seed);
 
-	// AABB内のブロックを破壊する
-	void DestroyBlockInAABB(const AABB& aabb);
-	// OBB内のブロックを破壊する
-	void DestroyBlockInOBB(const OBB& obb);
+	// 指定範囲内のブロックを一括で置き換える
+	void ReplaceBlockInAABB(const AABB& aabb, BlockID id);
+	void ReplaceBlockInOBB(const OBB& obb, BlockID id);
+	void ReplaceBlockInSphere(const Sphere& sphere, BlockID id);
 
-	// ブロック設置
-	bool SetBlockAt(const lookAtBlock& lab, BlockID id);
-	bool SetBlockAt(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id);
-	bool SetBlockAt(const Vector3& position, BlockID id);
+	// 指定位置のブロックを置き換える 
+	bool ReplaceBlock(const lookAtBlock& lab, BlockID id);
+	bool ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id);
+	bool ReplaceBlock(const Vector3& position, BlockID id);
+
+	// 指定座標ブロックのワールドAABB/ワールドSphereを取得
+	AABB GetAABB(const Vector3int& chunkPos, const Vector3int& index) const;
+	AABB GetAABB(const Vector3& position) const;
+	Sphere GetSphere(const Vector3int& chunkPos, const Vector3int& index) const;
+
+	// ワールド座標からチャンクの整数座標/ブロックのチャンク内整数座標を取得
+	Vector3int ChunkIndexByPosition(const Vector3& position) const;
+	Vector3int BlockIndexByPosition(const Vector3& position) const;
 
 	
 	/// <summary>
@@ -70,9 +78,6 @@ public:
 	// 指定AABBにキャラがあるか
 	bool IsOverlappingAnyCharacter(const AABB& aabb) const;
 
-	// 指定位置に固体ブロックがあるか
-	bool IsSolidAt(const Vector3& position) const;
-
 	// レイとブロックの交差判定（衝突ブロックを返す）
 	std::optional<lookAtBlock> GetBlockByCrossedRay(const Ray& ray, const float maxDistance) const;
 	// ブロック/キャラのうち最初に当たったものを返す
@@ -80,32 +85,17 @@ public:
 	// レイとブロックの交差判定（衝突座標を返す）
 	std::optional<Vector3> GetPositionByCrossedRay(const Ray& ray) const;
 
-	AABB GetAABB(const Vector3int& chunkPos, const Vector3int& index) const;
-	AABB GetAABB(const Vector3& position) const;
-	bool GetIsActive(const Vector3int& chunkPos, const Vector3int& index) const;
-	bool GetIsActive(const Vector3& position) const;
-	Vector3int ChunkIndexByPosition(const Vector3& position) const;		// ワールド座標 → chunksのキーインデックス座標
-	Vector3int BlockIndexByPosition(const Vector3& position) const;		// ワールド座標 → ブロックインデックス座標
-	// ワールド座標からワールドブロックインデックス
-	Vector3int WorldBlockIndexByPosition(const Vector3& position) const;
 
-
-	// チャンク取得(なくても生成はしない)
+	// チャンク取得
 	Chunk* GetChunk(const Vector3int& chunkPos) const;
 	// 欲しいチャンクが存在しなければスケジュールに登録
 	void EnsureChunkScheduled(const Vector3int& chunkPos);
-	// スケジュールに登録されたチャンクを1Fに1つ生成
+	// スケジュールに登録されたチャンクを1つ生成
 	void ProcessChunkGeneration(const Vector3int& cameraChunkPos);
 
-	// キャラクター登録
-	void RegisterCharacter(BaseCharacter* c) { Characters_.push_back(c); }
-	void UnregisterCharacter(BaseCharacter* c)
-	{
-		Characters_.erase(std::remove(Characters_.begin(), Characters_.end(), c), Characters_.end());
-	}
-
-	void SetSeed(uint32_t seed);
-	uint32_t GetSeed() const { return noiseParam_.seed; }
+	// キャラクター登録/解除
+	void RegisterCharacter(BaseCharacter* c);
+	void UnregisterCharacter(BaseCharacter* c);
 
 	// マップネーム->ファイルパスマップ
 	std::map<std::string, std::string> mapNameToFilePath_;
@@ -126,6 +116,8 @@ private:
 	// マップネーム
 	std::string currentMapName_;
 
+	// リアルタイム描画数
+	int32_t drawCount_ = 0;
 
 	// パラメータ
 	Vector3int drawRadius_;    // 描画半径（チャンク単位）

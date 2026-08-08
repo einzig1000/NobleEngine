@@ -1,22 +1,18 @@
 #pragma once
 #include <Game.h>
 #include <Utilities/PerlinNoise.h>
-#include <DrawSystem/RenderData/RenderObject.h>
-#include <GameObjects/Map/Chunk/Block/Block.h>
-
-class BlockConfig;
-
+#include <vector>
 
 struct ChunkInfo
 {
-	// 隣接チャンク１ブロック分も含めたブロックID配列SRVスロット
-	//uint32_t blockIdSrvIndex = 0;
-	// チャンクのボクセル数 (Constexprs::kChunkX/Y/Z、各軸偶数である必要あり)
-	//Vector3int chunkDim;
 	// このチャンクのワールド座標原点
 	Vector3 chunkWorldOrigin;
 	// ブロックサイズ (Constexprs::kBlockSize)
 	float blockSize = Constexprs::kBlockSize;
+	// 
+	Vector3uint chunkDim = Vector3uint(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
+	// 
+	uint32_t _pad0;
 };
 
 class Chunk
@@ -31,24 +27,16 @@ public:
 	void SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor);
 	bool IsNeighborExist(DirectionXYZ direction);
 
-	/// <summary>
-	/// 指定座標のブロックを取得する
-	/// </summary>
-	/// <param name="index">thisから見たローカル座標</param>
-	/// <param name="checkNeighborChunk">隣接チャンクまで探索しにいくか</param>
-	/// <returns>ブロック</returns>
-	Block* GetBlock(const Vector3int& index, bool checkNeighborChunk = false);
-
+	// 指定座標のブロックを取得する
+	BlockID* GetBlockID(const Vector3int& index);
+	BlockID* GetBlockIDHelloNeighbor(const Vector3int& index);
 
 	// ブロック設置(置換)
 	void SetBlock(const Vector3int& localIndex, const BlockID id);
+	void SetBlockIDs(const Vector3int& localIndex, BlockID id);
+	void PushToNeighborHalo(DirectionXYZ direction, const Vector3int& localIndex, const BlockID id);
 
 private:
-
-	// AABB取得
-	AABB GetAABB(const Vector3int& index) const;
-	// 座標取得
-	Vector3 LocalCenter(const Vector3int& index) const;
 
 	// 地形生成
 	void CreateChunkData(const NoiseParameter& param);
@@ -58,21 +46,25 @@ private:
 	void GenerateTrees(const NoiseParameter& param);// 木を生成
 
 private:
-	// 隣接チャンク
-	std::unordered_map<DirectionXYZ, Chunk*> neighbors_;
+	// 隣接チャンク static_cast<size_t>(DirectionXYZ)でアクセス
+	std::vector<Chunk*> neighbors_;
 
-	// チャンク座標
+	// チャンク情報
 	Vector3int chunkIndex_;
 	ChunkInfo chunkInfo_;
+	AABB chunkAABB_;
 	// ブロックデータ配列
-	Block blocks_[Constexprs::kChunkX][Constexprs::kChunkY][Constexprs::kChunkZ];
+	BlockID blocks_[Constexprs::kChunkX][Constexprs::kChunkY][Constexprs::kChunkZ];
 	std::vector<uint32_t> blockIds_;
+
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> render_;
 	// 計算オブジェクト
 	std::unique_ptr<ComputeObject> compute_;
 
-	int32_t instanceBufferDirty_;
+	// ブロックID配列更新フラグ
+	bool blockIdsDirty_ = false;
+	void UpdateBlockIds();
 
 	// このチャンクのブロックID配列SRVスロット
 	int32_t blockIdSrvIndex_ = -1;
@@ -80,5 +72,7 @@ private:
 	int32_t bakedFaceBufferHandle_ = -1;
 	// グループごとの面数SRVスロット
 	int32_t faceCountBufferHandle_ = -1;
+
+	bool inCamera_ = false;
 };
 
