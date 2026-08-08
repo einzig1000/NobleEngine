@@ -13,6 +13,8 @@
   <ItemGroup>
     <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Miner\Miner.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\SwingMining\SwingMining.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\RangeMining\RangeMining.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\MiningModeScreen\MiningModeScreen.cpp" />
     <ClCompile Include="src\engine\DirectX\FrameProfiler\FrameProfiler.cpp" />
@@ -145,6 +147,8 @@
   <ItemGroup>
     <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h" />
     <ClInclude Include="src\application\GameObjects\Map\Miner\Miner.h" />
+    <ClInclude Include="src\application\GameObjects\Character\SwingMining\SwingMining.h" />
+    <ClInclude Include="src\application\GameObjects\Character\RangeMining\RangeMining.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIScreen\MiningModeScreen\MiningModeScreen.h" />
     <ClInclude Include="src\engine\DirectX\FrameProfiler\FrameProfiler.h" />
