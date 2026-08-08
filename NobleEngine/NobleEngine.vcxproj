@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Miner\Miner.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\MiningModeScreen\MiningModeScreen.cpp" />
@@ -142,6 +143,7 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h" />
     <ClInclude Include="src\application\GameObjects\Map\Miner\Miner.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIScreen\MiningModeScreen\MiningModeScreen.h" />

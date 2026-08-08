@@ -70,7 +70,7 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 
 	windowManager_->AttachMouseController(ioManager_->GetMouseController());
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	engineEditor_ = std::make_unique<EngineEditor>(
 		windowManager_.get(),
 		dxManager_.get(),
@@ -79,7 +79,7 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 		cameraManager_.get(),
 		assetManager_.get(),
 		fixFPS_.get());
-#endif
+//#endif
 }
 
 // メインループ用
@@ -116,9 +116,9 @@ void Engine::BeginFrame()
 	ioManager_->Update();
 
 	// デバッグモードの時のみ呼び出す
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	engineEditor_->Update();
-#endif
+//#endif
 }
 
 void Engine::EndFrame()
@@ -127,10 +127,10 @@ void Engine::EndFrame()
 	ioManager_->EndFrame();
 
 	// デバッグモードの時のみ呼び出す
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	engineEditor_->Draw();
 	engineEditor_->DrawImGui();
-#endif
+//#endif
 
 	// カメラのImGui描画
 	cameraManager_->DrawImGui();

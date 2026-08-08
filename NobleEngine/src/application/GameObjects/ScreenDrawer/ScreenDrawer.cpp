@@ -6,18 +6,21 @@ ScreenDrawer::ScreenDrawer()
 	rt_3D_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "3D");
 	rt_3D_depth_ = Game::Asset::RenderTexture::GetRenderTextureDepthID("3D");
 	rt_UI_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "UI");
+	rt_Background_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Background");
 	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
 
 	for (int i = 0; i < 5; i++)
 	{
-		rt_3D_Effect_.push_back(Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "3D_Effect" + std::to_string(i)));
+		rt_PostEffect_.push_back(Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "PostEffect" + std::to_string(i)));
 	}
 
 	int32_t m_plane = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
 
+
+	texelSize = Vector2(1.0f / Game::Window::GetWidth(), 1.0f / Game::Window::GetHeight());
+
 	draw_3D_Vignette_ = std::make_unique<RenderObject>();
 	draw_3D_Vignette_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//draw_3D_Vignette_->psoConfig_.ps = "resources/shaders/FullScreen/RadialBlur.PS.hlsl";
 	draw_3D_Vignette_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
 	draw_3D_Vignette_->modelID_ = m_plane;
 	draw_3D_Vignette_->SetupFromShaders();
@@ -58,6 +61,12 @@ ScreenDrawer::ScreenDrawer()
 	draw_3D_->modelID_ = m_plane;
 	draw_3D_->SetupFromShaders();
 
+	draw_Background_ = std::make_unique<RenderObject>();
+	draw_Background_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_Background_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_Background_->modelID_ = m_plane;
+	draw_Background_->SetupFromShaders();
+
 	draw_main_ = std::make_unique<RenderObject>();
 	draw_main_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
 	draw_main_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
@@ -76,97 +85,112 @@ void ScreenDrawer::Update(int32_t cameraID)
 	}
 	DamageEffectUpdate();
 
+	// 背景書き込み
+	// 書き込み先：rt_PostEffect_[0]
+	// 参照元：rt_3D_, rt_3D_depth_, rt_Background_
+	draw_Background_->SetCBufferData(0, ShaderType::PixelShader, &rt_Background_);
+	draw_Background_->Draw(rt_PostEffect_[0], { rt_3D_, rt_3D_depth_, rt_Background_ });
+
+	// 3D描画
+	// 書き込み先：rt_PostEffect_[0]
+	// 参照元：rt_3D_, rt_3D_depth_, rt_Background_
+	draw_3D_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_);
+	draw_3D_->Draw(rt_PostEffect_[0], { rt_3D_, rt_3D_depth_, rt_Background_ });
+
 	// アウトライン描画
-	// 書き込み先：rt_3D_Effect_[0]
+	// 書き込み先：rt_PostEffect_[0]
 	// 参照元：rt_3D_、rt_3D_depth_
-	draw_3D_DepthBasedOutline_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_);
+	draw_3D_DepthBasedOutline_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[0]);
 	draw_3D_DepthBasedOutline_->SetCBufferData(1, ShaderType::PixelShader, &rt_3D_depth_);
 	Matrix4x4 projectionInverse = Game::Camera::Getter::GetProjectionMatrix(cameraID).Inverse();
 	draw_3D_DepthBasedOutline_->SetCBufferData(2, ShaderType::PixelShader, &projectionInverse);
+	draw_3D_DepthBasedOutline_->Draw(rt_PostEffect_[1], { rt_PostEffect_[0], rt_3D_depth_ });
 
 	// vignette描画
-	// 書き込み先：rt_3D_Effect_[1]
-	// 参照元：rt_3D_Effect_[0]
-	draw_3D_Vignette_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_[0]);
+	// 書き込み先：rt_PostEffect_[1]
+	// 参照元：rt_PostEffect_[0]
+	draw_3D_Vignette_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[1]);
 	draw_3D_Vignette_->SetCBufferData(1, ShaderType::PixelShader, &vignette_Brightness);
+	draw_3D_Vignette_->Draw(rt_PostEffect_[2], { rt_PostEffect_[1] });
 
 	// ガウシアンフィルタ描画
-	// 書き込み先：rt_3D_Effect_[2]
-	// 参照元：rt_3D_Effect_[1]
-	draw_3D_GaussianFilter_[0]->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_[1]);
+	// 書き込み先：rt_PostEffect_[2]
+	// 参照元：rt_PostEffect_[1]
+	draw_3D_GaussianFilter_[0]->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[2]);
 	draw_3D_GaussianFilter_[0]->SetCBufferData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
+	draw_3D_GaussianFilter_[0]->SetCBufferData(2, ShaderType::PixelShader, &texelSize);
+	draw_3D_GaussianFilter_[0]->Draw(rt_PostEffect_[3], { rt_PostEffect_[2] });
 
 	// ガウシアンフィルタ描画
-	// 書き込み先：rt_3D_Effect_[3]
-	// 参照元：rt_3D_Effect_[2]
-	draw_3D_GaussianFilter_[1]->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_[2]);
+	// 書き込み先：rt_PostEffect_[3]
+	// 参照元：rt_PostEffect_[2]
+	draw_3D_GaussianFilter_[1]->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[3]);
 	draw_3D_GaussianFilter_[1]->SetCBufferData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
+	draw_3D_GaussianFilter_[1]->SetCBufferData(2, ShaderType::PixelShader, &texelSize);
+	draw_3D_GaussianFilter_[1]->Draw(rt_PostEffect_[4], { rt_PostEffect_[3] });
 
 	// グレースケール描画
-	// 書き込み先：rt_3D_Effect_[4]
-	// 参照元：rt_3D_Effect_[3]
-	draw_3D_GrayScale_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_[3]);
+	// 書き込み先：rt_PostEffect_[4]
+	// 参照元：rt_PostEffect_[3]
+	draw_3D_GrayScale_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[4]);
 	draw_3D_GrayScale_->SetCBufferData(1, ShaderType::PixelShader, &grayScale_Scale);
-
-
+	draw_3D_GrayScale_->Draw(rt_main_, { rt_UI_, rt_PostEffect_[4] });
 
 	// UI描画
 	// 書き込み先：rt_main_
-	// 参照元：rt_UI_
+	// 参照元：rt_Background_, rt_UI_, rt_PostEffect_[4]
 	draw_UI_->SetCBufferData(0, ShaderType::PixelShader, &rt_UI_);
-
-	// 3D描画
-	// 書き込み先：rt_main_
-	// 参照元：rt_3D_Effect_
-	draw_3D_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_Effect_.back());
+	draw_UI_->Draw(rt_main_, { rt_UI_, rt_PostEffect_[4] });
 
 	// メイン描画
 	// 書き込み先：エンジンのデフォルトレンダーターゲット
 	// 参照元：rt_main_
 	draw_main_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
+	draw_main_->Draw(-1, { rt_main_ });
 }
 
 void ScreenDrawer::Draw()
 {
-	// アウトライン描画
-	// 書き込み先：rt_3D_Effect_[0]
-	// 参照元：rt_3D_、rt_3D_depth_
-	draw_3D_DepthBasedOutline_->Draw(rt_3D_Effect_[0], { rt_3D_, rt_3D_depth_ });
-
-	// vignette描画
-	// 書き込み先：rt_3D_Effect_[1]
-	// 参照元：rt_3D_Effect_[0]
-	draw_3D_Vignette_->Draw(rt_3D_Effect_[1], { rt_3D_Effect_[0] });
+	// ガウシアンフィルタ描画
+	// 書き込み先：rt_PostEffect_[2]
+	// 参照元：rt_PostEffect_[1]
 
 	// ガウシアンフィルタ描画
-	// 書き込み先：rt_3D_Effect_[2]
-	// 参照元：rt_3D_Effect_[1]
-	draw_3D_GaussianFilter_[0]->Draw(rt_3D_Effect_[2], {rt_3D_Effect_[1]});
-
-	// ガウシアンフィルタ描画
-	// 書き込み先：rt_3D_Effect_[3]
-	// 参照元：rt_3D_Effect_[2]
-	draw_3D_GaussianFilter_[1]->Draw(rt_3D_Effect_[3], { rt_3D_Effect_[2] });
+	// 書き込み先：rt_PostEffect_[3]
+	// 参照元：rt_PostEffect_[2]
 
 	// グレースケール描画
-	// 書き込み先：rt_3D_Effect_[4]
-	// 参照元：rt_3D_Effect_[3]
-	draw_3D_GrayScale_->Draw(rt_3D_Effect_[4], { rt_3D_Effect_[3] });
+	// 書き込み先：rt_PostEffect_[4]
+	// 参照元：rt_PostEffect_[3]
 
 
+	//// 背景描画
+	//// 書き込み先：rt_main_
+	//// 参照元：rt_Background_
+	//draw_Background_->Draw(rt_main_, { rt_Background_ });
+	//// 3D描画
+	//// 書き込み先：rt_main_
+	//// 参照元：rt_PostEffect_
+	//draw_3D_->Draw(rt_main_, { rt_PostEffect_.back() });
+	//// UI描画
+	//// 書き込み先：rt_main_
+	//// 参照元：rt_UI_
+	//draw_UI_->Draw(rt_main_, { rt_UI_ });
+
+
+	// 背景描画
+	// 書き込み先：rt_main_
+	// 参照元：rt_Background_
 	// 3D描画
 	// 書き込み先：rt_main_
-	// 参照元：rt_3D_Effect_
-	draw_3D_->Draw(rt_main_, { rt_3D_Effect_.back()});
+	// 参照元：rt_PostEffect_
 	// UI描画
 	// 書き込み先：rt_main_
 	// 参照元：rt_UI_
-	draw_UI_->Draw(rt_main_, { rt_UI_ });
 
 	// メイン描画
 	// 書き込み先：エンジンのデフォルトレンダーターゲット
 	// 参照元：rt_main_
-	draw_main_->Draw(-1, { rt_main_ });
 }
 
 void ScreenDrawer::DrawImGui()

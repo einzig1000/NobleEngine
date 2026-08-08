@@ -15,7 +15,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Engine::Instance().EndFrame();
 	while (Engine::Instance().ProcessMessage())
 	{
-		// フレームの開始
+		//// フレームの開始
 		Engine::Instance().BeginFrame();
 		// ↓更新処理ここから
 		gm->Update();

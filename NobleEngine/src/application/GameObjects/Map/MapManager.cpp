@@ -19,9 +19,9 @@ namespace
 
 MapManager::MapManager()
 {
-	drawRadius_.x = 3;
+	drawRadius_.x = 5;
 	drawRadius_.y = 1;
-	drawRadius_.z = 3;
+	drawRadius_.z = 5;
 	updateRadius_.x = drawRadius_.x;
 	updateRadius_.y = 1;
 	updateRadius_.z = drawRadius_.z;
@@ -61,11 +61,11 @@ void MapManager::Update(int32_t cameraID)
 	ProcessChunkGeneration(cameraChunkPos_);
 
 	// プレイヤー周囲更新
-	for (int32_t dx = -updateRadius_.x; dx <= updateRadius_.x; ++dx)
+	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
 	{
-		for (int32_t dy = -updateRadius_.y; dy <= updateRadius_.y; ++dy)
+		for (int32_t dy = -drawRadius_.y; dy <= drawRadius_.y; ++dy)
 		{
-			for (int32_t dz = -updateRadius_.z; dz <= updateRadius_.z; ++dz)
+			for (int32_t dz = -drawRadius_.z; dz <= drawRadius_.z; ++dz)
 			{
 				if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
 				{
@@ -111,6 +111,7 @@ void MapManager::DrawImGui()
 	ImGui::Text("Chunks count : %zu", chunks.size());
 	ImGui::Text("GenerateQueue: %zu", chunkScheduled_.size());
 	ImGui::Text("Draw count : %d", drawCount_);
+	ImGui::DragInt3("Draw Radius", &drawRadius_.x);
 
 	if (ImGui::Button("Save Map"))
 	{

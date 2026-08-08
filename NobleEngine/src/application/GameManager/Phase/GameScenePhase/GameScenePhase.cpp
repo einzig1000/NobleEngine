@@ -1,12 +1,12 @@
 #include "GameScenePhase.h"
-#include <GameObjects/Map/MapManager.h>
 #include <ResourceLoader/ResourceID.h>
+#include <GameObjects/Map/MapManager.h>
+#include <GameObjects/Map/SkyBox/SkyBox.h>
 #include <GameObjects/Character/Player/Player.h>
 #include <GameObjects/Character/Enemy/EnemyManager.h>
 #include <GameObjects/Camera/CameraController.h>
 #include <GameObjects/ScreenDrawer/ScreenDrawer.h>
 #include <GameObjects/UI/UIManager.h>
-#include <fstream>
 
 GameScenePhase::GameScenePhase()
 {
@@ -20,6 +20,9 @@ GameScenePhase::GameScenePhase()
 	cameraController_ = std::make_unique<CameraController>();
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
+	// スカイボックス生成
+	skyBox_ = std::make_unique<SkyBox>();
+
 	// 敵マネージャー生成
 	//enemyManager_ = std::make_unique<EnemyManager>();
 
@@ -72,6 +75,7 @@ void GameScenePhase::Update()
 	}
 	// マップ更新
 	map_->Update(targetCameraID);
+	skyBox_->Update(targetCameraID);
 	// UI更新
 	uiManager_->Update(targetCameraID);
 	// カメラ更新
@@ -89,9 +93,11 @@ void GameScenePhase::Draw()
 {
 	int32_t rt_3D = screenDrawer_->Get3DRenderTexture();
 	int32_t rt_UI = screenDrawer_->GetUIRenderTexture();
+	int32_t rt_Background = screenDrawer_->GetBackgroundRenderTexture();
 
 	// マップ描画
 	map_->Draw(rt_3D);
+	skyBox_->Draw(rt_Background);
 	// プレイヤー描画
 	player_->Draw(rt_3D);
 	// 敵描画
