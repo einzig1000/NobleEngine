@@ -34,7 +34,7 @@ GPUFPS:130
 ## 2.4.0
 <2.4.0/Block.MS.hlsl> <2.4.0/Block.AS.hlsl> <2.3.0/Block.CreateMesh.CS.hlsl> <2.0.0/Block.PS.hlsl> <2.3.0/Block.hlsli>  
 ASを導入しASを通してから描画するように変更。  
-描画頂点0のグループが描画されなくなりGPU負荷が少し削減された。
+描画頂点0のグループが描画されなくなりGPU負荷が削減された。
 GPUFPS:190
 
 ## 2.5.0

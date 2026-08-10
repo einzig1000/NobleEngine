@@ -162,6 +162,15 @@ enum class ObjectID
 	MAX,
 };
 
+// 採掘モードの種類
+enum class MiningPattern
+{
+	Swing,	// スイング採掘
+	Range,	// 範囲採掘
+
+	MAX,
+};
+
 // BlockID → ItemID 変換
 ItemID BlockIDtoItemID(BlockID id);
 // ToolID → ItemID 変換

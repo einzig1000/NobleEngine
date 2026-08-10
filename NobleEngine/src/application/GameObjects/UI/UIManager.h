@@ -12,8 +12,6 @@ class UIManager
 {
 public:
 	UIManager();
-	void SetPlayer(Player* player);
-	void SetMapManager(MapManager* mapManager);
 	~UIManager();
 
 	void Initialize();

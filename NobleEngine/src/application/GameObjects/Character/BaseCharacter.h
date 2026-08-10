@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include <Game.h>
 #include <definition/definition.h>
 #include <DrawSystem/RenderData/RenderObject.h>
@@ -65,6 +66,11 @@ public:
 	virtual void SetTargetBlock();
 
 	virtual void ComputeViewRay();
+
+	// 視線上にあるブロックを取得。target_/SetTargetBlockはGetFirstHitByRayが未実装のため常にNoneになる点に注意
+	virtual std::optional<lookAtBlock> GetLookedAtBlock() const;
+	// 指定ブロックのワールドAABBを取得
+	virtual AABB GetBlockWorldAABB(const Vector3int& chunkIndex, const Vector3int& localIndex) const;
 
 
 	// アイテム獲得

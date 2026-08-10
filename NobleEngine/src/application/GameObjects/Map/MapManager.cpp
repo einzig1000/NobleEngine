@@ -568,9 +568,9 @@ Sphere MapManager::GetSphere(const Vector3int& chunkPos, const Vector3int& index
 // ワールド座標からチャンクの整数座標/ブロックのチャンク内整数座標を取得
 Vector3int MapManager::ChunkIndexByPosition(const Vector3& position) const
 {
-	int32_t bx = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
-	int32_t by = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize));
-	int32_t bz = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize));
+	int32_t bx = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
+	int32_t by = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
+	int32_t bz = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
 
 	Vector3int chunk;
 	chunk.x = static_cast<int32_t>(std::floor((float)bx / Constexprs::kChunkX));
@@ -581,9 +581,9 @@ Vector3int MapManager::ChunkIndexByPosition(const Vector3& position) const
 Vector3int MapManager::BlockIndexByPosition(const Vector3& position) const
 {
 	Vector3int worldBlockIndex;
-	worldBlockIndex.x = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
-	worldBlockIndex.y = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize));
-	worldBlockIndex.z = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize));
+	worldBlockIndex.x = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
+	worldBlockIndex.y = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
+	worldBlockIndex.z = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
 
 	Vector3int local;
 	local.x = LocalMod(worldBlockIndex.x, Constexprs::kChunkX);

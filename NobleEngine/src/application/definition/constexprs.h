@@ -12,6 +12,9 @@ namespace Constexprs
 
 	static constexpr float kBlockSize = 0.1f; // ブロックのサイズ
 
+	// ワールド座標→ブロック番号変換時、kBlockSizeがfloatで正確に表現できないことによる丸め誤差(番号がブロック境界のわずかに手前に落ちて1小さくなる)を防ぐための微小値
+	static constexpr float kBlockIndexEpsilon = 0.0001f;
+
 	// 重力
 	static constexpr float GRAVITY = -0.005f;
 }

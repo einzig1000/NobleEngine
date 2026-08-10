@@ -1,9 +1,12 @@
 #pragma once
+#include <memory>
 #include <Game.h>
 #include <GameObjects/Character/BaseCharacter.h>
 
 class Itemslot;
 class UIManager;
+class SwingMining;
+class RangeMining;
 
 class Player : public BaseCharacter
 {
@@ -25,6 +28,10 @@ public:
 
 	bool JustDamaged() const { return previousHP_ > HP_; }	// ダメージを受けた瞬間
 
+	// 採掘モード切り替え
+	void SetMiningPattern(MiningPattern pattern);
+	MiningPattern GetMiningPattern() const { return miningMode_; }
+
 private:
 	// 速度
 	float normalSpeed_ = 0.30f;
@@ -36,5 +43,10 @@ private:
 
 	// hp
 	float previousHP_ = 0.0f;
+
+	// 採掘
+	std::unique_ptr<SwingMining> swingMining_;
+	std::unique_ptr<RangeMining> rangeMining_;
+	MiningPattern miningMode_ = MiningPattern::Swing;
 };
 

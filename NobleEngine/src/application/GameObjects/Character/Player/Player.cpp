@@ -1,4 +1,6 @@
 #include "Player.h"
+#include <GameObjects/Character/SwingMining/SwingMining.h>
+#include <GameObjects/Character/RangeMining/RangeMining.h>
 
 Player::Player()
 {
@@ -12,6 +14,9 @@ Player::Player()
 
 	c_viewCameraID_ = Game::Camera::AddCamera("PlayerView");
 	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
+
+	swingMining_ = std::make_unique<SwingMining>(this);
+	rangeMining_ = std::make_unique<RangeMining>(this);
 }
 
 Player::~Player()
@@ -59,14 +64,17 @@ void Player::Update(int32_t cameraID)
 	// 持ってるアイテムの更新
 	UpdateHaveItem(cameraID);
 
-	// 一旦常にブロックを破壊
-	if (Game::IO::Mouse::IsHeld(0))
+	// 採掘モードに応じて処理を切り替え
+	switch (miningMode_)
 	{
-		const std::vector<OBB>& itemOBBs = GetHaveItemOBB();
-		for (const auto& obb : itemOBBs)
-		{
-			DestroyBlockInOBB(obb);
-		}
+	case MiningPattern::Swing:
+		swingMining_->Update();
+		break;
+	case MiningPattern::Range:
+		rangeMining_->Update();
+		break;
+	default:
+		break;
 	}
 
 	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, c_viewCameraID_);
@@ -110,7 +118,33 @@ void Player::DrawImGui()
 	ImGui::DragFloat3("Position", &translate_.value.x, 1.0f);
 	ImGui::DragFloat3("Scale", &scale_.value.x, 0.1f);
 	ImGui::DragFloat3("Velocity", &translate_.velocity.x, 1.0f);
+
+	// モード選択UIがまだ無いので暫定でImGuiから切り替える
+	if (ImGui::RadioButton("Swing", miningMode_ == MiningPattern::Swing))
+	{
+		SetMiningPattern(MiningPattern::Swing);
+	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Range", miningMode_ == MiningPattern::Range))
+	{
+		SetMiningPattern(MiningPattern::Range);
+	}
+	if (miningMode_ == MiningPattern::Range)
+	{
+		ImGui::Text(rangeMining_->HasStartPoint() ? "Range: waiting for 2nd point" : "Range: waiting for 1st point");
+	}
+
 	ImGui::End();
+}
+
+void Player::SetMiningPattern(MiningPattern pattern)
+{
+	// Range切り替え時は選択途中の状態を持ち越さない
+	if (pattern == MiningPattern::Range && miningMode_ != MiningPattern::Range)
+	{
+		rangeMining_->Reset();
+	}
+	miningMode_ = pattern;
 }
 
 

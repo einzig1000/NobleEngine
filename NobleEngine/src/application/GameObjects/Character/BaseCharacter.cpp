@@ -21,6 +21,16 @@ void BaseCharacter::ComputeViewRay()
 	viewRay_.diff = cameraDir;
 }
 
+std::optional<lookAtBlock> BaseCharacter::GetLookedAtBlock() const
+{
+	return mapManager_->GetBlockByCrossedRay(viewRay_, maxDistance);
+}
+
+AABB BaseCharacter::GetBlockWorldAABB(const Vector3int& chunkIndex, const Vector3int& localIndex) const
+{
+	return mapManager_->GetAABB(chunkIndex, localIndex);
+}
+
 void BaseCharacter::UpdateHaveItem(int32_t cameraID)
 {
 	haveItem_.SetParentWorldMatrix(worldMatrix_);

@@ -30,6 +30,11 @@ void GameManager::Update()
 		currentPhase_->Initialize();
 	}
 
+	if (Game::IO::Key::IsJustPressed(VK_F11))
+	{
+		Game::Asset::RenderTexture::SaveAllRenderTextureToFile("generated/screenshots");
+	}
+
 	App::Update();
 }
 

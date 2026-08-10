@@ -56,7 +56,7 @@ void StructuredBufferManager::UpdateData(int32_t handle, const void* data, size_
 	if ((entry.buffers[frameIndex] == nullptr) || (bytes > entry.buffers[frameIndex]->GetDesc().Width))
 	{
 		entry.buffers[frameIndex] = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), bytes);
-		entry.buffers[frameIndex]->Map(0, nullptr, &entry.mapped[frameIndex]);
+ 		entry.buffers[frameIndex]->Map(0, nullptr, &entry.mapped[frameIndex]);
 	}
 
 	// srvが作成されていないなら作る
