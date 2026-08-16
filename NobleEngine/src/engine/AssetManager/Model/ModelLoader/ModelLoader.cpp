@@ -306,7 +306,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
             modelData->vertexBuffer.Get(),
             UINT(modelData->vertices.size()),
             sizeof(VertexData));
-        modelData->vertexSrvindex = srvAllocation.index;
+        modelData->vertexHeapSlot = srvAllocation.index;
     }
 
     /// インデックスバッファ作成
@@ -334,7 +334,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
             modelData->meshletBuffer.Get(),
             UINT(modelData->meshlets.size()),
             sizeof(ResMeshlet));
-        modelData->meshletSrvIndex = srvAllocation.index;
+        modelData->meshletHeapSlot = srvAllocation.index;
     }
 
 	/// ユニーク頂点インデックスバッファ作成
@@ -349,7 +349,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
             modelData->uniqueVertexIndexBuffer.Get(),
             UINT(modelData->uniqueVertexIndices.size()),
             sizeof(uint32_t));
-        modelData->uniqueVertexIndexSrvIndex = srvAllocation.index;
+        modelData->uniqueVertexIndexHeapSlot = srvAllocation.index;
     }
 
 	/// プリミティブインデックスバッファ作成
@@ -364,7 +364,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
             modelData->primitiveIndexBuffer.Get(),
             UINT(modelData->primitiveIndices.size()),
             sizeof(uint32_t));
-        modelData->primitiveIndexSrvIndex = srvAllocation.index;
+        modelData->primitiveIndexHeapSlot = srvAllocation.index;
     }
 
 	// modelData->skinClusterDataを作成する

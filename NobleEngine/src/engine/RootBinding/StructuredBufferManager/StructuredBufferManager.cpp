@@ -78,6 +78,38 @@ void StructuredBufferManager::UpdateData(int32_t handle, const void* data, size_
 	std::memcpy(entry.mapped[frameIndex], data, bytes);
 }
 
+void StructuredBufferManager::ZeroFillComputeOutput(int32_t handle, size_t bytes)
+{
+	if (kindMap_.find(handle) == kindMap_.end())
+	{
+		Log("存在しないハンドルのComputeOutputバッファをゼロクリアしようとしました。");
+		return;
+	}
+	if (kindMap_.at(handle) != BufferKind::ComputeOutput)
+	{
+		Log("ComputeOutput以外のバッファはZeroFillComputeOutputできません");
+		return;
+	}
+
+	auto& entry = computeOutBuffers_.at(handle);
+	const auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+
+	std::vector<uint8_t> zeros(bytes, 0);
+	Microsoft::WRL::ComPtr<ID3D12Resource> intermediate =
+		Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), bytes);
+	void* mapped = nullptr;
+	intermediate->Map(0, nullptr, &mapped);
+	std::memcpy(mapped, zeros.data(), bytes);
+	intermediate->Unmap(0, nullptr);
+	pendingIntermediates_.push_back(intermediate);
+
+	Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), entry.currentState, D3D12_RESOURCE_STATE_COPY_DEST);
+	cmdList->CopyBufferRegion(entry.buffer.Get(), 0, intermediate.Get(), 0, bytes);
+	Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	entry.currentState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+}
+
 
 
 void StructuredBufferManager::Destroy(int32_t handle)
@@ -87,9 +119,9 @@ void StructuredBufferManager::Destroy(int32_t handle)
 
 
 
-uint32_t StructuredBufferManager::GetSRV(int32_t handle) const
+uint32_t StructuredBufferManager::GetSRV(int32_t heapSlot) const
 {
-	auto it = kindMap_.find(handle);
+	auto it = kindMap_.find(heapSlot);
 	if (it == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferのSRVを取得しようとしました。");
@@ -98,17 +130,17 @@ uint32_t StructuredBufferManager::GetSRV(int32_t handle) const
 
 	switch (it->second)
 	{
-	case BufferKind::Static:        return staticBuffers_.at(handle).srv.index;
-	case BufferKind::Dynamic:       return dynamicBuffers_.at(handle).srvAllocations[dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()].index;
-	case BufferKind::ComputeOutput: return computeOutBuffers_.at(handle).srv.index;
+	case BufferKind::Static:        return staticBuffers_.at(heapSlot).srv.index;
+	case BufferKind::Dynamic:       return dynamicBuffers_.at(heapSlot).srvAllocations[dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()].index;
+	case BufferKind::ComputeOutput: return computeOutBuffers_.at(heapSlot).srv.index;
 	}
 
 	return UINT32_MAX;
 }
 
-uint32_t StructuredBufferManager::GetUAV(int32_t handle) const
+uint32_t StructuredBufferManager::GetUAV(int32_t heapSlot) const
 {
-	auto it = kindMap_.find(handle);
+	auto it = kindMap_.find(heapSlot);
 	if (it == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferのUAVを取得しようとしました。");
@@ -121,22 +153,22 @@ uint32_t StructuredBufferManager::GetUAV(int32_t handle) const
 		return UINT32_MAX;
 	}
 
-	return computeOutBuffers_.at(handle).uav.index;
+	return computeOutBuffers_.at(heapSlot).uav.index;
 }
 
-ID3D12Resource* StructuredBufferManager::GetResource(int32_t handle) const
+ID3D12Resource* StructuredBufferManager::GetResource(int32_t heapSlot) const
 {
-	if (kindMap_.find(handle) == kindMap_.end())
+	if (kindMap_.find(heapSlot) == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferのResourceを取得しようとしました。");
 		return nullptr;
 	}
 
-	switch (kindMap_.at(handle))
+	switch (kindMap_.at(heapSlot))
 	{
-	case BufferKind::Static:        return staticBuffers_.at(handle).buffer.Get();
-	case BufferKind::Dynamic:       return dynamicBuffers_.at(handle).buffers[dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()].Get();
-	case BufferKind::ComputeOutput: return computeOutBuffers_.at(handle).buffer.Get();
+	case BufferKind::Static:        return staticBuffers_.at(heapSlot).buffer.Get();
+	case BufferKind::Dynamic:       return dynamicBuffers_.at(heapSlot).buffers[dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()].Get();
+	case BufferKind::ComputeOutput: return computeOutBuffers_.at(heapSlot).buffer.Get();
 	}
 
 	return nullptr;
@@ -144,21 +176,21 @@ ID3D12Resource* StructuredBufferManager::GetResource(int32_t handle) const
 
 
 
-void StructuredBufferManager::TransitionToUAV(int32_t handle, ID3D12GraphicsCommandList6* cmdList)
+void StructuredBufferManager::TransitionToUAV(int32_t heapSlot, ID3D12GraphicsCommandList6* cmdList)
 {
-	if (kindMap_.find(handle) == kindMap_.end())
+	if (kindMap_.find(heapSlot) == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferをUAVに遷移しようとしました。");
 		return;
 	}
 
-	if (kindMap_.at(handle) != BufferKind::ComputeOutput)
+	if (kindMap_.at(heapSlot) != BufferKind::ComputeOutput)
 	{
 		Log("ComputeOutputのバッファ以外はUAVに遷移できません");
 		return;
 	}
 
-	auto& entry = computeOutBuffers_.at(handle);
+	auto& entry = computeOutBuffers_.at(heapSlot);
 
 	// 既にUAV状態ならreturn
 	if (entry.currentState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS) return;
@@ -167,21 +199,21 @@ void StructuredBufferManager::TransitionToUAV(int32_t handle, ID3D12GraphicsComm
 	entry.currentState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 }
 
-void StructuredBufferManager::TransitionToSRV(int32_t handle, ID3D12GraphicsCommandList6* cmdList)
+void StructuredBufferManager::TransitionToSRV(int32_t heapSlot, ID3D12GraphicsCommandList6* cmdList)
 {
-	if (kindMap_.find(handle) == kindMap_.end())
+	if (kindMap_.find(heapSlot) == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferをSRVに遷移しようとしました。");
 		return;
 	}
 
-	if (kindMap_.at(handle) != BufferKind::ComputeOutput)
+	if (kindMap_.at(heapSlot) != BufferKind::ComputeOutput)
 	{
 		Log("ComputeOutputのバッファ以外はSRVに遷移できません");
 		return;
 	}
 
-	auto& entry = computeOutBuffers_.at(handle);
+	auto& entry = computeOutBuffers_.at(heapSlot);
 
 	// VS・PSどちらから読めるようにするため両方のシェーダーステージフラグを立てる
 	constexpr D3D12_RESOURCE_STATES kSRVState =

@@ -11,7 +11,7 @@ SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     // SRV用ディスクリプタヒープ作成
 	textureCapacity_ = 128;
 	textureCubeCapacity_ = 16;
-	bufferCapacity_ = 1024 * 16;
+	bufferCapacity_ = 1024 * 16 * 4;
     capacity_ = textureCapacity_ + textureCubeCapacity_ + bufferCapacity_;
     nextTextureIndex_ = 0;
 	nextTextureCubeIndex_ = textureCapacity_;
@@ -30,7 +30,7 @@ SRV_UAVManager::~SRV_UAVManager()
 {
     Log("デストラクタ実行成功 : SRV_UAVManager");
 }
-
+  
 uint32_t SRV_UAVManager::Allocate(ResourceType type)
 {
     switch (type)

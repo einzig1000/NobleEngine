@@ -51,15 +51,17 @@ public:
 
 	void UpdateData(int32_t handle, const void* data, size_t elementSize, size_t elementCount);
 
+	void ZeroFillComputeOutput(int32_t handle, size_t bytes);
+
 	void Destroy(int32_t handle);
 
-	uint32_t GetSRV(int32_t handle) const;
-	uint32_t GetUAV(int32_t handle) const; // Compute出力のみ有効
-	ID3D12Resource* GetResource(int32_t handle) const; // バリア発行用
+	uint32_t GetSRV(int32_t heapSlot) const;
+	uint32_t GetUAV(int32_t heapSlot) const; // Compute出力のみ有効
+	ID3D12Resource* GetResource(int32_t heapSlot) const; // バリア発行用
 
 
-	void TransitionToUAV(int32_t handle, ID3D12GraphicsCommandList6* cmdList);
-	void TransitionToSRV(int32_t handle, ID3D12GraphicsCommandList6* cmdList);
+	void TransitionToUAV(int32_t heapSlot, ID3D12GraphicsCommandList6* cmdList);
+	void TransitionToSRV(int32_t heapSlot, ID3D12GraphicsCommandList6* cmdList);
 
 private:
 	DirectXManager* dxManager_ = nullptr;
@@ -90,7 +92,7 @@ private:
 	int32_t nextHandleIndex_ = 0;
 	std::unordered_map<int32_t, BufferKind> kindMap_{};
 
-	// TextureLoaderにもmodelLOaderにもある中間リソース　いつか統合。毎フレーム解放
+	// TextureLoaderにもmodelLoaderにもある中間リソース　いつか統合。毎フレーム解放
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> pendingIntermediates_{};
 
 };

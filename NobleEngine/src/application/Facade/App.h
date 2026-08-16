@@ -17,7 +17,7 @@ namespace App
 			const BlockInfo* Get(BlockID id);
 			const ToolInfo* Get(ToolID id);
 			const ObjectInfo* Get(ObjectID id);
-			const int32_t GetBlockInfoTableSRVIndex();
+			const int32_t GetBlockInfoTableHeapSlot();
 			void CreateBlockInfoTable();
 
 			void Save(ItemID id, const ItemInfo& info);

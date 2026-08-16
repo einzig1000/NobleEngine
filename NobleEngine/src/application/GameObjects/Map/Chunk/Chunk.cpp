@@ -74,52 +74,55 @@ namespace
 
 		return result;
 	}
+
+	// チャンクの各軸の長さ
+	constexpr Vector3 kChunkSize = Vector3{
+		static_cast<float>(Constexprs::kChunkBlockCountX) * Constexprs::kBlockSize,
+		static_cast<float>(Constexprs::kChunkBlockCountY) * Constexprs::kBlockSize,
+		static_cast<float>(Constexprs::kChunkBlockCountZ) * Constexprs::kBlockSize };
 }
 
 Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 {
 	// チャンク情報保存
 	chunkIndex_ = chunkIndex;
-	chunkInfo_.blockSize = Constexprs::kBlockSize;
-	Vector3 chunkSize = Vector3{
-		static_cast<float>(Constexprs::kChunkX) * Constexprs::kBlockSize,
-		static_cast<float>(Constexprs::kChunkY) * Constexprs::kBlockSize,
-		static_cast<float>(Constexprs::kChunkZ) * Constexprs::kBlockSize };
 	chunkInfo_.chunkWorldOrigin = Vector3{
-		static_cast<float>(chunkIndex.x) * chunkSize.x,
-		static_cast<float>(chunkIndex.y) * chunkSize.y,
-		static_cast<float>(chunkIndex.z) * chunkSize.z };
-	chunkAABB_ = AABB(chunkInfo_.chunkWorldOrigin, chunkInfo_.chunkWorldOrigin + chunkSize);
+		static_cast<float>(chunkIndex.x) * kChunkSize.x,
+		static_cast<float>(chunkIndex.y) * kChunkSize.y,
+		static_cast<float>(chunkIndex.z) * kChunkSize.z };
+	chunkAABB_ = AABB(chunkInfo_.chunkWorldOrigin, chunkInfo_.chunkWorldOrigin + kChunkSize);
 
-	// SRVスロット確保
-	constexpr uint32_t groupCount = (Constexprs::kChunkX / 2) * (Constexprs::kChunkY / 2) * (Constexprs::kChunkZ / 2);
-	constexpr uint32_t kMaxFacesPerGroup = 48;
-	bakedFaceBufferHandle_ = Game::Resource::CreateCompute(sizeof(uint32_t) * 3, groupCount * kMaxFacesPerGroup);
-	faceCountBufferHandle_ = Game::Resource::CreateCompute(sizeof(uint32_t), groupCount);
-	blockIdSrvIndex_ = Game::Resource::CreateDynamic();
+
+	// ヒープ領域確保
+	bakedFacesHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t) * 3, Constexprs::kMaxFacesPerChunk);
+	//bakedFacesHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t) * 3, (kGroupCount * kMaxFacesPerGroup));
+	faceCountHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
+	groupOffsetHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
+	faceWriteCounterHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1);
+	blockIDsHeapSlot_ = Game::Resource::CreateDynamic();
+
 
 	// 描画オブジェクトの初期化
 	render_ = std::make_unique<RenderObject>();
-	render_->psoConfig_.ms = "resources/shaders/Block/2.4.0/Block.MS.hlsl";
+	//render_->psoConfig_.ms = "resources/shaders/Block/4.2.0/Block.MS.hlsl";
+	render_->psoConfig_.ms = "resources/shaders/Block/4.3.0/Block.MS.hlsl";
 	render_->psoConfig_.ps = "resources/shaders/Block/2.0.0/Block.PS.hlsl";
-	render_->psoConfig_.as = "resources/shaders/Block/2.5.0/Block.AS.hlsl";
+	//render_->psoConfig_.ps = "resources/shaders/Block/4.3.0/Block.PS.hlsl";
+	render_->psoConfig_.as = "resources/shaders/Block/4.3.0/Block.AS.hlsl";
 	render_->psoConfig_.rasterizerID = RasterizerID::Solid_FrontCull;
 	render_->SetupFromShaders();
 	constexpr uint32_t kASGroupSize = 32;
-	render_->instanceNum_ = (groupCount + kASGroupSize - 1) / kASGroupSize;
-	//render_->instanceNum_ = static_cast<uint32_t>((Constexprs::kChunkX * Constexprs::kChunkY * Constexprs::kChunkZ) / 8);
+	render_->instanceNum_ = (Constexprs::kGroupCount + kASGroupSize - 1) / kASGroupSize;
 
 	// 計算オブジェクトの初期化
 	compute_ = std::make_unique<ComputeObject>();
-	compute_->psoConfig_.cs = "resources/shaders/Block/2.3.0/Block.CreateMesh.CS.hlsl";
+	compute_->psoConfig_.cs = "resources/shaders/Block/4.3.0/Block.CreateMesh.CS.hlsl";
 	compute_->SetupFromShaders();
-	compute_->size = { static_cast<int32_t>(groupCount), 1, 1 };
-	compute_->RegisterOutput(bakedFaceBufferHandle_);
-	compute_->RegisterOutput(faceCountBufferHandle_);
-
-	blockIds_.resize((Constexprs::kChunkX + 2) * (Constexprs::kChunkY + 2) * (Constexprs::kChunkZ + 2), 1);
-
-	neighbors_.resize(static_cast<size_t>(DirectionXYZ::Up) + 1, nullptr);
+	compute_->size = { static_cast<int32_t>(Constexprs::kGroupCount), 1, 1 };
+	compute_->RegisterOutput(bakedFacesHeapSlot_);
+	compute_->RegisterOutput(faceCountHeapSlot_);
+	compute_->RegisterOutput(groupOffsetHeapSlot_);
+	compute_->RegisterOutput(faceWriteCounterHeapSlot_);
 
 	CreateChunkData(param);
 }
@@ -172,19 +175,19 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 	const float invScale = 1.0f / param.scale;
 	const int32_t maxY = param.height - 1;
 
-	int32_t sizeX = Constexprs::kChunkX + 2;
-	int32_t sizeY = Constexprs::kChunkY + 2;
-	int32_t sizeZ = Constexprs::kChunkZ + 2;
+	int32_t sizeX = Constexprs::kChunkBlockCountX + 2;
+	int32_t sizeY = Constexprs::kChunkBlockCountY + 2;
+	int32_t sizeZ = Constexprs::kChunkBlockCountZ + 2;
 
 	// チャンク内すべてのブロック生成
-	for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
+	for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
 	{
-		for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
+		for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
 		{
 			// ワールド座標でのブロックインデックス
-			const int32_t worldX = chunkIndex_.x * Constexprs::kChunkX + x;
-			const int32_t worldY = chunkIndex_.y * Constexprs::kChunkY;
-			const int32_t worldZ = chunkIndex_.z * Constexprs::kChunkZ + z;
+			const int32_t worldX = chunkIndex_.x * Constexprs::kChunkBlockCountX + x;
+			const int32_t worldY = chunkIndex_.y * Constexprs::kChunkBlockCountY;
+			const int32_t worldZ = chunkIndex_.z * Constexprs::kChunkBlockCountZ + z;
 
 			// ワールド座標をノイズサンプル空間へスケールダウン
 			const float sampleX = static_cast<float>(worldX) * invScale;
@@ -209,9 +212,9 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 			const int32_t dirtEnd = std::max(0, height - 1);              // [stoneEnd, dirtEnd)
 			const int32_t lawnY = height - 1;                           // y==lawnY が Lawn（height>0のとき）
 
-			for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
+			for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
 			{
-				int32_t globalY = chunkIndex_.y * Constexprs::kChunkY + y;
+				int32_t globalY = chunkIndex_.y * Constexprs::kChunkBlockCountY + y;
 				if (globalY < -1)
 				{
 					continue;
@@ -239,7 +242,7 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 	auto ClampY = [&](int32_t& minY, int32_t& maxY)
 		{
 			minY = std::max(0, minY);
-			maxY = std::min(Constexprs::kChunkY - 1, maxY);
+			maxY = std::min(Constexprs::kChunkBlockCountY - 1, maxY);
 			if (minY > maxY) std::swap(minY, maxY);
 		};
 
@@ -257,9 +260,9 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 
 			for (int32_t v = 0; v < veinsPerChunk; ++v)
 			{
-				int32_t x = RandRange(rng, 0, Constexprs::kChunkX - 1);
+				int32_t x = RandRange(rng, 0, Constexprs::kChunkBlockCountX - 1);
 				int32_t y = RandRange(rng, minY, maxY);
-				int32_t z = RandRange(rng, 0, Constexprs::kChunkZ - 1);
+				int32_t z = RandRange(rng, 0, Constexprs::kChunkBlockCountZ - 1);
 
 				int32_t veinSize = sizeMean + RandRange(rng, -sizeRand, sizeRand);
 				if (veinSize < 1) veinSize = 1;
@@ -274,9 +277,9 @@ void Chunk::GenerateOres(const NoiseParameter& param)
 
 					// 次へ（ランダムウォーク）
 					const int32_t dir = RandRange(rng, 0, 5);
-					x = std::min(Constexprs::kChunkX - 1, std::max(0, x + dx[dir]));
-					y = std::min(Constexprs::kChunkY - 1, std::max(0, y + dy[dir]));
-					z = std::min(Constexprs::kChunkZ - 1, std::max(0, z + dz[dir]));
+					x = std::min(Constexprs::kChunkBlockCountX - 1, std::max(0, x + dx[dir]));
+					y = std::min(Constexprs::kChunkBlockCountY - 1, std::max(0, y + dy[dir]));
+					z = std::min(Constexprs::kChunkBlockCountZ - 1, std::max(0, z + dz[dir]));
 
 					// 高さ帯から外れたら戻す（分布を安定させる）
 					if (y < minY) y = minY;
@@ -307,7 +310,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 	// 指定座標のLawnの一番上のY座標を取得
 	auto FindSurfaceY_Lawn = [&](int32_t x, int32_t z) -> int32_t
 		{
-			for (int32_t y = Constexprs::kChunkY - 1; y >= 0; --y)
+			for (int32_t y = Constexprs::kChunkBlockCountY - 1; y >= 0; --y)
 			{
 				if (blocks_[x][y][z] == BlockID::Grass) return y;
 			}
@@ -317,7 +320,7 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 	// 指定位置に幹を立てられるか
 	auto CanPlaceTrunk = [&](int32_t x, int32_t y0, int32_t z, int32_t height) -> bool
 		{
-			if (y0 < 0 || y0 + height >= Constexprs::kChunkY) return false;
+			if (y0 < 0 || y0 + height >= Constexprs::kChunkBlockCountY) return false;
 			for (int32_t y = y0; y < y0 + height; ++y)
 			{
 				if (blocks_[x][y][z] != BlockID::Air) return false;
@@ -329,17 +332,17 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 	auto CanPlaceLeaves = [&](int32_t x, int32_t z, int32_t trunkTopY, int32_t leafRadius) -> bool
 		{
 			if (trunkTopY - leafRadius < 0) return false;
-			if (trunkTopY + leafRadius >= Constexprs::kChunkY) return false;
+			if (trunkTopY + leafRadius >= Constexprs::kChunkBlockCountY) return false;
 			if (x - leafRadius < 0) return false;
-			if (x + leafRadius >= Constexprs::kChunkX) return false;
+			if (x + leafRadius >= Constexprs::kChunkBlockCountX) return false;
 			if (z - leafRadius < 0) return false;
-			if (z + leafRadius >= Constexprs::kChunkZ) return false;
+			if (z + leafRadius >= Constexprs::kChunkBlockCountZ) return false;
 			return true;
 		};
 
-	for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
+	for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
 	{
-		for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
+		for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
 		{
 			if (Rand01(rng) > param.treeChancePerColumn) continue;
 
@@ -367,15 +370,15 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 			// 葉（幹先端に球っぽく）
 			for (int32_t ly = leafCenterY - leafRadius; ly <= leafCenterY + leafRadius; ++ly)
 			{
-				if (ly < 0 || ly >= Constexprs::kChunkY) continue;
+				if (ly < 0 || ly >= Constexprs::kChunkBlockCountY) continue;
 
 				for (int32_t lx = x - leafRadius; lx <= x + leafRadius; ++lx)
 				{
-					if (lx < 0 || lx >= Constexprs::kChunkX) continue;
+					if (lx < 0 || lx >= Constexprs::kChunkBlockCountX) continue;
 
 					for (int32_t lz = z - leafRadius; lz <= z + leafRadius; ++lz)
 					{
-						if (lz < 0 || lz >= Constexprs::kChunkZ) continue;
+						if (lz < 0 || lz >= Constexprs::kChunkBlockCountZ) continue;
 
 						const int32_t dx0 = lx - x;
 						const int32_t dy0 = ly - leafCenterY;
@@ -406,14 +409,14 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 //	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
 //	noise.SetFractalOctaves(4); // 4回重ねる
 //
-//	std::vector<std::vector<int32_t>> heightMap(Constexprs::kChunkZ, std::vector<int32_t>(Constexprs::kChunkX, 0));
+//	std::vector<std::vector<int32_t>> heightMap(Constexprs::kChunkBlockCountZ, std::vector<int32_t>(Constexprs::kChunkBlockCountX, 0));
 //
-//	for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
+//	for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
 //	{
-//		for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
+//		for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
 //		{
-//			float global_x = (float)((chunkIndex_.x * Constexprs::kChunkX) + x);
-//			float global_z = (float)((chunkIndex_.z * Constexprs::kChunkZ) + z);
+//			float global_x = (float)((chunkIndex_.x * Constexprs::kChunkBlockCountX) + x);
+//			float global_z = (float)((chunkIndex_.z * Constexprs::kChunkBlockCountZ) + z);
 //
 //			// 2. ノイズを取得（0.05f などのスケールはここで掛けるより、関数を使うと便利）
 //			// ※ FastNoiseLite は -1.0 ～ 1.0 の値を返します！
@@ -423,20 +426,20 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 //			float normalized_noise = (raw_noise + 1.0f) / 2.0f;
 //
 //			// 世界の高さはチャンクn個分
-//			heightMap[z][x] = static_cast<int32_t>(normalized_noise * Constexprs::kChunkY * 30);
+//			heightMap[z][x] = static_cast<int32_t>(normalized_noise * Constexprs::kChunkBlockCountY * 30);
 //		}
 //	}
 //
 //	/// [X][Z]軸の高さに応じてブロックを配置する(chunkIndex_.Y == 0 が世界の底・chunkIndex_.Y == 30 が世界の上面)
-//	for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
+//	for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
 //	{
-//		for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
+//		for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
 //		{
 //			int32_t height = heightMap[z][x];
 //			int32_t dirtThickness = 10;
-//			for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
+//			for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
 //			{
-//				int32_t globalY = chunkIndex_.y * Constexprs::kChunkY + y;
+//				int32_t globalY = chunkIndex_.y * Constexprs::kChunkBlockCountY + y;
 //				BlockID id;
 //				if (globalY == 0)							id = BlockID::Bedrock;
 //				else if (globalY < height - dirtThickness)	id = BlockID::Stone;
@@ -466,30 +469,30 @@ void Chunk::SetNeighborChunk(DirectionXYZ direction, Chunk* neighbor)
 		case DirectionXYZ::Left:
 		case DirectionXYZ::Right:
 		{
-			const int32_t haloX = (direction == DirectionXYZ::Left) ? -1 : Constexprs::kChunkX;
-			const int32_t neighborX = (direction == DirectionXYZ::Left) ? Constexprs::kChunkX - 1 : 0;
-			for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
-				for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
+			const int32_t haloX = (direction == DirectionXYZ::Left) ? -1 : Constexprs::kChunkBlockCountX;
+			const int32_t neighborX = (direction == DirectionXYZ::Left) ? Constexprs::kChunkBlockCountX - 1 : 0;
+			for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
+				for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
 					SetBlockIDs(Vector3int(haloX, y, z), neighbor->blocks_[neighborX][y][z]);
 			break;
 		}
 		case DirectionXYZ::Back:
 		case DirectionXYZ::Front:
 		{
-			const int32_t haloZ = (direction == DirectionXYZ::Back) ? -1 : Constexprs::kChunkZ;
-			const int32_t neighborZ = (direction == DirectionXYZ::Back) ? Constexprs::kChunkZ - 1 : 0;
-			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
-				for (int32_t y = 0; y < Constexprs::kChunkY; ++y)
+			const int32_t haloZ = (direction == DirectionXYZ::Back) ? -1 : Constexprs::kChunkBlockCountZ;
+			const int32_t neighborZ = (direction == DirectionXYZ::Back) ? Constexprs::kChunkBlockCountZ - 1 : 0;
+			for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
+				for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
 					SetBlockIDs(Vector3int(x, y, haloZ), neighbor->blocks_[x][y][neighborZ]);
 			break;
 		}
 		case DirectionXYZ::Down:
 		case DirectionXYZ::Up:
 		{
-			const int32_t haloY = (direction == DirectionXYZ::Down) ? -1 : Constexprs::kChunkY;
-			const int32_t neighborY = (direction == DirectionXYZ::Down) ? Constexprs::kChunkY - 1 : 0;
-			for (int32_t x = 0; x < Constexprs::kChunkX; ++x)
-				for (int32_t z = 0; z < Constexprs::kChunkZ; ++z)
+			const int32_t haloY = (direction == DirectionXYZ::Down) ? -1 : Constexprs::kChunkBlockCountY;
+			const int32_t neighborY = (direction == DirectionXYZ::Down) ? Constexprs::kChunkBlockCountY - 1 : 0;
+			for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
+				for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
 					SetBlockIDs(Vector3int(x, haloY, z), neighbor->blocks_[x][neighborY][z]);
 			break;
 		}
@@ -509,43 +512,70 @@ bool Chunk::IsNeighborExist(DirectionXYZ direction)
 void Chunk::Update(int32_t cameraID)
 {
 	// チャンクに更新が来ていたら
-	if (blockIdsDirty_)
-	{
-		UpdateBlockIds();
-	}
+	if (blockIdsDirty_) UpdateBlockIds();
 
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 
-	uint32_t asSrvIndexTable = Game::Resource::GetSRV(faceCountBufferHandle_);
-	render_->SetCBufferData(0, ShaderType::AmplificationShader, &asSrvIndexTable);
+	uint32_t asHeapSlotTable = Game::Resource::GetSRV(faceCountHeapSlot_);
+	render_->SetCBufferData(0, ShaderType::AmplificationShader, &asHeapSlotTable);
 	render_->SetCBufferData(1, ShaderType::AmplificationShader, &chunkInfo_);
 	render_->SetCBufferData(2, ShaderType::AmplificationShader, &viewPro);
 
-	Vector3int msSrvIndexTable = Vector3int(
-		Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()),
-		Game::Resource::GetSRV(bakedFaceBufferHandle_),
-		Game::Resource::GetSRV(faceCountBufferHandle_));
+	Vector4uint msSrvIndexTable = Vector4uint(
+		Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableHeapSlot()),
+		Game::Resource::GetSRV(bakedFacesHeapSlot_),
+		Game::Resource::GetSRV(faceCountHeapSlot_),
+		Game::Resource::GetSRV(groupOffsetHeapSlot_));
 	render_->SetCBufferData(0, ShaderType::MeshShader, &msSrvIndexTable);
 	render_->SetCBufferData(1, ShaderType::MeshShader, &chunkInfo_);
 	render_->SetCBufferData(2, ShaderType::MeshShader, &viewPro);
 	
 	inCamera_ = Game::Camera::InCamera(chunkAABB_, cameraID);
 }
+//void Chunk::UpdateBlockIds()
+//{
+//	Game::Resource::UpdateData(blockIDsHeapSlot_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
+//
+//	Vector2uint csHeapSlotTable = { Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableHeapSlot()), Game::Resource::GetSRV(blockIDsHeapSlot_) };
+//	compute_->SetCBufferData(0, &csHeapSlotTable);
+//	Vector3int chunkSize = Vector3int(Constexprs::kChunkBlockCountX, Constexprs::kChunkBlockCountY, Constexprs::kChunkBlockCountZ);
+//	compute_->SetCBufferData(1, &chunkSize);
+//
+//	compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFacesHeapSlot_));
+//	compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountHeapSlot_));
+//	compute_->Dispatch();
+//
+//	blockIdsDirty_ = false;
+//}
 void Chunk::UpdateBlockIds()
 {
-	Game::Resource::UpdateData(blockIdSrvIndex_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
+	Game::Resource::UpdateData(blockIDsHeapSlot_, blockIds_, sizeof(uint32_t), Constexprs::kMaxFacesPerChunkPlusHalo);
 
-	Vector2uint csSrvIndexTable = { Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableSRVIndex()), Game::Resource::GetSRV(blockIdSrvIndex_) };
-	compute_->SetCBufferData(0, &csSrvIndexTable);
-	Vector3int chunkDim = Vector3int(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
-	compute_->SetCBufferData(1, &chunkDim);
+	// 面カウンタを0にリセット(このDispatchの中でInterlockedAddの起点にする)
+	Game::Resource::ZeroFillCompute(faceWriteCounterHeapSlot_, sizeof(uint32_t));
 
-	compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFaceBufferHandle_));
-	compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountBufferHandle_));
+	Vector2uint csHeapSlotTable = Vector2uint(
+		Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableHeapSlot()),
+		Game::Resource::GetSRV(blockIDsHeapSlot_));
+	compute_->SetCBufferData(0, &csHeapSlotTable);
+
+	Vector4uint toCSChunkInfo = Vector4uint(
+		Constexprs::kChunkBlockCountX, 
+		Constexprs::kChunkBlockCountY, 
+		Constexprs::kChunkBlockCountZ, 
+		Constexprs::kMaxFacesPerChunk);
+	compute_->SetCBufferData(1, &toCSChunkInfo);
+
+	compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFacesHeapSlot_));
+	compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountHeapSlot_));
+	compute_->SetUAVData(2, Game::Resource::GetUAV(faceWriteCounterHeapSlot_));
+	compute_->SetUAVData(3, Game::Resource::GetUAV(groupOffsetHeapSlot_));
 	compute_->Dispatch();
 
 	blockIdsDirty_ = false;
 }
+
+
 
 void Chunk::Draw(int32_t renderTargetID)
 {
@@ -562,9 +592,9 @@ BlockID* Chunk::GetBlockID(const Vector3int& pos)
 BlockID* Chunk::GetBlockIDHelloNeighbor(const Vector3int& index)
 {
 	// チャンク内
-	if (0 <= index.x && index.x < Constexprs::kChunkX &&
-		0 <= index.y && index.y < Constexprs::kChunkY &&
-		0 <= index.z && index.z < Constexprs::kChunkZ)
+	if (0 <= index.x && index.x < Constexprs::kChunkBlockCountX &&
+		0 <= index.y && index.y < Constexprs::kChunkBlockCountY &&
+		0 <= index.z && index.z < Constexprs::kChunkBlockCountZ)
 	{
 		return &blocks_[index.x][index.y][index.z];
 	}
@@ -576,37 +606,37 @@ BlockID* Chunk::GetBlockIDHelloNeighbor(const Vector3int& index)
 	{
 		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Left)];
 		if (!targetChunk) return nullptr;
-		localIndex.x += Constexprs::kChunkX; // -1 -> Constexprs::kChunkX-1
+		localIndex.x += Constexprs::kChunkBlockCountX; // -1 -> Constexprs::kChunkBlockCountX-1
 	}
-	else if (localIndex.x >= Constexprs::kChunkX)
+	else if (localIndex.x >= Constexprs::kChunkBlockCountX)
 	{
 		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Right)];
 		if (!targetChunk) return nullptr;
-		localIndex.x -= Constexprs::kChunkX; // Constexprs::kChunkX -> 0
+		localIndex.x -= Constexprs::kChunkBlockCountX; // Constexprs::kChunkBlockCountX -> 0
 	}
 	else if (localIndex.z < 0)
 	{
 		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Back)];
 		if (!targetChunk) return nullptr;
-		localIndex.z += Constexprs::kChunkZ; // -1 -> Constexprs::kChunkZ-1
+		localIndex.z += Constexprs::kChunkBlockCountZ; // -1 -> Constexprs::kChunkBlockCountZ-1
 	}
-	else if (localIndex.z >= Constexprs::kChunkZ)
+	else if (localIndex.z >= Constexprs::kChunkBlockCountZ)
 	{
 		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Front)];
 		if (!targetChunk) return nullptr;
-		localIndex.z -= Constexprs::kChunkZ; // Constexprs::kChunkZ -> 0
+		localIndex.z -= Constexprs::kChunkBlockCountZ; // Constexprs::kChunkBlockCountZ -> 0
 	}
 	else if (localIndex.y < 0)
 	{
 		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Down)];
 		if (!targetChunk) return nullptr;
-		localIndex.y += Constexprs::kChunkY; // -1 -> Constexprs::kChunkY-1
+		localIndex.y += Constexprs::kChunkBlockCountY; // -1 -> Constexprs::kChunkBlockCountY-1
 	}
-	else if (localIndex.y >= Constexprs::kChunkY)
+	else if (localIndex.y >= Constexprs::kChunkBlockCountY)
 	{
 		targetChunk = neighbors_[static_cast<size_t>(DirectionXYZ::Up)];
 		if (!targetChunk) return nullptr;
-		localIndex.y -= Constexprs::kChunkY; // Constexprs::kChunkY -> 0
+		localIndex.y -= Constexprs::kChunkBlockCountY; // Constexprs::kChunkBlockCountY -> 0
 	}
 	else targetChunk = this;
 
@@ -625,16 +655,16 @@ void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id)
 
 	// マップ端のブロックを更新した場合隣接チャンクも更新する
 	if (localIndex.x == 0)                       PushToNeighborHalo(DirectionXYZ::Left, localIndex, id);
-	if (localIndex.x == Constexprs::kChunkX - 1) PushToNeighborHalo(DirectionXYZ::Right, localIndex, id);
+	if (localIndex.x == Constexprs::kChunkBlockCountX - 1) PushToNeighborHalo(DirectionXYZ::Right, localIndex, id);
 	if (localIndex.z == 0)                       PushToNeighborHalo(DirectionXYZ::Back, localIndex, id);
-	if (localIndex.z == Constexprs::kChunkZ - 1) PushToNeighborHalo(DirectionXYZ::Front, localIndex, id);
+	if (localIndex.z == Constexprs::kChunkBlockCountZ - 1) PushToNeighborHalo(DirectionXYZ::Front, localIndex, id);
 	if (localIndex.y == 0)                       PushToNeighborHalo(DirectionXYZ::Down, localIndex, id);
-	if (localIndex.y == Constexprs::kChunkY - 1) PushToNeighborHalo(DirectionXYZ::Up, localIndex, id);
+	if (localIndex.y == Constexprs::kChunkBlockCountY - 1) PushToNeighborHalo(DirectionXYZ::Up, localIndex, id);
 }
 void Chunk::SetBlockIDs(const Vector3int& localIndex, BlockID id)
 {
-	const int32_t sizeX = Constexprs::kChunkX + 2;
-	const int32_t sizeY = Constexprs::kChunkY + 2;
+	const int32_t sizeX = Constexprs::kChunkBlockCountX + 2;
+	const int32_t sizeY = Constexprs::kChunkBlockCountY + 2;
 	const int32_t index = (localIndex.x + 1) + ((localIndex.y + 1) * sizeX) + ((localIndex.z + 1) * sizeX * sizeY);
 	blockIds_[index] = static_cast<uint32_t>(id);
 	blockIdsDirty_ = true;
@@ -649,11 +679,11 @@ void Chunk::PushToNeighborHalo(DirectionXYZ direction, const Vector3int& localIn
 	Vector3int neighborLocal = localIndex;
 	switch (direction)
 	{
-	case DirectionXYZ::Left:  neighborLocal.x = Constexprs::kChunkX; break;
+	case DirectionXYZ::Left:  neighborLocal.x = Constexprs::kChunkBlockCountX; break;
 	case DirectionXYZ::Right: neighborLocal.x = -1;                  break;
-	case DirectionXYZ::Back:  neighborLocal.z = Constexprs::kChunkZ; break;
+	case DirectionXYZ::Back:  neighborLocal.z = Constexprs::kChunkBlockCountZ; break;
 	case DirectionXYZ::Front: neighborLocal.z = -1;                  break;
-	case DirectionXYZ::Down:  neighborLocal.y = Constexprs::kChunkY; break;
+	case DirectionXYZ::Down:  neighborLocal.y = Constexprs::kChunkBlockCountY; break;
 	case DirectionXYZ::Up:    neighborLocal.y = -1;                  break;
 	default: return;
 	}

@@ -6,6 +6,13 @@ struct FaceInfo
     float3 faceNormal;
 };
 
+struct BakedFace
+{
+    uint packedVoxelPos;
+    uint faceIndex;
+    uint blockId;
+};
+
 static const FaceInfo kFaceInfos[6] =
 {
     { int3(1, 0, 0), uint4(1, 3, 7, 5), float3(1, 0, 0) },
@@ -23,10 +30,3 @@ static const float3 kCubeCorners[8] =
 };
 
 static const uint kMaxFacesPerGroup = 48;
-
-struct BakedFace
-{
-    uint packedVoxelPos;
-    uint faceIndex;
-    uint blockId;
-};

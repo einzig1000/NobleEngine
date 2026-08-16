@@ -5,13 +5,13 @@
 
 struct ChunkInfo
 {
-	// このチャンクのワールド座標原点
+	// このチャンクの左下奥ワールド座標原点(x-y-z-)
 	Vector3 chunkWorldOrigin;
 	// ブロックサイズ (Constexprs::kBlockSize)
 	float blockSize = Constexprs::kBlockSize;
-	// 
-	Vector3uint chunkDim = Vector3uint(Constexprs::kChunkX, Constexprs::kChunkY, Constexprs::kChunkZ);
-	// 
+	// 各軸のブロック数 (Constexprs::kChunkBlockCount)
+	Vector3uint blockCountXYZ = Vector3uint(Constexprs::kChunkBlockCountX, Constexprs::kChunkBlockCountY, Constexprs::kChunkBlockCountZ);
+	// パディング
 	uint32_t _pad0;
 };
 
@@ -47,15 +47,16 @@ private:
 
 private:
 	// 隣接チャンク static_cast<size_t>(DirectionXYZ)でアクセス
-	std::vector<Chunk*> neighbors_;
+	Chunk* neighbors_[6];
 
 	// チャンク情報
 	Vector3int chunkIndex_;
 	ChunkInfo chunkInfo_;
 	AABB chunkAABB_;
 	// ブロックデータ配列
-	BlockID blocks_[Constexprs::kChunkX][Constexprs::kChunkY][Constexprs::kChunkZ];
-	std::vector<uint32_t> blockIds_;
+	BlockID blocks_[Constexprs::kChunkBlockCountX][Constexprs::kChunkBlockCountY][Constexprs::kChunkBlockCountZ];
+	uint32_t blockIds_[Constexprs::kMaxFacesPerChunkPlusHalo];
+
 
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> render_;
@@ -66,12 +67,16 @@ private:
 	bool blockIdsDirty_ = false;
 	void UpdateBlockIds();
 
-	// このチャンクのブロックID配列SRVスロット
-	int32_t blockIdSrvIndex_ = -1;
-	// 焼き込み済み面データSRVスロット
-	int32_t bakedFaceBufferHandle_ = -1;
-	// グループごとの面数SRVスロット
-	int32_t faceCountBufferHandle_ = -1;
+	// このチャンクのブロックID配列のヒープスロット
+	int32_t blockIDsHeapSlot_ = -1;
+	// 焼き込み済み面データのヒープスロット
+	int32_t bakedFacesHeapSlot_ = -1;
+	// グループごとの面数のヒープスロット
+	int32_t faceCountHeapSlot_ = -1;
+	// グループごとの書き込み開始オフセットのヒープスロット
+	int32_t groupOffsetHeapSlot_ = -1;
+	// 面カウンタ(InterlockedAdd用、1要素だけ)のヒープスロット
+	int32_t faceWriteCounterHeapSlot_ = -1;
 
 	bool inCamera_ = false;
 };

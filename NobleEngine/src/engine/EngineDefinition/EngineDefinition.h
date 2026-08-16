@@ -951,7 +951,7 @@ struct ModelData
     std::vector<VertexData> vertices;
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-    uint32_t vertexSrvindex = UINT32_MAX;
+    uint32_t vertexHeapSlot = UINT32_MAX;
     // インデックスデータ
     std::vector<uint32_t> indices;
 	Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer;
@@ -959,15 +959,15 @@ struct ModelData
     // メッシュレットデータ
     std::vector<ResMeshlet> meshlets;
     Microsoft::WRL::ComPtr<ID3D12Resource> meshletBuffer;
-    uint32_t meshletSrvIndex = UINT32_MAX;
+    uint32_t meshletHeapSlot = UINT32_MAX;
     // メッシュレットの頂点インデックスのユニーク化された配列
     std::vector<uint32_t> uniqueVertexIndices;
     Microsoft::WRL::ComPtr<ID3D12Resource> uniqueVertexIndexBuffer;
-    uint32_t uniqueVertexIndexSrvIndex = UINT32_MAX;
+    uint32_t uniqueVertexIndexHeapSlot = UINT32_MAX;
     // メッシュレットのプリミティブインデックスの配列
     std::vector<uint32_t> primitiveIndices;         // 10bit * 3 = 30bit, 残り2bitは予約領域
     Microsoft::WRL::ComPtr<ID3D12Resource> primitiveIndexBuffer;
-    uint32_t primitiveIndexSrvIndex = UINT32_MAX;
+    uint32_t primitiveIndexHeapSlot = UINT32_MAX;
 
 	MaterialData material;              // 材質データ
 	Node rootNode;                      // ノード

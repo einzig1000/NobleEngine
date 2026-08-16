@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\Map\SharedFaceBucketPool\SharedFaceBucketPool.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Miner\Miner.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\SwingMining\SwingMining.cpp" />
@@ -145,6 +146,7 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\Map\SharedFaceBucketPool\SharedFaceBucketPool.h" />
     <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h" />
     <ClInclude Include="src\application\GameObjects\Map\Miner\Miner.h" />
     <ClInclude Include="src\application\GameObjects\Character\SwingMining\SwingMining.h" />
@@ -493,6 +495,8 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary;$(ProjectDir)src/application/Facade</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -528,6 +532,8 @@ xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary;$(ProjectDir)src/application/Facade</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

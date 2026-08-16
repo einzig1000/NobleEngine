@@ -564,19 +564,24 @@ namespace Game
 			return Engine::Instance().GetStructuredBufferManager()->CreateComputeOutput(elementSize, elementCount);
 		}
 
-		void UpdateData(int32_t handle, const void* data, size_t elementSize, size_t elementCount)
+		void ZeroFillCompute(int32_t heapSlot, size_t bytes)
 		{
-			Engine::Instance().GetStructuredBufferManager()->UpdateData(handle, data, elementSize, elementCount);
+			Engine::Instance().GetStructuredBufferManager()->ZeroFillComputeOutput(heapSlot, bytes);
 		}
 
-		uint32_t GetSRV(int32_t handle)
+		void UpdateData(int32_t heapSlot, const void* data, size_t elementSize, size_t elementCount)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->GetSRV(handle);	
+			Engine::Instance().GetStructuredBufferManager()->UpdateData(heapSlot, data, elementSize, elementCount);
 		}
 
-		uint32_t GetUAV(int32_t handle)
+		uint32_t GetSRV(int32_t heapSlot)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->GetUAV(handle);
+			return Engine::Instance().GetStructuredBufferManager()->GetSRV(heapSlot);	
+		}
+
+		uint32_t GetUAV(int32_t heapSlot)
+		{
+			return Engine::Instance().GetStructuredBufferManager()->GetUAV(heapSlot);
 		}
 
 	}

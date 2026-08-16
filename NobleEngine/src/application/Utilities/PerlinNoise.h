@@ -29,7 +29,7 @@ private:
 
 struct NoiseParameter
 {
-	int32_t height = Constexprs::kChunkY * Constexprs::kChunkStackHeight;       // マップの高さ
+	int32_t height = Constexprs::kChunkBlockCountY * Constexprs::kChunkStackHeight;       // マップの高さ
 	float scale = 32.0f;        // 地形の粗さ（大きくすると緩やか）
     int32_t octaves = 4;            // 反復回数 (大きくすると細かい起伏が増える)
     float persistence = 0.5f;   // 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
@@ -42,19 +42,19 @@ struct NoiseParameter
 	int32_t ironVeinSizeMean = 10;			// 平均鉱脈サイズ
 	int32_t ironVeinSizeRand = 6;			// ±鉱脈サイズランダム幅
 	int32_t ironMinY = 2;					// 鉱脈生成最低Y座標
-	int32_t ironMaxY = Constexprs::kChunkY - 4;			// 鉱脈生成最高Y座標
+	int32_t ironMaxY = Constexprs::kChunkBlockCountY - 4;			// 鉱脈生成最高Y座標
 
 	int32_t diamondVeinsPerChunk = 1;		// チャンクあたりの鉱脈数
 	int32_t diamondVeinSizeMean = 4;		// 平均鉱脈サイズ
 	int32_t diamondVeinSizeRand = 3;		// ±鉱脈サイズランダム幅
 	int32_t diamondMinY = 1;				// 鉱脈生成最低Y座標
-	int32_t diamondMaxY = Constexprs::kChunkY / 3;		// 鉱脈生成最高Y座標
+	int32_t diamondMaxY = Constexprs::kChunkBlockCountY / 3;		// 鉱脈生成最高Y座標
 
 	int32_t goldVeinsPerChunk = 1;			// チャンクあたりの鉱脈数
 	int32_t goldVeinSizeMean = 6;			// 平均鉱脈サイズ
 	int32_t goldVeinSizeRand = 4;			// ±鉱脈サイズランダム幅
 	int32_t goldMinY = 2;					// 鉱脈生成最低Y座標
-	int32_t goldMaxY = Constexprs::kChunkY / 2;			// 鉱脈生成最高Y座標
+	int32_t goldMaxY = Constexprs::kChunkBlockCountY / 2;			// 鉱脈生成最高Y座標
 
 	// ===== 木パラメータ =====
 	float treeChancePerColumn = 0.02f;	// 大きいほど木が増える

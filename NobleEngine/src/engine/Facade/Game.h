@@ -546,11 +546,6 @@ namespace Game
 		bool InCamera(const AABB& aabb, int32_t cameraID);
 	};
 
-	namespace Utilities
-	{
-
-	};
-
 	namespace Math
 	{
 		namespace Ease
@@ -683,7 +678,7 @@ namespace Game
 		/// </summary>
 		/// <typeparam name="T">データ型</typeparam>
 		/// <param name="data">データ</param>
-		/// <returns>ID</returns>
+		/// <returns>ヒープスロット</returns>
 		template<typename T>
 		int32_t CreateStatic(const std::vector<T>& data)
 		{
@@ -693,20 +688,33 @@ namespace Game
 		/// <summary>
 		/// 動的リソースの作成(毎フレーム変わるパーティクル配列等)
 		/// </summary>
-		/// <returns>ID</returns>
+		/// <returns>ヒープスロット</returns>
 		int32_t CreateDynamic();
 
 		/// <summary>
-		/// コンピュートリソースの作成(コンピュートシェーダーで使用するバッファ等)
+		/// コンピュートリソースの作成(UAVも作成される)
 		/// </summary>
-		/// <returns>ID</returns>
+		/// <returns>ヒープスロット</returns>
 		int32_t CreateCompute(size_t elementSize, size_t elementCount);
 
+		/// <summary>
+		/// コンピュートリソースの0初期化
+		/// </summary>
+		/// <param name="heapSlot">ヒープスロット</param>
+		/// <param name="bytes"></param>
+		void ZeroFillCompute(int32_t heapSlot, size_t bytes);
 
-		void UpdateData(int32_t handle, const void* data, size_t elementSize, size_t elementCount);
+		/// <summary>
+		/// 動的リソースの更新
+		/// </summary>
+		/// <param name="heapSlot"> ヒープスロット </param>
+		/// <param name="data"> 更新するデータ </param>
+		/// <param name="elementSize"> 要素のサイズ </param>
+		/// <param name="elementCount"> 要素の数 </param>
+		void UpdateData(int32_t heapSlot, const void* data, size_t elementSize, size_t elementCount);
 
-		uint32_t GetSRV(int32_t handle);
-		uint32_t GetUAV(int32_t handle);
+		uint32_t GetSRV(int32_t heapSlot);
+		uint32_t GetUAV(int32_t heapSlot);
 	}
 
 	void quit();

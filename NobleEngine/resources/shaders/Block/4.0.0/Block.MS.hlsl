@@ -1,4 +1,4 @@
-#include "../2.3.0/Block.hlsli"
+#include "../3.0.0/Block.hlsli"
 #include "../../Utilities/Utilities.hlsli"
 
 struct MSOutput

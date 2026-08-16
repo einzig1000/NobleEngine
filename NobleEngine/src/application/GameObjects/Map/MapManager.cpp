@@ -145,7 +145,7 @@ void MapManager::SetSeed(uint32_t seed)
 	noiseParam_.scale = 1200.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 8;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.7f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkY;		// マップの高さ
+	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkBlockCountY;		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 }
 
@@ -193,7 +193,7 @@ void MapManager::CreateNewMap(const std::string& mapName, uint32_t seed)
 	noiseParam_.scale = 12.0f;			// 地形の粗さ（大きくすると緩やか）
 	noiseParam_.octaves = 4;			// 反復回数 (大きくすると細かい起伏が増える)
 	noiseParam_.persistence = 0.5f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkY;		// マップの高さ
+	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkBlockCountY;		// マップの高さ
 	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
 
 	// mapNameToFilePath_ に新規マップ登録
@@ -261,19 +261,33 @@ void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 	// スケジュールキューが空ではないなら作成
 	if (!chunkScheduled_.empty())
 	{
-		// 近い順にソートする
-		std::vector<Vector3int> tempQueue(chunkScheduled_.begin(), chunkScheduled_.end());
-		std::sort(tempQueue.begin(), tempQueue.end(),
-			[cameraChunkPos](const Vector3int& a, const Vector3int& b)
-			{
-				int32_t distA = (a.x - cameraChunkPos.x) * (a.x - cameraChunkPos.x) + (a.y - cameraChunkPos.y) * (a.y - cameraChunkPos.y) + (a.z - cameraChunkPos.z) * (a.z - cameraChunkPos.z);
-				int32_t distB = (b.x - cameraChunkPos.x) * (b.x - cameraChunkPos.x) + (b.y - cameraChunkPos.y) * (b.y - cameraChunkPos.y) + (b.z - cameraChunkPos.z) * (b.z - cameraChunkPos.z);
-				return distA < distB;
-			});
+	//	// 近い順にソートする
+	//	std::vector<Vector3int> tempQueue(chunkScheduled_.begin(), chunkScheduled_.end());
+	//	std::sort(tempQueue.begin(), tempQueue.end(),
+	//		[cameraChunkPos](const Vector3int& a, const Vector3int& b)
+	//		{
+	//			int32_t distA = (a.x - cameraChunkPos.x) * (a.x - cameraChunkPos.x) + (a.y - cameraChunkPos.y) * (a.y - cameraChunkPos.y) + (a.z - cameraChunkPos.z) * (a.z - cameraChunkPos.z);
+	//			int32_t distB = (b.x - cameraChunkPos.x) * (b.x - cameraChunkPos.x) + (b.y - cameraChunkPos.y) * (b.y - cameraChunkPos.y) + (b.z - cameraChunkPos.z) * (b.z - cameraChunkPos.z);
+	//			return distA < distB;
+	//		});
+	//	// キューから取り出し
+	//	Vector3int pos = tempQueue.front();
+	//	chunkScheduled_.erase(pos);
 
-		// キューから取り出し
-		Vector3int pos = tempQueue.front();
+		// 最も近いものを取り出す
+		Vector3int pos = *chunkScheduled_.begin();
+		int32_t minDistSq = (pos.x - cameraChunkPos.x) * (pos.x - cameraChunkPos.x) + (pos.y - cameraChunkPos.y) * (pos.y - cameraChunkPos.y) + (pos.z - cameraChunkPos.z) * (pos.z - cameraChunkPos.z);
+		for (const auto& p : chunkScheduled_)
+		{
+			int32_t distP = (p.x - cameraChunkPos.x) * (p.x - cameraChunkPos.x) + (p.y - cameraChunkPos.y) * (p.y - cameraChunkPos.y) + (p.z - cameraChunkPos.z) * (p.z - cameraChunkPos.z);
+			if (distP < minDistSq)
+			{
+				pos = p;
+				minDistSq = distP;
+			}
+		}
 		chunkScheduled_.erase(pos);
+
 
 		// 一応存在確認
 		if (GetChunk(pos) != nullptr)
@@ -495,32 +509,32 @@ bool MapManager::ReplaceBlock(const lookAtBlock& lab, BlockID id)
 	if (localIndex.x < 0)
 	{
 		chunkPos.x -= 1;
-		localIndex.x += Constexprs::kChunkX;
+		localIndex.x += Constexprs::kChunkBlockCountX;
 	}
-	else if (localIndex.x >= Constexprs::kChunkX)
+	else if (localIndex.x >= Constexprs::kChunkBlockCountX)
 	{
 		chunkPos.x += 1;
-		localIndex.x -= Constexprs::kChunkX;
+		localIndex.x -= Constexprs::kChunkBlockCountX;
 	}
 	if (localIndex.y < 0)
 	{
 		chunkPos.y -= 1;
-		localIndex.y += Constexprs::kChunkY;
+		localIndex.y += Constexprs::kChunkBlockCountY;
 	}
-	else if (localIndex.y >= Constexprs::kChunkY)
+	else if (localIndex.y >= Constexprs::kChunkBlockCountY)
 	{
 		chunkPos.y += 1;
-		localIndex.y -= Constexprs::kChunkY;
+		localIndex.y -= Constexprs::kChunkBlockCountY;
 	}
 	if (localIndex.z < 0)
 	{
 		chunkPos.z -= 1;
-		localIndex.z += Constexprs::kChunkZ;
+		localIndex.z += Constexprs::kChunkBlockCountZ;
 	}
-	else if (localIndex.z >= Constexprs::kChunkZ)
+	else if (localIndex.z >= Constexprs::kChunkBlockCountZ)
 	{
 		chunkPos.z += 1;
-		localIndex.z -= Constexprs::kChunkZ;
+		localIndex.z -= Constexprs::kChunkBlockCountZ;
 	}
 
 	return ReplaceBlock(chunkPos, localIndex, id);
@@ -534,9 +548,9 @@ bool MapManager::ReplaceBlock(const Vector3& position, BlockID id)
 AABB MapManager::GetAABB(const Vector3int& chunkPos, const Vector3int& index) const
 {
 	// チャンクのワールド原点
-	float chunkWorldX = chunkPos.x * Constexprs::kChunkX * Constexprs::kBlockSize;
-	float chunkWorldY = chunkPos.y * Constexprs::kChunkY * Constexprs::kBlockSize;
-	float chunkWorldZ = chunkPos.z * Constexprs::kChunkZ * Constexprs::kBlockSize;
+	float chunkWorldX = chunkPos.x * Constexprs::kChunkBlockCountX * Constexprs::kBlockSize;
+	float chunkWorldY = chunkPos.y * Constexprs::kChunkBlockCountY * Constexprs::kBlockSize;
+	float chunkWorldZ = chunkPos.z * Constexprs::kChunkBlockCountZ * Constexprs::kBlockSize;
 
 	// ブロックのワールド座標
 	float worldX = chunkWorldX + index.x * Constexprs::kBlockSize;
@@ -573,9 +587,9 @@ Vector3int MapManager::ChunkIndexByPosition(const Vector3& position) const
 	int32_t bz = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
 
 	Vector3int chunk;
-	chunk.x = static_cast<int32_t>(std::floor((float)bx / Constexprs::kChunkX));
-	chunk.y = static_cast<int32_t>(std::floor((float)by / Constexprs::kChunkY));
-	chunk.z = static_cast<int32_t>(std::floor((float)bz / Constexprs::kChunkZ));
+	chunk.x = static_cast<int32_t>(std::floor((float)bx / Constexprs::kChunkBlockCountX));
+	chunk.y = static_cast<int32_t>(std::floor((float)by / Constexprs::kChunkBlockCountY));
+	chunk.z = static_cast<int32_t>(std::floor((float)bz / Constexprs::kChunkBlockCountZ));
 	return chunk;
 }
 Vector3int MapManager::BlockIndexByPosition(const Vector3& position) const
@@ -586,9 +600,9 @@ Vector3int MapManager::BlockIndexByPosition(const Vector3& position) const
 	worldBlockIndex.z = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
 
 	Vector3int local;
-	local.x = LocalMod(worldBlockIndex.x, Constexprs::kChunkX);
-	local.y = LocalMod(worldBlockIndex.y, Constexprs::kChunkY);
-	local.z = LocalMod(worldBlockIndex.z, Constexprs::kChunkZ);
+	local.x = LocalMod(worldBlockIndex.x, Constexprs::kChunkBlockCountX);
+	local.y = LocalMod(worldBlockIndex.y, Constexprs::kChunkBlockCountY);
+	local.z = LocalMod(worldBlockIndex.z, Constexprs::kChunkBlockCountZ);
 
 	return local;
 }
@@ -753,9 +767,9 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	auto WorldChunkIndexFromWorldBlock = [](const Vector3int& wb) -> Vector3int
 		{
 			Vector3int cp;
-			cp.x = int32_t(std::floor(float(wb.x) / float(Constexprs::kChunkX)));
-			cp.y = int32_t(std::floor(float(wb.y) / float(Constexprs::kChunkY)));
-			cp.z = int32_t(std::floor(float(wb.z) / float(Constexprs::kChunkZ)));
+			cp.x = int32_t(std::floor(float(wb.x) / float(Constexprs::kChunkBlockCountX)));
+			cp.y = int32_t(std::floor(float(wb.y) / float(Constexprs::kChunkBlockCountY)));
+			cp.z = int32_t(std::floor(float(wb.z) / float(Constexprs::kChunkBlockCountZ)));
 			return cp;
 		};
 
@@ -766,9 +780,9 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 	auto LocalIndexFromWorldBlock = [&](const Vector3int& wb) -> Vector3int
 		{
 			return Vector3int(
-				LocalMod(wb.x, Constexprs::kChunkX),
-				LocalMod(wb.y, Constexprs::kChunkY),
-				LocalMod(wb.z, Constexprs::kChunkZ)
+				LocalMod(wb.x, Constexprs::kChunkBlockCountX),
+				LocalMod(wb.y, Constexprs::kChunkBlockCountY),
+				LocalMod(wb.z, Constexprs::kChunkBlockCountZ)
 			);
 		};
 
@@ -825,9 +839,9 @@ std::optional<lookAtBlock> MapManager::GetBlockByCrossedRay(const Ray& ray, cons
 		if (chunk)
 		{
 			// local.y は縦制限があるので範囲チェック
-			if (0 <= local.x && local.x < Constexprs::kChunkX &&
-				0 <= local.y && local.y < Constexprs::kChunkY &&
-				0 <= local.z && local.z < Constexprs::kChunkZ)
+			if (0 <= local.x && local.x < Constexprs::kChunkBlockCountX &&
+				0 <= local.y && local.y < Constexprs::kChunkBlockCountY &&
+				0 <= local.z && local.z < Constexprs::kChunkBlockCountZ)
 			{
 				BlockID* blockID = chunk->GetBlockID(local);
 				if (blockID && *blockID != BlockID::Air)

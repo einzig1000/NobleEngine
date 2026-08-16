@@ -214,7 +214,7 @@ int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const
             modelData->vertexBuffer.Get(),
             UINT(modelData->vertices.size()),
             sizeof(VertexData));
-        modelData->vertexSrvindex = srvAllocation.index;
+        modelData->vertexHeapSlot = srvAllocation.index;
     }
 
     /// インデックスバッファ作成
@@ -242,7 +242,7 @@ int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const
             modelData->meshletBuffer.Get(),
             UINT(modelData->meshlets.size()),
             sizeof(ResMeshlet));
-        modelData->meshletSrvIndex = srvAllocation.index;
+        modelData->meshletHeapSlot = srvAllocation.index;
     }
 
     /// ユニーク頂点インデックスバッファ作成
@@ -257,7 +257,7 @@ int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const
             modelData->uniqueVertexIndexBuffer.Get(),
             UINT(modelData->uniqueVertexIndices.size()),
             sizeof(uint32_t));
-        modelData->uniqueVertexIndexSrvIndex = srvAllocation.index;
+        modelData->uniqueVertexIndexHeapSlot = srvAllocation.index;
     }
 
     /// プリミティブインデックスバッファ作成
@@ -272,7 +272,7 @@ int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const
             modelData->primitiveIndexBuffer.Get(),
             UINT(modelData->primitiveIndices.size()),
             sizeof(uint32_t));
-        modelData->primitiveIndexSrvIndex = srvAllocation.index;
+        modelData->primitiveIndexHeapSlot = srvAllocation.index;
     }
 
 
