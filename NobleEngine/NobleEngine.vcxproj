@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\application\GameObjects\Map\SharedFaceBucketPool\SharedFaceBucketPool.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\FaceDataPagePool\FaceDataPagePool.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Miner\Miner.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\SwingMining\SwingMining.cpp" />
@@ -107,7 +107,7 @@
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp" />
     <ClCompile Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.cpp" />
-    <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceUtilities.cpp" />
+    <ClCompile Include="src\engine\DirectX\ResourceUtilities\ResourceUtilities.cpp" />
     <ClCompile Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.cpp" />
     <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp" />
     <ClCompile Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.cpp" />
@@ -146,7 +146,7 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\application\GameObjects\Map\SharedFaceBucketPool\SharedFaceBucketPool.h" />
+    <ClInclude Include="src\application\GameObjects\Map\FaceDataPagePool\FaceDataPagePool.h" />
     <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h" />
     <ClInclude Include="src\application\GameObjects\Map\Miner\Miner.h" />
     <ClInclude Include="src\application\GameObjects\Character\SwingMining\SwingMining.h" />
@@ -395,7 +395,7 @@
     <ClInclude Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTargetStruct.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.h" />
-    <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceUtilities.h" />
+    <ClInclude Include="src\engine\DirectX\ResourceUtilities\ResourceUtilities.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.h" />
     <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h" />
     <ClInclude Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.h" />

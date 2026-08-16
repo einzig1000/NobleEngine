@@ -57,3 +57,13 @@ void SynchronizationManager::WaitForGPU()
         WaitForSingleObject(fenceEvent, INFINITE);
     }
 }
+
+UINT64 SynchronizationManager::GetNextFenceValue() const
+{
+    return currentFenceValue + 1;
+}
+
+bool SynchronizationManager::IsFenceValueReached(UINT64 value) const
+{
+    return fence->GetCompletedValue() >= value;
+}

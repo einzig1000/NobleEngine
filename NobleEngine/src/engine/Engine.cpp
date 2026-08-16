@@ -138,6 +138,10 @@ void Engine::EndFrame()
 	// gpu計算処理
 	computeSystem_->DispatchComputeObjects();
 
+	// ReadBack処理
+	structuredBufferManager_->FlushPendingReadbackRequests();
+
+
 	// 描画処理
 	drawSystem_->Execute();
 

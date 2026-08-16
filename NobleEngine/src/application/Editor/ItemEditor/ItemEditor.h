@@ -1,6 +1,7 @@
 #pragma once
 #include <Game.h>
 #include <memory>
+#include <definition/definition.h>
 
 class DataManager;
 

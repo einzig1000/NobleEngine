@@ -561,29 +561,38 @@ namespace Game
 		}
 		int32_t CreateCompute(size_t elementSize, size_t elementCount)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->CreateComputeOutput(elementSize, elementCount);
+			return Engine::Instance().GetStructuredBufferManager()->CreateCompute(elementSize, elementCount);
 		}
 
-		void ZeroFillCompute(int32_t heapSlot, size_t bytes)
+		void ZeroFillCompute(int32_t resourceID, size_t bytes)
 		{
-			Engine::Instance().GetStructuredBufferManager()->ZeroFillComputeOutput(heapSlot, bytes);
+			Engine::Instance().GetStructuredBufferManager()->ZeroFillCompute(resourceID, bytes);
 		}
 
-		void UpdateData(int32_t heapSlot, const void* data, size_t elementSize, size_t elementCount)
+		void UpdateData(int32_t resourceID, const void* data, size_t elementSize, size_t elementCount)
 		{
-			Engine::Instance().GetStructuredBufferManager()->UpdateData(heapSlot, data, elementSize, elementCount);
+			Engine::Instance().GetStructuredBufferManager()->UpdateData(resourceID, data, elementSize, elementCount);
 		}
 
-		uint32_t GetSRV(int32_t heapSlot)
+		uint32_t GetSRV(int32_t resourceID)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->GetSRV(heapSlot);	
+			return Engine::Instance().GetStructuredBufferManager()->GetSRV(resourceID);
 		}
 
-		uint32_t GetUAV(int32_t heapSlot)
+		uint32_t GetUAV(int32_t resourceID)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->GetUAV(heapSlot);
+			return Engine::Instance().GetStructuredBufferManager()->GetUAV(resourceID);
 		}
 
+		int32_t RequestReadback(int32_t resourceID, size_t bytes)
+		{
+			return Engine::Instance().GetStructuredBufferManager()->RequestReadback(resourceID, bytes);
+		}
+
+		bool TryGetReadbackResult(int32_t token, void* outData, size_t bytes)
+		{
+			return Engine::Instance().GetStructuredBufferManager()->TryGetReadbackResult(token, outData, bytes);
+		}
 	}
 
 	void Game::quit()

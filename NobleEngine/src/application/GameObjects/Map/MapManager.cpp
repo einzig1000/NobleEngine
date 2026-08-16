@@ -1,6 +1,5 @@
 #include "MapManager.h"
 #include <GameObjects/Map/Chunk/Chunk.h>
-#include <GameObjects/Map/Chunk/Block/Block.h>
 #include <fstream>
 #include <sstream>
 #include <Utilities/PerlinNoise.h>
@@ -26,32 +25,15 @@ MapManager::MapManager()
 	updateRadius_.y = 1;
 	updateRadius_.z = drawRadius_.z;
 
-	for (int32_t dx = -10; dx <= 10; ++dx)
-	{
-		for (int32_t dy = -10; dy <= 10; ++dy)
-		{
-			for (int32_t dz = -10; dz <= 10; ++dz)
-			{
-				if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
-				{
-					continue;
-				}
-
-				Vector3int chunkPos(dx, dy, dz);
-				EnsureChunkScheduled(chunkPos);
-			}
-		}
-	}
+	// 露出面ページを生成
+	facePagePool_ = std::make_unique<FaceDataPagePool>(20000);
 
 	SetSeed(123456);
 }
 
 MapManager::~MapManager(){}
 
-void MapManager::Initialize()
-{
-	//CreateNewMap(123456);
-}
+void MapManager::Initialize() {}
 
 void MapManager::Update(int32_t cameraID)
 {
@@ -261,19 +243,6 @@ void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 	// スケジュールキューが空ではないなら作成
 	if (!chunkScheduled_.empty())
 	{
-	//	// 近い順にソートする
-	//	std::vector<Vector3int> tempQueue(chunkScheduled_.begin(), chunkScheduled_.end());
-	//	std::sort(tempQueue.begin(), tempQueue.end(),
-	//		[cameraChunkPos](const Vector3int& a, const Vector3int& b)
-	//		{
-	//			int32_t distA = (a.x - cameraChunkPos.x) * (a.x - cameraChunkPos.x) + (a.y - cameraChunkPos.y) * (a.y - cameraChunkPos.y) + (a.z - cameraChunkPos.z) * (a.z - cameraChunkPos.z);
-	//			int32_t distB = (b.x - cameraChunkPos.x) * (b.x - cameraChunkPos.x) + (b.y - cameraChunkPos.y) * (b.y - cameraChunkPos.y) + (b.z - cameraChunkPos.z) * (b.z - cameraChunkPos.z);
-	//			return distA < distB;
-	//		});
-	//	// キューから取り出し
-	//	Vector3int pos = tempQueue.front();
-	//	chunkScheduled_.erase(pos);
-
 		// 最も近いものを取り出す
 		Vector3int pos = *chunkScheduled_.begin();
 		int32_t minDistSq = (pos.x - cameraChunkPos.x) * (pos.x - cameraChunkPos.x) + (pos.y - cameraChunkPos.y) * (pos.y - cameraChunkPos.y) + (pos.z - cameraChunkPos.z) * (pos.z - cameraChunkPos.z);
@@ -298,7 +267,7 @@ void MapManager::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 		}
 
 		// 新規生成
-		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(noiseParam_, pos);
+		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(noiseParam_, pos, facePagePool_.get());
 
 		// 隣接チャンク設定
 		static constexpr Vector3int dirOffsets[6] =

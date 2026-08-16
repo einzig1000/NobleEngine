@@ -1,5 +1,8 @@
-#include "Dx12ResourceUtilities.h"
+#include "ResourceUtilities.h"
 #include <Utilities/Logger/Logger.h>
+#include <filesystem>
+#include <fstream>
+#include <externals/meshoptimizer-1.1/meshoptimizer.h>
 
 namespace Dx12ResourceFactory
 {
@@ -94,6 +97,42 @@ namespace Dx12ResourceFactory
 
         resource->SetName(L"CreateDefaultBufferResource()");
 
+        return resource;
+    }
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateReadbackResource(ID3D12Device2* device, size_t sizeInBytes)
+    {
+        D3D12_RESOURCE_DESC resourceDesc{};
+        resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+        resourceDesc.Width = sizeInBytes;
+        resourceDesc.Height = 1;
+        resourceDesc.DepthOrArraySize = 1;
+        resourceDesc.MipLevels = 1;
+        resourceDesc.SampleDesc.Count = 1;
+        resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+        D3D12_HEAP_PROPERTIES heapProperties{};
+        heapProperties.Type = D3D12_HEAP_TYPE_READBACK;
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
+        HRESULT hr = device->CreateCommittedResource(
+            &heapProperties,
+            D3D12_HEAP_FLAG_NONE,
+            &resourceDesc,
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            nullptr,
+            IID_PPV_ARGS(resource.ReleaseAndGetAddressOf())
+        );
+
+        if (FAILED(hr) || !resource)
+        {
+            const HRESULT removed = device->GetDeviceRemovedReason();
+            Log("CreateReadbackResource()に失敗しました。hr=%s removedReason=%s",
+                HrToString(hr), HrToString(removed));
+            return nullptr;
+        }
+
+        resource->SetName(L"CreateReadbackResource()");
         return resource;
     }
 

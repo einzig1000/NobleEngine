@@ -94,12 +94,12 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 
 
 	// ヒープ領域確保
-	bakedFacesHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t) * 3, Constexprs::kMaxFacesPerChunk);
-	//bakedFacesHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t) * 3, (kGroupCount * kMaxFacesPerGroup));
-	faceCountHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
-	groupOffsetHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
-	faceWriteCounterHeapSlot_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1);
-	blockIDsHeapSlot_ = Game::Resource::CreateDynamic();
+	bakedFacesResourceID_ = Game::Resource::CreateCompute(sizeof(uint32_t) * 3, Constexprs::kMaxFacesPerChunk);
+	//bakedFacesResourceID_ = Game::Resource::CreateCompute(sizeof(uint32_t) * 3, (kGroupCount * kMaxFacesPerGroup));
+	faceCountResourceID_ = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
+	groupOffsetResourceID_ = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
+	faceWriteCounterResourceID_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1);
+	blockIDsResourceID_ = Game::Resource::CreateDynamic();
 
 
 	// 描画オブジェクトの初期化
@@ -119,10 +119,10 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex)
 	compute_->psoConfig_.cs = "resources/shaders/Block/4.3.0/Block.CreateMesh.CS.hlsl";
 	compute_->SetupFromShaders();
 	compute_->size = { static_cast<int32_t>(Constexprs::kGroupCount), 1, 1 };
-	compute_->RegisterOutput(bakedFacesHeapSlot_);
-	compute_->RegisterOutput(faceCountHeapSlot_);
-	compute_->RegisterOutput(groupOffsetHeapSlot_);
-	compute_->RegisterOutput(faceWriteCounterHeapSlot_);
+	compute_->RegisterOutput(bakedFacesResourceID_);
+	compute_->RegisterOutput(faceCountResourceID_);
+	compute_->RegisterOutput(groupOffsetResourceID_);
+	compute_->RegisterOutput(faceWriteCounterResourceID_);
 
 	CreateChunkData(param);
 }
@@ -399,59 +399,6 @@ void Chunk::GenerateTrees(const NoiseParameter& param)
 	}
 }
 
-//void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
-//{
-//	FastNoiseLite noise;
-//	noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2); // パーリンより高速で綺麗
-//	noise.SetSeed(param.seed);
-//
-//	// フラクタル（オクターブ）の設定
-//	noise.SetFractalType(FastNoiseLite::FractalType_FBm);
-//	noise.SetFractalOctaves(4); // 4回重ねる
-//
-//	std::vector<std::vector<int32_t>> heightMap(Constexprs::kChunkBlockCountZ, std::vector<int32_t>(Constexprs::kChunkBlockCountX, 0));
-//
-//	for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
-//	{
-//		for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
-//		{
-//			float global_x = (float)((chunkIndex_.x * Constexprs::kChunkBlockCountX) + x);
-//			float global_z = (float)((chunkIndex_.z * Constexprs::kChunkBlockCountZ) + z);
-//
-//			// 2. ノイズを取得（0.05f などのスケールはここで掛けるより、関数を使うと便利）
-//			// ※ FastNoiseLite は -1.0 ～ 1.0 の値を返します！
-//			float raw_noise = noise.GetNoise(global_x * 0.05f, global_z * 0.05f);
-//
-//			// 3. -1.0～1.0 の値を 0.0～1.0 に変換する
-//			float normalized_noise = (raw_noise + 1.0f) / 2.0f;
-//
-//			// 世界の高さはチャンクn個分
-//			heightMap[z][x] = static_cast<int32_t>(normalized_noise * Constexprs::kChunkBlockCountY * 30);
-//		}
-//	}
-//
-//	/// [X][Z]軸の高さに応じてブロックを配置する(chunkIndex_.Y == 0 が世界の底・chunkIndex_.Y == 30 が世界の上面)
-//	for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
-//	{
-//		for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
-//		{
-//			int32_t height = heightMap[z][x];
-//			int32_t dirtThickness = 10;
-//			for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
-//			{
-//				int32_t globalY = chunkIndex_.y * Constexprs::kChunkBlockCountY + y;
-//				BlockID id;
-//				if (globalY == 0)							id = BlockID::Bedrock;
-//				else if (globalY < height - dirtThickness)	id = BlockID::Stone;
-//				else if (globalY < height - 1)				id = BlockID::Dirt;
-//				else if (globalY < height)					id = BlockID::Grass;
-//				else										id = BlockID::Air;
-//				SetBlock(Vector3int(x, y, z), id);
-//			}
-//		}
-//	}
-//}
-
 #pragma endregion
 
 #pragma region 隣接チャンク
@@ -516,47 +463,32 @@ void Chunk::Update(int32_t cameraID)
 
 	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 
-	uint32_t asHeapSlotTable = Game::Resource::GetSRV(faceCountHeapSlot_);
+	uint32_t asHeapSlotTable = Game::Resource::GetSRV(faceCountResourceID_);
 	render_->SetCBufferData(0, ShaderType::AmplificationShader, &asHeapSlotTable);
 	render_->SetCBufferData(1, ShaderType::AmplificationShader, &chunkInfo_);
 	render_->SetCBufferData(2, ShaderType::AmplificationShader, &viewPro);
 
 	Vector4uint msSrvIndexTable = Vector4uint(
-		Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableHeapSlot()),
-		Game::Resource::GetSRV(bakedFacesHeapSlot_),
-		Game::Resource::GetSRV(faceCountHeapSlot_),
-		Game::Resource::GetSRV(groupOffsetHeapSlot_));
+		App::Data::Item::GetBlockInfoTableHeapSlot(),
+		Game::Resource::GetSRV(bakedFacesResourceID_),
+		Game::Resource::GetSRV(faceCountResourceID_),
+		Game::Resource::GetSRV(groupOffsetResourceID_));
 	render_->SetCBufferData(0, ShaderType::MeshShader, &msSrvIndexTable);
 	render_->SetCBufferData(1, ShaderType::MeshShader, &chunkInfo_);
 	render_->SetCBufferData(2, ShaderType::MeshShader, &viewPro);
 	
 	inCamera_ = Game::Camera::InCamera(chunkAABB_, cameraID);
 }
-//void Chunk::UpdateBlockIds()
-//{
-//	Game::Resource::UpdateData(blockIDsHeapSlot_, blockIds_.data(), sizeof(uint32_t), blockIds_.size());
-//
-//	Vector2uint csHeapSlotTable = { Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableHeapSlot()), Game::Resource::GetSRV(blockIDsHeapSlot_) };
-//	compute_->SetCBufferData(0, &csHeapSlotTable);
-//	Vector3int chunkSize = Vector3int(Constexprs::kChunkBlockCountX, Constexprs::kChunkBlockCountY, Constexprs::kChunkBlockCountZ);
-//	compute_->SetCBufferData(1, &chunkSize);
-//
-//	compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFacesHeapSlot_));
-//	compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountHeapSlot_));
-//	compute_->Dispatch();
-//
-//	blockIdsDirty_ = false;
-//}
 void Chunk::UpdateBlockIds()
 {
-	Game::Resource::UpdateData(blockIDsHeapSlot_, blockIds_, sizeof(uint32_t), Constexprs::kMaxFacesPerChunkPlusHalo);
+	Game::Resource::UpdateData(blockIDsResourceID_, blockIds_, sizeof(uint32_t), Constexprs::kMaxFacesPerChunkPlusHalo);
 
 	// 面カウンタを0にリセット(このDispatchの中でInterlockedAddの起点にする)
-	Game::Resource::ZeroFillCompute(faceWriteCounterHeapSlot_, sizeof(uint32_t));
+	Game::Resource::ZeroFillCompute(faceWriteCounterResourceID_, sizeof(uint32_t));
 
 	Vector2uint csHeapSlotTable = Vector2uint(
-		Game::Resource::GetSRV(App::Data::Item::GetBlockInfoTableHeapSlot()),
-		Game::Resource::GetSRV(blockIDsHeapSlot_));
+		App::Data::Item::GetBlockInfoTableHeapSlot(),
+		Game::Resource::GetSRV(blockIDsResourceID_));
 	compute_->SetCBufferData(0, &csHeapSlotTable);
 
 	Vector4uint toCSChunkInfo = Vector4uint(
@@ -566,10 +498,10 @@ void Chunk::UpdateBlockIds()
 		Constexprs::kMaxFacesPerChunk);
 	compute_->SetCBufferData(1, &toCSChunkInfo);
 
-	compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFacesHeapSlot_));
-	compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountHeapSlot_));
-	compute_->SetUAVData(2, Game::Resource::GetUAV(faceWriteCounterHeapSlot_));
-	compute_->SetUAVData(3, Game::Resource::GetUAV(groupOffsetHeapSlot_));
+	compute_->SetUAVData(0, Game::Resource::GetUAV(bakedFacesResourceID_));
+	compute_->SetUAVData(1, Game::Resource::GetUAV(faceCountResourceID_));
+	compute_->SetUAVData(2, Game::Resource::GetUAV(faceWriteCounterResourceID_));
+	compute_->SetUAVData(3, Game::Resource::GetUAV(groupOffsetResourceID_));
 	compute_->Dispatch();
 
 	blockIdsDirty_ = false;

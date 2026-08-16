@@ -3,11 +3,7 @@
 #include <EngineDefinition/EngineDefinition.h>
 #include <d3d12.h>
 #include <wrl.h>
-#include <Utilities/Logger/Logger.h>
 #include <DirectX/DirectXManager.h>
-#include <filesystem>
-#include <fstream>
-#include <externals/meshoptimizer-1.1/meshoptimizer.h>
 
 namespace Dx12ResourceFactory
 {
@@ -37,6 +33,16 @@ namespace Dx12ResourceFactory
     /// <returns>作成された定数バッファリソース</returns>
     Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBufferResource(
 		ID3D12Device2* device, size_t sizeInBytes, D3D12_RESOURCE_FLAGS Flags = D3D12_RESOURCE_FLAG_NONE);
+
+    /// <summary>
+    /// 読み戻し用(Readbackヒープ)のバッファリソースを作成する関数
+    /// </summary>
+    /// <param name="device">DirectX 12 デバイス</param>
+    /// <param name="sizeInBytes">バッファのサイズ (バイト単位)</param>
+    /// <returns>作成されたバッファリソース</returns>
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateReadbackResource(
+        ID3D12Device2* device, size_t sizeInBytes);
+
 
     template <typename T>
     [[nodiscard]]

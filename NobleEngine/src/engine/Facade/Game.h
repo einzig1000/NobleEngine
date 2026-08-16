@@ -678,7 +678,7 @@ namespace Game
 		/// </summary>
 		/// <typeparam name="T">データ型</typeparam>
 		/// <param name="data">データ</param>
-		/// <returns>ヒープスロット</returns>
+		/// <returns>リソースID</returns>
 		template<typename T>
 		int32_t CreateStatic(const std::vector<T>& data)
 		{
@@ -688,33 +688,64 @@ namespace Game
 		/// <summary>
 		/// 動的リソースの作成(毎フレーム変わるパーティクル配列等)
 		/// </summary>
-		/// <returns>ヒープスロット</returns>
+		/// <returns>リソースID</returns>
 		int32_t CreateDynamic();
 
 		/// <summary>
 		/// コンピュートリソースの作成(UAVも作成される)
 		/// </summary>
-		/// <returns>ヒープスロット</returns>
+		/// <param name="elementSize">要素のサイズ</param>
+		/// <param name="elementCount">要素の数</param>
+		/// <returns>リソースID</returns>
 		int32_t CreateCompute(size_t elementSize, size_t elementCount);
+
 
 		/// <summary>
 		/// コンピュートリソースの0初期化
 		/// </summary>
-		/// <param name="heapSlot">ヒープスロット</param>
-		/// <param name="bytes"></param>
-		void ZeroFillCompute(int32_t heapSlot, size_t bytes);
+		/// <param name="resourceID">リソースID</param>
+		/// <param name="bytes">初期化するバイト数</param>
+		void ZeroFillCompute(int32_t resourceID, size_t bytes);
 
 		/// <summary>
 		/// 動的リソースの更新
 		/// </summary>
-		/// <param name="heapSlot"> ヒープスロット </param>
-		/// <param name="data"> 更新するデータ </param>
-		/// <param name="elementSize"> 要素のサイズ </param>
-		/// <param name="elementCount"> 要素の数 </param>
-		void UpdateData(int32_t heapSlot, const void* data, size_t elementSize, size_t elementCount);
+		/// <param name="resourceID">リソースID</param>
+		/// <param name="data">更新するデータ</param>
+		/// <param name="elementSize">要素のサイズ</param>
+		/// <param name="elementCount">要素の数</param>
+		void UpdateData(int32_t resourceID, const void* data, size_t elementSize, size_t elementCount);
 
-		uint32_t GetSRV(int32_t heapSlot);
-		uint32_t GetUAV(int32_t heapSlot);
+		/// <summary>
+		/// リソースのSRVを取得
+		/// </summary>
+		/// <param name="resourceID">リソースID</param>
+		/// <returns>SRVのヒープスロット</returns>
+		uint32_t GetSRV(int32_t resourceID);
+
+		/// <summary>
+		/// リソースのUAVを取得(コンピュートリソースのみ)
+		/// </summary>
+		/// <param name="resourceID">リソースID</param>
+		/// <returns>UAVのヒープスロット</returns>
+		uint32_t GetUAV(int32_t resourceID);
+
+		/// <summary>
+		/// Readbackの要求
+		/// </summary>
+		/// <param name="resourceID">リソースID</param>
+		/// <param name="bytes">読み出すバイト数</param>
+		/// <returns>Readbackトークン</returns>
+		int32_t RequestReadback(int32_t resourceID, size_t bytes);
+
+		/// <summary>
+		/// Readbackの結果を取得
+		/// </summary>
+		/// <param name="token">Readbackトークン</param>
+		/// <param name="outData">結果を格納するバッファ</param>
+		/// <param name="bytes">読み出すバイト数</param>
+		/// <returns>結果が利用可能であればtrue</returns>
+		bool TryGetReadbackResult(int32_t token, void* outData, size_t bytes);
 	}
 
 	void quit();

@@ -1,7 +1,9 @@
 #pragma once
 #include <Game.h>
 #include <Utilities/PerlinNoise.h>
-#include <vector>
+#include <definition/definition.h>
+
+class FaceDataPagePool;
 
 struct ChunkInfo
 {
@@ -15,10 +17,17 @@ struct ChunkInfo
 	uint32_t _pad0;
 };
 
+// 露出面ベイクの進行状況
+enum class BakeState
+{
+	Idle,           // 何もしていない
+	WaitingForCount // Phase1発行済み、総面数の読み戻し待ち
+};
+
 class Chunk
 {
 public:
-	Chunk(const NoiseParameter& param, const Vector3int& chunkIndex);
+	Chunk(const NoiseParameter& param, const Vector3int& chunkIndex, FaceDataPagePool* pagePool);
 	~Chunk();
 	void Update(int32_t cameraID);
 	void Draw(int32_t renderTargetID);
@@ -45,6 +54,12 @@ private:
 	void GenerateOres(const NoiseParameter& param);	// 鉱石を生成
 	void GenerateTrees(const NoiseParameter& param);// 木を生成
 
+
+	// Phase1(カウントのみ)を発行し、読み戻しを要求する
+	void DispatchCountPhase();
+	// 読み戻し結果を受けて、ページ確保とPhase2(書き込み)を行う
+	void FinishBakeWithPageAssignment(uint32_t totalFaces);
+
 private:
 	// 隣接チャンク static_cast<size_t>(DirectionXYZ)でアクセス
 	Chunk* neighbors_[6];
@@ -60,23 +75,37 @@ private:
 
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> render_;
-	// 計算オブジェクト
-	std::unique_ptr<ComputeObject> compute_;
+	// Phase1(カウントのみ)用の計算オブジェクト
+	std::unique_ptr<ComputeObject> countCompute_;
+	// Phase2(共有プールへの書き込み)用の計算オブジェクト
+	std::unique_ptr<ComputeObject> writeCompute_;
 
 	// ブロックID配列更新フラグ
 	bool blockIdsDirty_ = false;
 	void UpdateBlockIds();
 
-	// このチャンクのブロックID配列のヒープスロット
-	int32_t blockIDsHeapSlot_ = -1;
-	// 焼き込み済み面データのヒープスロット
-	int32_t bakedFacesHeapSlot_ = -1;
-	// グループごとの面数のヒープスロット
-	int32_t faceCountHeapSlot_ = -1;
-	// グループごとの書き込み開始オフセットのヒープスロット
-	int32_t groupOffsetHeapSlot_ = -1;
-	// 面カウンタ(InterlockedAdd用、1要素だけ)のヒープスロット
-	int32_t faceWriteCounterHeapSlot_ = -1;
+	// ベイクの進行状況
+	BakeState bakeState_ = BakeState::Idle;
+	// 進行中の読み戻しトークン
+	int32_t pendingReadbackToken_ = -1;
+
+	// 全チャンク共有のページプール(所有はMapManager)
+	FaceDataPagePool* pagePool_ = nullptr;
+	// このチャンクが現在保有しているページ番号一覧
+	std::vector<uint32_t> myPages_;
+
+
+
+	// このチャンクのブロックID配列のリソースID
+	int32_t blockIDsResourceID_ = -1;
+	// 焼き込み済み面データのリソースID
+	int32_t bakedFacesResourceID_ = -1;
+	// グループごとの面数のリソースID
+	int32_t faceCountResourceID_ = -1;
+	// グループごとの書き込み開始オフセットのリソースID
+	int32_t groupOffsetResourceID_ = -1;
+	// 面カウンタ(InterlockedAdd用、1要素だけ)のリソースID
+	int32_t faceWriteCounterResourceID_ = -1;
 
 	bool inCamera_ = false;
 };

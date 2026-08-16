@@ -41,7 +41,8 @@ void ItemDataBank::CreateBlockInfoTable()
 		blockInfoTable_.emplace_back(tableElement);
 	}
 
-	blockInfoTableHeapSlot_ = Game::Resource::CreateStatic(blockInfoTable_);
+	int32_t blockInfoTableResourceID_ = Game::Resource::CreateStatic(blockInfoTable_);
+	blockInfoTableHeapSlot_ = Game::Resource::GetSRV(blockInfoTableResourceID_);
 }
 
 const ItemInfo* ItemDataBank::GetItemInfo(ItemID id)

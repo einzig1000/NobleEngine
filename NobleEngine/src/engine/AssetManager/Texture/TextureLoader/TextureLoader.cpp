@@ -4,7 +4,7 @@
 #include <Utilities/Logger/Logger.h>
 #include <AssetManager/Texture/TextureBank/TextureBank.h>
 #include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
-//#include <DirectX/Resource/Dx12ResourceUtilities.h>
+//#include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include <DirectX/DirectXManager.h>
 #include <filesystem>
 

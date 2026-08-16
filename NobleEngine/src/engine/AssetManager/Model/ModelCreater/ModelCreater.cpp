@@ -1,6 +1,6 @@
 #include "ModelCreater.h"
 #include <Utilities/Logger/Logger.h>
-#include <DirectX/Resource/Dx12ResourceUtilities.h>
+#include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include <DirectX/DirectXManager.h>
 #include <AssetManager/Model/ModelBank/ModelBank.h>
 #include <filesystem>

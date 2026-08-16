@@ -5,12 +5,9 @@
 #include <memory>
 #include <Utilities/PerlinNoise.h>
 #include <definition/definition.h>
+#include <GameObjects/Map/FaceDataPagePool/FaceDataPagePool.h>
 
-class Block;
 class Chunk;
-class Player;
-class BlockConfig;
-class DropItemManager;
 class BaseCharacter;
 
 class MapManager
@@ -107,6 +104,9 @@ private:
 	std::unordered_set<Vector3int, Vector3intHash> chunkScheduled_;
 	// 既に作成されたチャンク集合
 	std::unordered_set<Vector3int, Vector3intHash> chunkCreated_;
+	
+	// 露出面プール
+	std::unique_ptr<FaceDataPagePool> facePagePool_;
 
 	// キャラクター管理
 	std::vector<BaseCharacter*> Characters_;

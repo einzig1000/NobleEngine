@@ -15,6 +15,11 @@ public:
 	void WaitForGPU(UINT frameIndex);   // フレームごと待ち
     void WaitForGPU();                  // 全体待ち
 
+    // 次にSignalされる予定のフェンス値を取得(まだ発行前の予約値)
+    UINT64 GetNextFenceValue() const;
+    // 指定した値までフェンスが進んでいるか
+    bool IsFenceValueReached(UINT64 value) const;
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 	UINT64 fenceValues[Constexprs::kFrameCount];    // フレームごとのフェンス値
