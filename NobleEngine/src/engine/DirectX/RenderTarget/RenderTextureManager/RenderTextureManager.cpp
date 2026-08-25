@@ -11,7 +11,7 @@ RenderTextureManager::RenderTextureManager(ID3D12Device2* device, ID3D12CommandQ
 RenderTextureManager::~RenderTextureManager()
 {}
 
-int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string label, float clearColorA)
+int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string label, Vector4 clearColor)
 {
 	// 既に作成されていたらそのIDを返す
 	RenderTarget* renderTarget = Get(label);
@@ -27,10 +27,10 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
     rt->width = width;
     rt->height = height;
     rt->format = format;
-	rt->clearColor[0] = 0.11f;
-	rt->clearColor[1] = 0.11f;
-	rt->clearColor[2] = 0.11f;
-	rt->clearColor[3] = clearColorA;
+    rt->clearColor[0] = clearColor.x;
+    rt->clearColor[1] = clearColor.y;
+    rt->clearColor[2] = clearColor.z;
+    rt->clearColor[3] = clearColor.w;
 
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
     rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;

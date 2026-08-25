@@ -59,11 +59,15 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 
 	windowManager_ = std::make_unique<WindowManager>(width, height, title);
 	dxManager_ = std::make_unique<DirectXManager>(windowManager_->GetHwnd());
+
+	// DirectXを更新
+	dxManager_->BeginFrame();
+
 	structuredBufferManager_ = std::make_unique<StructuredBufferManager>(dxManager_.get());
 	imguiManager_ = std::make_unique<ImGuiManager>(dxManager_.get(), windowManager_.get());
 	assetManager_ = std::make_unique<AssetManager>(dxManager_.get());
 	cameraManager_ = std::make_unique<CameraManager>();
-	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd(), cameraManager_.get());
+	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd());
 	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), assetManager_.get());
 	computeSystem_ = std::make_unique<ComputeSystem>(dxManager_.get(), structuredBufferManager_.get());
 	fixFPS_ = std::make_unique<FixFPS>();
@@ -80,6 +84,9 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 		assetManager_.get(),
 		fixFPS_.get());
 //#endif
+
+	// DirectX終了処理
+	dxManager_->EndFrame();
 }
 
 // メインループ用

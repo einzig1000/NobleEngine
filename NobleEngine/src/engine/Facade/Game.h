@@ -1,8 +1,9 @@
 #pragma once
 #include <EngineDefinition/EngineConstexprs.h>
 #include <EngineDefinition/EngineDefinition.h>
-#include <ImGuiManager/ImGuiManager.h>
+#include <Utilities/Easing/Easing.h>
 #include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
+#include <ImGuiManager/ImGuiManager.h>
 #include <Engine.h>
 #include <DrawSystem/RenderData/RenderObject.h>
 #include <ComputeSystem/ComputeObject/ComputeObject.h>
@@ -22,7 +23,7 @@ namespace Game
 			/// <summary>
 			/// モデル読み込み
 			/// </summary>
-			/// <param name="filePath">例:"Resources/prototypes/model/cube.obj"</param>
+			/// <param name="filePath">例:"assets/engine/model/cube.obj"</param>
 			/// <returns>モデルID</returns>
 			int32_t Load(const std::string& filePath);
 
@@ -48,7 +49,7 @@ namespace Game
 			/// <summary>
 			/// アニメーション読み込み
 			/// </summary>
-			/// <param name="filePath">例:"Resources/prototypes/animation/animation.fbx"</param>
+			/// <param name="filePath">例:"assets/engine/animation/animation.fbx"</param>
 			/// <param name="animationName">アニメーション名</param>
 			/// <returns>アニメーションID</returns>
 			int32_t Load(const std::string& filePath, const std::string& animationName);
@@ -75,7 +76,7 @@ namespace Game
 			/// <summary>
 			/// テクスチャ読み込み
 			/// </summary>
-			/// <param name="filePath">例:"Resources/prototypes/texture/uvChecker.png"</param>
+			/// <param name="filePath">例:"assets/engine/texture/uvChecker.png"</param>
 			/// <returns>テクスチャID</returns>
 			int32_t Load(const std::string& filePath);
 
@@ -92,7 +93,7 @@ namespace Game
 			/// <summary>
 			/// オーディオ読み込み
 			/// </summary>
-			/// <param name="filePath">例:"Resources/prototypes/audio/BGM/InGame.mp3"</param>
+			/// <param name="filePath">例:"assets/engine/audio/BGM/InGame.mp3"</param>
 			/// <returns>オーディオID</returns>
 			int32_t Load(const std::string& filePath);
 
@@ -104,6 +105,39 @@ namespace Game
 			AudioData* GetData(int32_t audioID);
 		}
 
+		namespace Font
+		{
+			/// <summary>
+			/// フォント読み込み
+			/// </summary>
+			/// <param name="filePath">例:"assets/font/test.ttf"</param>
+			/// <returns>フォントID</returns>
+			int32_t Load(const std::string& filePath);
+
+			/// <summary>
+			/// 指定したテクスチャに文字を書きこむ
+			/// </summary>
+			/// <param name="renderTextureID">レンダーテクスチャID</param>
+			/// <param name="text">書き込む文字列</param>
+			/// <param name="charSize">文字サイズ</param>
+			/// <param name="startPos">開始位置</param>
+			/// <param name="color">文字色</param>
+			/// <param name="extraSpacing">文字間隔</param>
+			void DrawString(int32_t renderTextureID, const std::string& text, int32_t charSize,
+				const Vector2& startPos, const Vector4& color = Vector4{ 1.0f, 1.0f, 1.0f, 1.0f }, float extraSpacing = 0.0f);
+
+			/// <summary>
+			/// ジャストサイズのテクスチャサイズ計算
+			/// </summary>
+			/// <param name="text">書き込む文字列</param>
+			/// <param name="charSize">文字サイズ</param>
+			/// <param name="startPos">開始位置</param>
+			/// <param name="extraSpacing">文字間隔</param>
+			/// <returns>テクスチャサイズ</returns>
+			Vector2 MeasureJustTextureSize(const std::string& text, int32_t charSize,
+				const Vector2& startPos, float extraSpacing);
+		}
+
 		namespace RenderTexture
 		{
 			/// <summary>
@@ -113,7 +147,7 @@ namespace Game
 			/// <param name="height">縦幅</param>
 			/// <param name="label">識別用のラベル</param>
 			/// <returns>テクスチャID</returns>
-			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& label);
+			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& label, Vector4 clearColor = Vector4{ 0.0f, 0.0f, 0.0f, 0.0f });
 
 			/// <summary>
 			/// レンダーテクスチャをファイルに保存する
@@ -278,14 +312,14 @@ namespace Game
 			/// </summary>
 			/// <pram name="cameraID">カメラID</param>
 			/// <returns>マウスのワールド座標</returns>
-			Vector3 Get3DPosition(int32_t cameraID);
+			Vector3 Get3DPosition(Matrix4x4& viewProjection);
 
 			/// <summary>
 			/// マウスのワールド座標レイ取得
 			/// </summary>
 			/// <pram name="cameraID">カメラID</param>
 			/// <returns>マウスのワールド座標レイ</returns>
-			Ray GetRay(int32_t cameraID);
+			Ray GetRay(Matrix4x4& viewProjection);
 
 			/// <summary>
 			/// マウスホイールの回転量取得
@@ -465,15 +499,15 @@ namespace Game
 			/// <param name="target">目標座標</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetCenter(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID);
-
+			void SetCenter(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID);
+			
 			/// <summary>
 			///	カメラの回転量変更
 			/// </summary>
 			/// <param name="target">目標回転量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetRotate(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID);
+			void SetRotate(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			///  カメラの回転中心からの距離(ズーム量)変更
@@ -481,7 +515,7 @@ namespace Game
 			/// <param name="target">目標ズーム量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetDistance(float target, int32_t spendFrame, EaseType easetype, int32_t cameraID);
+			void SetDistance(float target, float durationSec, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			/// カメラのスクリーンサイズ変更
@@ -490,7 +524,7 @@ namespace Game
 			/// <param name="spendFrame">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetScreenSize(Vector2 target, int32_t spendFrame, EaseType easetype, int32_t cameraID);
+			void SetScreenSize(Vector2 target, float durationSec, EaseType easetype, int32_t cameraID);
 			
 			/// <summary>
 			/// カメラのfovY変更
@@ -499,7 +533,7 @@ namespace Game
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetFovTarget(float target, int32_t duration, EaseType easetype, int32_t cameraID);
+			void SetFovTarget(float target, float durationSec, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			/// カメラコントロールの有効無効設定
@@ -551,24 +585,18 @@ namespace Game
 		namespace Ease
 		{
 			/// <summary>
-			/// イージング float
+			/// イージング
 			/// </summary>
 			/// <param name="start"> 初期値 </param>
 			/// <param name="end"> 終了値 </param>
 			/// <param name="easeType"> イージングタイプ </param>
 			/// <param name="t"> 0.0f～1.0f の補完値 </param>
 			/// <returns> イージング後の値 </returns>
-			float EasingFloat(float start, float end, EaseType easeType, float t);
-
-			/// <summary>
-			/// イージング Vector3
-			/// </summary>
-			/// <param name="start"> 初期値 </param>
-			/// <param name="end"> 終了値 </param>
-			/// <param name="easeType"> イージングタイプ </param>
-			/// <param name="t"> 0.0f～1.0f の補完値 </param>
-			/// <returns> イージング後の値 </returns>
-			Vector3 EasingVector3(Vector3 start, Vector3 end, EaseType easeType, float t);
+			template<typename T>
+			float Easing(T start, T end, EaseType easeType, float t)
+			{
+				return Easing::EasingValue(start, end, easeType, t);
+			}
 		}
 
 		namespace Rand

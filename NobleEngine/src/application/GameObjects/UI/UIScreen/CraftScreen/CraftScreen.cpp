@@ -12,11 +12,14 @@ CraftScreen::~CraftScreen()
 
 void CraftScreen::Initialize()
 {
-	nextUIMode_ = UIMode::None;
+	nextUIMode_ = UIMode::MAX;
+
 	for (const auto& element : uiElements_)
 	{
 		element->Initialize();
+		element->SetNextUIMode(&nextUIMode_);
 	}
+
 	// カーソル操作有効化
 	Game::IO::Mouse::ShowCursor(true);
 }

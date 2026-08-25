@@ -1,18 +1,19 @@
 #include "GameManager.h"
 #include <App.h>
 #include <Utilities/Logger/Logger.h>
-#include <GameManager/Phase/TestPhase/TestPhase.h>
-#include <GameManager/Phase/Test2Phase/Test2Phase.h>
-#include <GameManager/Phase/BattlePhase/BattlePhase.h>
 #include <GameManager/Phase/TitlePhase/TitlePhase.h>
 #include <GameManager/Phase/GameScenePhase/GameScenePhase.h>
+#include <Utilities/Json/JsonManager.h>
 
 
 GameManager::GameManager() 
 {
 	currentPhase_ = CreatePhase(PHASE::Phase_GameScene);
+	//currentPhase_ = CreatePhase(PHASE::Phase_Title);
 	currentPhase_->SetContext(&phaseContext_);
 	currentPhase_->Initialize();
+
+	JsonManager::LoadAll("assets/application/json");
 }
 
 GameManager::~GameManager()
@@ -22,34 +23,30 @@ GameManager::~GameManager()
 
 void GameManager::Update()
 {
-	currentPhase_->Update();
 	if (currentPhase_->GetNextPhase() != PHASE::Phase_None)
 	{
 		currentPhase_ = CreatePhase(currentPhase_->GetNextPhase());
 		currentPhase_->SetContext(&phaseContext_);
 		currentPhase_->Initialize();
 	}
+	currentPhase_->Update();
 
 	if (Game::IO::Key::IsJustPressed(VK_F11))
 	{
 		Game::Asset::RenderTexture::SaveAllRenderTextureToFile("generated/screenshots");
 	}
-
-	App::Update();
 }
 
 void GameManager::Draw()
 {
 	currentPhase_->Draw();
 
-	App::Draw();
 }
 
 void GameManager::DrawImGui()
 {
 	currentPhase_->DrawImGui();
 
-	App::DrawImGui();
 }
 
 
@@ -57,10 +54,6 @@ std::unique_ptr<IPhase> GameManager::CreatePhase(PHASE phase)
 {
 	switch (phase)
 	{
-	case PHASE::Phase_Test:
-		return std::make_unique<TestPhase>();
-	case PHASE::Phase_Test2:
-		return std::make_unique<Test2Phase>();
 	case PHASE::Phase_Title:
 		return std::make_unique<TitlePhase>();
 	case PHASE::Phase_GameScene:

@@ -1,19 +1,20 @@
 #include "Player.h"
 #include <GameObjects/Character/SwingMining/SwingMining.h>
 #include <GameObjects/Character/RangeMining/RangeMining.h>
+#include <GameObjects/EventBus/EventBus.h>
 
 Player::Player()
 {
 	// プレイヤーデータ初期化
-	render_.modelID_ = Game::Asset::Model::Load("resources/prototypes/model/cube/cube.obj");
+	render_.modelID_ = Game::Asset::Model::Load("assets/engine/model/cube/cube.obj");
 	ModelData* modelData = Game::Asset::Model::GetData(render_.modelID_);
-	SetBoundingBox(modelData->aabb[0]);
-	render_.psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	render_.psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	SetBoundingBox(modelData->colliderShape.aabbs[0]);
+	render_.psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	render_.psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_.SetupFromShaders();
 
-	c_viewCameraID_ = Game::Camera::AddCamera("PlayerView");
-	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
+	//c_viewCameraID_ = Game::Camera::AddCamera("PlayerView");
+	//Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
 
 	swingMining_ = std::make_unique<SwingMining>(this);
 	rangeMining_ = std::make_unique<RangeMining>(this);
@@ -41,8 +42,14 @@ void Player::Initialize()
 	AddItem(ItemID::Tool_Pickel_of_Iron);
 }
 
+//void Player::Update(int32_t 俯瞰カメラID, int32_t 自身の視点カメラID)
+// 俯瞰カメラID は WorldMatrixとか作るのに必要
+// 自身の視点カメラID は ViewRayの計算とかに必要
 void Player::Update(int32_t cameraID)
 {
+	// 外部イベント確認
+	CheckExternalEvents();
+
 	previousHP_ = static_cast<float>(HP_);
 
 	// 移動系入力処理
@@ -51,7 +58,7 @@ void Player::Update(int32_t cameraID)
 	ApplyMove();
 
 	// 移動後の視線レイ更新
-	ComputeViewRay();
+	ComputeViewRay(cameraID);
 
 	// ターゲットブロック取得
 	SetTargetBlock();
@@ -77,7 +84,7 @@ void Player::Update(int32_t cameraID)
 		break;
 	}
 
-	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, c_viewCameraID_);
+	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, cameraID);
 
 	Matrix4x4 wvpMatrix = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -99,6 +106,21 @@ void Player::UpdateLeftClick()
 void Player::UpdateRightClick()
 {
 	if (!Game::IO::Mouse::IsJustPressed(1)) return;
+}
+
+void Player::CheckExternalEvents()
+{
+	if (eventBus_)
+	{
+		const std::vector<Event>& events = eventBus_->GetEvents(EventType::MiningModeChanged);
+		if (!events.empty())
+		{
+			// 1Fに一回しか変更フラグはされない
+			events[0].value[0] == 0 ? miningMode_ = MiningPattern::Swing : miningMode_ = MiningPattern::Range;
+
+			eventBus_->Clear(EventType::MiningModeChanged);
+		}
+	}
 }
 
 
@@ -145,6 +167,12 @@ void Player::SetMiningPattern(MiningPattern pattern)
 		rangeMining_->Reset();
 	}
 	miningMode_ = pattern;
+}
+
+void Player::SetViewCamera(int32_t cameraID)
+{
+	c_viewCameraID_ = cameraID;
+	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
 }
 
 

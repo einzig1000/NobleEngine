@@ -105,7 +105,8 @@ void StructuredBufferManager::ZeroFillCompute(int32_t resourceID, size_t bytes)
 	intermediate->Unmap(0, nullptr);
 	pendingIntermediates_.push_back(intermediate);
 
-	Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), entry.currentState, D3D12_RESOURCE_STATE_COPY_DEST);
+	D3D12_RESOURCE_STATES currentState = entry.currentState;
+	Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), currentState, D3D12_RESOURCE_STATE_COPY_DEST);
 	cmdList->CopyBufferRegion(entry.buffer.Get(), 0, intermediate.Get(), 0, bytes);
 	Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	entry.currentState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
@@ -126,6 +127,7 @@ uint32_t StructuredBufferManager::GetSRV(int32_t resourceID) const
 	if (it == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferのSRVを取得しようとしました。");
+		__debugbreak();
 		return UINT32_MAX;
 	}
 
@@ -136,6 +138,7 @@ uint32_t StructuredBufferManager::GetSRV(int32_t resourceID) const
 	case BufferKind::ComputeOutput: return computeOutBuffers_.at(resourceID).srv.index;
 	}
 
+	__debugbreak();
 	return UINT32_MAX;
 }
 
@@ -145,12 +148,14 @@ uint32_t StructuredBufferManager::GetUAV(int32_t resourceID) const
 	if (it == kindMap_.end())
 	{
 		Log("存在しないハンドルのStructuredBufferのUAVを取得しようとしました。");
+		__debugbreak();
 		return UINT32_MAX;
 	}
 
 	if (it->second != BufferKind::ComputeOutput)
 	{
 		Log("ComputeOutputのバッファ以外はUAVを取得できません");
+		__debugbreak();
 		return UINT32_MAX;
 	}
 

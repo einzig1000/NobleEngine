@@ -1,7 +1,9 @@
 #pragma once
 #include <memory>
-#include <ResourceLoader/Data/DataManager.h>
-#include <Editor/editor.h>
+
+class GameManager;
+class DataManager;
+class Editor;
 
 class Application
 {
@@ -15,21 +17,25 @@ public:
 	Application(Application&&) = delete;
 	Application& operator=(Application&&) = delete;
 
+	void Initialize();
 	void Update();
 	void Draw();
 	void DrawImGui();
+	void Finalize();
 
 public:
 
 	DataManager* GetDataManager() { return dataManager_.get(); }
 
 private:
-	Application();
-	~Application();
+	Application() = default;
+	~Application() = default;
+
+	// メインのゲームループ
+	std::unique_ptr<GameManager> gameManager_;
 
 	// データ管理
 	std::unique_ptr<DataManager> dataManager_;
-
 
 	// エディタ
 	std::unique_ptr<Editor> editor_;

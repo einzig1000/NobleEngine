@@ -2,14 +2,59 @@
 #include <GameManager/Phase/IPhase.h>
 
 class MapManager;
-class Player;
+class SkyBox;
+class CameraController;
+class ScreenDrawer;
 
-enum class TitlePhaseState
+enum class Stage
 {
 	None,
+	// タイトル画面
 	Title,
+	// ワールドセレクトとクレジット
+	Menu,
+	// ワールドセレクト
 	WorldSelect,
+	// 新規作成
 	CreateNewWorld,
+};
+
+enum class Button
+{
+	TiTleLogo,
+	WorldSelect,
+	Credit,
+	Back,
+	CreateNewWorld,
+};
+
+struct ButtonInfo
+{
+	// ボタンラベル
+	std::string label;
+	// ボタンに表示するテキスト
+	std::string text;
+
+	// テキストが書かれたテクスチャのID
+	int32_t textureID = -1;
+	// 文字サイズ
+	int32_t charSize = 0;
+	// 文字開始位置
+	Vector2 textPos;
+	// 文字間隔
+	float textSpace = 0.0f;
+	// テキストの色
+	Vector4 textColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+
+	// テクスチャの色
+	Vector4 textureColor = Vector4(0.11f, 0.11f, 0.11f, 1.0f);
+	
+	EulerTransforms transforms;
+	Matrix4x4 worldMatrix;
+	std::unique_ptr<RenderObject> render_;
+
+	std::function<void()> onClick;
 };
 
 class TitlePhase :
@@ -19,8 +64,6 @@ public:
 	TitlePhase();
 	~TitlePhase() override;
 
-	std::string GetStageFilePath() const { return stageFilePath_; }
-
 	void Initialize() override;
 	void Update() override;
 	void Draw() override;
@@ -29,49 +72,29 @@ public:
 
 
 private:
-
-	std::string stageFilePath_;
-
-	//// ロゴ
-	//std::unique_ptr<RenderData_Sprite> titleLogo;
-
-	//// スタートボタン
-	//std::unique_ptr<RenderData_Sprite> startButton;
-	//std::array<std::unique_ptr<RenderData_Sprite>, 5> startStr;
-
-	//// 新規ワールド作成ボタン
-	//std::unique_ptr<RenderData_Sprite> CreateNewWorldButton;
-	//std::array<std::unique_ptr<RenderData_Sprite>, 16> CreateNewWorldStr;
-
-	//// 新規ワールド名前シード入力
-	//std::unique_ptr<RenderData_Sprite> NewWorldNameInputBox;
-	//std::unique_ptr<RenderData_Sprite> nameInputBox;
-	//std::array<std::unique_ptr<RenderData_Sprite>, 16> nameInputStr;
-	//std::unique_ptr<RenderData_Sprite> seedInputBox;
-	//std::string newWorldName;
-	//std::array<std::unique_ptr<RenderData_Sprite>, 8> seedInputStr;
-	//uint32_t newWorldSeed = 0;
-	//std::unique_ptr<RenderData_Sprite> tentenLine;
-	//Vector2 tentenPos[2];
-	//std::unique_ptr<RenderData_Sprite> CreateWorldDecideButton;
-
-	//// ワールド選択ボタン群
-	//std::vector<std::string> allWorldNames;
-	//std::vector<std::unique_ptr<RenderData_Sprite>> EnterWorldButtons;
-	//std::vector<std::vector<std::unique_ptr<RenderData_Sprite>>> EnterWorldStrs;
+	// ボタンデータ読み込み
+	void LoadButtonData();
 
 
+	void OnClickButton(std::string buttonLabel);
 
-	// タイトルフェーズ状態
-	TitlePhaseState currentState = TitlePhaseState::Title;
-	TitlePhaseState nextState = TitlePhaseState::Title;
+	void MoveCamera(Stage stage, float duration);
 
-	// フレームカウント
-	uint32_t frameCount = 0;
+	// カメラ
+	std::unique_ptr<CameraController> cameraController_;
+	int32_t c_title_ = -1;
+	// 描画マネージャ
+	std::unique_ptr<ScreenDrawer> screenDrawer_;
 
+	// マップ
+	std::unique_ptr<MapManager> map_;
+	std::unique_ptr<SkyBox> skyBox_;
 
-	//// マップ
-	//std::unique_ptr<MapManager> map_;
-	//// プレイヤー
-	//std::unique_ptr<Player> player_;
+	std::vector<ButtonInfo> buttons_;
+	std::string buttonJsonPath_ = "assets/application/json/TitleButtons.json";
+	ModelData* buttonColliderModel_ = nullptr;
+	int32_t buttonColliderModelID_ = -1;
+	int32_t buttonModelID_ = -1;
+
+	int32_t selectedButtonIndex_ = -1;
 };

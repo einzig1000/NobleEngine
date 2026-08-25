@@ -1,6 +1,5 @@
 #include "PlayingScreen.h"
 #include <GameObjects/UI/UIElement/Hotbar/Hotbar.h>
-#include <GameObjects/Character/Player/Player.h>
 
 PlayingScreen::PlayingScreen()
 {
@@ -13,15 +12,16 @@ PlayingScreen::~PlayingScreen()
 
 void PlayingScreen::Initialize()
 {
-	nextUIMode_ = UIMode::None;
+	nextUIMode_ = UIMode::MAX;
 
 	for (const auto& element : uiElements_)
 	{
 		element->Initialize();
+		element->SetNextUIMode(&nextUIMode_);
 	}
 
-	// カーソル操作無効化
-	//Game::IO::Mouse::ShowCursor(false);
+	// カーソル操作有効化
+	Game::IO::Mouse::ShowCursor(false);
 }
 
 void PlayingScreen::Update(int32_t cameraID)

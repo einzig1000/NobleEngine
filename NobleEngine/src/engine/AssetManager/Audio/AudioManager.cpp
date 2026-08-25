@@ -1,29 +1,16 @@
-#pragma comment(lib, "Mfplat.lib")
-#pragma comment(lib, "mfreadwrite.lib")
-#pragma comment(lib, "mfuuid.lib")
-
-#include <AssetManager/Audio/AudioManager.h>
-#include <Windows.h>
-#include <string>
+#include "AudioManager.h"
 #include <Utilities/Logger/Logger.h>
-#include <Utilities/Converter/StringConverter/StringConverter.h>
-#include <mfapi.h>
-#include <mfidl.h>
-#include <mferror.h>
-#include <mfreadwrite.h>
-#include <atomic>
-#include <sdkddkver.h>
-
-
 
 // x
 AudioManager::AudioManager()
 {
+    Log("コンストラクタ実行開始 : AudioManager");
+
 	bank_ = std::make_unique<AudioBank>();
 	player_ = std::make_unique<AudioPlayer>(bank_.get());
 	loader_ = std::make_unique<AudioLoader>(bank_.get(), player_->GetXAudio2());
 
-    Log("コンストラクタ実行成功 : AudioManager");
+	Log("成功");
 }
 
 // x

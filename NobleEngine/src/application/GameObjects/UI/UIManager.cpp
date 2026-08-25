@@ -14,28 +14,39 @@
 
 UIManager::UIManager()
 {
-	elements_[UIElementType::Inventory] = std::make_unique<Inventory>();
-	elements_[UIElementType::Craft] = std::make_unique<Craft>();
-	elements_[UIElementType::Pause] = std::make_unique<Pause>();
-	elements_[UIElementType::Hotbar] = std::make_unique<Hotbar>();
-	elements_[UIElementType::MiningMode] = std::make_unique<MiningMode>();
+	elements_.resize(static_cast<size_t>(UIElementType::MAX));
+	elements_[static_cast<size_t>(UIElementType::Inventory)] = std::make_unique<Inventory>();
+	elements_[static_cast<size_t>(UIElementType::Craft)] = std::make_unique<Craft>();
+	elements_[static_cast<size_t>(UIElementType::Pause)] = std::make_unique<Pause>();
+	elements_[static_cast<size_t>(UIElementType::Hotbar)] = std::make_unique<Hotbar>();
+	elements_[static_cast<size_t>(UIElementType::MiningMode)] = std::make_unique<MiningMode>();
 
-	screens_[UIMode::Playing] = std::make_unique<PlayingScreen>();
-	screens_[UIMode::Inventory] = std::make_unique<InventoryScreen>();
-	screens_[UIMode::Crafting] = std::make_unique<CraftScreen>();
-	screens_[UIMode::Pause] = std::make_unique<PauseScreen>();
-	screens_[UIMode::MiningMode] = std::make_unique<MiningModeScreen>();
+
+	screens_.resize(static_cast<size_t>(UIMode::MAX));
+	screens_[static_cast<size_t>(UIMode::Playing)] = std::make_unique<PlayingScreen>();
+	screens_[static_cast<size_t>(UIMode::Inventory)] = std::make_unique<InventoryScreen>();
+	screens_[static_cast<size_t>(UIMode::Crafting)] = std::make_unique<CraftScreen>();
+	screens_[static_cast<size_t>(UIMode::Pause)] = std::make_unique<PauseScreen>();
+	screens_[static_cast<size_t>(UIMode::MiningMode)] = std::make_unique<MiningModeScreen>();
+
+	for (size_t i = 0; i < screens_.size(); ++i)
+	{
+		const auto& requiredElements = screens_[i]->GetRequiredElements();
+		for (const auto& elementType : requiredElements)
+		{
+			screens_[i]->AddElement(elements_[static_cast<size_t>(elementType)].get());
+		}
+	}
+}
+
+
+void UIManager::SetEventBus(EventBus* eventBus)
+{
+	eventBus_ = eventBus;
 
 	for (auto& screen : screens_)
 	{
-		const auto& requiredElements = screen.second->GetRequiredElements();
-		for (const auto& elementType : requiredElements)
-		{
-			if (elements_.find(elementType) != elements_.end())
-			{
-				screen.second->AddElement(elements_[elementType].get());
-			}
-		}
+		screen->SetEventBus(eventBus_);
 	}
 }
 
@@ -55,7 +66,7 @@ void UIManager::Update(int32_t cameraID)
 
 		// 画面遷移確認
 		UIMode nextMode = currentScreen_->GetNextUIMode();
-		if (nextMode != UIMode::None)
+		if (nextMode != UIMode::MAX)
 		{
 			// 新画面生成
 			ChangeScreen(nextMode);
@@ -76,25 +87,11 @@ void UIManager::DrawImGui()
 
 void UIManager::ChangeScreen(UIMode mode)
 {
-	currentUIMode_ = mode;
+	currentUIMode_ = static_cast<size_t>(mode);
 	currentScreen_ = screens_[currentUIMode_].get();
 
 	if (currentScreen_)
 	{
 		currentScreen_->Initialize();
 	}
-}
-
-bool UIManager::IsGameplayActive() const
-{
-	switch (currentUIMode_)
-	{
-	case UIMode::Playing:			return true;		break;
-	case UIMode::Inventory:			return false;		break;
-	case UIMode::Crafting:			return false;		break;
-	case UIMode::Pause:				return false;		break;
-	case UIMode::MiningMode:		return false;		break;
-	}
-
-	return true;
 }

@@ -1,15 +1,16 @@
 #include "MiningMode.h"
+#include <GameObjects/EventBus/EventBus.h>
 
 MiningMode::MiningMode()
 {
 	// sprites_[0] : 
 	sprites_.emplace_back(ElementData{});
 	sprites_[0].render = std::make_unique<RenderObject>();
-	sprites_[0].render->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	sprites_[0].render->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	sprites_[0].render->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	sprites_[0].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
-	sprites_[0].textureID = Game::Asset::Texture::Load("resources/Minecraft/UI/MiningMode/mode1.png");
+	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/MiningMode/mode1.png");
 	TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
 	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / -2.0f, 1.0f);
 	sprites_[0].transforms.translate = Vector3(280.0f, 360.0f, 1.0f);
@@ -17,11 +18,11 @@ MiningMode::MiningMode()
 	// sprites_[1] : 
 	sprites_.emplace_back(ElementData{});
 	sprites_[1].render = std::make_unique<RenderObject>();
-	sprites_[1].render->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	sprites_[1].render->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	sprites_[1].render->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	sprites_[1].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	sprites_[1].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	sprites_[1].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[1].render->SetupFromShaders();
-	sprites_[1].textureID = Game::Asset::Texture::Load("resources/Minecraft/UI/MiningMode/mode2.png");
+	sprites_[1].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/MiningMode/mode2.png");
 	textureData = Game::Asset::Texture::GetData(sprites_[1].textureID);
 	sprites_[1].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / -2.0f, 1.0f);
 	sprites_[1].transforms.translate = Vector3(static_cast<float>(Game::Window::GetWidth()) - 280.0f, 360.0f, 1.0f);
@@ -40,7 +41,9 @@ void MiningMode::Update(int32_t cameraID)
 	rotateZ = std::sinf(static_cast<float>(time) / 10.0f) * 0.2f;
 
 	Vector2 mousePos = Game::IO::Mouse::Get2DPosition();
-	if (mousePos.x < static_cast<float>(Game::Window::GetWidth()) / 2.0f)
+	bool leftKey = mousePos.x < static_cast<float>(Game::Window::GetWidth()) / 2.0f;
+
+	if (leftKey)
 	{
 		sprites_[0].transforms.rotate.z = rotateZ;
 		sprites_[1].transforms.rotate.z = 0.0f;
@@ -49,6 +52,24 @@ void MiningMode::Update(int32_t cameraID)
 	{
 		sprites_[0].transforms.rotate.z = 0.0f;
 		sprites_[1].transforms.rotate.z = rotateZ;
+	}
+
+	if (Game::IO::Mouse::IsJustPressed(0))
+	{
+		Event event;
+		event.type = EventType::MiningModeChanged;
+		event.value.push_back(leftKey ? 0 : 1);
+
+		if (leftKey)
+		{
+			eventBus_->Notify(event);
+		}
+		else
+		{
+			eventBus_->Notify(event);
+		}
+
+		*nextUIMode_ = UIMode::Playing;
 	}
 
 	Matrix4x4 orthographic = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);

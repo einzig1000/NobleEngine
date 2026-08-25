@@ -5,9 +5,9 @@ Pause::Pause()
 	// sprites_[0] : ポーズメニュー
 	sprites_.emplace_back(ElementData{});
 	sprites_[0].render = std::make_unique<RenderObject>();
-	sprites_[0].render->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	sprites_[0].render->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	sprites_[0].render->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	sprites_[0].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
 	sprites_[0].textureID = 0;
 	sprites_[0].transforms.scale = Vector3(1.0f, 1.0f, 1.0f);
@@ -16,9 +16,9 @@ Pause::Pause()
 	// sprites_[1] : 保存ボタン
 	sprites_.emplace_back(ElementData{});
 	sprites_[1].render = std::make_unique<RenderObject>();
-	sprites_[1].render->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	sprites_[1].render->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	sprites_[1].render->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	sprites_[1].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	sprites_[1].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	sprites_[1].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[1].render->SetupFromShaders();
 	sprites_[1].textureID = 0;
 	sprites_[1].transforms.scale = Vector3(1.0f, 1.0f, 1.0f);

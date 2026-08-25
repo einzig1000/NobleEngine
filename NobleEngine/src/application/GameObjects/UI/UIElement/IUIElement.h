@@ -2,6 +2,8 @@
 #include <Game.h>
 #include <GameObjects/UI/UIData.h>
 
+class EventBus;
+
 struct ElementData
 {
 	std::unique_ptr<RenderObject> render;
@@ -24,10 +26,13 @@ public:
 	// UI要素の描画
 	virtual void Draw(int32_t rt_ID) = 0;
 
-protected:
-	std::vector<ElementData> sprites_;
+	virtual void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; }
+	virtual void SetNextUIMode(UIMode* nextUIMode) { nextUIMode_ = nextUIMode; }
 
-	// このUIが表示されている時プレイヤーは操作可能か
-	bool isPlayerControllable_ = true;
+protected:
+	EventBus* eventBus_ = nullptr;
+	UIMode* nextUIMode_ = nullptr;
+
+	std::vector<ElementData> sprites_;
 };
 

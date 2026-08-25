@@ -3,10 +3,6 @@
 
 namespace App
 {
-	void Update();
-	void Draw();
-	void DrawImGui();
-
 	namespace Data
 	{
 		namespace Item

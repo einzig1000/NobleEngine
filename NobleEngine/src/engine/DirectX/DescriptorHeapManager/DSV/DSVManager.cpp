@@ -6,6 +6,8 @@
 DSVManager::DSVManager(ID3D12Device2* device)
 	: device_(device)
 {
+	Log("コンストラクタ実行開始 : DSVManager");
+
 	// DSVスロット一つ分のサイズを取得
 	descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
@@ -19,7 +21,7 @@ DSVManager::DSVManager(ID3D12Device2* device)
 	HRESULT hr = device_->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap_));
 	assert(SUCCEEDED(hr));
 
-	Log("コンストラクタ実行成功 : DSVManager");
+	Log("成功");
 }
 
 DSVManager::~DSVManager()

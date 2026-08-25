@@ -56,16 +56,4 @@ namespace App
 		}
 	}
 
-	void Update()
-	{
-		Application::Instance().Update();
-	}
-	void Draw()
-	{
-		Application::Instance().Draw();
-	}
-	void DrawImGui()
-	{
-		Application::Instance().DrawImGui();
-	}
 }

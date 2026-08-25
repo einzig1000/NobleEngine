@@ -4,12 +4,13 @@
 
 class Player;
 class MapManager;
-class MapWorldCollider;
+class SkyBox;
 class CameraController;
 class UIManager;
 class EnemyManager;
 class ScreenDrawer;
-class SkyBox;
+class CharacterManager;
+class EventBus;
 
 class GameScenePhase :
 	public IPhase
@@ -25,27 +26,28 @@ public:
 	void ChangePhase(PHASE phase) override { nextPhase_ = phase; }
 
 private:
-
+	// カメラID
 	int32_t c_debug_ = -1;
+	int32_t c_player_ = -1;
+
+	// イベントバス
+	std::unique_ptr<EventBus> eventBus_;
 
 
 	// カメラ
 	std::unique_ptr<CameraController> cameraController_;
 
-	// プレイヤー
-	std::unique_ptr<Player> player_;
+	// 描画マネージャ
+	std::unique_ptr<ScreenDrawer> screenDrawer_;
 
-	// 敵マネージャー
-	//std::unique_ptr<EnemyManager> enemyManager_;
+
+	// キャラクターマネージャー
+	std::unique_ptr<CharacterManager> charctorManager_;
 
 	// マップ
 	std::unique_ptr<MapManager> map_;
-	std::unique_ptr<SkyBox> skyBox_;
 
 	// UIマネージャー
 	std::unique_ptr<UIManager> uiManager_;
-
-	// 描画マネージャ
-	std::unique_ptr<ScreenDrawer> screenDrawer_;
 
 };

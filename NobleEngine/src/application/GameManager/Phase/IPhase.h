@@ -11,7 +11,7 @@ struct PhaseContext
 {
 	std::string mapName = "default";
 	bool isNewGame = false;
-	uint32_t seed = 0;
+	uint32_t seed = 123456;
 };
 
 class IPhase

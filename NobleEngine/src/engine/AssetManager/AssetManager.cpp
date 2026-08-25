@@ -1,6 +1,4 @@
 #include "AssetManager.h"
-#include <DirectX/DirectXManager.h>
-#include "AssetManager.h"
 
 AssetManager::AssetManager(DirectXManager* dxManager)
 {
@@ -8,6 +6,7 @@ AssetManager::AssetManager(DirectXManager* dxManager)
     textureManager_ = std::make_unique<TextureManager>(dxManager);
     modelManager_ = std::make_unique<ModelManager>(dxManager);
 	animationManager_ = std::make_unique<AnimationManager>(dxManager);
+	fontManager_ = std::make_unique<FontManager>(dxManager, modelManager_.get());
 }
 
 AssetManager::~AssetManager()

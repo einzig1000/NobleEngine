@@ -11,14 +11,16 @@ MiningModeScreen::~MiningModeScreen()
 
 void MiningModeScreen::Initialize()
 {
-	nextUIMode_ = UIMode::None;
+	nextUIMode_ = UIMode::MAX;
 
 	for (const auto& element : uiElements_)
 	{
 		element->Initialize();
+		element->SetNextUIMode(&nextUIMode_);
 	}
 
-	// カメラ操作を無効化
+	// カーソル操作有効化
+	Game::IO::Mouse::ShowCursor(true);
 }
 
 void MiningModeScreen::Update(int32_t cameraID)

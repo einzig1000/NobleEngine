@@ -14,7 +14,7 @@ class MouseController;
 class IOManager
 {
 public:
-    IOManager(HWND hwnd, CameraManager* cameraManager);
+    IOManager(HWND hwnd);
     ~IOManager();
     void Update();
     void EndFrame();

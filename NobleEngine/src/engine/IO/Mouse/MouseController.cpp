@@ -5,8 +5,7 @@
 #include <Camera/Camera.h>
 #include <ImGuiManager/ImGuiManager.h>
 
-MouseController::MouseController(HWND hwnd, CameraManager* cameraManager)
-	:cameraManager_(cameraManager)
+MouseController::MouseController(HWND hwnd)
 {
     hwnd_ = hwnd;
     wheelDelta_ = 0;
@@ -17,12 +16,6 @@ void MouseController::Update()
 {
     // マウスポジション取得
     Compute2DPosition();
-
-    // マウスレイ配列リセット
-    for (auto& r : ray_)
-	{
-		r.reset();
-	}
 
     // マウスボタン状態取得
     UpdateButtonState();
@@ -40,27 +33,14 @@ void MouseController::EndFrame()
     rawDelta_ = Vector2{ 0,0 }; 
 }
 
-Vector3 MouseController::GetWorldPosition(int32_t cameraID)
+Vector3 MouseController::GetWorldPosition(Matrix4x4& viewProjection)
 {
-	return GetRay(cameraID).origin;
+	return GetRay(viewProjection).origin;
 }
 
-Ray MouseController::GetRay(int32_t cameraID)
+Ray MouseController::GetRay(Matrix4x4& viewProjection)
 {
-	if (ray_.size() <= cameraID)
-	{
-		ray_.resize(cameraID + 1);
-	}
-
-	// そのフレーム中に既に計算されていた場合はキャッシュから返す
-    if (ray_[cameraID].has_value())
-    {
-        return ray_[cameraID].value();
-    }
-
-    ray_[cameraID] = ComputeRay(cameraID);
-
-	return ray_[cameraID].value();
+	return ComputeRay(viewProjection);
 }
 
 // 今押しているか  i: 0=左ボタン、1=右ボタン、2=中ボタン
@@ -203,7 +183,7 @@ void MouseController::Compute2DPosition()
 }
 
 // マウスレイ取得
-Ray MouseController::ComputeRay(int32_t cameraID)
+Ray MouseController::ComputeRay(Matrix4x4& viewProjection)
 {
     // 左下が０、右上が１とした時のマウスポジション
     float ndcX = (position_.x / WindowManager::winWidth_) * 2.0f - 1.0f;
@@ -214,7 +194,7 @@ Ray MouseController::ComputeRay(int32_t cameraID)
     Vector4 farPoint = { ndcX, ndcY, 1.0f, 1.0f };
 
     // 逆射影行列
-    Matrix4x4 inverseViewProj = cameraManager_->GetCamera(cameraID)->GetViewProjectionMatrix().Inverse();
+    Matrix4x4 inverseViewProj = viewProjection.Inverse();
 
     // ワールド空間に変換
     Vector4 nearWorld = Transform(nearPoint, inverseViewProj);

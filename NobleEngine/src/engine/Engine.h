@@ -1,5 +1,7 @@
 #pragma once
-#include <EngineDefinition/EngineDefinition.h>
+#include <Windows.h>
+#include <cstdint>
+#include <string>
 #include <memory>
 
 class WindowManager;

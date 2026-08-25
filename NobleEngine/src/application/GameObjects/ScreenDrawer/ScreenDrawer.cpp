@@ -1,5 +1,5 @@
 #include "ScreenDrawer.h"
-#include "ScreenDrawer.h"
+#include <GameObjects/EventBus/EventBus.h>
 
 ScreenDrawer::ScreenDrawer()
 {
@@ -14,62 +14,62 @@ ScreenDrawer::ScreenDrawer()
 		rt_PostEffect_.push_back(Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "PostEffect" + std::to_string(i)));
 	}
 
-	int32_t m_plane = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	int32_t m_plane = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 
 
 	texelSize = Vector2(1.0f / Game::Window::GetWidth(), 1.0f / Game::Window::GetHeight());
 
 	draw_3D_Vignette_ = std::make_unique<RenderObject>();
-	draw_3D_Vignette_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_3D_Vignette_->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	draw_3D_Vignette_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_Vignette_->psoConfig_.ps = "assets/shaders/FullScreen/Vignette.PS.hlsl";
 	draw_3D_Vignette_->modelID_ = m_plane;
 	draw_3D_Vignette_->SetupFromShaders();
 
 	draw_3D_DepthBasedOutline_ = std::make_unique<RenderObject>();
-	draw_3D_DepthBasedOutline_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_3D_DepthBasedOutline_->psoConfig_.ps = "resources/shaders/FullScreen/DepthBasedOutline.PS.hlsl";
+	draw_3D_DepthBasedOutline_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_DepthBasedOutline_->psoConfig_.ps = "assets/shaders/FullScreen/DepthBasedOutline.PS.hlsl";
 	draw_3D_DepthBasedOutline_->modelID_ = m_plane;
 	draw_3D_DepthBasedOutline_->SetupFromShaders();
 
 	draw_3D_GaussianFilter_[0] = std::make_unique<RenderObject>();
-	draw_3D_GaussianFilter_[0]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_3D_GaussianFilter_[0]->psoConfig_.ps = "resources/shaders/FullScreen/GaussianFilterFirst.PS.hlsl";
+	draw_3D_GaussianFilter_[0]->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_GaussianFilter_[0]->psoConfig_.ps = "assets/shaders/FullScreen/GaussianFilterFirst.PS.hlsl";
 	draw_3D_GaussianFilter_[0]->modelID_ = m_plane;
 	draw_3D_GaussianFilter_[0]->SetupFromShaders();
 
 	draw_3D_GaussianFilter_[1] = std::make_unique<RenderObject>();
-	draw_3D_GaussianFilter_[1]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_3D_GaussianFilter_[1]->psoConfig_.ps = "resources/shaders/FullScreen/GaussianFilterSecond.PS.hlsl";
+	draw_3D_GaussianFilter_[1]->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_GaussianFilter_[1]->psoConfig_.ps = "assets/shaders/FullScreen/GaussianFilterSecond.PS.hlsl";
 	draw_3D_GaussianFilter_[1]->modelID_ = m_plane;
 	draw_3D_GaussianFilter_[1]->SetupFromShaders();
 
 	draw_3D_GrayScale_ = std::make_unique<RenderObject>();
-	draw_3D_GrayScale_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_3D_GrayScale_->psoConfig_.ps = "resources/shaders/FullScreen/GrayScale.PS.hlsl";
+	draw_3D_GrayScale_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_GrayScale_->psoConfig_.ps = "assets/shaders/FullScreen/GrayScale.PS.hlsl";
 	draw_3D_GrayScale_->modelID_ = m_plane;
 	draw_3D_GrayScale_->SetupFromShaders();
 
 	draw_UI_ = std::make_unique<RenderObject>();
-	draw_UI_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_UI_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_UI_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_UI_->psoConfig_.ps = "assets/shaders/FullScreen/CopyImage.PS.hlsl";
 	draw_UI_->modelID_ = m_plane;
 	draw_UI_->SetupFromShaders();
 
 	draw_3D_ = std::make_unique<RenderObject>();
-	draw_3D_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_3D_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_3D_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_->psoConfig_.ps = "assets/shaders/FullScreen/CopyImage.PS.hlsl";
 	draw_3D_->modelID_ = m_plane;
 	draw_3D_->SetupFromShaders();
 
 	draw_Background_ = std::make_unique<RenderObject>();
-	draw_Background_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_Background_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_Background_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_Background_->psoConfig_.ps = "assets/shaders/FullScreen/CopyImage.PS.hlsl";
 	draw_Background_->modelID_ = m_plane;
 	draw_Background_->SetupFromShaders();
 
 	draw_main_ = std::make_unique<RenderObject>();
-	draw_main_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_main_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	draw_main_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_main_->psoConfig_.ps = "assets/shaders/FullScreen/CopyImage.PS.hlsl";
 	draw_main_->modelID_ = m_plane;
 	draw_main_->SetupFromShaders();
 }
@@ -79,10 +79,16 @@ ScreenDrawer::~ScreenDrawer()
 
 void ScreenDrawer::Update(int32_t cameraID)
 {
-	if (Game::IO::Key::IsJustPressed('Q'))
+	if (eventBus_)
 	{
-		TakeDamage();
+		const std::vector<Event>& events = eventBus_->GetEvents(EventType::PlayerDamaged);
+		if (!events.empty())
+		{
+			TakeDamage();
+			eventBus_->Clear(EventType::PlayerDamaged);
+		}
 	}
+
 	DamageEffectUpdate();
 
 	// 背景書き込み
@@ -151,46 +157,6 @@ void ScreenDrawer::Update(int32_t cameraID)
 
 void ScreenDrawer::Draw()
 {
-	// ガウシアンフィルタ描画
-	// 書き込み先：rt_PostEffect_[2]
-	// 参照元：rt_PostEffect_[1]
-
-	// ガウシアンフィルタ描画
-	// 書き込み先：rt_PostEffect_[3]
-	// 参照元：rt_PostEffect_[2]
-
-	// グレースケール描画
-	// 書き込み先：rt_PostEffect_[4]
-	// 参照元：rt_PostEffect_[3]
-
-
-	//// 背景描画
-	//// 書き込み先：rt_main_
-	//// 参照元：rt_Background_
-	//draw_Background_->Draw(rt_main_, { rt_Background_ });
-	//// 3D描画
-	//// 書き込み先：rt_main_
-	//// 参照元：rt_PostEffect_
-	//draw_3D_->Draw(rt_main_, { rt_PostEffect_.back() });
-	//// UI描画
-	//// 書き込み先：rt_main_
-	//// 参照元：rt_UI_
-	//draw_UI_->Draw(rt_main_, { rt_UI_ });
-
-
-	// 背景描画
-	// 書き込み先：rt_main_
-	// 参照元：rt_Background_
-	// 3D描画
-	// 書き込み先：rt_main_
-	// 参照元：rt_PostEffect_
-	// UI描画
-	// 書き込み先：rt_main_
-	// 参照元：rt_UI_
-
-	// メイン描画
-	// 書き込み先：エンジンのデフォルトレンダーターゲット
-	// 参照元：rt_main_
 }
 
 void ScreenDrawer::DrawImGui()
@@ -212,9 +178,9 @@ void ScreenDrawer::DamageEffectUpdate()
 	if (frame > 0)
 	{
 		frame -= 0.01f;
-		vignette_Brightness = Game::Math::Ease::EasingFloat(12.0f, 100000.0f, EaseType::IN_QUINT, (3.0f - frame) / 3.0f);
-		gaussianFilter_Radius_ = static_cast<int32_t>(Game::Math::Ease::EasingFloat(20.0f, 0.0f, EaseType::LINEAR, (3.0f - frame) / 3.0f));
-		grayScale_Scale = Game::Math::Ease::EasingFloat(1.0f, 0.0f, EaseType::LINEAR, (3.0f - frame) / 3.0f);
+		vignette_Brightness = Game::Math::Ease::Easing(12.0f, 100000.0f, EaseType::IN_QUINT, (3.0f - frame) / 3.0f);
+		gaussianFilter_Radius_ = static_cast<int32_t>(Game::Math::Ease::Easing(20.0f, 0.0f, EaseType::LINEAR, (3.0f - frame) / 3.0f));
+		grayScale_Scale = Game::Math::Ease::Easing(1.0f, 0.0f, EaseType::LINEAR, (3.0f - frame) / 3.0f);
 	}
 	else
 	{

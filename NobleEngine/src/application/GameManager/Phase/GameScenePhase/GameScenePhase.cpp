@@ -1,48 +1,40 @@
 #include "GameScenePhase.h"
 #include <ResourceLoader/ResourceID.h>
+#include <GameObjects/EventBus/EventBus.h>
 #include <GameObjects/Map/MapManager.h>
-#include <GameObjects/Map/SkyBox/SkyBox.h>
-#include <GameObjects/Character/Player/Player.h>
-#include <GameObjects/Character/Enemy/EnemyManager.h>
+#include <GameObjects/Character/CharacterManager.h>
+#include <GameObjects/UI/UIManager.h>
 #include <GameObjects/Camera/CameraController.h>
 #include <GameObjects/ScreenDrawer/ScreenDrawer.h>
-#include <GameObjects/UI/UIManager.h>
 
 GameScenePhase::GameScenePhase()
 {
-	c_debug_ = Game::Camera::AddCamera("DebugCamera");
+	// イベントバス生成
+	eventBus_ = std::make_unique<EventBus>();
+
+	// カメラコントローラー生成
+	cameraController_ = std::make_unique<CameraController>();
+	cameraController_->SetEventBus(eventBus_.get());
+	// スクリーンドロワー生成
+	screenDrawer_ = std::make_unique<ScreenDrawer>();
+	screenDrawer_->SetEventBus(eventBus_.get());
 
 	// UIマネージャー生成
 	uiManager_ = std::make_unique<UIManager>();
-	// プレイヤー生成
-	player_ = std::make_unique<Player>();
-	// カメラコントローラー生成
-	cameraController_ = std::make_unique<CameraController>();
+	uiManager_->SetEventBus(eventBus_.get());
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
-	// スカイボックス生成
-	skyBox_ = std::make_unique<SkyBox>();
-
-	// 敵マネージャー生成
-	//enemyManager_ = std::make_unique<EnemyManager>();
-
-	// カメラコントローラーにプレイヤーとマップマネージャーをセット
-	//cameraController_->SetPlayer(player_.get());
-	//cameraController_->SetMapManager(map_.get());
-	//cameraController_->SetUIManager(uiManager_.get());
-
-	// プレイヤーにマップマネージャーをセット
-	player_->SetMapManager(map_.get());
-
-	// 敵マネージャーにプレイヤーをセット
-	//enemyManager_->SetPlayer(player_.get());
-	//enemyManager_->SetMapManager(map_.get());
-	//enemyManager_->SetUIManager(uiManager_.get());
-
-	screenDrawer_ = std::make_unique<ScreenDrawer>();
+	map_->SetEventBus(eventBus_.get());
+	// キャラクターマネージャー生成
+	charctorManager_ = std::make_unique<CharacterManager>(map_.get());
+	charctorManager_->SetEventBus(eventBus_.get());
 
 
-	ResourceID::reload();
+
+	c_debug_ = cameraController_->AddCamera("DebugCamera");
+	c_player_ = cameraController_->AddCamera("PlayerCamera");
+
+	charctorManager_->SetViewCamera(c_player_);
 }
 
 GameScenePhase::~GameScenePhase() {}
@@ -52,39 +44,30 @@ void GameScenePhase::Initialize()
 	nextPhase_ = PHASE::Phase_None;
 
 	map_->Initialize();
-	player_->Initialize();
 	uiManager_->Initialize();
-	//enemyManager_->Initialize();
+	charctorManager_->Initialize();
 
-	if (context_->isNewGame) map_->CreateNewMap(context_->mapName, context_->seed);
-	else map_->LoadMap(context_->mapName);
+	if (context_->isNewGame) map_->GetTerrain()->CreateNewMap(context_->mapName, context_->seed);
+	else map_->GetTerrain()->LoadMap(context_->mapName);
 }
 
 void GameScenePhase::Update()
 {
 	//int32_t targetCameraID = c_debug_;
-	int32_t targetCameraID = player_->GetCameraID();
-	Game::Camera::Update(targetCameraID);
+	int32_t targetCameraID = c_player_;
+	Vector3 cameraPos = Game::Camera::Getter::GetCenter(targetCameraID);
 
-	if (uiManager_->IsGameplayActive())
-	{
-		// プレイヤー更新
-		player_->Update(targetCameraID);
-		// 敵マネージャー更新
-		//enemyManager_->Update(targetCameraID);
-	}
-	// マップ更新
-	map_->Update(targetCameraID);
-	skyBox_->Update(targetCameraID);
+
+	// カメラ更新
+	cameraController_->Update(targetCameraID);
+
 	// UI更新
 	uiManager_->Update(targetCameraID);
-	// カメラ更新
-	//cameraController_->Update();
+	// キャラクターマネージャー更新
+	charctorManager_->Update(targetCameraID);
+	// マップ更新
+	map_->Update(targetCameraID, cameraPos);
 
-	if (player_->JustDamaged())
-	{
- 		screenDrawer_->TakeDamage();
-	}
 	screenDrawer_->Update(targetCameraID);
 }
 
@@ -96,12 +79,9 @@ void GameScenePhase::Draw()
 	int32_t rt_Background = screenDrawer_->GetBackgroundRenderTexture();
 
 	// マップ描画
-	map_->Draw(rt_3D);
-	skyBox_->Draw(rt_Background);
-	// プレイヤー描画
-	player_->Draw(rt_3D);
-	// 敵描画
-	//enemyManager_->Draw(rt_3D);
+	map_->Draw(rt_Background, rt_3D);
+	// キャラクター描画
+	charctorManager_->Draw(rt_3D);
 	// UI描画
 	uiManager_->Draw(rt_UI);
 
@@ -112,10 +92,8 @@ void GameScenePhase::DrawImGui()
 {
 	// マップImGui描画
 	map_->DrawImGui();
-	// プレイヤーImGui描画
-	player_->DrawImGui();
-	// 敵ImGui描画
-	//enemyManager_->DrawImGui();
+	// キャラクターImGui描画
+	charctorManager_->DrawImGui();
 	// UIImGui描画
 	uiManager_->DrawImGui();
 

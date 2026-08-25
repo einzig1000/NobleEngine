@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <Game.h>
 
+class EventBus;
+
 class ScreenDrawer
 {
 public:
@@ -15,9 +17,13 @@ public:
 	int32_t GetUIRenderTexture() const { return rt_UI_; }
 	int32_t GetBackgroundRenderTexture() const { return rt_Background_; }
 
+	void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; }
+
 	void TakeDamage();
 
 private:
+	EventBus* eventBus_ = nullptr;
+
 	void DamageEffectUpdate();
 
 	int32_t rt_main_ = -1;	// 最終的に描画されるレンダーテクスチャ
@@ -54,6 +60,6 @@ private:
 
 	EasingSet<float> damageEffect_EasingSet;
 
-	float frame;
+	float frame = 0.0f;
 };
 

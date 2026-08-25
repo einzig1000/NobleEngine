@@ -7,23 +7,23 @@ Test2Phase::Test2Phase()
 	Game::Camera::Setter::SetDistance(5.0f, 0, EaseType::IN_BACK, c_main_);
 	Game::Camera::Setter::SetEnableControl(true, c_main_);
 
-	t_dissolveMaskTexture_ = Game::Asset::Texture::Load("resources/prototypes/texture/noise0.png");
+	t_dissolveMaskTexture_ = Game::Asset::Texture::Load("assets/engine/texture/noise0.png");
 
 	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(1280, 720, "main");
 	rt_noise_ = Game::Asset::RenderTexture::CreateRenderTexture(1280, 720, "noise");
 
 	render_ = std::make_unique<RenderObject>();
-	//render_->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
-	render_->psoConfig_.ps = "resources/shaders/FullScreen/Dissolve.PS.hlsl";
-	//render_->psoConfig_.ps = "resources/shaders/FullScreen/RandomNoise.PS.hlsl";
-	render_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	//render_->psoConfig_.ps = "assets/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
+	render_->psoConfig_.ps = "assets/shaders/FullScreen/Dissolve.PS.hlsl";
+	//render_->psoConfig_.ps = "assets/shaders/FullScreen/RandomNoise.PS.hlsl";
+	render_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	render_->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	render_->SetupFromShaders();
 
 	weapon_ = std::make_unique<RenderObject>();
-	weapon_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	weapon_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	weapon_->modelID_ = Game::Asset::Model::Load("resources/Minecraft/Item/tool/sword/sword.obj");
+	weapon_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	weapon_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	weapon_->modelID_ = Game::Asset::Model::Load("assets/application/Minecraft/Item/tool/sword/sword.obj");
 	weapon_->SetupFromShaders();
 }
 

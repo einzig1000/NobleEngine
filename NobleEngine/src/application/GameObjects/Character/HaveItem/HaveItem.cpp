@@ -58,8 +58,8 @@ namespace
 HaveItem::HaveItem()
 {
 	render_ = std::make_unique<RenderObject>();
-	render_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	render_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	render_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	render_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_->SetupFromShaders();
 
 	itemTransform_.translate.y = 0.2f;
@@ -100,7 +100,7 @@ void HaveItem::Update(int32_t cameraID)
 		const ToolInfo* toolConfig = App::Data::Item::Get(toolID);
 
 		render_->modelID_ = toolConfig->modelID;
-		const std::vector<AABB>& localAABBs = Game::Asset::Model::GetData(toolConfig->modelID)->aabb;
+		const ColliderShape& colliderShape = Game::Asset::Model::GetData(toolConfig->modelID)->colliderShape;
 
 		Matrix4x4 itemWorld = Matrix4x4::MakeAffineMatrix(itemTransform_.scale, itemTransform_.rotate, itemTransform_.translate);
 		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(pivotTransform_.scale, pivotTransform_.rotate, pivotTransform_.translate);
@@ -114,8 +114,8 @@ void HaveItem::Update(int32_t cameraID)
 		render_->SetCBufferData(0, ShaderType::PixelShader, &color);
 		render_->SetCBufferData(1, ShaderType::PixelShader, &textureID);
 
-		itemAABB_ = CreateAABB(localAABBs, itemWorld);
-		itemOBB_ = CreateOBB(localAABBs, itemWorld);
+		itemAABB_ = CreateAABB(colliderShape.aabbs, itemWorld);
+		itemOBB_ = CreateOBB(colliderShape.aabbs, itemWorld);
 	}
     else
     {

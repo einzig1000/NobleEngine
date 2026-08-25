@@ -786,8 +786,8 @@ enum class EaseType
 template <typename t>
 struct EasingSet
 {
-    int32_t duration = 0;
-    int32_t currentFrame = 0;
+    float durationMs = 0;
+    float elapsedMs = 0;
     EaseType easetype = EaseType::LINEAR;
     t start{};
     t target{};
@@ -823,6 +823,30 @@ struct TransformationMatrix
     Matrix4x4 WVP;
     Matrix4x4 World;
 };
+
+
+
+#pragma region 衝突判定構造体
+
+enum class AABBFace
+{
+    NONE = -1,
+    ZPlus = 0,  // z+
+    ZMinus = 1,   // z-
+    XPlus = 2,   // x+
+    XMinus = 3,  // x-
+    YPlus = 4,    // y+
+    YMinus = 5, // y-
+};
+
+struct ColliderShape
+{
+    std::vector<AABB> aabbs;
+    std::vector<Sphere> spheres;
+};
+
+#pragma endregion
+
 
 #pragma region アニメーションデータ構造体
 
@@ -874,7 +898,7 @@ struct Joint
 
 struct Skeleton
 {
-    int32_t root;
+    int32_t root = 0;
 	std::map<std::string, int32_t> jointIndexByName;
 	std::vector<Joint> joints;
 };
@@ -979,8 +1003,8 @@ struct ModelData
     // ファイルパス
 	std::string filePath;
 
-    // AABB
-    std::vector<AABB> aabb;
+    // HitBoxリスト
+	ColliderShape colliderShape;
 };
 
 #pragma endregion
@@ -1088,75 +1112,6 @@ struct Material
 	float  shininess = 1.0f;
 	Vector3 specularColor = { 1.0f, 1.0f, 1.0f };
 	float  _pad0 = 0.0f;
-};
-
-#pragma endregion
-
-
-#pragma region 衝突判定構造体
-
-enum class CollisionResult
-{
-    非衝突,
-    接触,
-    衝突
-};
-
-struct CollisionFlags
-{
-    enum
-    {
-        NONE = 0x00000000,
-        FRONT = 0x00000001,
-        BACK = 0x00000002,
-        LEFT = 0x00000004,
-        RIGHT = 0x00000008,
-        TOP = 0x00000010,
-        BOTTOM = 0x00000020,
-        INSIDE = 0x00000040,
-    };
-};
-
-enum class AABBFace
-{
-    NONE = -1,
-    ZPlus = 0,  // z+
-    ZMinus = 1,   // z-
-    XPlus = 2,   // x+
-    XMinus = 3,  // x-
-    YPlus = 4,    // y+
-    YMinus = 5, // y-
-};
-
-struct CollisionPair
-{
-    // 軽い方
-    int32_t light = 0;
-    // 重い方
-    int32_t heavy = 0;
-
-    bool operator==(const CollisionPair& rhs) const
-    {
-        return light == rhs.light && heavy == rhs.heavy;
-    }
-    bool operator!=(const CollisionPair& rhs) const
-    {
-        return !(*this == rhs);
-    }
-};
-
-struct CollisionAABBFace
-{
-    AABBFace light = AABBFace::NONE;
-    AABBFace heavy = AABBFace::NONE;
-};
-
-struct CollisionInf
-{
-    CollisionPair IDpair;    // 衝突したオブジェクトの識別番号ペア
-    CollisionPair AABBpair;  // 衝突したオブジェクトのAABBの番号ペア
-    CollisionAABBFace face;  // 衝突したオブジェクトのAABBの衝突面ペア
-    Vector3 depth;    // 浸入深度
 };
 
 #pragma endregion
@@ -1363,11 +1318,3 @@ struct D3DResourceLeakChecker
         }
     }
 };
-
-enum class LineType
-{
-    Line,
-    BezierCurve,
-    SplineCurve,
-};
-

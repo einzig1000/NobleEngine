@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include <Game.h>
 #include <GameManager/Phase/IPhase.h>
 
 

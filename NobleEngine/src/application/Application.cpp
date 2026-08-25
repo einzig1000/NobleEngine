@@ -1,4 +1,7 @@
 #include "Application.h"
+#include <GameManager/GameManager.h>
+#include <ResourceLoader/Data/DataManager.h>
+#include <Editor/editor.h>
 
 Application& Application::Instance()
 {
@@ -6,31 +9,39 @@ Application& Application::Instance()
 	return instance;
 }
 
-Application::Application()
+void Application::Initialize()
 {
 	dataManager_ = std::make_unique<DataManager>();
-
 	editor_ = std::make_unique<Editor>(dataManager_.get());
-}
 
 
-Application::~Application()
-{
-	dataManager_.reset();
-	editor_.reset();
+	gameManager_ = std::make_unique<GameManager>();
 }
 
 void Application::Update()
 {
 	editor_->Update();
+
+	gameManager_->Update();
 }
 
 void Application::Draw()
 {
 	editor_->Draw();
+
+	gameManager_->Draw();
 }
 
 void Application::DrawImGui()
 {
 	editor_->DrawImGui();
+
+	gameManager_->DrawImGui();
+}
+
+void Application::Finalize()
+{
+	gameManager_.reset();
+	editor_.reset();
+	dataManager_.reset();
 }

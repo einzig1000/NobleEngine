@@ -12,7 +12,6 @@
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
 #include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
-#include <Utilities/Easing/Easing.h>
 #include <Utilities/Converter/ColorConverter/ColorConverter.h>
 #include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
 #include <Utilities/Converter/AngleConverter/AngleConverter.h>
@@ -84,11 +83,29 @@ namespace Game
 			}
 		}
 
+		namespace Font
+		{
+			int32_t Load(const std::string& filePath)
+			{
+				return Engine::Instance().GetAssetManager()->GetFontManager()->Load(filePath);
+			}
+			void DrawString(int32_t renderTextureID, const std::string& text, int32_t charSize, const Vector2& startPos, const Vector4& color, float extraSpacing)
+			{
+				Engine::Instance().GetAssetManager()->GetFontManager()->DrawString(renderTextureID, text, charSize, startPos, color, extraSpacing);
+			}
+
+			Vector2 MeasureJustTextureSize(const std::string& text, int32_t charSize, const Vector2& startPos, float extraSpacing)
+			{
+				return Engine::Instance().GetAssetManager()->GetFontManager()->MeasureJustTextureSize(text, charSize, startPos, extraSpacing);
+			}
+
+		}
+
 		namespace RenderTexture
 		{
-			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& textureName)
+			int32_t CreateRenderTexture(uint32_t width, uint32_t height, const std::string& textureName, Vector4 clearColor)
 			{
-				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName);
+				return Engine::Instance().GetDirectXManager()->GetRenderTextureManager()->CreateRenderTarget(width, height, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, textureName, clearColor);
 			}
 			bool SaveRenderTextureToFile(const std::string& filePath, const std::string& textureName, bool color)
 			{
@@ -183,15 +200,15 @@ namespace Game
 			}
 			Vector2 Get2DPositionDelta()
 			{
-				return Engine::Instance().GetIOManager()->GetMouseController()->GetRawDelta();
+				return Engine::Instance().GetIOManager()->GetMouseController()->Get2DPositionDelta();
 			}
-			Vector3 Get3DPosition(int32_t cameraID)
+			Vector3 Get3DPosition(Matrix4x4& viewProjection)
 			{
-				return Engine::Instance().GetIOManager()->GetMouseController()->GetWorldPosition(cameraID);
+				return Engine::Instance().GetIOManager()->GetMouseController()->GetWorldPosition(viewProjection);
 			}
-			Ray GetRay(int32_t cameraID)
+			Ray GetRay(Matrix4x4& viewProjection)
 			{
-				return Engine::Instance().GetIOManager()->GetMouseController()->GetRay(cameraID);
+				return Engine::Instance().GetIOManager()->GetMouseController()->GetRay(viewProjection);
 			}
 
 			bool IsHeld(int32_t i)
@@ -355,29 +372,29 @@ namespace Game
 
 		namespace Setter
 		{
-			void SetCenter(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
+			void SetCenter(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
-				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCenterTarget(target, spendFrame, easetype);
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCenterTarget(target, durationSec, easetype);
 			}
 
-			void SetRotate(Vector3 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
+			void SetRotate(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
-				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetRotateTarget(target, spendFrame, easetype);
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetRotateTarget(target, durationSec, easetype);
 			}
 
-			void SetDistance(float target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
+			void SetDistance(float target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
-				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetDistanceTarget(target, spendFrame, easetype);
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetDistanceTarget(target, durationSec, easetype);
 			}
 
-			void SetScreenSize(Vector2 target, int32_t spendFrame, EaseType easetype, int32_t cameraID)
+			void SetScreenSize(Vector2 target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
-				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetScreenSizeTarget(target, spendFrame, easetype);
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetScreenSizeTarget(target, durationSec, easetype);
 			}
 
-			void SetFovTarget(float target, int32_t duration, EaseType easetype, int32_t cameraID)
+			void SetFovTarget(float target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
-				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetFovTarget(target, duration, easetype);
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetFovTarget(target, durationSec, easetype);
 			}
 
 			void SetEnableControl(bool enable, int32_t cameraID)
@@ -415,18 +432,6 @@ namespace Game
 
 	namespace Math
 	{
-		namespace Ease
-		{
-			float EasingFloat(float start, float end, EaseType easeType, float t)
-			{
-				return Easing::EasingFloat(start, end, easeType, t);
-			}
-			Vector3 EasingVector3(Vector3 start, Vector3 end, EaseType easeType, float t)
-			{
-				return Easing::EasingVector3(start, end, easeType, t);
-			}
-		}
-
 		namespace Rand
 		{
 			float RandFloat(float min, float max, int32_t decimalPlaces)
@@ -601,4 +606,3 @@ namespace Game
 	}
 
 }
-

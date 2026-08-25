@@ -5,8 +5,7 @@
 #include "UIElement/IUIElement.h"
 #include "UIData.h"
 
-class Player;
-class MapManager;
+class EventBus;
 
 class UIManager
 {
@@ -21,16 +20,15 @@ public:
 
 	void ChangeScreen(UIMode mode);
 
-	UIMode GetCurrentUIMode() const { return currentUIMode_; }
-
-	// 「何のモードか」ではなく「今何が許可されるか」を公開する
-	bool IsGameplayActive() const;   // プレイヤー/敵の行動を許可するか
+	void SetEventBus(EventBus* eventBus);
 
 private:
-	UIMode currentUIMode_ = UIMode::None;
+	EventBus* eventBus_ = nullptr;
+
+	size_t currentUIMode_ = 0;
 	IUIScreen* currentScreen_ = nullptr;
 
-	std::unordered_map<UIMode, std::unique_ptr<IUIScreen>> screens_;
-	std::unordered_map<UIElementType, std::unique_ptr<IUIElement>> elements_;
+	std::vector<std::unique_ptr<IUIScreen>> screens_;
+	std::vector<std::unique_ptr<IUIElement>> elements_;
 };
 

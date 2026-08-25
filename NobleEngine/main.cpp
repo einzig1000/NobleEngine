@@ -1,6 +1,6 @@
 #include "Engine.h"
 #include "Application.h"
-#include "GameManager/GameManager.h"
+#include <definition/definition.h>
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -11,22 +11,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// ウィンドウ、DirectX初期化
 	Engine::Instance().Initialize(1280, 720, L"MyCraft Builders");
 	Engine::Instance().BeginFrame();
-	std::unique_ptr<GameManager> gm = std::make_unique<GameManager>();
+	Application::Instance().Initialize();
 	Engine::Instance().EndFrame();
 	while (Engine::Instance().ProcessMessage())
 	{
 		//// フレームの開始
 		Engine::Instance().BeginFrame();
 		// ↓更新処理ここから
-		gm->Update();
+		Application::Instance().Update();
 		// ↓描画処理ここから
-		gm->Draw();
+		Application::Instance().Draw();
 		// ↓ImGui描画処理ここから
-		gm->DrawImGui();
+		Application::Instance().DrawImGui();
 		// フレームの終了
 		Engine::Instance().EndFrame();
 	}
-	gm.reset();
+	Application::Instance().Finalize();
 	Engine::Instance().Finalize();
 	return 0;
 }
