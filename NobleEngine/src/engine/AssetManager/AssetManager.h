@@ -3,6 +3,7 @@
 #include "Texture/TextureManager.h"
 #include "Model/ModelManager.h"
 #include "Animation/AnimationManager.h"
+#include "Font/FontManager.h"
 #include <memory> 
 
 class DirectXManager;
@@ -20,6 +21,7 @@ public:
 	TextureManager* GetTextureManager() const { return textureManager_.get(); }
 	ModelManager* GetModelManager() const { return modelManager_.get(); }
 	AnimationManager* GetAnimationManager() const { return animationManager_.get(); }
+	FontManager* GetFontManager() const { return fontManager_.get(); }
 
 private:
 
@@ -27,6 +29,7 @@ private:
 	std::unique_ptr<TextureManager> textureManager_;
 	std::unique_ptr<ModelManager> modelManager_;
 	std::unique_ptr<AnimationManager> animationManager_;
+	std::unique_ptr<FontManager> fontManager_;
 
 };
 

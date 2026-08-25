@@ -9,7 +9,7 @@ ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManag
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
-	auto& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
@@ -29,6 +29,14 @@ ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManag
 		dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetCPUHandleAt(slot),                    // ImGuiフォントSRV用のCPUハンドル
 		dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(slot)                     // ImGuiフォントSRV用のGPUハンドル
 	);
+
+
+#ifdef _RELEASE
+	io.IniFilename = nullptr;
+
+	ImGui::LoadIniSettingsFromDisk("imgui.ini");
+#endif 
+
 }
 
 ImGuiManager::~ImGuiManager()

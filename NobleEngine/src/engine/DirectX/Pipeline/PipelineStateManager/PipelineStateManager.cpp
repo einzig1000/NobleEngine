@@ -57,8 +57,13 @@ namespace
         {
         case D3D_PRIMITIVE_TOPOLOGY_LINELIST:
             return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+		case D3D_PRIMITIVE_TOPOLOGY_LINESTRIP:
+            return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
         case D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
             return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		case D3D_PRIMITIVE_TOPOLOGY_POINTLIST:
+			return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+
         default:
             return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
         }
@@ -67,9 +72,7 @@ namespace
     static D3D12_BLEND_DESC MakeBlendDesc(BlendStateID id)
     {
         D3D12_BLEND_DESC d{};
-        // 
         d.AlphaToCoverageEnable = FALSE;
-        // 
         d.IndependentBlendEnable = FALSE;
         auto& rt = d.RenderTarget[0];
 
@@ -238,8 +241,11 @@ namespace
 PipelineStateManager::PipelineStateManager(ID3D12Device2* device)
 	: device_(device)
 {
+    Log("コンストラクタ実行開始 : PipelineStateManager");
+
     InitializeDxc();
-    Log("コンストラクタ実行成功 : PipelineStateManager");
+
+    Log("成功");
 }
 
 PipelineStateManager::~PipelineStateManager()
@@ -640,7 +646,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
     //L"-E", L"main",
     //L"-T", profile,
     //L"-Zpr",
-    //L"-I", L"resources/shaders",   // ← これを追加
+    //L"-I", L"assets/shaders",   // ← これを追加
     //};
 
     // 実際にシェーダーをコンパイルする

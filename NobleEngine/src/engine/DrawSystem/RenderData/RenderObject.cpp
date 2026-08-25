@@ -1,9 +1,9 @@
 #include "RenderObject.h"
 #include <Engine.h>
 #include <DirectX/DirectXManager.h>
-#include <DirectX/Resource/Dx12ResourceUtilities.h>
 #include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
 #include <Utilities/Converter/StringConverter/StringConverter.h>
+#include <Utilities/Logger/Logger.h>
 #include <DrawSystem/DrawSystem.h>
 #include <cstring>
 #include <cstdint>
@@ -51,13 +51,14 @@ void RenderObject::SetupFromShaders()
 	
 #ifdef _DEBUG
 
-	// ハッシュの精度を確認するためしばらくこっちを使う。確信がもてたらチェックなしに移行
+	// デバッグビルドではハッシュの衝突がないか確認する
 	for (size_t i = 0; i < rootParams_.size(); ++i)
 	{
 		const auto& param = rootParams_[i];
 		if (rootParamHashToIndexMap_.find(param.hash) != rootParamHashToIndexMap_.end())
 		{
-			Log("やっぱりハッシュのみで判断するのは難しい。ComputeHash()を改善するか各パラメータを比較する方式に変更必須");
+			Log("RenderObject::SetupFromShaders() ルートパラメータのハッシュが衝突しました");
+			__debugbreak();
 		}
 		else
 		{

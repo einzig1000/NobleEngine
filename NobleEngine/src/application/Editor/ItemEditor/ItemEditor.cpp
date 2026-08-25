@@ -6,8 +6,8 @@
 ItemEditor::ItemEditor(DataManager* dataManager)
 {
 	renderObject_ = std::make_unique<RenderObject>();
-	renderObject_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	renderObject_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	renderObject_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	renderObject_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	renderObject_->SetupFromShaders();
 
 	renderTextureID_ = Game::Asset::RenderTexture::CreateRenderTexture(512, 512, "ItemEditorTexture");
@@ -312,7 +312,7 @@ void ItemEditor::DrawImGui()
 	if (ImGui::Button("AllSave"))
 	{
 		std::vector<std::string> blockKeys(blockIDNames.begin(), blockIDNames.end() - 1);
-		JsonManager::AddParam("resources/json/BlockConfig.json", "/Keys", blockKeys);
+		JsonManager::AddParam("assets/application/json/BlockConfig.json", "/Keys", blockKeys);
 
 		for (int32_t i = 0; i < static_cast<int32_t>(BlockID::MAX); i++)
 		{
@@ -320,14 +320,14 @@ void ItemEditor::DrawImGui()
 			const BlockInfo* info = App::Data::Item::Get(blockID);
 			if (info)
 			{
-				JsonManager::AddParam("resources/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/durability", info->durability);
-				JsonManager::AddParam("resources/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/color", info->color);
-				JsonManager::AddParam("resources/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/isTransparent", info->isTransparent);
+				JsonManager::AddParam("assets/application/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/durability", info->durability);
+				JsonManager::AddParam("assets/application/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/color", info->color);
+				JsonManager::AddParam("assets/application/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/isTransparent", info->isTransparent);
 			}
 		}
 
 		std::vector<std::string> toolKeys(toolIDNames.begin(), toolIDNames.end() - 1);
-		JsonManager::AddParam("resources/json/ToolConfig.json", "/Keys", toolKeys);
+		JsonManager::AddParam("assets/application/json/ToolConfig.json", "/Keys", toolKeys);
 
 		for (int32_t i = 0; i < static_cast<int32_t>(ToolID::MAX); i++)
 		{
@@ -335,16 +335,16 @@ void ItemEditor::DrawImGui()
 			const ToolInfo* info = App::Data::Item::Get(toolID);
 			if (info)
 			{
-				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/durability", info->durability);
-				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/attackPower", info->attackPower);
-				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/miningSpeed", info->miningSpeed);
-				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/textureID", info->texturePath);
-				JsonManager::AddParam("resources/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/modelID", info->modelPath);
+				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/durability", info->durability);
+				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/attackPower", info->attackPower);
+				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/miningSpeed", info->miningSpeed);
+				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/textureID", info->texturePath);
+				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/modelID", info->modelPath);
 			}
 		}
 
 		std::vector<std::string> objectKeys(objectIDNames.begin(), objectIDNames.end() - 1);
-		JsonManager::AddParam("resources/json/ObjectConfig.json", "/Keys", objectKeys);
+		JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/Keys", objectKeys);
 
 		for (int32_t i = 0; i < static_cast<int32_t>(ObjectID::MAX); i++)
 		{
@@ -352,16 +352,16 @@ void ItemEditor::DrawImGui()
 			const ObjectInfo* info = App::Data::Item::Get(objectID);
 			if (info)
 			{
-				JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelID", info->modelID);
-				JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/textureID", info->textureID);
-				JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelPath", info->modelPath);
-				JsonManager::AddParam("resources/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/texturePath", info->texturePath);
+				JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelID", info->modelID);
+				JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/textureID", info->textureID);
+				JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelPath", info->modelPath);
+				JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/texturePath", info->texturePath);
 			}
 		}
 
 
 		std::vector<std::string> itemKeys(itemIDNames.begin(), itemIDNames.end() - 1);
-		JsonManager::AddParam("resources/json/ItemConfig.json", "/Keys", itemKeys);
+		JsonManager::AddParam("assets/application/json/ItemConfig.json", "/Keys", itemKeys);
 
 		for (int32_t i = 0; i < static_cast<int32_t>(ItemID::MAX); i++)
 		{
@@ -369,16 +369,16 @@ void ItemEditor::DrawImGui()
 			const ItemInfo* info = App::Data::Item::Get(itemID);
 			if (info)
 			{
-				JsonManager::AddParam("resources/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/blockID", magic_enum::enum_name(info->blockID).data());
-				JsonManager::AddParam("resources/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/toolID", magic_enum::enum_name(info->toolID).data());
-				JsonManager::AddParam("resources/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/objectID", magic_enum::enum_name(info->objectID).data());
+				JsonManager::AddParam("assets/application/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/blockID", magic_enum::enum_name(info->blockID).data());
+				JsonManager::AddParam("assets/application/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/toolID", magic_enum::enum_name(info->toolID).data());
+				JsonManager::AddParam("assets/application/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/objectID", magic_enum::enum_name(info->objectID).data());
 			}
 		}
 
-		JsonManager::Save("resources/json/BlockConfig.json");
-		JsonManager::Save("resources/json/ToolConfig.json");
-		JsonManager::Save("resources/json/ObjectConfig.json");
-		JsonManager::Save("resources/json/ItemConfig.json");
+		JsonManager::Save("assets/application/json/BlockConfig.json");
+		JsonManager::Save("assets/application/json/ToolConfig.json");
+		JsonManager::Save("assets/application/json/ObjectConfig.json");
+		JsonManager::Save("assets/application/json/ItemConfig.json");
 
 		App::Data::Item::CreateBlockInfoTable();
 	}

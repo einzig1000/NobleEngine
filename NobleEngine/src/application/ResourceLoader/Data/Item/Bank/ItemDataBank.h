@@ -18,7 +18,7 @@ public:
 	const BlockInfo* GetBlockInfo(BlockID id);
 	const ToolInfo* GetToolInfo(ToolID id);
 	const ObjectInfo* GetObjectInfo(ObjectID id);
-	const int32_t GetBlockInfoTableSRVIndex() { return blockInfoTableSrvIndex_; }
+	const int32_t GetBlockInfoTableHeapSlot() { return blockInfoTableHeapSlot_; }
 
 private:
 	std::unordered_map<ItemID, ItemInfo> itemInfoMap_;
@@ -27,6 +27,6 @@ private:
 	std::unordered_map<ToolID, ToolInfo> toolInfoMap_;
 	std::unordered_map<ObjectID, ObjectInfo> objectInfoMap_;
 
-	int32_t blockInfoTableSrvIndex_ = -1;
+	int32_t blockInfoTableHeapSlot_ = -1;
 };
 

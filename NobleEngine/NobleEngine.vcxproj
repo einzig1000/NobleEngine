@@ -11,8 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\EventBus\EventBus.cpp" />
+    <ClCompile Include="src\engine\AssetManager\Font\FontManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\CharacterManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\FaceDataPagePool\FaceDataPagePool.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp" />
-    <ClCompile Include="src\application\GameObjects\Map\Miner\Miner.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\SwingMining\SwingMining.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\RangeMining\RangeMining.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.cpp" />
@@ -29,7 +32,7 @@
     <ClCompile Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\HaveItem\HaveItem.cpp" />
     <ClCompile Include="src\application\GameObjects\Camera\CameraController.cpp" />
-    <ClCompile Include="src\application\GameObjects\Character\BaseCharacter.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\ICharacter.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\Player\Player.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\ItemInventory\ItemInventory.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\CraftScreen\CraftScreen.cpp" />
@@ -73,9 +76,7 @@
     <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp" />
-    <ClCompile Include="src\application\GameObjects\Map\Chunk\Block\Block.cpp" />
-    <ClCompile Include="src\application\GameObjects\Map\Chunk\Block\BlockConfig.cpp" />
-    <ClCompile Include="src\application\GameObjects\Map\Chunk\Chunk.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\MapManager.cpp" />
     <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp" />
     <ClCompile Include="src\engine\AssetManager\Audio\AudioPlayer\AudioPlayer.cpp" />
@@ -84,13 +85,12 @@
     <ClCompile Include="src\engine\AssetManager\Model\ModelBank\ModelBank.cpp" />
     <ClCompile Include="src\engine\AssetManager\Model\ModelCreater\ModelCreater.cpp" />
     <ClCompile Include="src\engine\AssetManager\Model\ModelLoader\ModelLoader.cpp" />
-    <ClCompile Include="src\application\TestLine\LineDrawer.cpp" />
+    <ClCompile Include="src\application\Test\TestLine\LineDrawer.cpp" />
     <ClCompile Include="src\engine\AssetManager\Animation\AnimationManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\application\GameManager\GameManager.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\IPhase.cpp" />
-    <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.cpp" />
     <ClCompile Include="src\engine\Camera\Camera.cpp" />
     <ClCompile Include="src\engine\Camera\CameraManager.cpp" />
@@ -106,10 +106,9 @@
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp" />
     <ClCompile Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.cpp" />
-    <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceUtilities.cpp" />
+    <ClCompile Include="src\engine\DirectX\ResourceUtilities\ResourceUtilities.cpp" />
     <ClCompile Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.cpp" />
     <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp" />
-    <ClCompile Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.cpp" />
     <ClCompile Include="src\engine\DrawSystem\DrawSystem.cpp" />
     <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp" />
     <ClCompile Include="src\engine\Engine.cpp" />
@@ -124,29 +123,33 @@
     <ClCompile Include="src\engine\AssetManager\Model\ModelManager.cpp" />
     <ClCompile Include="src\engine\AssetManager\AssetManager.cpp" />
     <ClCompile Include="src\engine\AssetManager\Texture\TextureManager.cpp" />
-    <ClCompile Include="src\application\Utilities\Converter\AngleConverter\AngleConverter.cpp" />
-    <ClCompile Include="src\application\Utilities\Converter\ColorConverter\ColorConverter.cpp" />
-    <ClCompile Include="src\application\Utilities\Converter\CoordinateConverter\CoordinateConverter.cpp" />
-    <ClCompile Include="src\application\Utilities\Converter\StringConverter\StringConverter.cpp" />
-    <ClCompile Include="src\application\Utilities\Easing\Easing.cpp" />
-    <ClCompile Include="src\application\Utilities\functions.cpp" />
-    <ClCompile Include="src\application\Utilities\Json\JsonManager.cpp" />
-    <ClCompile Include="src\application\Utilities\Logger\Logger.cpp" />
-    <ClCompile Include="src\application\Utilities\PerlinNoise.cpp" />
-    <ClCompile Include="src\application\Utilities\Random\Random.cpp" />
+    <ClCompile Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.cpp" />
+    <ClCompile Include="src\engine\Utilities\Converter\ColorConverter\ColorConverter.cpp" />
+    <ClCompile Include="src\engine\Utilities\Converter\CoordinateConverter\CoordinateConverter.cpp" />
+    <ClCompile Include="src\engine\Utilities\Converter\StringConverter\StringConverter.cpp" />
+    <ClCompile Include="src\engine\Utilities\Easing\Easing.cpp" />
+    <ClCompile Include="src\engine\Utilities\functions.cpp" />
+    <ClCompile Include="src\engine\Utilities\Json\JsonManager.cpp" />
+    <ClCompile Include="src\engine\Utilities\Logger\Logger.cpp" />
+    <ClCompile Include="src\engine\Utilities\PerlinNoise.cpp" />
+    <ClCompile Include="src\engine\Utilities\Random\Random.cpp" />
     <ClCompile Include="src\engine\Window\WindowManager.cpp" />
-    <ClCompile Include="src\application\TestAnimation\TestAnimation.cpp" />
-    <ClCompile Include="src\application\TestParticle\TestParticle.cpp" />
+    <ClCompile Include="src\application\Test\TestAnimation\TestAnimation.cpp" />
+    <ClCompile Include="src\application\Test\TestParticle\TestParticle.cpp" />
     <ClCompile Include="src\engine\AssetManager\Texture\TextureBank\TextureBank.cpp" />
     <ClCompile Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.cpp" />
-    <ClCompile Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.cpp" />
     <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp" />
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\EventBus\EventBus.h" />
+    <ClInclude Include="externals\stb\stb_truetype.h" />
+    <ClInclude Include="src\engine\AssetManager\Font\FontManager.h" />
+    <ClInclude Include="src\application\GameObjects\Character\CharacterManager.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\FaceDataPagePool\FaceDataPagePool.h" />
     <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h" />
-    <ClInclude Include="src\application\GameObjects\Map\Miner\Miner.h" />
     <ClInclude Include="src\application\GameObjects\Character\SwingMining\SwingMining.h" />
     <ClInclude Include="src\application\GameObjects\Character\RangeMining\RangeMining.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.h" />
@@ -163,7 +166,7 @@
     <ClInclude Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.h" />
     <ClInclude Include="src\application\GameObjects\Character\HaveItem\HaveItem.h" />
     <ClInclude Include="src\application\GameObjects\Camera\CameraController.h" />
-    <ClInclude Include="src\application\GameObjects\Character\BaseCharacter.h" />
+    <ClInclude Include="src\application\GameObjects\Character\ICharacter.h" />
     <ClInclude Include="src\application\GameObjects\Character\Player\Player.h" />
     <ClInclude Include="src\application\GameObjects\Character\ItemInventory\ItemInventory.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIData.h" />
@@ -358,9 +361,7 @@
     <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h" />
     <ClInclude Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h" />
-    <ClInclude Include="src\application\GameObjects\Map\Chunk\Block\Block.h" />
-    <ClInclude Include="src\application\GameObjects\Map\Chunk\Block\BlockConfig.h" />
-    <ClInclude Include="src\application\GameObjects\Map\Chunk\Chunk.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.h" />
     <ClInclude Include="src\application\GameObjects\Map\MapManager.h" />
     <ClInclude Include="src\application\ResourceLoader\ResourceID.h" />
     <ClInclude Include="src\engine\AssetManager\Audio\AudioPlayer\AudioPlayer.h" />
@@ -369,13 +370,12 @@
     <ClInclude Include="src\engine\AssetManager\Model\ModelBank\ModelBank.h" />
     <ClInclude Include="src\engine\AssetManager\Model\ModelCreater\ModelCreater.h" />
     <ClInclude Include="src\engine\AssetManager\Model\ModelLoader\ModelLoader.h" />
-    <ClInclude Include="src\application\TestLine\LineDrawer.h" />
+    <ClInclude Include="src\application\Test\TestLine\LineDrawer.h" />
     <ClInclude Include="src\engine\EngineDefinition\EngineConstexprs.h" />
     <ClInclude Include="src\engine\AssetManager\Animation\AnimationManager.h" />
     <ClInclude Include="src\application\GameManager\GameManager.h" />
     <ClInclude Include="src\application\GameManager\Phase\BattlePhase\BattlePhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\IPhase.h" />
-    <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.h" />
     <ClInclude Include="src\engine\Camera\Camera.h" />
     <ClInclude Include="src\engine\Camera\CameraManager.h" />
@@ -393,10 +393,9 @@
     <ClInclude Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTargetStruct.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.h" />
-    <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceUtilities.h" />
+    <ClInclude Include="src\engine\DirectX\ResourceUtilities\ResourceUtilities.h" />
     <ClInclude Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.h" />
     <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h" />
-    <ClInclude Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.h" />
     <ClInclude Include="src\engine\DrawSystem\DrawSystem.h" />
     <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h" />
     <ClInclude Include="src\engine\Engine.h" />
@@ -411,25 +410,25 @@
     <ClInclude Include="src\engine\AssetManager\Model\ModelManager.h" />
     <ClInclude Include="src\engine\AssetManager\AssetManager.h" />
     <ClInclude Include="src\engine\AssetManager\Texture\TextureManager.h" />
-    <ClInclude Include="src\application\Utilities\Converter\AngleConverter\AngleConverter.h" />
-    <ClInclude Include="src\application\Utilities\Converter\ColorConverter\ColorConverter.h" />
-    <ClInclude Include="src\application\Utilities\Converter\CoordinateConverter\CoordinateConverter.h" />
-    <ClInclude Include="src\application\Utilities\Converter\StringConverter\StringConverter.h" />
-    <ClInclude Include="src\application\Utilities\Easing\Easing.h" />
-    <ClInclude Include="src\application\Utilities\functions.h" />
-    <ClInclude Include="src\application\Utilities\Json\JsonManager.h" />
-    <ClInclude Include="src\application\Utilities\Logger\Logger.h" />
-    <ClInclude Include="src\application\Utilities\PerlinNoise.h" />
-    <ClInclude Include="src\application\Utilities\Random\Random.h" />
+    <ClInclude Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.h" />
+    <ClInclude Include="src\engine\Utilities\Converter\ColorConverter\ColorConverter.h" />
+    <ClInclude Include="src\engine\Utilities\Converter\CoordinateConverter\CoordinateConverter.h" />
+    <ClInclude Include="src\engine\Utilities\Converter\StringConverter\StringConverter.h" />
+    <ClInclude Include="src\engine\Utilities\Easing\Easing.h" />
+    <ClInclude Include="src\engine\Utilities\functions.h" />
+    <ClInclude Include="src\engine\Utilities\Json\JsonManager.h" />
+    <ClInclude Include="src\engine\Utilities\Logger\Logger.h" />
+    <ClInclude Include="src\engine\Utilities\PerlinNoise.h" />
+    <ClInclude Include="src\engine\Utilities\Random\Random.h" />
     <ClInclude Include="src\engine\Window\WindowManager.h" />
-    <ClInclude Include="src\application\TestAnimation\TestAnimation.h" />
-    <ClInclude Include="src\application\TestParticle\TestParticle.h" />
+    <ClInclude Include="src\application\Test\TestAnimation\TestAnimation.h" />
+    <ClInclude Include="src\application\Test\TestParticle\TestParticle.h" />
     <ClInclude Include="src\engine\AssetManager\Texture\TextureBank\TextureBank.h" />
     <ClInclude Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.h" />
-    <ClInclude Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.h" />
     <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h" />
     <ClInclude Include="src\engine\Editor\TimeEditor\TimeEditor.h" />
     <ClInclude Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\Terrain.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Block\versionInfo.md">
@@ -493,6 +492,8 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary;$(ProjectDir)src/application/Facade</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -519,7 +520,7 @@ xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NOMINMAX;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;NDEBUG;_WINDOWS;_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -528,6 +529,8 @@ xcopy /E /I /Y "$(ProjectDir)resources/*" "$(TargetDir)resources/"</Command>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)src/application;$(ProjectDir)src/engine;$(ProjectDir)src/engine/Facade;$(ProjectDir)externals/assimp/include;$(ProjectDir)externals/DungeonTemplateLibrary;$(ProjectDir)src/application/Facade</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -30,9 +30,9 @@ namespace App
 				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetObjectInfo(id);
 			}
 
-			const int32_t GetBlockInfoTableSRVIndex()
+			const int32_t GetBlockInfoTableHeapSlot()
 			{
-				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetBlockInfoTableSRVIndex();
+				return Application::Instance().GetDataManager()->GetItemDataManager()->getBank()->GetBlockInfoTableHeapSlot();
 			}
 
 			void CreateBlockInfoTable()
@@ -56,16 +56,4 @@ namespace App
 		}
 	}
 
-	void Update()
-	{
-		Application::Instance().Update();
-	}
-	void Draw()
-	{
-		Application::Instance().Draw();
-	}
-	void DrawImGui()
-	{
-		Application::Instance().DrawImGui();
-	}
 }

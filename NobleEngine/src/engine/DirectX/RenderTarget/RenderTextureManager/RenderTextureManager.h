@@ -22,9 +22,10 @@ public:
 	/// <param name="width">横幅</param>
 	/// <param name="height">縦幅</param>
 	/// <param name="format">テクスチャのフォーマット</param>
-	/// <param name="textureName">テクスチャの名前</param>
+	/// <param name="label">テクスチャの名前</param>
+	/// <param name="clearColor">クリアカラー</param>
 	/// <returns>テクスチャID</returns>
-    int32_t CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string label, float clearColorA = 0.0f);
+	int32_t CreateRenderTarget(UINT width, UINT height, DXGI_FORMAT format, std::string label, Vector4 clearColor);
 
 	// テクスチャ保存
     bool SaveTexture(const std::string& filePath, std::string textureName, bool color);

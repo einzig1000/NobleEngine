@@ -1,5 +1,10 @@
 #include "Camera.h"
 #include <Game.h>
+#include <Engine.h>
+#include <IO/IOManager.h>
+#include <IO/Mouse/MouseController.h>
+#include <IO/Keyboard/KeyboardController.h>
+#include <FixFPS/FixFPS.h>
 #include <Window/WindowManager.h>
 #include <algorithm>
 #include <numbers>
@@ -18,6 +23,27 @@ Camera::Camera()
     sphericalEye_.radius = 20.0f;
 	sphericalEye_.theta = std::numbers::pi_v<float> / 2.0f;
     sphericalEye_.phi = 0;
+
+	//backToFrontMatrix_.m[0][0] = -1.00000000f;
+	//backToFrontMatrix_.m[0][1] = 0.00000000f;
+	//backToFrontMatrix_.m[0][2] = 8.74227766e-08f;
+	//backToFrontMatrix_.m[0][3] = 0.00000000f;
+
+	//backToFrontMatrix_.m[1][0] = 0.00000000f;
+	//backToFrontMatrix_.m[1][1] = 1.00000000f;
+	//backToFrontMatrix_.m[1][2] = 0.00000000f;
+	//backToFrontMatrix_.m[1][3] = 0.00000000f;
+
+	//backToFrontMatrix_.m[2][0] = -8.74227766e-08f;
+	//backToFrontMatrix_.m[2][1] = 0.00000000f;
+	//backToFrontMatrix_.m[2][2] = -1.00000000f;
+	//backToFrontMatrix_.m[2][3] = 0.00000000f;
+
+	//backToFrontMatrix_.m[2][0] = 0.00000000f;
+	//backToFrontMatrix_.m[2][1] = 0.00000000f;
+	//backToFrontMatrix_.m[2][2] = 0.00000000f;
+	//backToFrontMatrix_.m[2][3] = 0.00000000f;
+	backToFrontMatrix_ = Matrix4x4::MakeRotateYMatrix(3.14159265358979323846f);
 
     Resize();
 }
@@ -43,6 +69,8 @@ void Camera::Update()
 
 void Camera::Update_Orbit()
 {
+	float dt = Engine::Instance().GetFixFPS()->GetClampedDeltaTimeMs();
+
 	if (enableControl_)
 	{
 		// マウス移動量
@@ -53,6 +81,7 @@ void Camera::Update_Orbit()
 		bool isMiddleHeld = Game::IO::Mouse::IsHeld(2);
 		// Shiftキー
 		bool isShiftHeld = Game::IO::Key::IsHeld(VK_LSHIFT);
+
 
 		// パン
 		if (isMiddleHeld && isShiftHeld)
@@ -74,11 +103,11 @@ void Camera::Update_Orbit()
 	}
 
     // イージング
-	MovingCenter();
-	MovingRotate();
-	MovingDistance();
-	MovingScreenSize();
-	MovingFov();
+	MovingCenter(dt);
+	MovingRotate(dt);
+	MovingDistance(dt);
+	MovingScreenSize(dt);
+	MovingFov(dt);
 
 	// 距離をクランプ
 	if (sphericalEye_.radius < 0.1f) sphericalEye_.radius = 0.1f;
@@ -99,29 +128,8 @@ void Camera::Update_Orbit()
 
 	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
     viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
-	Matrix4x4 backToFrontMatrix;// = Matrix4x4::MakeRotateYMatrix(3.14159265358979323846f);
 
-	backToFrontMatrix.m[0][0] = -1.00000000f;
-	backToFrontMatrix.m[0][1] = 0.00000000f;
-	backToFrontMatrix.m[0][2] = 8.74227766e-08f;
-	backToFrontMatrix.m[0][3] = 0.00000000f;
-
-	backToFrontMatrix.m[1][0] = 0.00000000f;
-	backToFrontMatrix.m[1][1] = 1.00000000f;
-	backToFrontMatrix.m[1][2] = 0.00000000f;
-	backToFrontMatrix.m[1][3] = 0.00000000f;
-
-	backToFrontMatrix.m[2][0] = -8.74227766e-08f;
-	backToFrontMatrix.m[2][1] = 0.00000000f;
-	backToFrontMatrix.m[2][2] = -1.00000000f;
-	backToFrontMatrix.m[2][3] = 0.00000000f;
-
-	backToFrontMatrix.m[2][0] = 0.00000000f;
-	backToFrontMatrix.m[2][1] = 0.00000000f;
-	backToFrontMatrix.m[2][2] = 0.00000000f;
-	backToFrontMatrix.m[2][3] = 0.00000000f;
-
-	billboardMatrix_ = backToFrontMatrix * viewMatrix_.Inverse();
+	billboardMatrix_ = backToFrontMatrix_ * viewMatrix_.Inverse();
 	billboardMatrix_.m[3][0] = 0.0f; // 平行移動成分のリセット
 	billboardMatrix_.m[3][1] = 0.0f;
 	billboardMatrix_.m[3][2] = 0.0f;
@@ -170,7 +178,7 @@ void Camera::DrawImGui()
 	tag = "radius" + radiusTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &sphericalEye_.radius, 0.1f);
 	tag = "duration" + radiusTag + cameraTag;
-    ImGui::DragInt(tag.c_str(), &distanceEasing_.duration, 1, 0, 1000);
+    ImGui::DragFloat(tag.c_str(), &distanceEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + radiusTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &distanceEasing_.target, 0.1f);
 	tag = "easeType" + radiusTag + cameraTag;
@@ -182,14 +190,15 @@ void Camera::DrawImGui()
 	tag = "start" + radiusTag + cameraTag;
     if (ImGui::Button(tag.c_str()))
     {
-		SetDistanceTarget(distanceEasing_.target, distanceEasing_.duration, distanceEasing_.easetype);
+		distanceEasing_.durationMs *= 0.001f;
+		SetDistanceTarget(distanceEasing_.target, distanceEasing_.durationMs, distanceEasing_.easetype);
     }
 
 	std::string phiTag = "##phi";
 	tag = "phi" + phiTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &sphericalEye_.phi, 0.01f);
-	tag = "duration" + phiTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &rotateEasing_.duration, 1, 0, 1000);
+	tag = "durationMs" + phiTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &rotateEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + phiTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &rotateEasing_.target.x, 0.01f);
 	tag = "easeType" + phiTag + cameraTag;
@@ -201,14 +210,15 @@ void Camera::DrawImGui()
 	tag = "start" + phiTag + cameraTag;
 	if (ImGui::Button(tag.c_str()))
 	{
-		SetRotateTarget(rotateEasing_.target, rotateEasing_.duration, rotateEasing_.easetype);
+		rotateEasing_.durationMs *= 0.001f;
+		SetRotateTarget(rotateEasing_.target, rotateEasing_.durationMs, rotateEasing_.easetype);
 	}
 
 	std::string thetaTag = "##theta";
 	tag = "theta" + thetaTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &sphericalEye_.theta, 0.01f);
-	tag = "duration" + thetaTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &rotateEasing_.duration, 1, 0, 1000);
+	tag = "durationMs" + thetaTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &rotateEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + thetaTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &rotateEasing_.target.y, 0.01f);
 	tag = "easeType" + thetaTag + cameraTag;
@@ -220,14 +230,15 @@ void Camera::DrawImGui()
 	tag = "start" + thetaTag + cameraTag;
 	if (ImGui::Button(tag.c_str()))
 	{
-		SetRotateTarget(rotateEasing_.target, rotateEasing_.duration, rotateEasing_.easetype);
+		rotateEasing_.durationMs *= 0.001f;
+		SetRotateTarget(rotateEasing_.target, rotateEasing_.durationMs, rotateEasing_.easetype);
 	}
 
 	std::string centerTag = "##Center";
 	tag = "center" + centerTag + cameraTag;
 	ImGui::DragFloat3(tag.c_str(), &center_.x, 0.1f);
-	tag = "duration" + centerTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &centerEasing_.duration, 1, 0, 1000);
+	tag = "durationMs" + centerTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &centerEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + centerTag + cameraTag;
 	ImGui::DragFloat3(tag.c_str(), &centerEasing_.target.x, 0.1f);
 	tag = "easeType" + centerTag + cameraTag;
@@ -239,7 +250,8 @@ void Camera::DrawImGui()
 	tag = "start" + centerTag + cameraTag;
 	if (ImGui::Button(tag.c_str()))
 	{
-		SetCenterTarget(centerEasing_.target, centerEasing_.duration, centerEasing_.easetype);
+		centerEasing_.durationMs *= 0.001f;
+		SetCenterTarget(centerEasing_.target, centerEasing_.durationMs, centerEasing_.easetype);
 	}
 
 	ImGui::Separator();
@@ -250,8 +262,8 @@ void Camera::DrawImGui()
     {
 		Resize();
     }
-	tag = "duration" + screenSizeTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &screenSizeEasing_.duration, 1, 0, 1000);
+	tag = "durationMs" + screenSizeTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &screenSizeEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + screenSizeTag + cameraTag;
 	ImGui::DragFloat2(tag.c_str(), &screenSizeEasing_.target.x, 1.0f);
 	tag = "easeType" + screenSizeTag + cameraTag;
@@ -263,7 +275,8 @@ void Camera::DrawImGui()
 	tag = "start" + screenSizeTag + cameraTag;
 	if (ImGui::Button(tag.c_str()))
 	{
-		SetScreenSizeTarget(screenSizeEasing_.target, screenSizeEasing_.duration, screenSizeEasing_.easetype);
+		screenSizeEasing_.durationMs *= 0.001f;
+		SetScreenSizeTarget(screenSizeEasing_.target, screenSizeEasing_.durationMs, screenSizeEasing_.easetype);
 	}
 
 	std::string fovYTag = "##fovY";
@@ -272,8 +285,8 @@ void Camera::DrawImGui()
     {
         projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
     }
-	tag = "duration" + fovYTag + cameraTag;
-	ImGui::DragInt(tag.c_str(), &fovEasing_.duration, 1, 0, 1000);
+	tag = "durationMs" + fovYTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &fovEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + fovYTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &fovEasing_.target, 0.01f);
 	tag = "easeType" + fovYTag + cameraTag;
@@ -285,7 +298,8 @@ void Camera::DrawImGui()
 	tag = "start" + fovYTag + cameraTag;
 	if (ImGui::Button(tag.c_str()))
 	{
-		SetFovTarget(fovEasing_.target, fovEasing_.duration, fovEasing_.easetype);
+		fovEasing_.durationMs *= 0.001f;
+		SetFovTarget(fovEasing_.target, fovEasing_.durationMs, fovEasing_.easetype);
 	}
 
 
@@ -389,98 +403,98 @@ bool Camera::InCamera(const AABB& aabb)
 }
 
 // 実際に動かす
-void Camera::MovingCenter()
+void Camera::MovingCenter(float dt)
 {
 	if (!centerEasing_.easeing) return;
 
-	center_ = Easing::EasingVector3(
+	center_ = Easing::EasingValue(
         centerEasing_.start, 
         centerEasing_.target,
         centerEasing_.easetype,
-		float(centerEasing_.currentFrame) / float(centerEasing_.duration)
+		float(centerEasing_.elapsedMs) / float(centerEasing_.durationMs)
     );
 
-	centerEasing_.currentFrame++;
+	centerEasing_.elapsedMs += dt;
 
-	if (centerEasing_.currentFrame > centerEasing_.duration)
+	if (centerEasing_.elapsedMs > centerEasing_.durationMs)
 	{
 		centerEasing_.easeing = false;
 	}
 }
-void Camera::MovingRotate()
+void Camera::MovingRotate(float dt)
 {
 	if (!rotateEasing_.easeing) return;
 
-	Vector3 spherical = Easing::EasingVector3(
+	Vector3 spherical = Easing::EasingValue(
 		rotateEasing_.start,
 		rotateEasing_.target,
 		rotateEasing_.easetype,
-		float(rotateEasing_.currentFrame) / float(rotateEasing_.duration)
+		float(rotateEasing_.elapsedMs) / float(rotateEasing_.durationMs)
 	);
 	sphericalEye_.phi = spherical.x;
 	sphericalEye_.theta = spherical.y;
 
-	rotateEasing_.currentFrame++;
-	if (rotateEasing_.currentFrame > rotateEasing_.duration)
+	rotateEasing_.elapsedMs += dt;
+	if (rotateEasing_.elapsedMs > rotateEasing_.durationMs)
 	{
 		rotateEasing_.easeing = false;
 	}
 }
-void Camera::MovingDistance()
+void Camera::MovingDistance(float dt)
 {
 	if (!distanceEasing_.easeing) return;
 
-	sphericalEye_.radius = Easing::EasingFloat(
+	sphericalEye_.radius = Easing::EasingValue(
 		distanceEasing_.start,
 		distanceEasing_.target,
 		distanceEasing_.easetype,
-		float(distanceEasing_.currentFrame) / float(distanceEasing_.duration)
+		float(distanceEasing_.elapsedMs) / float(distanceEasing_.durationMs)
 	);
 
-	distanceEasing_.currentFrame++;
-	if (distanceEasing_.currentFrame > distanceEasing_.duration)
+	distanceEasing_.elapsedMs += dt;
+	if (distanceEasing_.elapsedMs > distanceEasing_.durationMs)
 	{
 		distanceEasing_.easeing = false;
 	}
 }
-void Camera::MovingScreenSize()
+void Camera::MovingScreenSize(float dt)
 {
 	if (!screenSizeEasing_.easeing) return;
 
-    screenSize_.x = Easing::EasingFloat(
+    screenSize_.x = Easing::EasingValue(
         screenSizeEasing_.start.x,
         screenSizeEasing_.target.x,
         screenSizeEasing_.easetype,
-        float(screenSizeEasing_.currentFrame) / float(screenSizeEasing_.duration)
+        float(screenSizeEasing_.elapsedMs) / float(screenSizeEasing_.durationMs)
     );
-    screenSize_.y = Easing::EasingFloat(
+    screenSize_.y = Easing::EasingValue(
         screenSizeEasing_.start.y,
         screenSizeEasing_.target.y,
         screenSizeEasing_.easetype,
-        float(screenSizeEasing_.currentFrame) / float(screenSizeEasing_.duration)
+        float(screenSizeEasing_.elapsedMs) / float(screenSizeEasing_.durationMs)
     );
 
-	screenSizeEasing_.currentFrame++;
+	screenSizeEasing_.elapsedMs += dt;
 	
-    if (screenSizeEasing_.currentFrame > screenSizeEasing_.duration)
+    if (screenSizeEasing_.elapsedMs > screenSizeEasing_.durationMs)
 	{
 		screenSizeEasing_.easeing = false;
 	}
 
     Resize();
 }
-void Camera::MovingFov()
+void Camera::MovingFov(float dt)
 {
 	if (!fovEasing_.easeing) return;
 
-    fovY_ = Easing::EasingFloat(
+    fovY_ = Easing::EasingValue(
 		fovEasing_.start,
 		fovEasing_.target,
 		fovEasing_.easetype,
-		float(fovEasing_.currentFrame) / float(fovEasing_.duration)
+		float(fovEasing_.elapsedMs) / float(fovEasing_.durationMs)
 	);
-	fovEasing_.currentFrame++;
-	if (fovEasing_.currentFrame > fovEasing_.duration)
+	fovEasing_.elapsedMs += dt;
+	if (fovEasing_.elapsedMs > fovEasing_.durationMs)
 	{
 		fovEasing_.easeing = false;
 	}
@@ -489,9 +503,9 @@ void Camera::MovingFov()
 }
 
 // 動かす先の設定
-void Camera::SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype)
+void Camera::SetCenterTarget(Vector3 target, float durationSec, EaseType easetype)
 {
-	if (duration <= 0)
+	if (durationSec <= 0.0f)
 	{
 		center_ = target;
 		centerEasing_.easeing = false;
@@ -500,15 +514,15 @@ void Camera::SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype
 	{
 		centerEasing_.start = center_;
 		centerEasing_.target = target;
-		centerEasing_.duration = duration;
-		centerEasing_.currentFrame = 0;
+		centerEasing_.durationMs = durationSec * 1000.0f;
+		centerEasing_.elapsedMs = 0.0f;
 		centerEasing_.easeing = true;
 		centerEasing_.easetype = easetype;
 	}
 }
-void Camera::SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype)
+void Camera::SetRotateTarget(Vector3 target, float durationSec, EaseType easetype)
 {
-	if (duration <= 0)
+	if (durationSec <= 0.0f)
 	{
 		sphericalEye_.phi = target.x;
 		sphericalEye_.theta = target.y;
@@ -518,15 +532,15 @@ void Camera::SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype
 	{
 		rotateEasing_.start = Vector3{ sphericalEye_.phi, sphericalEye_.theta, 0.0f };
 		rotateEasing_.target = target;
-		rotateEasing_.duration = duration;
-		rotateEasing_.currentFrame = 0;
+		rotateEasing_.durationMs = durationSec * 1000.0f;
+		rotateEasing_.elapsedMs = 0.0f;
 		rotateEasing_.easeing = true;
 		rotateEasing_.easetype = easetype;
 	}
 }
-void Camera::SetDistanceTarget(float target, int32_t duration, EaseType easetype)
+void Camera::SetDistanceTarget(float target, float durationSec, EaseType easetype)
 {
-	if (duration <= 0)
+	if (durationSec <= 0.0f)
 	{
 		sphericalEye_.radius = target;
 		distanceEasing_.easeing = false;
@@ -535,15 +549,15 @@ void Camera::SetDistanceTarget(float target, int32_t duration, EaseType easetype
 	{
 		distanceEasing_.start = sphericalEye_.radius;
 		distanceEasing_.target = target;
-		distanceEasing_.duration = duration;
-		distanceEasing_.currentFrame = 0;
+		distanceEasing_.durationMs = durationSec * 1000.0f;
+		distanceEasing_.elapsedMs = 0.0f;
 		distanceEasing_.easeing = true;
 		distanceEasing_.easetype = easetype;
 	}
 }
-void Camera::SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType easetype)
+void Camera::SetScreenSizeTarget(Vector2 target, float durationSec, EaseType easetype)
 {
-    if (duration <= 0)
+	if (durationSec <= 0.0f)
     {
 		screenSize_ = target;
 		screenSizeEasing_.easeing = false;
@@ -553,15 +567,15 @@ void Camera::SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType ease
     {
         screenSizeEasing_.start = screenSize_;
         screenSizeEasing_.target = target;
-        screenSizeEasing_.duration = duration;
-        screenSizeEasing_.currentFrame = 0;
+        screenSizeEasing_.durationMs = durationSec * 1000.0f;
+        screenSizeEasing_.elapsedMs = 0.0f;
         screenSizeEasing_.easeing = true;
         screenSizeEasing_.easetype = easetype;
     }
 }
-void Camera::SetFovTarget(float target, int32_t duration, EaseType easetype)
+void Camera::SetFovTarget(float target, float durationSec, EaseType easetype)
 {
-	if (duration <= 0)
+	if (durationSec <= 0.0f)
 	{
 		fovY_ = target;
 		fovEasing_.easeing = false; 
@@ -571,8 +585,8 @@ void Camera::SetFovTarget(float target, int32_t duration, EaseType easetype)
 	{
 		fovEasing_.start = fovY_;
 		fovEasing_.target = target;
-		fovEasing_.duration = duration;
-		fovEasing_.currentFrame = 0;
+		fovEasing_.durationMs = durationSec * 1000.0f;
+		fovEasing_.elapsedMs = 0.0f;
 		fovEasing_.easeing = true;
 		fovEasing_.easetype = easetype;
 	}

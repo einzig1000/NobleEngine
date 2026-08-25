@@ -5,13 +5,15 @@
 SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     :device_(device)
 {
+    Log("コンストラクタ実行開始 : SRV_UAVManager");
+
     // SRVスロット一つ分のサイズ取得
     descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // SRV用ディスクリプタヒープ作成
 	textureCapacity_ = 128;
 	textureCubeCapacity_ = 16;
-	bufferCapacity_ = 1024 * 16;
+	bufferCapacity_ = 1024 * 16 * 4;
     capacity_ = textureCapacity_ + textureCubeCapacity_ + bufferCapacity_;
     nextTextureIndex_ = 0;
 	nextTextureCubeIndex_ = textureCapacity_;
@@ -23,14 +25,14 @@ SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     HRESULT hr = device->CreateDescriptorHeap(&DescriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap_));
     assert(SUCCEEDED(hr));
 
-    Log("コンストラクタ実行成功 : SRV_UAVManager");
+    Log("成功");
 }
 
 SRV_UAVManager::~SRV_UAVManager()
 {
     Log("デストラクタ実行成功 : SRV_UAVManager");
 }
-
+  
 uint32_t SRV_UAVManager::Allocate(ResourceType type)
 {
     switch (type)

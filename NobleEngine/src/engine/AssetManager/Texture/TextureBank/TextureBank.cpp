@@ -1,10 +1,10 @@
 #include "TextureBank.h"
 #include <Utilities/Logger/Logger.h>
 
-void TextureBank::AddTextureData(const std::string& filePath, const int32_t srvIndex, std::unique_ptr<TextureData> textureData)
+void TextureBank::AddTextureData(const std::string& filePath, const int32_t heapSlot, std::unique_ptr<TextureData> textureData)
 {
-	pathToIDMap_[filePath] = srvIndex;
-	textures_[srvIndex] = std::move(textureData);
+	pathToIDMap_[filePath] = heapSlot;
+	textures_[heapSlot] = std::move(textureData);
 }
 
 int32_t TextureBank::IsTextureDataExist(const std::string& filePath) const

@@ -143,11 +143,11 @@ private:
 
 	static inline const std::unordered_map<TextureID, std::string> textureFilePaths_ =
 	{
-	{ TextureID::UVChecker,    "resources/Prototypes/texture/uvChecker.png" },
-	{ TextureID::monsterBall,  "resources/Prototypes/texture/monsterBall.png" },
-	{ TextureID::white1x1,     "resources/Prototypes/texture/white1x1.png" },
-	{ TextureID::empty1x1,     "resources/Prototypes/texture/empty1x1.png" },
-	{ TextureID::Circle,       "resources/Prototypes/texture/circle.png" },
+	{ TextureID::UVChecker,    "assets/Prototypes/texture/uvChecker.png" },
+	{ TextureID::monsterBall,  "assets/Prototypes/texture/monsterBall.png" },
+	{ TextureID::white1x1,     "assets/Prototypes/texture/white1x1.png" },
+	{ TextureID::empty1x1,     "assets/Prototypes/texture/empty1x1.png" },
+	{ TextureID::Circle,       "assets/Prototypes/texture/circle.png" },
 	};
 
 	ResourceID() = delete;

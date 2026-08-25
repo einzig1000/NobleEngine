@@ -18,12 +18,13 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager)
 	rt_nobleScreenID_ = dxManager_->GetRenderTextureManager()->CreateRenderTarget(
 		Engine::Instance().GetWindowManager()->winWidth_,
 		Engine::Instance().GetWindowManager()->winHeight_,
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", 1.0f);
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", Vector4{ 0.11f, 0.11f, 0.11f, 1.0f });
 
 	screenRenderObject_ = std::make_unique<RenderObject>();
 	screenRenderObject_->psoConfig_.blendID = BlendStateID::Normal2;
-	screenRenderObject_->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	screenRenderObject_->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	screenRenderObject_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	screenRenderObject_->psoConfig_.ps = "assets/shaders/FullScreen/CopyImage.PS.hlsl";
+	screenRenderObject_->modelID_ = assetManager_->GetModelManager()->GetModelLoader()->LoadModel("assets/engine/model/plane/plane.obj");
 	screenRenderObject_->SetupFromShaders();
 }
 
@@ -200,11 +201,9 @@ void DrawSystem::Execute()
 
 void DrawSystem::ScreenDraw()
 {
-	screenRenderObject_->modelID_ = assetManager_->GetModelManager()->GetModelLoader()->LoadModel("resources/prototypes/model/plane/plane.obj");
 	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
 	DrawObject(screenRenderObject_.get());
 
-// デバッグモードの時は、PreScreenDrawで描画した内容をImGuiのウィンドウに表示する
 #ifdef _DEBUG
 
 	ImGui::Begin("mainDisplay");

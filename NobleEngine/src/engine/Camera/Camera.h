@@ -20,11 +20,11 @@ public:
 	std::string GetName() const { return name_; }
 
     // 動かす先の設定
-    void SetCenterTarget(Vector3 target, int32_t duration, EaseType easetype);
-    void SetRotateTarget(Vector3 target, int32_t duration, EaseType easetype);
-    void SetDistanceTarget(float target, int32_t duration, EaseType easetype);
-	void SetScreenSizeTarget(Vector2 target, int32_t duration, EaseType easetype);
-	void SetFovTarget(float target, int32_t duration, EaseType easetype);
+    void SetCenterTarget(Vector3 target, float durationSec, EaseType easetype);
+    void SetRotateTarget(Vector3 target, float durationSec, EaseType easetype);
+    void SetDistanceTarget(float target, float durationSec, EaseType easetype);
+	void SetScreenSizeTarget(Vector2 target, float durationSec, EaseType easetype);
+	void SetFovTarget(float target, float durationSec, EaseType easetype);
 
     // シェイク
     void StartShake(float intensity, float duration, float frequency = 25.0f);
@@ -77,19 +77,19 @@ private:
 
 
     /// カメラ回転
-    void MovingCenter();
+    void MovingCenter(float dt);
 	EasingSet<Vector3> centerEasing_;
     /// 回転中心
-    void MovingRotate();
+    void MovingRotate(float dt);
 	EasingSet<Vector3> rotateEasing_;
     /// カメラ距離
-    void MovingDistance();
+    void MovingDistance(float dt);
 	EasingSet<float> distanceEasing_;
 	/// 画面サイズ
-	void MovingScreenSize();
+	void MovingScreenSize(float dt);
 	EasingSet<Vector2> screenSizeEasing_;
 	/// FOV
-	void MovingFov();
+	void MovingFov(float dt);
 	EasingSet<float> fovEasing_;
 
 
@@ -118,4 +118,5 @@ private:
 
 	// ビルボード行列
     Matrix4x4 billboardMatrix_;
+    Matrix4x4 backToFrontMatrix_;
 };

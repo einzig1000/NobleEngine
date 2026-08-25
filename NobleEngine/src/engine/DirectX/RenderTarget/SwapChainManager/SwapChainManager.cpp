@@ -1,7 +1,7 @@
 #include "SwapChainManager.h"
 #include <Utilities/Logger/Logger.h>
 #include <Window/WindowManager.h>
-#include <DirectX/Resource/Dx12ResourceUtilities.h>
+#include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include "DirectX/DescriptorHeapManager/DescriptorHeapManager.h"
 #include <Windows.h> 
 #include <cassert>
@@ -9,6 +9,8 @@
 SwapChainManager::SwapChainManager(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd, DescriptorHeapManager* descriptorHeapManager)
 	: device_(device), descriptorHeapManager_(descriptorHeapManager)
 {
+	Log("コンストラクタ実行開始 : SwapChainManager");
+
 	InitializeSwapChainInternal(device, commandQueue, hwnd);
 	InitializeRenderTargetView(device);
 	InitializeDepthStencilView(device);
@@ -17,7 +19,7 @@ SwapChainManager::SwapChainManager(ID3D12Device2* device, ID3D12CommandQueue* co
 	renderTargets_[0] = std::make_unique<RenderTarget>();
 	renderTargets_[1] = std::make_unique<RenderTarget>();
 
-	Log("コンストラクタ実行成功 : SwapChainManager");
+    Log("成功");
 }
 
 SwapChainManager::~SwapChainManager()

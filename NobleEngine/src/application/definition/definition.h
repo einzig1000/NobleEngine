@@ -162,6 +162,15 @@ enum class ObjectID
 	MAX,
 };
 
+// 採掘モードの種類
+enum class MiningPattern
+{
+	Swing,	// スイング採掘
+	Range,	// 範囲採掘
+
+	MAX,
+};
+
 // BlockID → ItemID 変換
 ItemID BlockIDtoItemID(BlockID id);
 // ToolID → ItemID 変換
@@ -205,7 +214,7 @@ struct ToolInfo
 	int32_t modelID = -1;
 
 	// あたり判定
-	std::vector<AABB> aabb;
+	ColliderShape colliderShape;
 };
 
 struct ObjectInfo
@@ -221,7 +230,7 @@ struct ObjectInfo
 	int32_t modelID = -1;
 
 	// あたり判定
-	std::vector<AABB> aabb;
+	ColliderShape colliderShape;
 };
 
 // アイテムごとの情報
@@ -250,7 +259,7 @@ struct lookAtBlock
 	float distance = 0.0f;
 };
 
-class BaseCharacter;
+class ICharacter;
 struct RayHitResult
 {
 	enum class Type
@@ -267,7 +276,7 @@ struct RayHitResult
 	lookAtBlock blockHit{};
 
 	// type == Character のとき有効
-	BaseCharacter* Character = nullptr;
+	ICharacter* Character = nullptr;
 
 	// 共通：レイ原点からの距離
 	float distance = 0.0f;

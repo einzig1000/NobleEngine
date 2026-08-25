@@ -1,6 +1,6 @@
 #include "DirectXManager.h"
 #include <Utilities/Logger/Logger.h>
-#include <DirectX/Resource/Dx12ResourceUtilities.h>
+#include <DirectX/ResourceUtilities/ResourceUtilities.h>
 
 namespace
 {
@@ -19,6 +19,8 @@ namespace
 
 DirectXManager::DirectXManager(HWND hwnd)
 {
+    Log("コンストラクタ実行開始 : DirectXManager");
+
     deviceManager = std::make_unique<DeviceManager>();
     commandContextManager = std::make_unique<CommandContextManager>(deviceManager->GetDevice());
     descriptorHeapManager = std::make_unique<DescriptorHeapManager>(deviceManager->GetDevice());
@@ -28,7 +30,7 @@ DirectXManager::DirectXManager(HWND hwnd)
     synchronizationManager = std::make_unique<SynchronizationManager>(deviceManager->GetDevice());
     frameProfiler = std::make_unique<FrameProfiler>(deviceManager->GetDevice(), commandContextManager->GetCommandQueue());
 
-    Log("コンストラクタ実行成功 : DirectXManager");
+    Log("成功");
 }
 
 DirectXManager::~DirectXManager()

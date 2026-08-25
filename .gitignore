@@ -441,3 +441,15 @@ FodyWeavers.xsd
 *.blender
 *.blender1
 *.aseprite
+
+# ネイティブC++の既定出力先(Platform/Configuration順)。テンプレは逆順しか想定していないため追加
+x64/
+x86/
+Win32/
+
+# 中間生成物の.objとモデルアセットの.objを分離(保険。実体はgenerated/obj配下で既に無視済み)
+*.obj
+!NobleEngine/resources/**/*.obj
+
+# Mapデータ
+NobleEngine/resources/Minecraft/Maps/*.json

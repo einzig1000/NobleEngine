@@ -5,7 +5,7 @@ FixFPS::FixFPS()
 {
 	previousTime_ = std::chrono::steady_clock::now();
 
-	SetTargetFPS(60);
+	SetFPSCap(60);
 }
 
 void FixFPS::Update()
@@ -62,9 +62,9 @@ void FixFPS::Update()
     frameCount_++;
 }
 
-void FixFPS::SetTargetFPS(int32_t targetFPS)
+void FixFPS::SetFPSCap(int32_t fpsCap)
 {
-	targetFPS_ = targetFPS;
-	double targetFrameTime = 1.0 / static_cast<double>(targetFPS_);
+	fpsCap_ = fpsCap;
+	double targetFrameTime = 1.0 / static_cast<double>(fpsCap_);
     targetFrameDuration_ = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<double>(targetFrameTime));
 }

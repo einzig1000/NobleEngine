@@ -3,16 +3,19 @@
 SkyBox::SkyBox()
 {
 	render_ = std::make_unique<RenderObject>();
-	render_->psoConfig_.vs = "resources/shaders/SkyBox/SkyBox.VS.hlsl";
-	render_->psoConfig_.ps = "resources/shaders/SkyBox/SkyBox.PS.hlsl";
-	render_->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/cube/cube.obj");
+	render_->psoConfig_.vs = "assets/shaders/SkyBox/SkyBox.VS.hlsl";
+	render_->psoConfig_.ps = "assets/shaders/SkyBox/SkyBox.PS.hlsl";
 	render_->SetupFromShaders();
-
-	textureID_ = Game::Asset::Texture::Load("resources/prototypes/texture/skybox.dds");
 }
 
 SkyBox::~SkyBox()
 {}
+
+void SkyBox::Initialize()
+{
+	render_->modelID_ = Game::Asset::Model::Load("assets/engine/model/cube/cube.obj");
+	textureID_ = Game::Asset::Texture::Load("assets/application/texture/skybox.dds");
+}
 
 void SkyBox::Update(int32_t cameraID)
 {

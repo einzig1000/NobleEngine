@@ -1,6 +1,6 @@
 #include "ModelLoader.h"
 #include <Utilities/Logger/Logger.h>
-#include <DirectX/Resource/Dx12ResourceUtilities.h>
+#include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include <DirectX/DirectXManager.h>
 #include <AssetManager/Model/ModelBank/ModelBank.h>
 #include <filesystem>
@@ -284,8 +284,8 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     /// スケルトン作成
     modelData->skeleton = CreateSkeleton(modelData->rootNode);
 
-    /// AABB読み込み
-    modelData->aabb = LoadAABB(filePath, modelData->vertices);
+    /// ColliderShape読み込み
+    modelData->colliderShape = LoadColliderShapes(filePath, modelData->vertices);
 
     /// ファイルパスを保存
     modelData->filePath = filePath;
@@ -306,7 +306,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
             modelData->vertexBuffer.Get(),
             UINT(modelData->vertices.size()),
             sizeof(VertexData));
-        modelData->vertexSrvindex = srvAllocation.index;
+        modelData->vertexHeapSlot = srvAllocation.index;
     }
 
     /// インデックスバッファ作成
@@ -334,7 +334,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
             modelData->meshletBuffer.Get(),
             UINT(modelData->meshlets.size()),
             sizeof(ResMeshlet));
-        modelData->meshletSrvIndex = srvAllocation.index;
+        modelData->meshletHeapSlot = srvAllocation.index;
     }
 
 	/// ユニーク頂点インデックスバッファ作成
@@ -349,7 +349,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
             modelData->uniqueVertexIndexBuffer.Get(),
             UINT(modelData->uniqueVertexIndices.size()),
             sizeof(uint32_t));
-        modelData->uniqueVertexIndexSrvIndex = srvAllocation.index;
+        modelData->uniqueVertexIndexHeapSlot = srvAllocation.index;
     }
 
 	/// プリミティブインデックスバッファ作成
@@ -364,7 +364,7 @@ void ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
             modelData->primitiveIndexBuffer.Get(),
             UINT(modelData->primitiveIndices.size()),
             sizeof(uint32_t));
-        modelData->primitiveIndexSrvIndex = srvAllocation.index;
+        modelData->primitiveIndexHeapSlot = srvAllocation.index;
     }
 
 	// modelData->skinClusterDataを作成する
@@ -494,61 +494,90 @@ int32_t ModelLoader::CreateJoint(const Node& node, const std::optional<int32_t>&
 }
 
 
-// AABB.csvの読み込み & 存在しなければ作成,保存
-std::vector<AABB> ModelLoader::LoadAABB(const std::string& filePath, const std::vector<VertexData>& vertices)
+// ColliderShape.csvの読み込み & 存在しなければ作成,保存
+ColliderShape ModelLoader::LoadColliderShapes(const std::string& filePath, const std::vector<VertexData>& vertices)
 {
     auto path = std::filesystem::path(filePath);
     // ディレクトリ名
     std::string directory = path.parent_path().string();
     // 拡張子を除いたファイル名
     std::string stem = path.stem().string();
-	// AABB.csvのパス
+	// ColliderShape.csvのパス
 	std::string csvFilePath = directory + "/" + stem + ".csv";
 
-    std::vector<AABB> aabbs;
+    ColliderShape colliderShapes;
     if (std::filesystem::exists(csvFilePath))
     {
-        aabbs = LoadAABBFromCSV(csvFilePath);
+        colliderShapes = LoadColliderShapesFromCSV(csvFilePath);
     }
     else
     {
-        // 今までの方法でAABBを1つ作成
+        // 全頂点を含む形のデフォルトAABBを1つ作成
+        ColliderShape colliderShape;
         AABB aabb = CreateLocalAABB(vertices);
-        aabbs.push_back(aabb);
-        SaveAABBToCSV(csvFilePath, aabbs);
+        colliderShape.aabbs.push_back(aabb);
+        SaveColliderShapesToCSV(csvFilePath, colliderShapes);
     }
-    return aabbs;
+    return colliderShapes;
 }
-// AABB.csvの読み込み
-std::vector<AABB> ModelLoader::LoadAABBFromCSV(const std::string& filePath)
+// ColliderShape.csvの読み込み
+ColliderShape ModelLoader::LoadColliderShapesFromCSV(const std::string& filePath)
 {
-    std::vector<AABB> aabbs;
+    ColliderShape colliderShapes;
     std::ifstream file(filePath);
-    if (!file.is_open()) return aabbs;
+    if (!file.is_open()) return colliderShapes;
 
     std::string line;
-    // 1行目はヘッダーなのでスキップ
-    std::getline(file, line);
+    enum class Mode { None, Sphere, AABB };
+    Mode mode = Mode::None;
 
     while (std::getline(file, line))
     {
+        if (line.empty()) continue;
+
+        // 構造読みこみ
+        if (line == "center_x,center_y,center_z,radius")
+        {
+            mode = Mode::Sphere;
+            continue;
+        }
+        if (line == "min_x,min_y,min_z,max_x,max_y,max_z")
+        {
+            mode = Mode::AABB;
+            continue;
+        }
+
+		// 実データ読み込み
         std::istringstream ss(line);
         std::string token;
         std::vector<float> values;
+
         while (std::getline(ss, token, ','))
         {
             values.push_back(std::stof(token));
         }
-        if (values.size() == 6)
+
+        if (mode == Mode::Sphere && values.size() == 4)
+        {
+            Sphere sphere;
+            sphere.center = { values[0], values[1], values[2] };
+            sphere.radius = values[3];
+            colliderShapes.spheres.push_back(sphere);
+        }
+        else if (mode == Mode::AABB && values.size() == 6)
         {
             AABB aabb;
             aabb.min = { values[0], values[1], values[2] };
             aabb.max = { values[3], values[4], values[5] };
-            aabbs.push_back(aabb);
+            colliderShapes.aabbs.push_back(aabb);
         }
     }
-    return aabbs;
+
+    return colliderShapes;
 }
+
+
+
 // AABBの作成
 AABB ModelLoader::CreateLocalAABB(const std::vector<VertexData>& vertices)
 {
@@ -585,12 +614,19 @@ AABB ModelLoader::CreateLocalAABB(const std::vector<VertexData>& vertices)
 
     return localAABB;
 }
-// AABB.csvの作成、保存
-void ModelLoader::SaveAABBToCSV(const std::string& filePath, const std::vector<AABB>& aabbs)
+// ColliderShape.csvの作成、保存
+void ModelLoader::SaveColliderShapesToCSV(const std::string& filePath, const ColliderShape& colliderShapes)
 {
     std::ofstream file(filePath);
+
+    file << "center_x,center_y,center_z,radius\n";
+    for (const auto& sphere : colliderShapes.spheres)
+    {
+		file << sphere.center.x << "," << sphere.center.y << "," << sphere.center.z << "," << sphere.radius << "\n";
+    }
+
     file << "min_x,min_y,min_z,max_x,max_y,max_z\n";
-    for (const auto& aabb : aabbs)
+    for (const auto& aabb : colliderShapes.aabbs)
     {
         file << aabb.min.x << "," << aabb.min.y << "," << aabb.min.z << ","
             << aabb.max.x << "," << aabb.max.y << "," << aabb.max.z << "\n";

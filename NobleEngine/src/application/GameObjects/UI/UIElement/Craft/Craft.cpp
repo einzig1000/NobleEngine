@@ -6,9 +6,9 @@ Craft::Craft()
 	// sprites_[0] : アイテムインベントリ
 	sprites_.emplace_back(ElementData{});
 	sprites_[0].render = std::make_unique<RenderObject>();
-	sprites_[0].render->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	sprites_[0].render->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	sprites_[0].render->modelID_ = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	sprites_[0].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
 	sprites_[0].textureID = 0;//ResourceID::GetUITextureID(UITextureID::Inventory3x3);
 	sprites_[0].transforms.scale = Vector3(1.0f, 1.0f, 1.0f);

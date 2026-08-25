@@ -1,15 +1,23 @@
 #pragma once
 #include <Game.h>
+#include <vector>
+
+class EventBus;
 
 class CameraController
 {
 public:
 	CameraController();
-	void Update();
+	void Update(int32_t cameraID);
+
+	int32_t AddCamera(const std::string& cameraName);
+
+	void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; }
 
 private:
+	std::vector<int32_t> cameraIDs_;
 
-
+	EventBus* eventBus_ = nullptr;
 };
 
 

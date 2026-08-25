@@ -15,7 +15,7 @@ ItemDataLoader::~ItemDataLoader()
 void ItemDataLoader::Load()
 {
 	std::vector<std::string> blockKeys;
-	JsonManager::Load("resources/json/BlockConfig.json", "/Keys", blockKeys);
+	JsonManager::Load("assets/application/json/BlockConfig.json", "/Keys", blockKeys);
 
 	for (const std::string& blockIDStr : blockKeys)
 	{
@@ -30,9 +30,9 @@ void ItemDataLoader::Load()
 
 		info.ID = e.value();
 
-		JsonManager::Load("resources/json/BlockConfig.json", "/" + blockIDStr + "/color", info.color);
-		JsonManager::Load("resources/json/BlockConfig.json", "/" + blockIDStr + "/durability", info.durability);
-		JsonManager::Load("resources/json/BlockConfig.json", "/" + blockIDStr + "/isTransparent", info.isTransparent);
+		JsonManager::Load("assets/application/json/BlockConfig.json", "/" + blockIDStr + "/color", info.color);
+		JsonManager::Load("assets/application/json/BlockConfig.json", "/" + blockIDStr + "/durability", info.durability);
+		JsonManager::Load("assets/application/json/BlockConfig.json", "/" + blockIDStr + "/isTransparent", info.isTransparent);
 
 		bank_->SetBlockInfo(info.ID, info);
 	}
@@ -40,7 +40,7 @@ void ItemDataLoader::Load()
 	bank_->CreateBlockInfoTable();
 
 	std::vector<std::string> toolKeys;
-	JsonManager::Load("resources/json/ToolConfig.json", "/Keys", toolKeys);
+	JsonManager::Load("assets/application/json/ToolConfig.json", "/Keys", toolKeys);
 
 	for (const std::string& toolIDStr : toolKeys)
 	{
@@ -54,13 +54,13 @@ void ItemDataLoader::Load()
 		ToolInfo info;
 		ToolID toolID = e.value();
 
-		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/durability", info.durability);
-		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
-		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/miningSpeed", info.miningSpeed);
-		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/modelID", info.modelPath);
+		JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/durability", info.durability);
+		JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
+		JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/miningSpeed", info.miningSpeed);
+		JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/modelID", info.modelPath);
 		info.modelID = Game::Asset::Model::Load(info.modelPath);
-		info.aabb = Game::Asset::Model::GetData(info.modelID)->aabb;
-		JsonManager::Load("resources/json/ToolConfig.json", "/" + toolIDStr + "/textureID", info.texturePath);
+		info.colliderShape = Game::Asset::Model::GetData(info.modelID)->colliderShape;
+		JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/textureID", info.texturePath);
 		info.textureID = Game::Asset::Texture::Load(info.texturePath);
 	
 		bank_->SetToolInfo(toolID, info);
@@ -68,7 +68,7 @@ void ItemDataLoader::Load()
 
 
 	std::vector<std::string> itemKeys;
-	JsonManager::Load("resources/json/ItemConfig.json", "/Keys", itemKeys);
+	JsonManager::Load("assets/application/json/ItemConfig.json", "/Keys", itemKeys);
 
 	for (const std::string& itemIDStr : itemKeys)
 	{
@@ -87,10 +87,10 @@ void ItemDataLoader::Load()
 		std::string toolIDStr;
 		std::string objectIDStr;
 
-		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/itemGenre", itemGenreStr);
-		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/blockID", blockIDStr);
-		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/toolID", toolIDStr);
-		JsonManager::Load("resources/json/ItemConfig.json", "/" + itemIDStr + "/objectID", objectIDStr);
+		JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/itemGenre", itemGenreStr);
+		JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/blockID", blockIDStr);
+		JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/toolID", toolIDStr);
+		JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/objectID", objectIDStr);
 
 		auto genreEnum = magic_enum::enum_cast<ItemGenre>(itemGenreStr);
 		if (!genreEnum.has_value())

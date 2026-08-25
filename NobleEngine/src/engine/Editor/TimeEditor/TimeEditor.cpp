@@ -18,10 +18,10 @@ void TimeEditor::DrawImGui()
     ImGui::Text("CPU FPS        : %5.1f  (%4.1f ms)", frameProfiler_->GetCpuFPS(), frameProfiler_->GetCpuDeltaTimeMs());
     ImGui::Text("GPU FPS        : %5.1f  (%4.1f ms)", frameProfiler_->GetGpuFPS(), frameProfiler_->GetGpuDeltaTimeMs());
     ImGui::Text("Frame Count    : %d", fixFPS_->GetFrameCount());
-	static int32_t targetFPS = 60;
-    if (ImGui::DragInt("Target FPS", &targetFPS, 1.0f, 12, 60))
+	static int32_t targetFPSCap = 60;
+    if (ImGui::DragInt("Target fpsCap", &targetFPSCap, 1.0f, 12, 60))
     {
-        fixFPS_->SetTargetFPS(targetFPS);
+        fixFPS_->SetFPSCap(targetFPSCap);
     }
     ImGui::End();
 }

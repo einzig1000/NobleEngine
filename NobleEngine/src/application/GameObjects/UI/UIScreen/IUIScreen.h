@@ -4,8 +4,7 @@
 #include <GameObjects/UI/UIData.h>
 
 class IUIElement;
-class Player;
-class MapManager;
+class EventBus;
 
 class IUIScreen
 {
@@ -21,6 +20,8 @@ public:
 
 	virtual UIMode GetNextUIMode() const { return nextUIMode_; }
 
+	virtual void SetEventBus(EventBus* eventBus);
+
 	// エレメントの追加
 	virtual void AddElement(IUIElement* element) { uiElements_.push_back(element); }
 
@@ -29,7 +30,10 @@ public:
 
 
 protected:
-	UIMode nextUIMode_ = UIMode::None;
+	EventBus* eventBus_ = nullptr;
+
+	UIMode nextUIMode_ = UIMode::MAX;
+
 	std::vector<UIElementType> elementTypes_;	// この画面で使用するエレメントの種類
 	std::vector<IUIElement*> uiElements_;
 };

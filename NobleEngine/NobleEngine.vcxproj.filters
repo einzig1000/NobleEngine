@@ -48,7 +48,7 @@
     <ClCompile Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DirectX\Resource\Dx12ResourceUtilities.cpp">
+    <ClCompile Include="src\engine\DirectX\ResourceUtilities\ResourceUtilities.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\CommandContextManager\CommandContextManager.cpp">
@@ -64,9 +64,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp">
@@ -108,34 +105,34 @@
     <ClCompile Include="src\engine\AssetManager\AssetManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\Converter\AngleConverter\AngleConverter.cpp">
+    <ClCompile Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\Converter\ColorConverter\ColorConverter.cpp">
+    <ClCompile Include="src\engine\Utilities\Converter\ColorConverter\ColorConverter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\Converter\CoordinateConverter\CoordinateConverter.cpp">
+    <ClCompile Include="src\engine\Utilities\Converter\CoordinateConverter\CoordinateConverter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\Converter\StringConverter\StringConverter.cpp">
+    <ClCompile Include="src\engine\Utilities\Converter\StringConverter\StringConverter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\Easing\Easing.cpp">
+    <ClCompile Include="src\engine\Utilities\Easing\Easing.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\Json\JsonManager.cpp">
+    <ClCompile Include="src\engine\Utilities\Json\JsonManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\Logger\Logger.cpp">
+    <ClCompile Include="src\engine\Utilities\Logger\Logger.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\Random\Random.cpp">
+    <ClCompile Include="src\engine\Utilities\Random\Random.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\functions.cpp">
+    <ClCompile Include="src\engine\Utilities\functions.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Utilities\PerlinNoise.cpp">
+    <ClCompile Include="src\engine\Utilities\PerlinNoise.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Window\WindowManager.cpp">
@@ -150,9 +147,6 @@
     <ClCompile Include="src\application\GameManager\Phase\IPhase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -165,13 +159,13 @@
     <ClCompile Include="src\engine\AssetManager\Animation\AnimationManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\TestAnimation\TestAnimation.cpp">
+    <ClCompile Include="src\application\Test\TestAnimation\TestAnimation.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\TestParticle\TestParticle.cpp">
+    <ClCompile Include="src\application\Test\TestParticle\TestParticle.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\TestLine\LineDrawer.cpp">
+    <ClCompile Include="src\application\Test\TestLine\LineDrawer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\AssetManager\Model\ModelLoader\ModelLoader.cpp">
@@ -204,13 +198,7 @@
     <ClCompile Include="src\application\GameObjects\Map\MapManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\Map\Chunk\Chunk.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="src\application\GameObjects\Map\Chunk\Block\Block.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="src\application\GameObjects\Map\Chunk\Block\BlockConfig.cpp">
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp">
@@ -220,9 +208,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp">
@@ -315,7 +300,7 @@
     <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\Character\BaseCharacter.cpp">
+    <ClCompile Include="src\application\GameObjects\Character\ICharacter.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Character\Player\Player.cpp">
@@ -399,9 +384,6 @@
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\Map\Miner\Miner.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -409,6 +391,21 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Character\RangeMining\RangeMining.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\FaceDataPagePool\FaceDataPagePool.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Character\CharacterManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\AssetManager\Font\FontManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\Terrain.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\EventBus\EventBus.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -449,7 +446,7 @@
     <ClInclude Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DirectX\Resource\Dx12ResourceUtilities.h">
+    <ClInclude Include="src\engine\DirectX\ResourceUtilities\ResourceUtilities.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\CommandContextManager\CommandContextManager.h">
@@ -465,9 +462,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\DirectX\ViewportScissorManager\ViewportScissorManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h">
@@ -509,34 +503,34 @@
     <ClInclude Include="src\engine\AssetManager\AssetManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\Converter\AngleConverter\AngleConverter.h">
+    <ClInclude Include="src\engine\Utilities\Converter\AngleConverter\AngleConverter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\Converter\ColorConverter\ColorConverter.h">
+    <ClInclude Include="src\engine\Utilities\Converter\ColorConverter\ColorConverter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\Converter\CoordinateConverter\CoordinateConverter.h">
+    <ClInclude Include="src\engine\Utilities\Converter\CoordinateConverter\CoordinateConverter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\Converter\StringConverter\StringConverter.h">
+    <ClInclude Include="src\engine\Utilities\Converter\StringConverter\StringConverter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\Easing\Easing.h">
+    <ClInclude Include="src\engine\Utilities\Easing\Easing.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\Json\JsonManager.h">
+    <ClInclude Include="src\engine\Utilities\Json\JsonManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\Logger\Logger.h">
+    <ClInclude Include="src\engine\Utilities\Logger\Logger.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\Random\Random.h">
+    <ClInclude Include="src\engine\Utilities\Random\Random.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\functions.h">
+    <ClInclude Include="src\engine\Utilities\functions.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Utilities\PerlinNoise.h">
+    <ClInclude Include="src\engine\Utilities\PerlinNoise.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Window\WindowManager.h">
@@ -551,9 +545,6 @@
     <ClInclude Include="src\application\GameManager\Phase\IPhase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="src\application\GameManager\Phase\TitlePhase\TitlePhase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -566,16 +557,16 @@
     <ClInclude Include="src\engine\AssetManager\Animation\AnimationManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\TestAnimation\TestAnimation.h">
+    <ClInclude Include="src\application\Test\TestAnimation\TestAnimation.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\TestParticle\TestParticle.h">
+    <ClInclude Include="src\application\Test\TestParticle\TestParticle.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\EngineDefinition\EngineConstexprs.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\TestLine\LineDrawer.h">
+    <ClInclude Include="src\application\Test\TestLine\LineDrawer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\AssetManager\Model\ModelLoader\ModelLoader.h">
@@ -608,13 +599,7 @@
     <ClInclude Include="src\application\GameObjects\Map\MapManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\Map\Chunk\Chunk.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\GameObjects\Map\Chunk\Block\Block.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\GameObjects\Map\Chunk\Block\BlockConfig.h">
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\ResourceLoader\ResourceID.h">
@@ -624,9 +609,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\GameManager\Phase\Test2Phase\Test2Phase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Editor\EngineEditor.h">
@@ -1169,7 +1151,7 @@
     <ClInclude Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\Character\BaseCharacter.h">
+    <ClInclude Include="src\application\GameObjects\Character\ICharacter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Character\Player\Player.h">
@@ -1256,9 +1238,6 @@
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\Map\Miner\Miner.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="src\application\GameObjects\Character\SwingMining\SwingMining.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1266,6 +1245,24 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\FaceDataPagePool\FaceDataPagePool.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Character\CharacterManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\AssetManager\Font\FontManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\stb\stb_truetype.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\Terrain.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\EventBus\EventBus.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

@@ -48,62 +48,62 @@ TestPhase::TestPhase()
 	//renderTargetNames_["postEffect4"] = Game::Asset::RenderTexture::CreateRenderTexture(uint32_t(renderTargetSizes_["postEffect4"].x), uint32_t(renderTargetSizes_["postEffect4"].y), "postEffect4");
 
 	// テクスチャ読み込み
-	t_uvChecker = Game::Asset::Texture::Load("resources/prototypes/texture/uvChecker.png");
-	t_monsterBall_ = Game::Asset::Texture::Load("resources/prototypes/texture/monsterBall.png");
-	t_white1x1_ = Game::Asset::Texture::Load("resources/prototypes/texture/white1x1.png");
-	t_dds_ = Game::Asset::Texture::Load("resources/prototypes/texture/rostock_laage_airport_4k.dds");
+	t_uvChecker = Game::Asset::Texture::Load("assets/engine/texture/uvChecker.png");
+	t_monsterBall_ = Game::Asset::Texture::Load("assets/engine/texture/monsterBall.png");
+	t_white1x1_ = Game::Asset::Texture::Load("assets/engine/texture/white1x1.png");
+	t_dds_ = Game::Asset::Texture::Load("assets/engine/texture/rostock_laage_airport_4k.dds");
 
 	// モデル読み込み
-	int32_t model1 = Game::Asset::Model::Load("resources/prototypes/model/cube/cube.obj");
-	int32_t model2 = Game::Asset::Model::Load("resources/prototypes/model/sphere/sphere.obj");
-	int32_t model3 = Game::Asset::Model::Load("resources/prototypes/model/plane/plane.obj");
+	int32_t model1 = Game::Asset::Model::Load("assets/engine/model/cube/cube.obj");
+	int32_t model2 = Game::Asset::Model::Load("assets/engine/model/sphere/sphere.obj");
+	int32_t model3 = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 
 	// オーディオ読み込み
-	audio1 = Game::Asset::Audio::Load("resources/prototypes/audio/BGM/InGame.mp3");
-	audio2 = Game::Asset::Audio::Load("resources/prototypes/audio/SE/バトル用/氷魔法1.mp3");
+	audio1 = Game::Asset::Audio::Load("assets/engine/audio/BGM/InGame.mp3");
+	audio2 = Game::Asset::Audio::Load("assets/engine/audio/SE/バトル用/氷魔法1.mp3");
 
 
 	//RenderObjectData data1;
 	//data1.name = "cbvOnly";
-	//data1.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//data1.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	//data1.modelPath = "resources/prototypes/model/cube/cube.obj";
+	//data1.config.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data1.config.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data1.modelPath = "assets/engine/model/cube/cube.obj";
 	//data1.out.push_back("mainL");
 
 	//renderObjectData_.push_back(data1);
 
 	//RenderObjectData data2;
 	//data2.name = "cbvAndSrv";
-	//data2.config.ps = "resources/shaders/SimpleModel/SimpleModels.PS.hlsl";
-	//data2.config.vs = "resources/shaders/SimpleModel/SimpleModels.VS.hlsl";
-	//data2.modelPath = "resources/prototypes/model/cube/cube.obj";
+	//data2.config.ps = "assets/shaders/SimpleModel/SimpleModels.PS.hlsl";
+	//data2.config.vs = "assets/shaders/SimpleModel/SimpleModels.VS.hlsl";
+	//data2.modelPath = "assets/engine/model/cube/cube.obj";
 	//data2.out.push_back("mainR");
 
 	//renderObjectData_.push_back(data2);
 
 	//RenderObjectData data3;
 	//data3.name = "skybox";
-	//data3.config.ps = "resources/shaders/SkyBox/SkyBox.PS.hlsl";
-	//data3.config.vs = "resources/shaders/SkyBox/SkyBox.VS.hlsl";
-	//data3.modelPath = "resources/prototypes/model/sphere/sphere.obj";
+	//data3.config.ps = "assets/shaders/SkyBox/SkyBox.PS.hlsl";
+	//data3.config.vs = "assets/shaders/SkyBox/SkyBox.VS.hlsl";
+	//data3.modelPath = "assets/engine/model/sphere/sphere.obj";
 	//data3.out.push_back("minimapL");
 
 	//renderObjectData_.push_back(data3);
 
 	//RenderObjectData data4;
 	//data4.name = "PunctualLight";
-	//data4.config.ps = "resources/shaders/PunctualLight/PunctualLight.PS.hlsl";
-	//data4.config.vs = "resources/shaders/PunctualLight/PunctualLight.VS.hlsl";
-	//data4.modelPath = "resources/prototypes/model/sphere/sphere.obj";
+	//data4.config.ps = "assets/shaders/PunctualLight/PunctualLight.PS.hlsl";
+	//data4.config.vs = "assets/shaders/PunctualLight/PunctualLight.VS.hlsl";
+	//data4.modelPath = "assets/engine/model/sphere/sphere.obj";
 	//data4.out.push_back("minimapR");
 
 	//renderObjectData_.push_back(data4);
 
 	//RenderObjectData data5;
 	//data5.name = "postEffects1";
-	//data5.config.ps = "resources/shaders/FullScreen/RadialBlue.PS.hlsl";
-	//data5.config.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//data5.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data5.config.ps = "assets/shaders/FullScreen/RadialBlue.PS.hlsl";
+	//data5.config.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	//data5.modelPath = "assets/engine/model/plane/plane.obj";
 	//data5.config.dsvFormatID = DSVFormatID::Unknown;
 	//data5.out.push_back("minimapR");
 
@@ -111,9 +111,9 @@ TestPhase::TestPhase()
 
 	//RenderObjectData data6;
 	//data6.name = "postEffects2";
-	//data6.config.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
-	//data6.config.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//data6.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data6.config.ps = "assets/shaders/FullScreen/Vignette.PS.hlsl";
+	//data6.config.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	//data6.modelPath = "assets/engine/model/plane/plane.obj";
 	//data6.config.dsvFormatID = DSVFormatID::Unknown;
 	//data6.out.push_back("minimapR");
 
@@ -121,9 +121,9 @@ TestPhase::TestPhase()
 
 	//RenderObjectData data7;
 	//data7.name = "postEffects3";
-	//data7.config.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
-	//data7.config.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//data7.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data7.config.ps = "assets/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
+	//data7.config.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	//data7.modelPath = "assets/engine/model/plane/plane.obj";
 	//data7.config.dsvFormatID = DSVFormatID::Unknown;
 	//data7.out.push_back("minimapR");
 
@@ -131,9 +131,9 @@ TestPhase::TestPhase()
 
 	//RenderObjectData data8;
 	//data8.name = "postEffects3";
-	//data8.config.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
-	//data8.config.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//data8.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data8.config.ps = "assets/shaders/FullScreen/CopyImage.PS.hlsl";
+	//data8.config.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	//data8.modelPath = "assets/engine/model/plane/plane.obj";
 	//data8.config.dsvFormatID = DSVFormatID::Unknown;
 	//data8.out.push_back("minimapR");
 
@@ -141,9 +141,9 @@ TestPhase::TestPhase()
 
 	//RenderObjectData data9;
 	//data9.name = "screenDraw1";
-	//data9.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//data9.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	//data9.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data9.config.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data9.config.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data9.modelPath = "assets/engine/model/plane/plane.obj";
 	//data9.config.dsvFormatID = DSVFormatID::Unknown;
 	//data9.out.push_back("minimapR");
 
@@ -151,9 +151,9 @@ TestPhase::TestPhase()
 
 	//RenderObjectData data10;
 	//data10.name = "screenDraw1";
-	//data10.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//data10.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	//data10.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data10.config.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data10.config.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data10.modelPath = "assets/engine/model/plane/plane.obj";
 	//data10.config.dsvFormatID = DSVFormatID::Unknown;
 	//data10.out.push_back("minimapR");
 
@@ -161,9 +161,9 @@ TestPhase::TestPhase()
 
 	//RenderObjectData data11;
 	//data11.name = "screenDraw1";
-	//data11.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//data11.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	//data11.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data11.config.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data11.config.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data11.modelPath = "assets/engine/model/plane/plane.obj";
 	//data11.config.dsvFormatID = DSVFormatID::Unknown;
 	//data11.out.push_back("minimapR");
 
@@ -171,9 +171,9 @@ TestPhase::TestPhase()
 
 	//RenderObjectData data12;
 	//data12.name = "screenDraw1";
-	//data12.config.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//data12.config.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	//data12.modelPath = "resources/prototypes/model/plane/plane.obj";
+	//data12.config.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//data12.config.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//data12.modelPath = "assets/engine/model/plane/plane.obj";
 	//data12.config.dsvFormatID = DSVFormatID::Unknown;
 	//data12.out.push_back("minimapR");
 
@@ -183,94 +183,94 @@ TestPhase::TestPhase()
 
 	//cbvOnly_ = std::make_unique<RenderObject>();
 	//cbvOnly_->modelID_ = model1;
-	//cbvOnly_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//cbvOnly_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//cbvOnly_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//cbvOnly_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	//cbvOnly_->SetupFromShaders();
 
 	//cbvAndSrv_ = std::make_unique<RenderObject>();
 	//cbvAndSrv_->modelID_ = model1;
-	//cbvAndSrv_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModels.PS.hlsl";
-	//cbvAndSrv_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModels.VS.hlsl";
+	//cbvAndSrv_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModels.PS.hlsl";
+	//cbvAndSrv_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModels.VS.hlsl";
 	//cbvAndSrv_->instanceNum_ = 10;
 	//cbvAndSrv_->SetupFromShaders();
 
 	//line_ = std::make_unique<RenderObject>();
-	//line_->psoConfig_.ps = "resources/shaders/Line/Line.PS.hlsl";
-	//line_->psoConfig_.vs = "resources/shaders/Line/Line.VS.hlsl";
+	//line_->psoConfig_.ps = "assets/shaders/Line/Line.PS.hlsl";
+	//line_->psoConfig_.vs = "assets/shaders/Line/Line.VS.hlsl";
 	//line_->SetupFromShaders();
 
 	//skybox_ = std::make_unique<RenderObject>();
 	//skybox_->modelID_ = model1;
-	//skybox_->psoConfig_.ps = "resources/shaders/SkyBox/SkyBox.PS.hlsl";
-	//skybox_->psoConfig_.vs = "resources/shaders/SkyBox/SkyBox.VS.hlsl";
+	//skybox_->psoConfig_.ps = "assets/shaders/SkyBox/SkyBox.PS.hlsl";
+	//skybox_->psoConfig_.vs = "assets/shaders/SkyBox/SkyBox.VS.hlsl";
 	//skybox_->SetupFromShaders();
 
 	//PunctualLight_ = std::make_unique<RenderObject>();
 	//PunctualLight_->modelID_ = model2;
-	//PunctualLight_->psoConfig_.ps = "resources/shaders/PunctualLight/PunctualLight.PS.hlsl";
-	//PunctualLight_->psoConfig_.vs = "resources/shaders/PunctualLight/PunctualLight.VS.hlsl";
+	//PunctualLight_->psoConfig_.ps = "assets/shaders/PunctualLight/PunctualLight.PS.hlsl";
+	//PunctualLight_->psoConfig_.vs = "assets/shaders/PunctualLight/PunctualLight.VS.hlsl";
 	//PunctualLight_->SetupFromShaders();
 
 	//environmentMap_ = std::make_unique<RenderObject>();
 	//environmentMap_->modelID_ = model2;
-	//environmentMap_->psoConfig_.ps = "resources/shaders/EnvironmentMap/EnvironmentMap.PS.hlsl";
-	//environmentMap_->psoConfig_.vs = "resources/shaders/EnvironmentMap/EnvironmentMap.VS.hlsl";
+	//environmentMap_->psoConfig_.ps = "assets/shaders/EnvironmentMap/EnvironmentMap.PS.hlsl";
+	//environmentMap_->psoConfig_.vs = "assets/shaders/EnvironmentMap/EnvironmentMap.VS.hlsl";
 	//environmentMap_->SetupFromShaders();
 
 	//postEffects_[0] = std::make_unique<RenderObject>();
 	//postEffects_[0]->modelID_ = model3;
-	//postEffects_[0]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//postEffects_[0]->psoConfig_.ps = "resources/shaders/FullScreen/RadialBlue.PS.hlsl";
+	//postEffects_[0]->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	//postEffects_[0]->psoConfig_.ps = "assets/shaders/FullScreen/RadialBlue.PS.hlsl";
 	//postEffects_[0]->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	//postEffects_[0]->SetupFromShaders();
 
 	//postEffects_[1] = std::make_unique<RenderObject>();
 	//postEffects_[1]->modelID_ = model3;
-	//postEffects_[1]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//postEffects_[1]->psoConfig_.ps = "resources/shaders/FullScreen/Vignette.PS.hlsl";
+	//postEffects_[1]->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	//postEffects_[1]->psoConfig_.ps = "assets/shaders/FullScreen/Vignette.PS.hlsl";
 	//postEffects_[1]->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	//postEffects_[1]->SetupFromShaders();
 
 	//postEffects_[2] = std::make_unique<RenderObject>();
 	//postEffects_[2]->modelID_ = model3;
-	//postEffects_[2]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//postEffects_[2]->psoConfig_.ps = "resources/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
+	//postEffects_[2]->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	//postEffects_[2]->psoConfig_.ps = "assets/shaders/FullScreen/LuminanceBasedOutline.PS.hlsl";
 	//postEffects_[2]->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	//postEffects_[2]->SetupFromShaders();
 
 	//postEffects_[3] = std::make_unique<RenderObject>();
 	//postEffects_[3]->modelID_ = model3;
-	//postEffects_[3]->psoConfig_.vs = "resources/shaders/FullScreen/FullScreen.VS.hlsl";
-	//postEffects_[3]->psoConfig_.ps = "resources/shaders/FullScreen/CopyImage.PS.hlsl";
+	//postEffects_[3]->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	//postEffects_[3]->psoConfig_.ps = "assets/shaders/FullScreen/CopyImage.PS.hlsl";
 	//postEffects_[3]->psoConfig_.dsvFormatID = DSVFormatID::Unknown;
 	//postEffects_[3]->SetupFromShaders();
 
 	//screenDrawObjectMain1_ = std::make_unique<RenderObject>();
 	//screenDrawObjectMain1_->modelID_ = model3;
 	////screenDrawObjectMain1_->psoConfig_.blendID = BlendStateID::Normal2;
-	//screenDrawObjectMain1_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//screenDrawObjectMain1_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//screenDrawObjectMain1_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//screenDrawObjectMain1_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	//screenDrawObjectMain1_->SetupFromShaders();
 
 	//screenDrawObjectMain2_ = std::make_unique<RenderObject>();
 	//screenDrawObjectMain2_->modelID_ = model3;
 	////screenDrawObjectMain2_->psoConfig_.blendID = BlendStateID::Normal2;
-	//screenDrawObjectMain2_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//screenDrawObjectMain2_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//screenDrawObjectMain2_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//screenDrawObjectMain2_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	//screenDrawObjectMain2_->SetupFromShaders();
 
 	//screenDrawObjectMiniMap1_ = std::make_unique<RenderObject>();
 	//screenDrawObjectMiniMap1_->modelID_ = model3;
 	////screenDrawObjectMiniMap1_->psoConfig_.blendID = BlendStateID::Normal2;
-	//screenDrawObjectMiniMap1_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//screenDrawObjectMiniMap1_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//screenDrawObjectMiniMap1_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//screenDrawObjectMiniMap1_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	//screenDrawObjectMiniMap1_->SetupFromShaders();
 
 	//screenDrawObjectMiniMap2_ = std::make_unique<RenderObject>();
 	//screenDrawObjectMiniMap2_->modelID_ = model3;
 	////screenDrawObjectMiniMap2_->psoConfig_.blendID = BlendStateID::Normal2;
-	//screenDrawObjectMiniMap2_->psoConfig_.ps = "resources/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	//screenDrawObjectMiniMap2_->psoConfig_.vs = "resources/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	//screenDrawObjectMiniMap2_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
+	//screenDrawObjectMiniMap2_->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	//screenDrawObjectMiniMap2_->SetupFromShaders();
 
 
@@ -776,9 +776,9 @@ void TestPhase::DrawImGui()
 		if (ImGui::BeginTabItem("mouse Test"))
 		{
 			ImGui::Text("Mouse Position: (%.1f, %.1f)", Game::IO::Mouse::Get2DPosition().x, Game::IO::Mouse::Get2DPosition().y);
-			ImGui::Text("Mouse World Position: (%.1f, %.1f, %.1f)", Game::IO::Mouse::Get3DPosition(0).x, Game::IO::Mouse::Get3DPosition(0).y, Game::IO::Mouse::Get3DPosition(0).z);
-			ImGui::Text("Mouse Ray Origin: (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(0).origin.x, Game::IO::Mouse::GetRay(0).origin.y, Game::IO::Mouse::GetRay(0).origin.z);
-			ImGui::Text("Mouse Ray Diff  : (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(0).diff.x, Game::IO::Mouse::GetRay(0).diff.y, Game::IO::Mouse::GetRay(0).diff.z);
+			//ImGui::Text("Mouse World Position: (%.1f, %.1f, %.1f)", Game::IO::Mouse::Get3DPosition(0).x, Game::IO::Mouse::Get3DPosition(0).y, Game::IO::Mouse::Get3DPosition(0).z);
+			//ImGui::Text("Mouse Ray Origin: (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(0).origin.x, Game::IO::Mouse::GetRay(0).origin.y, Game::IO::Mouse::GetRay(0).origin.z);
+			//ImGui::Text("Mouse Ray Diff  : (%.1f, %.1f, %.1f)", Game::IO::Mouse::GetRay(0).diff.x, Game::IO::Mouse::GetRay(0).diff.y, Game::IO::Mouse::GetRay(0).diff.z);
 			ImGui::Text("Mouse Wheel: %d", Game::IO::Mouse::GetWheel());
 
 			ImGui::Text("Mouse Buttons:");
@@ -1017,7 +1017,7 @@ void TestPhase::DrawImGui()
 
 void TestPhase::Load_renderTarget()
 {
-	const std::string filePath = "resources/json/TestPhase/";
+	const std::string filePath = "assets/application/json/TestPhase/";
 
 	const std::string fileName = "renderTargets.json";
 
@@ -1050,7 +1050,7 @@ void TestPhase::Load_renderTarget()
 
 void TestPhase::Save_renderTarget()
 {
-	const std::string filePath = "resources/json/TestPhase/";
+	const std::string filePath = "assets/application/json/TestPhase/";
 
 	const std::string fileName = "renderTargets.json";
 
@@ -1072,7 +1072,7 @@ void TestPhase::Save_renderTarget()
 
 void TestPhase::Load_camera()
 {
-	const std::string filePath = "resources/json/TestPhase/";
+	const std::string filePath = "assets/application/json/TestPhase/";
 
 	const std::string fileName = "cameras.json";
 
@@ -1110,7 +1110,7 @@ void TestPhase::Load_camera()
 
 void TestPhase::Save_camera()
 {
-	const std::string filePath = "resources/json/TestPhase/";
+	const std::string filePath = "assets/application/json/TestPhase/";
 
 	const std::string fileName = "cameras.json";
 
@@ -1133,7 +1133,7 @@ void TestPhase::Save_camera()
 
 void TestPhase::Load_renderObject()
 {
-	const std::string filePath = "resources/json/TestPhase/";
+	const std::string filePath = "assets/application/json/TestPhase/";
 
 	const std::string fileName = "renderObjects.json";
 
@@ -1165,7 +1165,7 @@ void TestPhase::Load_renderObject()
 
 void TestPhase::Save_renderObject()
 {
-	//const std::string filePath = "resources/json/TestPhase/";
+	//const std::string filePath = "assets/application/json/TestPhase/";
 
 	//const std::string fileName = "renderObjects.json";
 

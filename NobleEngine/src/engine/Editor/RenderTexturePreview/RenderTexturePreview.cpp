@@ -60,7 +60,7 @@ void RenderTexturePreview::DrawImGui()
 	{
 		fullscreen_ = !fullscreen_;
 	}
-	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+	if (renderTargetIndex_ != 22193211 && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 	{
 		ImGui::SetDragDropPayload("DAD_TEXTURE_ID", &renderTargets[renderTargetIndex_]->colorsrvAlloc.index, sizeof(int32_t));
 		ImGui::Text("Texture ID %d", renderTargets[renderTargetIndex_]->colorsrvAlloc.index);
