@@ -453,3 +453,7 @@ Win32/
 
 # Mapデータ
 NobleEngine/resources/Minecraft/Maps/*.json
+
+# externals配下のvendorライブラリがDebug/Release命名のため、上のVSテンプレ由来ルールに巻き込まれて除外されるのを復活
+!NobleEngine/externals/assimp/lib/Debug/
+!NobleEngine/externals/assimp/lib/Release/
