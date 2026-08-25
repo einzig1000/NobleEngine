@@ -438,8 +438,8 @@ FodyWeavers.xsd
 # DirectXTexのシェーダーコンパイル後の生成ファイル
 *.inc
 # 制作アプリ関係を除外
-*.blender
-*.blender1
+*.blend
+*.blend1
 *.aseprite
 
 # ネイティブC++の既定出力先(Platform/Configuration順)。テンプレは逆順しか想定していないため追加
@@ -449,10 +449,7 @@ Win32/
 
 # 中間生成物の.objとモデルアセットの.objを分離(保険。実体はgenerated/obj配下で既に無視済み)
 *.obj
-!NobleEngine/resources/**/*.obj
-
-# Mapデータ
-NobleEngine/resources/Minecraft/Maps/*.json
+!NobleEngine/assets/**/*.obj
 
 # externals配下のvendorライブラリがDebug/Release命名のため、上のVSテンプレ由来ルールに巻き込まれて除外されるのを復活
 !NobleEngine/externals/assimp/lib/Debug/
