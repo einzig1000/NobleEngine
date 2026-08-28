@@ -39,19 +39,6 @@
     "durability": 20.0,
     "isTransparent": false
   },
-  "Keys": [
-    "Air",
-    "Stone",
-    "Iron",
-    "Gold",
-    "Diamond",
-    "Bedrock",
-    "Glass",
-    "Dirt",
-    "Grass",
-    "Wood",
-    "Leaf"
-  ],
   "Leaf": {
     "color": 699334911,
     "durability": 8.0,

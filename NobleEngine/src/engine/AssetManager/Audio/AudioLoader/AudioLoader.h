@@ -27,7 +27,7 @@ public:
 class AudioLoader
 {
 public:
-    AudioLoader(AudioBank* bank, IXAudio2* pXAudio2);
+    AudioLoader(AudioBank* bank);
     ~AudioLoader();
 
     // オーディオ読み込み
@@ -35,7 +35,6 @@ public:
 
 private:
 	AudioBank* bank_;
-    IXAudio2* pXAudio2_;
 
     VoiceCallback voiceCallback;
 

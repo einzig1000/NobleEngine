@@ -24,7 +24,7 @@ Pause::Pause()
 	sprites_[1].transforms.scale = Vector3(1.0f, 1.0f, 1.0f);
 	sprites_[1].transforms.translate = Vector3(640.0f, 325.0f, 0.0f);
 
-	TextureData* textureData = Game::Asset::Texture::GetData(sprites_[1].textureID);
+	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[1].textureID);
 	//buttonSize_ = Vector2(textureData->metadata.width, textureData->metadata.height);
 }
 

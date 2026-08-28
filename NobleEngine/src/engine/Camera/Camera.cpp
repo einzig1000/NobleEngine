@@ -14,15 +14,15 @@
 
 Camera::Camera()
 {
-    enableControl_ = true;
+	enableControl_ = true;
 
-    fovY_ = 0.65f;
+	fovY_ = 0.65f;
 
-    screenSize_ = Vector2{ float(WindowManager::winWidth_) , float(WindowManager::winHeight_) };
+	screenSize_ = Vector2{ float(WindowManager::winWidth_) , float(WindowManager::winHeight_) };
 
-    sphericalEye_.radius = 20.0f;
+	sphericalEye_.radius = 20.0f;
 	sphericalEye_.theta = std::numbers::pi_v<float> / 2.0f;
-    sphericalEye_.phi = 0;
+	sphericalEye_.phi = 0;
 
 	//backToFrontMatrix_.m[0][0] = -1.00000000f;
 	//backToFrontMatrix_.m[0][1] = 0.00000000f;
@@ -45,7 +45,7 @@ Camera::Camera()
 	//backToFrontMatrix_.m[2][3] = 0.00000000f;
 	backToFrontMatrix_ = Matrix4x4::MakeRotateYMatrix(3.14159265358979323846f);
 
-    Resize();
+	Resize();
 }
 
 Camera::~Camera()
@@ -54,17 +54,17 @@ Camera::~Camera()
 
 void Camera::Update()
 {
-    switch (cameraMode_)
-    {
-    case CameraMode_ORBIT_FPS::ORBIT:
-        Update_Orbit();
-        break;
-    case CameraMode_ORBIT_FPS::FPS:
-        Update_FPS();
-        break;
-    default:
-        break;
-    }
+	switch (cameraMode_)
+	{
+	case CameraMode_ORBIT_FPS::ORBIT:
+		Update_Orbit();
+		break;
+	case CameraMode_ORBIT_FPS::FPS:
+		Update_FPS();
+		break;
+	default:
+		break;
+	}
 }
 
 void Camera::Update_Orbit()
@@ -102,7 +102,7 @@ void Camera::Update_Orbit()
 		sphericalEye_.radius -= mouseWheel * sphericalEye_.radius * 0.001f;
 	}
 
-    // イージング
+	// イージング
 	MovingCenter(dt);
 	MovingRotate(dt);
 	MovingDistance(dt);
@@ -112,29 +112,29 @@ void Camera::Update_Orbit()
 	// 距離をクランプ
 	if (sphericalEye_.radius < 0.1f) sphericalEye_.radius = 0.1f;
 
-    // ピッチのクランプ
-    sphericalEye_.phi = std::clamp(
-        sphericalEye_.phi,
-        -std::numbers::pi_v<float> / 2 + 0.001f,
-        +std::numbers::pi_v<float> / 2 - 0.001f
-    );
+	// ピッチのクランプ
+	sphericalEye_.phi = std::clamp(
+		sphericalEye_.phi,
+		-std::numbers::pi_v<float> / 2 + 0.001f,
+		+std::numbers::pi_v<float> / 2 - 0.001f
+	);
 
-    // カメラ位置
-    Vector3 localPos = CoordinateConverter::ToCartesian(sphericalEye_);
-    eye_ = center_ + localPos;
+	// カメラ位置
+	Vector3 localPos = CoordinateConverter::ToCartesian(sphericalEye_);
+	eye_ = center_ + localPos;
 
-    // 視線ベクトル
-	Vector3 forward = (center_ - eye_).Normalized();
+	// 視線ベクトル
+	cameraDirection_ = (center_ - eye_).Normalized();
 
 	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
-    viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
+	viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
 
 	billboardMatrix_ = backToFrontMatrix_ * viewMatrix_.Inverse();
 	billboardMatrix_.m[3][0] = 0.0f; // 平行移動成分のリセット
 	billboardMatrix_.m[3][1] = 0.0f;
 	billboardMatrix_.m[3][2] = 0.0f;
 
-    CreateFrustumPlanes();
+	CreateFrustumPlanes();
 }
 
 // 移動(回転)するものをcenter_にして、カメラ座標を固定
@@ -146,8 +146,8 @@ void Camera::Update_FPS()
 void Camera::Resize()
 {
 	aspect_ = screenSize_.x / screenSize_.y;
-    projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
-    viewportMatrix = Matrix4x4::MakeViewPortMatrix(0.0f, 0.0f, screenSize_.x, screenSize_.y, 0.0f, 1.0f);
+	projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
+	viewportMatrix = Matrix4x4::MakeViewPortMatrix(0.0f, 0.0f, screenSize_.x, screenSize_.y, 0.0f, 1.0f);
 	orthoProjectionMatrix_ = Matrix4x4::MakeOrthographicMatrix(0.0f, 0.0f, screenSize_.x, screenSize_.y, nearZ_, farZ_);
 }
 
@@ -157,42 +157,42 @@ void Camera::Draw()
 
 void Camera::DrawImGui()
 {
-    static const char* EaseTypeNames[] = {
-    "LINEAR",
-    "IN_SINE", "OUT_SINE", "IN_OUT_SINE",
-    "IN_QUAD", "OUT_QUAD", "IN_OUT_QUAD",
-    "IN_CUBIC", "OUT_CUBIC", "IN_OUT_CUBIC",
-    "IN_QUART", "OUT_QUART", "IN_OUT_QUART",
-    "IN_QUINT", "OUT_QUINT", "IN_OUT_QUINT",
-    "IN_EXPO", "OUT_EXPO", "IN_OUT_EXPO",
-    "IN_CIRC", "OUT_CIRC", "IN_OUT_CIRC",
-    "IN_BACK", "OUT_BACK", "IN_OUT_BACK",
-    "IN_ELASTIC", "OUT_ELASTIC", "IN_OUT_ELASTIC",
-    "IN_BOUNCE", "OUT_BOUNCE"
-    };
+	static const char* EaseTypeNames[] = {
+	"LINEAR",
+	"IN_SINE", "OUT_SINE", "IN_OUT_SINE",
+	"IN_QUAD", "OUT_QUAD", "IN_OUT_QUAD",
+	"IN_CUBIC", "OUT_CUBIC", "IN_OUT_CUBIC",
+	"IN_QUART", "OUT_QUART", "IN_OUT_QUART",
+	"IN_QUINT", "OUT_QUINT", "IN_OUT_QUINT",
+	"IN_EXPO", "OUT_EXPO", "IN_OUT_EXPO",
+	"IN_CIRC", "OUT_CIRC", "IN_OUT_CIRC",
+	"IN_BACK", "OUT_BACK", "IN_OUT_BACK",
+	"IN_ELASTIC", "OUT_ELASTIC", "IN_OUT_ELASTIC",
+	"IN_BOUNCE", "OUT_BOUNCE"
+	};
 
 	std::string cameraTag = "##";
-    std::string tag;
+	std::string tag;
 
 	std::string radiusTag = "##radius";
 	tag = "radius" + radiusTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &sphericalEye_.radius, 0.1f);
 	tag = "duration" + radiusTag + cameraTag;
-    ImGui::DragFloat(tag.c_str(), &distanceEasing_.durationMs, 1, 0, 1000);
+	ImGui::DragFloat(tag.c_str(), &distanceEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + radiusTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &distanceEasing_.target, 0.1f);
 	tag = "easeType" + radiusTag + cameraTag;
 	int32_t easeType = static_cast<int32_t>(distanceEasing_.easetype);
-    if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-    {
+	if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	{
 		distanceEasing_.easetype = static_cast<EaseType>(easeType);
-    }
+	}
 	tag = "start" + radiusTag + cameraTag;
-    if (ImGui::Button(tag.c_str()))
-    {
+	if (ImGui::Button(tag.c_str()))
+	{
 		distanceEasing_.durationMs *= 0.001f;
 		SetDistanceTarget(distanceEasing_.target, distanceEasing_.durationMs, distanceEasing_.easetype);
-    }
+	}
 
 	std::string phiTag = "##phi";
 	tag = "phi" + phiTag + cameraTag;
@@ -258,10 +258,10 @@ void Camera::DrawImGui()
 
 	std::string screenSizeTag = "##screenSize";
 	tag = "screenSize" + screenSizeTag + cameraTag;
-    if (ImGui::DragFloat2(tag.c_str(), &screenSize_.x, 1.0f))
-    {
+	if (ImGui::DragFloat2(tag.c_str(), &screenSize_.x, 1.0f))
+	{
 		Resize();
-    }
+	}
 	tag = "durationMs" + screenSizeTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &screenSizeEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + screenSizeTag + cameraTag;
@@ -281,10 +281,10 @@ void Camera::DrawImGui()
 
 	std::string fovYTag = "##fovY";
 	tag = "fovY" + fovYTag + cameraTag;
-    if (ImGui::DragFloat(tag.c_str(), &fovY_, 0.01f))
-    {
-        projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
-    }
+	if (ImGui::DragFloat(tag.c_str(), &fovY_, 0.01f))
+	{
+		projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
+	}
 	tag = "durationMs" + fovYTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &fovEasing_.durationMs, 1, 0, 1000);
 	tag = "target" + fovYTag + cameraTag;
@@ -305,63 +305,63 @@ void Camera::DrawImGui()
 
 
 	std::string enableControlTag = tag + ".enableControl";
-    ImGui::Checkbox(enableControlTag.c_str(), &enableControl_);
-    ImGui::SameLine();
+	ImGui::Checkbox(enableControlTag.c_str(), &enableControl_);
+	ImGui::SameLine();
 	ImGui::Text("enableControl");
 
 	std::string cameraModeTag = tag + ".cameraMode";
 	int32_t currentMode = static_cast<int32_t>(cameraMode_);
 	static const char* items[] = { "ORBIT", "FPS" };
-    if (ImGui::Combo(cameraModeTag.c_str(), &currentMode, items, IM_ARRAYSIZE(items)))
-    {
-        cameraMode_ = static_cast<CameraMode_ORBIT_FPS>(currentMode);
+	if (ImGui::Combo(cameraModeTag.c_str(), &currentMode, items, IM_ARRAYSIZE(items)))
+	{
+		cameraMode_ = static_cast<CameraMode_ORBIT_FPS>(currentMode);
 	}
-    ImGui::SameLine();
+	ImGui::SameLine();
 	ImGui::Text("cameraMode");
 }
 
 void Camera::CreateFrustumPlanes()
 {
-    // Left Plane
-    frustumPlanes_[0].normal.x = viewProjectionMatrix.m[0][3] + viewProjectionMatrix.m[0][0];
-    frustumPlanes_[0].normal.y = viewProjectionMatrix.m[1][3] + viewProjectionMatrix.m[1][0];
-    frustumPlanes_[0].normal.z = viewProjectionMatrix.m[2][3] + viewProjectionMatrix.m[2][0];
-    frustumPlanes_[0].distance = viewProjectionMatrix.m[3][3] + viewProjectionMatrix.m[3][0];
-    // Right Plane
-    frustumPlanes_[1].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][0];
-    frustumPlanes_[1].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][0];
-    frustumPlanes_[1].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][0];
-    frustumPlanes_[1].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][0];
-    // Bottom Plane
-    frustumPlanes_[2].normal.x = viewProjectionMatrix.m[0][3] + viewProjectionMatrix.m[0][1];
-    frustumPlanes_[2].normal.y = viewProjectionMatrix.m[1][3] + viewProjectionMatrix.m[1][1];
-    frustumPlanes_[2].normal.z = viewProjectionMatrix.m[2][3] + viewProjectionMatrix.m[2][1];
-    frustumPlanes_[2].distance = viewProjectionMatrix.m[3][3] + viewProjectionMatrix.m[3][1];
-    // Top Plane
-    frustumPlanes_[3].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][1];
-    frustumPlanes_[3].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][1];
-    frustumPlanes_[3].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][1];
-    frustumPlanes_[3].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][1];
-    // Near Plane
-    frustumPlanes_[4].normal.x = viewProjectionMatrix.m[0][2];
-    frustumPlanes_[4].normal.y = viewProjectionMatrix.m[1][2];
-    frustumPlanes_[4].normal.z = viewProjectionMatrix.m[2][2];
-    frustumPlanes_[4].distance = viewProjectionMatrix.m[3][2];
-    // Far Plane
-    frustumPlanes_[5].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][2];
-    frustumPlanes_[5].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][2];
-    frustumPlanes_[5].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][2];
-    frustumPlanes_[5].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][2];
+	// Left Plane
+	frustumPlanes_[0].normal.x = viewProjectionMatrix.m[0][3] + viewProjectionMatrix.m[0][0];
+	frustumPlanes_[0].normal.y = viewProjectionMatrix.m[1][3] + viewProjectionMatrix.m[1][0];
+	frustumPlanes_[0].normal.z = viewProjectionMatrix.m[2][3] + viewProjectionMatrix.m[2][0];
+	frustumPlanes_[0].distance = viewProjectionMatrix.m[3][3] + viewProjectionMatrix.m[3][0];
+	// Right Plane
+	frustumPlanes_[1].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][0];
+	frustumPlanes_[1].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][0];
+	frustumPlanes_[1].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][0];
+	frustumPlanes_[1].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][0];
+	// Bottom Plane
+	frustumPlanes_[2].normal.x = viewProjectionMatrix.m[0][3] + viewProjectionMatrix.m[0][1];
+	frustumPlanes_[2].normal.y = viewProjectionMatrix.m[1][3] + viewProjectionMatrix.m[1][1];
+	frustumPlanes_[2].normal.z = viewProjectionMatrix.m[2][3] + viewProjectionMatrix.m[2][1];
+	frustumPlanes_[2].distance = viewProjectionMatrix.m[3][3] + viewProjectionMatrix.m[3][1];
+	// Top Plane
+	frustumPlanes_[3].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][1];
+	frustumPlanes_[3].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][1];
+	frustumPlanes_[3].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][1];
+	frustumPlanes_[3].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][1];
+	// Near Plane
+	frustumPlanes_[4].normal.x = viewProjectionMatrix.m[0][2];
+	frustumPlanes_[4].normal.y = viewProjectionMatrix.m[1][2];
+	frustumPlanes_[4].normal.z = viewProjectionMatrix.m[2][2];
+	frustumPlanes_[4].distance = viewProjectionMatrix.m[3][2];
+	// Far Plane
+	frustumPlanes_[5].normal.x = viewProjectionMatrix.m[0][3] - viewProjectionMatrix.m[0][2];
+	frustumPlanes_[5].normal.y = viewProjectionMatrix.m[1][3] - viewProjectionMatrix.m[1][2];
+	frustumPlanes_[5].normal.z = viewProjectionMatrix.m[2][3] - viewProjectionMatrix.m[2][2];
+	frustumPlanes_[5].distance = viewProjectionMatrix.m[3][3] - viewProjectionMatrix.m[3][2];
 
-    // 各平面を正規化
-    for (int32_t i = 0; i < 6; ++i)
-    {
-        float length = sqrt(frustumPlanes_[i].normal.x * frustumPlanes_[i].normal.x +
-            frustumPlanes_[i].normal.y * frustumPlanes_[i].normal.y +
-            frustumPlanes_[i].normal.z * frustumPlanes_[i].normal.z);
-        frustumPlanes_[i].normal = frustumPlanes_[i].normal / length;
-        frustumPlanes_[i].distance /= length;
-    }
+	// 各平面を正規化
+	for (int32_t i = 0; i < 6; ++i)
+	{
+		float length = sqrt(frustumPlanes_[i].normal.x * frustumPlanes_[i].normal.x +
+			frustumPlanes_[i].normal.y * frustumPlanes_[i].normal.y +
+			frustumPlanes_[i].normal.z * frustumPlanes_[i].normal.z);
+		frustumPlanes_[i].normal = frustumPlanes_[i].normal / length;
+		frustumPlanes_[i].distance /= length;
+	}
 
 
 }
@@ -402,19 +402,30 @@ bool Camera::InCamera(const AABB& aabb)
 	return true; // どの平面の外側にもない場合は、視錐台内にあると判定
 }
 
+Matrix4x4 Camera::GetViewProjectionMatrix()
+{
+	Vector3 localPos = CoordinateConverter::ToCartesian(sphericalEye_);
+	eye_ = center_ + localPos;
+
+	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
+	viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
+
+	return viewProjectionMatrix;
+}
+
 // 実際に動かす
 void Camera::MovingCenter(float dt)
 {
 	if (!centerEasing_.easeing) return;
 
-	center_ = Easing::EasingValue(
-        centerEasing_.start, 
-        centerEasing_.target,
-        centerEasing_.easetype,
-		float(centerEasing_.elapsedMs) / float(centerEasing_.durationMs)
-    );
-
 	centerEasing_.elapsedMs += dt;
+
+	center_ = Easing::EasingValue(
+		centerEasing_.start,
+		centerEasing_.target,
+		centerEasing_.easetype,
+		(centerEasing_.elapsedMs / centerEasing_.durationMs)
+	);
 
 	if (centerEasing_.elapsedMs > centerEasing_.durationMs)
 	{
@@ -425,16 +436,17 @@ void Camera::MovingRotate(float dt)
 {
 	if (!rotateEasing_.easeing) return;
 
+	rotateEasing_.elapsedMs += dt;
+
 	Vector3 spherical = Easing::EasingValue(
 		rotateEasing_.start,
 		rotateEasing_.target,
 		rotateEasing_.easetype,
-		float(rotateEasing_.elapsedMs) / float(rotateEasing_.durationMs)
+		(rotateEasing_.elapsedMs / rotateEasing_.durationMs)
 	);
 	sphericalEye_.phi = spherical.x;
 	sphericalEye_.theta = spherical.y;
 
-	rotateEasing_.elapsedMs += dt;
 	if (rotateEasing_.elapsedMs > rotateEasing_.durationMs)
 	{
 		rotateEasing_.easeing = false;
@@ -444,14 +456,15 @@ void Camera::MovingDistance(float dt)
 {
 	if (!distanceEasing_.easeing) return;
 
+	distanceEasing_.elapsedMs += dt;
+
 	sphericalEye_.radius = Easing::EasingValue(
 		distanceEasing_.start,
 		distanceEasing_.target,
 		distanceEasing_.easetype,
-		float(distanceEasing_.elapsedMs) / float(distanceEasing_.durationMs)
+		(distanceEasing_.elapsedMs / distanceEasing_.durationMs)
 	);
 
-	distanceEasing_.elapsedMs += dt;
 	if (distanceEasing_.elapsedMs > distanceEasing_.durationMs)
 	{
 		distanceEasing_.easeing = false;
@@ -461,135 +474,104 @@ void Camera::MovingScreenSize(float dt)
 {
 	if (!screenSizeEasing_.easeing) return;
 
-    screenSize_.x = Easing::EasingValue(
-        screenSizeEasing_.start.x,
-        screenSizeEasing_.target.x,
-        screenSizeEasing_.easetype,
-        float(screenSizeEasing_.elapsedMs) / float(screenSizeEasing_.durationMs)
-    );
-    screenSize_.y = Easing::EasingValue(
-        screenSizeEasing_.start.y,
-        screenSizeEasing_.target.y,
-        screenSizeEasing_.easetype,
-        float(screenSizeEasing_.elapsedMs) / float(screenSizeEasing_.durationMs)
-    );
-
 	screenSizeEasing_.elapsedMs += dt;
-	
-    if (screenSizeEasing_.elapsedMs > screenSizeEasing_.durationMs)
+
+	screenSize_.x = Easing::EasingValue(
+		screenSizeEasing_.start.x,
+		screenSizeEasing_.target.x,
+		screenSizeEasing_.easetype,
+		(screenSizeEasing_.elapsedMs / screenSizeEasing_.durationMs)
+	);
+	screenSize_.y = Easing::EasingValue(
+		screenSizeEasing_.start.y,
+		screenSizeEasing_.target.y,
+		screenSizeEasing_.easetype,
+		(screenSizeEasing_.elapsedMs / screenSizeEasing_.durationMs)
+	);
+
+	if (screenSizeEasing_.elapsedMs > screenSizeEasing_.durationMs)
 	{
 		screenSizeEasing_.easeing = false;
 	}
 
-    Resize();
+	Resize();
 }
 void Camera::MovingFov(float dt)
 {
 	if (!fovEasing_.easeing) return;
 
-    fovY_ = Easing::EasingValue(
+	fovEasing_.elapsedMs += dt;
+
+	fovY_ = Easing::EasingValue(
 		fovEasing_.start,
 		fovEasing_.target,
 		fovEasing_.easetype,
-		float(fovEasing_.elapsedMs) / float(fovEasing_.durationMs)
+		(fovEasing_.elapsedMs / fovEasing_.durationMs)
 	);
-	fovEasing_.elapsedMs += dt;
+
 	if (fovEasing_.elapsedMs > fovEasing_.durationMs)
 	{
 		fovEasing_.easeing = false;
 	}
 
-    projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
+	projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
 }
 
 // 動かす先の設定
 void Camera::SetCenterTarget(Vector3 target, float durationSec, EaseType easetype)
 {
-	if (durationSec <= 0.0f)
-	{
-		center_ = target;
-		centerEasing_.easeing = false;
-	}
-	else
-	{
-		centerEasing_.start = center_;
-		centerEasing_.target = target;
-		centerEasing_.durationMs = durationSec * 1000.0f;
-		centerEasing_.elapsedMs = 0.0f;
-		centerEasing_.easeing = true;
-		centerEasing_.easetype = easetype;
-	}
+	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
+
+	centerEasing_.start = center_;
+	centerEasing_.target = target;
+	centerEasing_.durationMs = durationMs;
+	centerEasing_.elapsedMs = 0.0f;
+	centerEasing_.easeing = true;
+	centerEasing_.easetype = easetype;
 }
 void Camera::SetRotateTarget(Vector3 target, float durationSec, EaseType easetype)
 {
-	if (durationSec <= 0.0f)
-	{
-		sphericalEye_.phi = target.x;
-		sphericalEye_.theta = target.y;
-		rotateEasing_.easeing = false;
-	}
-	else
-	{
-		rotateEasing_.start = Vector3{ sphericalEye_.phi, sphericalEye_.theta, 0.0f };
-		rotateEasing_.target = target;
-		rotateEasing_.durationMs = durationSec * 1000.0f;
-		rotateEasing_.elapsedMs = 0.0f;
-		rotateEasing_.easeing = true;
-		rotateEasing_.easetype = easetype;
-	}
+	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
+
+	rotateEasing_.start = Vector3{ sphericalEye_.phi, sphericalEye_.theta, 0.0f };
+	rotateEasing_.target = target;
+	rotateEasing_.durationMs = durationMs;
+	rotateEasing_.elapsedMs = 0.0f;
+	rotateEasing_.easeing = true;
+	rotateEasing_.easetype = easetype;
 }
 void Camera::SetDistanceTarget(float target, float durationSec, EaseType easetype)
 {
-	if (durationSec <= 0.0f)
-	{
-		sphericalEye_.radius = target;
-		distanceEasing_.easeing = false;
-	}
-	else
-	{
-		distanceEasing_.start = sphericalEye_.radius;
-		distanceEasing_.target = target;
-		distanceEasing_.durationMs = durationSec * 1000.0f;
-		distanceEasing_.elapsedMs = 0.0f;
-		distanceEasing_.easeing = true;
-		distanceEasing_.easetype = easetype;
-	}
+	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
+
+	distanceEasing_.start = sphericalEye_.radius;
+	distanceEasing_.target = target;
+	distanceEasing_.durationMs = durationMs;
+	distanceEasing_.elapsedMs = 0.0f;
+	distanceEasing_.easeing = true;
+	distanceEasing_.easetype = easetype;
 }
 void Camera::SetScreenSizeTarget(Vector2 target, float durationSec, EaseType easetype)
 {
-	if (durationSec <= 0.0f)
-    {
-		screenSize_ = target;
-		screenSizeEasing_.easeing = false;
-        Resize();
-	}
-    else
-    {
-        screenSizeEasing_.start = screenSize_;
-        screenSizeEasing_.target = target;
-        screenSizeEasing_.durationMs = durationSec * 1000.0f;
-        screenSizeEasing_.elapsedMs = 0.0f;
-        screenSizeEasing_.easeing = true;
-        screenSizeEasing_.easetype = easetype;
-    }
+	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
+
+	screenSizeEasing_.start = screenSize_;
+	screenSizeEasing_.target = target;
+	screenSizeEasing_.durationMs = durationMs;
+	screenSizeEasing_.elapsedMs = 0.0f;
+	screenSizeEasing_.easeing = true;
+	screenSizeEasing_.easetype = easetype;
 }
 void Camera::SetFovTarget(float target, float durationSec, EaseType easetype)
 {
-	if (durationSec <= 0.0f)
-	{
-		fovY_ = target;
-		fovEasing_.easeing = false; 
-        projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
-	}
-	else
-	{
-		fovEasing_.start = fovY_;
-		fovEasing_.target = target;
-		fovEasing_.durationMs = durationSec * 1000.0f;
-		fovEasing_.elapsedMs = 0.0f;
-		fovEasing_.easeing = true;
-		fovEasing_.easetype = easetype;
-	}
+	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
+
+	fovEasing_.start = fovY_;
+	fovEasing_.target = target;
+	fovEasing_.durationMs = durationMs;
+	fovEasing_.elapsedMs = 0.0f;
+	fovEasing_.easeing = true;
+	fovEasing_.easetype = easetype;
 }
 
 // シェイク

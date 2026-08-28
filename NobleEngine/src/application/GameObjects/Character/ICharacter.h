@@ -62,6 +62,7 @@ public:
 	// ブロック範囲破壊
 	virtual void DestroyBlockInAABB(const AABB& aabb);
 	virtual void DestroyBlockInOBB(const OBB& obb);
+	virtual void DestroyBlockInSphere(const Sphere& sphere);
 	// マップに自身を登録
 	virtual void RegisterToMap();
 
@@ -80,11 +81,8 @@ public:
 	virtual void AddItem(ItemID id) { inventory_.AddItem(id); }
 	// 手に持っているアイテムを取得
 	virtual ItemID GetHaveItem() const { return inventory_.GetCurrentSelectedItemID(); }
-	// 手に持っているアイテムのAABBを取得
-	virtual std::vector<AABB> GetHaveItemAABB() const { return haveItem_.GetAABB(); }
-	// 手に持っているアイテムのOBBを取得
-	virtual std::vector<OBB> GetHaveItemOBB() const { return haveItem_.GetOBB(); }
-
+	// 手に持っているアイテムのコライダーを取得
+	virtual const ColliderShape& GetHaveItemWorldCollider() const { return haveItem_.GetWorldCollider(); }
 
 protected:
 	EventBus* eventBus_ = nullptr;

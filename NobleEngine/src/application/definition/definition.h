@@ -205,32 +205,12 @@ struct ToolInfo
 	float attackPower = 1.0f;
 	// 採掘速度
 	float miningSpeed = 1.0f;
-
-	// テクスチャ
-	std::string texturePath = "";
-	int32_t textureID = -1;
-	// モデル
-	std::string modelPath = "";
-	int32_t modelID = -1;
-
-	// あたり判定
-	ColliderShape colliderShape;
 };
 
 struct ObjectInfo
 {
 	// オブジェクトID
 	ObjectID ID = ObjectID::MAX;
-
-	// テクスチャ
-	std::string texturePath = "";
-	int32_t textureID = -1;
-	// モデル
-	std::string modelPath = "";
-	int32_t modelID = -1;
-
-	// あたり判定
-	ColliderShape colliderShape;
 };
 
 // アイテムごとの情報
@@ -247,6 +227,11 @@ struct ItemInfo
 	ToolID toolID = ToolID::MAX;
 	// オブジェクトとして扱う時のデータ
 	ObjectID objectID = ObjectID::MAX;
+
+	// テクスチャ
+	int32_t textureID = -1;
+	// モデル
+	int32_t modelID = -1;
 };
 
 

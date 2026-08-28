@@ -16,6 +16,7 @@ class AssetManager
 public:
 	AssetManager(DirectXManager* dxManager);
 	~AssetManager();
+	void Update();
 
 	AudioManager* GetAudioManager() const { return audioManager_.get(); }
 	TextureManager* GetTextureManager() const { return textureManager_.get(); }

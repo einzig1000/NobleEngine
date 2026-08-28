@@ -52,6 +52,20 @@ namespace
 		}
 		return result;
 	}
+
+	// scaleは一番でかい軸の値を使う
+	std::vector<Sphere> CreateSphere(const std::vector<Sphere>& localSpheres, const Matrix4x4& worldMatrix)
+	{
+		std::vector<Sphere> result;
+		result.reserve(localSpheres.size());
+		for (const auto& localSphere : localSpheres)
+		{
+			Vector3 worldCenter = Transform(localSphere.center, worldMatrix);
+			float worldRadius = localSphere.radius * std::max({ worldMatrix.m[0][0], worldMatrix.m[1][1], worldMatrix.m[2][2] });
+			result.push_back({ worldCenter, worldRadius });
+		}
+		return result;
+	}
 }
 
 
@@ -62,75 +76,106 @@ HaveItem::HaveItem()
 	render_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_->SetupFromShaders();
 
-	itemTransform_.translate.y = 0.2f;
-	itemTransform_.scale = { 0.5f, 0.5f, 0.5f };
+	itemTransform_.translate = { 0.65f, -0.620f, 0.0f };
+	itemTransform_.scale = { 1.0f, 1.0f, 1.0f };
+	//itemTransform_.rotate = { -1.49f, 0.0f, -2.35619f };
+	itemTransform_.rotate = { -2.57f, 0.0f, -2.35619f };
 }
 
 HaveItem::~HaveItem()
 {}
 
+//void HaveItem::Update(int32_t cameraID)
+//{
+//	if (currentItemID_ != ItemID::MAX)
+//	{
+//		Vector3 cameraCenter = Game::Camera::Getter::GetCenter(cameraID);
+//		Vector3 cameraPos = Game::Camera::Getter::GetTranslate(cameraID);
+//		Vector3 cameraDir = cameraCenter - cameraPos;
+//		cameraDir.y = 0.0f;
+//		cameraDir.Normalize();
+//		pivotTransform_.rotate.y = std::atan2(cameraDir.x, cameraDir.z);
+//
+//		if (Game::IO::Mouse::IsJustPressed(0))
+//		{
+//			pivotTransform_.rotate.z = Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1);
+//		}
+//
+//		if (Game::IO::Mouse::IsHeld(0))
+//		{
+//			pivotTransform_.rotate.x += 0.5f;
+//			pivotTransform_.rotate.z += 0.01f;
+//		}
+//
+//		if (Game::IO::Mouse::IsJustReleased(0))
+//		{
+//			pivotTransform_.rotate.x = 0.0f;
+//		}
+//
+//		const ToolID toolID = App::Data::Item::Get(currentItemID_)->toolID;
+//		const ToolInfo* toolConfig = App::Data::Item::Get(toolID);
+//
+//		render_->modelID_ = toolConfig->modelID;
+//		const ColliderShape& colliderShape = Game::Asset::Model::GetData(toolConfig->modelID)->colliderShape;
+//
+//		Matrix4x4 itemWorld = Matrix4x4::MakeAffineMatrix(itemTransform_.scale, itemTransform_.rotate, itemTransform_.translate);
+//		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(pivotTransform_.scale, pivotTransform_.rotate, pivotTransform_.translate);
+//		itemWorld = itemWorld * pivotWorld * parentWorldMatrix_;
+//		Matrix4x4 wvp = itemWorld * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+//		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+//		int32_t textureID = toolConfig->textureID;
+//
+//		render_->SetCBufferData(0, ShaderType::VertexShader, &wvp);
+//		render_->SetCBufferData(1, ShaderType::VertexShader, &itemWorld);
+//		render_->SetCBufferData(0, ShaderType::PixelShader, &color);
+//		render_->SetCBufferData(1, ShaderType::PixelShader, &textureID);
+//
+//		//itemAABB_ = CreateAABB(colliderShape.aabbs, itemWorld);
+//		//itemOBB_ = CreateOBB(colliderShape.aabbs, itemWorld);
+//		worldCollider_.spheres = CreateSphere(colliderShape.spheres, itemWorld);
+//	}
+//	else
+//	{
+//		render_->modelID_ = -1;
+//	}
+//}
+
 void HaveItem::Update(int32_t cameraID)
 {
 	if (currentItemID_ != ItemID::MAX)
 	{
-		Vector3 cameraCenter = Game::Camera::Getter::GetCenter(cameraID);
-		Vector3 cameraPos = Game::Camera::Getter::GetTranslate(cameraID);
-		Vector3 cameraDir = cameraCenter - cameraPos;
+		const ItemInfo* itemInfo = App::Data::Item::Get(currentItemID_);
+
+		Vector3 cameraDir = Game::Camera::Getter::GetCameraDirection(cameraID);
 		cameraDir.y = 0.0f;
 		cameraDir.Normalize();
 		pivotTransform_.rotate.y = std::atan2(cameraDir.x, cameraDir.z);
 
-		if (Game::IO::Mouse::IsJustPressed(0))
-		{
-			pivotTransform_.rotate.z = Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1);
-		}
-
-		if (Game::IO::Mouse::IsHeld(0))
-		{
-			pivotTransform_.rotate.x += 0.5f;
-			pivotTransform_.rotate.z += 0.01f;
-		}
-
-		if (Game::IO::Mouse::IsJustReleased(0))
-		{
-			pivotTransform_.rotate.x = 0.0f;
-		}
-
-		const ToolID toolID = App::Data::Item::Get(currentItemID_)->toolID;
-		const ToolInfo* toolConfig = App::Data::Item::Get(toolID);
-
-		render_->modelID_ = toolConfig->modelID;
-		const ColliderShape& colliderShape = Game::Asset::Model::GetData(toolConfig->modelID)->colliderShape;
-
 		Matrix4x4 itemWorld = Matrix4x4::MakeAffineMatrix(itemTransform_.scale, itemTransform_.rotate, itemTransform_.translate);
 		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(pivotTransform_.scale, pivotTransform_.rotate, pivotTransform_.translate);
 		itemWorld = itemWorld * pivotWorld * parentWorldMatrix_;
+		//itemWorld = parentWorldMatrix_;
 		Matrix4x4 wvp = itemWorld * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-		int32_t textureID = toolConfig->textureID;
+		int32_t textureID = itemInfo->textureID;
+		render_->modelID_ = itemInfo->modelID;
 
 		render_->SetCBufferData(0, ShaderType::VertexShader, &wvp);
 		render_->SetCBufferData(1, ShaderType::VertexShader, &itemWorld);
 		render_->SetCBufferData(0, ShaderType::PixelShader, &color);
 		render_->SetCBufferData(1, ShaderType::PixelShader, &textureID);
-
-		itemAABB_ = CreateAABB(colliderShape.aabbs, itemWorld);
-		itemOBB_ = CreateOBB(colliderShape.aabbs, itemWorld);
 	}
-    else
-    {
-        render_->modelID_ = -1;
-    }
+	else
+	{
+		render_->modelID_ = -1;
+	}
 }
 
 void HaveItem::Draw(int32_t renderTextureID)
 {
 	if (render_->modelID_ >= 0)
 	{
-		if (Game::IO::Mouse::IsHeld(0))
-		{
-			render_->Draw(renderTextureID);
-		}
+		render_->Draw(renderTextureID);
 	}
 
 	ImGui::Begin("HaveItem");

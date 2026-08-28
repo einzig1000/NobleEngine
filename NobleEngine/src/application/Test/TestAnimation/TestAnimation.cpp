@@ -24,8 +24,7 @@ TestAnimation::TestAnimation()
 	vertexSRVID_ = Game::Resource::CreateDynamic();
 	vertexInflenceSRVID_ = Game::Resource::CreateDynamic();
 
-	ModelData* modelData = nullptr;
-	modelData = Game::Asset::Model::GetData(render_->modelID_);
+	const ModelData* modelData = Game::Asset::Model::GetData(render_->modelID_);
 	vertices = modelData->vertices;
 	skeleton_ = modelData->skeleton;
 	skinCluster_ = modelData->skinCluster;

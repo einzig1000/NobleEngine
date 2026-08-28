@@ -34,23 +34,6 @@
     "modelID": "assets/application/Minecraft/Item/tool/axe/axe.obj",
     "textureID": "assets/application/Minecraft/Item/tool/axe/axe.png"
   },
-  "Keys": [
-    "Sword_of_Wood",
-    "Sword_of_Stone",
-    "Sword_of_Iron",
-    "Sword_of_Gold",
-    "Sword_of_Diamond",
-    "Pickel_of_Wood",
-    "Pickel_of_Stone",
-    "Pickel_of_Iron",
-    "Pickel_of_Gold",
-    "Pickel_of_Diamond",
-    "Axe_of_Wood",
-    "Axe_of_Stone",
-    "Axe_of_Iron",
-    "Axe_of_Gold",
-    "Axe_of_Diamond"
-  ],
   "Pickel_of_Diamond": {
     "attackPower": 1.0,
     "durability": 1.0,

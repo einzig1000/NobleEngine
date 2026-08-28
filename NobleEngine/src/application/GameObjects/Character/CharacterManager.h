@@ -26,6 +26,7 @@ public:
 
 	void SetEventBus(EventBus* eventBus);
 
+	Player* GetPlayer() { return player_.get(); }
 
 private:
 	MapManager* mapManager_ = nullptr;

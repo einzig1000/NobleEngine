@@ -9,9 +9,9 @@ void SwingMining::Update()
 {
 	if (!Game::IO::Mouse::IsHeld(0)) return;
 
-	const std::vector<OBB>& itemOBBs = owner_->GetHaveItemOBB();
-	for (const auto& obb : itemOBBs)
+	const ColliderShape& collider = owner_->GetHaveItemWorldCollider();
+	for (const auto& sphere : collider.spheres)
 	{
-		owner_->DestroyBlockInOBB(obb);
+		owner_->DestroyBlockInSphere(sphere);
 	}
 }

@@ -92,7 +92,7 @@ private:
 
 	std::vector<ButtonInfo> buttons_;
 	std::string buttonJsonPath_ = "assets/application/json/TitleButtons.json";
-	ModelData* buttonColliderModel_ = nullptr;
+	const ModelData* buttonColliderModel_ = nullptr;
 	int32_t buttonColliderModelID_ = -1;
 	int32_t buttonModelID_ = -1;
 

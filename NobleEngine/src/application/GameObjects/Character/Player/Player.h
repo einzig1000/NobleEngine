@@ -19,22 +19,30 @@ public:
 	void Draw(int32_t renderTextureID) override;
 	void DrawImGui() override;
 
-	void UpdateLeftClick();		// 左クリック時の処理(ブロック破壊とか攻撃とか)
-	void UpdateRightClick();	// 右クリック時の処理(ブロック設置とか)
 
 	
 	void CheckExternalEvents();	// 外部イベント確認
 
-	void UpdateInput(int32_t cameraID);			// 入力に対する更新
-	void UpdateInputMove(int32_t cameraID);		// 移動更新
-	void UpdateInputSpeed();					// ダッシュ更新
-	void UpdateInputJump();						// ジャンプ更新
+	// 入力に対する更新
+	void UpdateInput(int32_t cameraID);		
+	// 左クリック時の処理(ブロック破壊とか攻撃とか)
+	void UpdateInputLeftClick();
+	// 右クリック時の処理(ブロック設置とか)
+	void UpdateInputRightClick();
+	// マウスカーソル操作時の処理(視線(カメラ)操作)
+	void UpdateInputMouseCursor(int32_t cameraID);
+	// WASD入力時の処理
+	void UpdateInputWASD(int32_t cameraID);
+	// SPACE入力時の処理
+	void UpdateInputSpace();
 
 	// 採掘モード切り替え
 	void SetMiningPattern(MiningPattern pattern);
 	MiningPattern GetMiningPattern() const { return miningMode_; }
 
 	void SetViewCamera(int32_t cameraID);
+
+	const Vector3& GetPosition() const { return translate_.value; }
 
 private:
 	// 速度

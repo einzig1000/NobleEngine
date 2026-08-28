@@ -99,7 +99,7 @@ void ItemEditor::DrawImGui()
 	}
 
 
-	// 現在の情報描画
+	// パラメータ編集
 	switch (genre_)
 	{
 	case ItemGenre::MAX:
@@ -108,11 +108,11 @@ void ItemEditor::DrawImGui()
 	}
 	case ItemGenre::Armor:
 	{
-		ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
+		const ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
 		std::string modelName = modelData ? modelData->filePath : "None";
 		ImGui::Text("ModelPath	: %s", modelName.c_str());
 
-		TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
+		const TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
 		std::string textureName = textureData ? textureData->filePath : "None";
 		ImGui::Text("TexturePath: %s", textureName.c_str());
 
@@ -137,11 +137,11 @@ void ItemEditor::DrawImGui()
 			ImGui::EndCombo();
 		}
 
-		ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
+		const ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
 		std::string modelName = modelData ? modelData->filePath : "None";
 		ImGui::Text("ModelPath	: %s", modelName.c_str());
 
-		TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
+		const TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
 		std::string textureName = textureData ? textureData->filePath : "None";
 		ImGui::Text("TexturePath: %s", textureName.c_str());
 
@@ -152,10 +152,6 @@ void ItemEditor::DrawImGui()
 		// 保存
 		if (ImGui::Button("Save"))
 		{
-			toolInfo.textureID = textureID_;
-			toolInfo.modelID = renderObject_->modelID_;
-			toolInfo.texturePath = textureName;
-			toolInfo.modelPath = modelName;
 			App::Data::Item::Save(toolID_, toolInfo);
 		}
 
@@ -214,22 +210,18 @@ void ItemEditor::DrawImGui()
 			ImGui::EndCombo();
 		}
 
-		ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
+		const ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
 		std::string modelName = modelData ? modelData->filePath : "None";
 		ImGui::Text("ModelPath	: %s", modelName.c_str());
 
-		TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
+		const TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
 		std::string textureName = textureData ? textureData->filePath : "None";
 		ImGui::Text("TexturePath: %s", textureName.c_str());
 
 		// 保存
 		if (ImGui::Button("Save"))
 		{
-			objectInfo.textureID = textureID_;
-			objectInfo.modelID = renderObject_->modelID_;
-			objectInfo.texturePath = textureName;
-			objectInfo.modelPath = modelName;
-			//App::Data::Item::Save(objectID_, objectInfo);
+			App::Data::Item::Save(objectID_, objectInfo);
 		}
 
 		break;
@@ -238,9 +230,9 @@ void ItemEditor::DrawImGui()
 		break;
 	}
 
-	ImGui::BeginChild("ItemListChild", ImVec2(250, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
 
 	// 全表示
+	ImGui::BeginChild("ItemListChild", ImVec2(250, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
 	for (int32_t i = 0; i < static_cast<int32_t>(ItemID::MAX); i++)
 	{
 		ItemID itemID = static_cast<ItemID>(i);
@@ -305,82 +297,38 @@ void ItemEditor::DrawImGui()
 			ImGui::TreePop();
 		}
 	}
-	
 	ImGui::EndChild();
 
 
 	if (ImGui::Button("AllSave"))
 	{
-		std::vector<std::string> blockKeys(blockIDNames.begin(), blockIDNames.end() - 1);
-		JsonManager::AddParam("assets/application/json/BlockConfig.json", "/Keys", blockKeys);
-
-		for (int32_t i = 0; i < static_cast<int32_t>(BlockID::MAX); i++)
+		for (BlockID id : magic_enum::enum_values<BlockID>())
 		{
-			BlockID blockID = static_cast<BlockID>(i);
-			const BlockInfo* info = App::Data::Item::Get(blockID);
-			if (info)
-			{
-				JsonManager::AddParam("assets/application/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/durability", info->durability);
-				JsonManager::AddParam("assets/application/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/color", info->color);
-				JsonManager::AddParam("assets/application/json/BlockConfig.json", "/" + std::string(magic_enum::enum_name(blockID).data()) + "/isTransparent", info->isTransparent);
-			}
+			if (id == BlockID::MAX) continue;
+			const BlockInfo* info = App::Data::Item::Get(id);
+			if (info) App::Data::Item::Save(id, *info);
 		}
 
-		std::vector<std::string> toolKeys(toolIDNames.begin(), toolIDNames.end() - 1);
-		JsonManager::AddParam("assets/application/json/ToolConfig.json", "/Keys", toolKeys);
-
-		for (int32_t i = 0; i < static_cast<int32_t>(ToolID::MAX); i++)
+		for (ToolID id : magic_enum::enum_values<ToolID>())
 		{
-			ToolID toolID = static_cast<ToolID>(i);
-			const ToolInfo* info = App::Data::Item::Get(toolID);
-			if (info)
-			{
-				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/durability", info->durability);
-				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/attackPower", info->attackPower);
-				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/miningSpeed", info->miningSpeed);
-				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/textureID", info->texturePath);
-				JsonManager::AddParam("assets/application/json/ToolConfig.json", "/" + std::string(magic_enum::enum_name(toolID).data()) + "/modelID", info->modelPath);
-			}
+			if (id == ToolID::MAX) continue;
+			const ToolInfo* info = App::Data::Item::Get(id);
+			if (info) App::Data::Item::Save(id, *info);
 		}
 
-		std::vector<std::string> objectKeys(objectIDNames.begin(), objectIDNames.end() - 1);
-		JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/Keys", objectKeys);
-
-		for (int32_t i = 0; i < static_cast<int32_t>(ObjectID::MAX); i++)
+		for (ObjectID id : magic_enum::enum_values<ObjectID>())
 		{
-			ObjectID objectID = static_cast<ObjectID>(i);
-			const ObjectInfo* info = App::Data::Item::Get(objectID);
-			if (info)
-			{
-				JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelID", info->modelID);
-				JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/textureID", info->textureID);
-				JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/modelPath", info->modelPath);
-				JsonManager::AddParam("assets/application/json/ObjectConfig.json", "/" + std::string(magic_enum::enum_name(objectID).data()) + "/texturePath", info->texturePath);
-			}
+			if (id == ObjectID::MAX) continue;
+			const ObjectInfo* info = App::Data::Item::Get(id);
+			if (info) App::Data::Item::Save(id, *info);
 		}
 
-
-		std::vector<std::string> itemKeys(itemIDNames.begin(), itemIDNames.end() - 1);
-		JsonManager::AddParam("assets/application/json/ItemConfig.json", "/Keys", itemKeys);
-
-		for (int32_t i = 0; i < static_cast<int32_t>(ItemID::MAX); i++)
+		for (ItemID id : magic_enum::enum_values<ItemID>())
 		{
-			ItemID itemID = static_cast<ItemID>(i);
-			const ItemInfo* info = App::Data::Item::Get(itemID);
-			if (info)
-			{
-				JsonManager::AddParam("assets/application/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/blockID", magic_enum::enum_name(info->blockID).data());
-				JsonManager::AddParam("assets/application/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/toolID", magic_enum::enum_name(info->toolID).data());
-				JsonManager::AddParam("assets/application/json/ItemConfig.json", "/" + std::string(magic_enum::enum_name(itemID).data()) + "/objectID", magic_enum::enum_name(info->objectID).data());
-			}
+			if (id == ItemID::MAX) continue;
+			const ItemInfo* info = App::Data::Item::Get(id);
+			if (info) App::Data::Item::Save(id, *info);
 		}
-
-		JsonManager::Save("assets/application/json/BlockConfig.json");
-		JsonManager::Save("assets/application/json/ToolConfig.json");
-		JsonManager::Save("assets/application/json/ObjectConfig.json");
-		JsonManager::Save("assets/application/json/ItemConfig.json");
-
-		App::Data::Item::CreateBlockInfoTable();
 	}
 
 

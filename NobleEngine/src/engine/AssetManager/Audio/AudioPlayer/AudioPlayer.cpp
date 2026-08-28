@@ -38,6 +38,15 @@ AudioPlayer::AudioPlayer(AudioBank* bank)
 
 AudioPlayer::~AudioPlayer()
 {
+    // 再生中のボイスを破棄
+    for (auto& pair : activeVoices_)
+    {
+        pair.second->Stop(0);
+        pair.second->FlushSourceBuffers();
+        pair.second->DestroyVoice();
+    }
+    activeVoices_.clear();
+
     // マスタリングボイスを破棄
     if (pMasteringVoice)
     {
@@ -50,85 +59,115 @@ AudioPlayer::~AudioPlayer()
     MFShutdown();
 }
 
-void AudioPlayer::PlayAudio(const int32_t& audioId, bool loop)
+void AudioPlayer::Update()
 {
-	AudioData* audioData = bank_->GetAudioData(audioId);
-
-    if (audioData)
+    for (auto it = activeVoices_.begin(); it != activeVoices_.end(); )
     {
-        // すでに再生中であれば停止
-        audioData->pSourceVoice->Stop(0);
-        audioData->pSourceVoice->FlushSourceBuffers(); // バッファをクリア
+        XAUDIO2_VOICE_STATE state;
+        it->second->GetState(&state);
 
-        // loopが１の場合XAUDIO2_LOOP_INFINITE(無限ループ)に設定。0なら0
-        audioData->xAudioBuffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0; // ループ設定
-
-        // オーディオデータをキューに送信し再生の準備をする(サブミット)
-        HRESULT hr = audioData->pSourceVoice->SubmitSourceBuffer(&audioData->xAudioBuffer);
-        if (FAILED(hr))
+        if (state.BuffersQueued == 0)
         {
-            Log("Failed to submit source buffer for audio ID: %u HRESULT: 0x%X", audioId, hr);
-            assert(0);
+            it->second->DestroyVoice();
+            it = activeVoices_.erase(it);
         }
-
-        // 再生
-        hr = audioData->pSourceVoice->Start(0);
-        if (FAILED(hr))
+        else
         {
-            Log("ID:%u のオーディオの再生に失敗しました。HRESULT: 0x%X", audioId, hr);
-            assert(0);
+            ++it;
         }
-        Log("ID:%u のオーディオを再生します。Loop: %d", audioId, loop);
     }
-    else
+}
+
+
+int32_t AudioPlayer::PlayAudio(const int32_t& audioId, bool loop)
+{
+    const AudioData* audioData = bank_->GetAudioData(audioId);
+    if (!audioData)
     {
         Log("存在しないオーディオの再生を失敗しました。ID: %u", audioId);
         assert(0);
+        return -1;
     }
-}
 
-void AudioPlayer::StopAudio(const int32_t & audioId)
-{
-	AudioData* audioData = bank_->GetAudioData(audioId);
-	if (audioData)
-	{
-		audioData->pSourceVoice->Stop(0);
-		audioData->pSourceVoice->FlushSourceBuffers(); // バッファをクリア
-		Log("ID:%u のオーディオを停止します。", audioId);
-	}
-	else
-	{
-		Log("存在しないオーディオの停止を失敗しました。ID: %u", audioId);
-		assert(0);
-	}
-}
-
-void AudioPlayer::SetVolume(const int32_t & audioId, float volume)
-{
-	AudioData* audioData = bank_->GetAudioData(audioId);
-	if (audioData)
-	{
-		float clampedVolume = std::clamp(volume, 0.0f, 1.0f);
-		audioData->pSourceVoice->SetVolume(clampedVolume);
-		Log("ID:%u のオーディオの音量を %f に設定します。", audioId, clampedVolume);
-	}
-	else
-	{
-		Log("存在しないオーディオの音量設定を失敗しました。ID: %u", audioId);
-		assert(0);
-	}
-}
-float AudioPlayer::GetVolume(const int32_t & audioId)
-{
-	AudioData* audioData = bank_->GetAudioData(audioId);
-	if (audioData)
+    // この再生専用のボイスを新規作成する。原本(audioData)は一切書き換えない
+    IXAudio2SourceVoice* voice = nullptr;
+    HRESULT hr = pXAudio2->CreateSourceVoice(&voice, audioData->pWfx, 0, XAUDIO2_DEFAULT_FREQ_RATIO, nullptr);
+    if (FAILED(hr))
     {
-        float currentVolume = 0.0f;
-        audioData->pSourceVoice->GetVolume(&currentVolume);
-        return currentVolume;
+		Log("Voiceの作成に失敗しました。ID: %u HRESULT: 0x%X", audioId, hr);
+        assert(0);
+        return -1;
     }
-	Log("存在しないオーディオの音量取得を失敗しました。ID: %u", audioId);
-    return 0.0f;
+
+    XAUDIO2_BUFFER buffer = {};
+    buffer.AudioBytes = audioData->audioBytes;
+    buffer.pAudioData = audioData->audioData.data();
+    buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
+
+    hr = voice->SubmitSourceBuffer(&buffer);
+    if (FAILED(hr))
+    {
+		Log("オーディオのバッファ送信に失敗しました。 ID: %u HRESULT: 0x%X", audioId, hr);
+        voice->DestroyVoice();
+        assert(0);
+        return -1;
+    }
+
+    hr = voice->Start(0);
+    if (FAILED(hr))
+    {
+        Log("ID:%u のオーディオの再生に失敗しました。HRESULT: 0x%X", audioId, hr);
+        voice->DestroyVoice();
+        assert(0);
+        return -1;
+    }
+
+    int32_t playId = nextPlayId_++;
+    activeVoices_[playId] = voice;
+
+    Log("ID:%u のオーディオを再生します。playId:%d Loop:%d", audioId, playId, loop);
+    return playId;
+}
+
+void AudioPlayer::StopAudio(const int32_t& playId)
+{
+    auto it = activeVoices_.find(playId);
+    if (it == activeVoices_.end())
+    {
+        Log("playId:%d のオーディオは既に再生終了しています。", playId);
+        return;
+    }
+
+    it->second->Stop(0);
+    it->second->FlushSourceBuffers();
+    it->second->DestroyVoice();
+    activeVoices_.erase(it);
+    Log("playId:%d のオーディオを停止します。", playId);
+}
+
+void AudioPlayer::SetVolume(const int32_t& playId, float volume)
+{
+    auto it = activeVoices_.find(playId);
+    if (it == activeVoices_.end())
+    {
+        Log("playId:%d のオーディオは既に再生終了しています。", playId);
+        return;
+    }
+    float clampedVolume = std::clamp(volume, 0.0f, 1.0f);
+    it->second->SetVolume(clampedVolume);
+    Log("playId:%d のオーディオの音量を %f に設定します。", playId, clampedVolume);
+}
+float AudioPlayer::GetVolume(const int32_t& playId)
+{
+    auto it = activeVoices_.find(playId);
+    if (it == activeVoices_.end())
+    {
+        Log("playId:%d のオーディオは既に再生終了しています。", playId);
+        return 0.0f;
+    }
+    float currentVolume = 0.0f;
+    it->second->GetVolume(&currentVolume);
+    return currentVolume;
 }
 
 void AudioPlayer::SetMasterVolume(float volume)
@@ -160,36 +199,15 @@ float AudioPlayer::GetMasterVolume()
     return 0.0f;
 }
 
-bool AudioPlayer::IsAudioPlaying(const int32_t& audioId)
+bool AudioPlayer::IsAudioPlaying(const int32_t& playId)
 {
-	AudioData* audioData = bank_->GetAudioData(audioId);
-
-	if (audioData)
+    auto it = activeVoices_.find(playId);
+    if (it == activeVoices_.end())
     {
-        if (audioData->pSourceVoice)
-        {
-            XAUDIO2_VOICE_STATE state;
-            audioData->pSourceVoice->GetState(&state);
-
-            // キューにバッファがある場合、再生中または再生待ちと判断
-            if (state.BuffersQueued > 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            Log("このIDのオーディンは存在しません", audioId);
-            return false;
-        }
-    }
-    else
-    {
-        Log("このIDのオーディンは存在しません", audioId);
         return false;
     }
+
+    XAUDIO2_VOICE_STATE state;
+    it->second->GetState(&state);
+    return state.BuffersQueued > 0;
 }

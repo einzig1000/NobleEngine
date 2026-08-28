@@ -41,7 +41,7 @@ namespace Game
 			/// </summary>
 			/// <param name="modelID">モデルID</param>
 			/// <returns>モデルデータ</returns>
-			ModelData* GetData(int32_t modelID);
+			const ModelData* GetData(int32_t modelID);
 		}
 
 		namespace Animation
@@ -85,7 +85,7 @@ namespace Game
 			/// </summary>
 			/// <param name="textureID">テクスチャID</param>
 			/// <returns>メタデータを含むテクスチャデータ</returns>
-			TextureData* GetData(int32_t textureID);
+			const TextureData* GetData(int32_t textureID);
 		}
 
 		namespace Audio
@@ -102,7 +102,7 @@ namespace Game
 			/// </summary>
 			/// <param name="audioID">オーディオID</param>
 			/// <returns>オーディオデータ</returns>
-			AudioData* GetData(int32_t audioID);
+			const AudioData* GetData(int32_t audioID);
 		}
 
 		namespace Font
@@ -240,52 +240,52 @@ namespace Game
 	/// </summary>
 	namespace Audio
 	{
-		//// 返り値をint32_t にして重ね再生
 		/// <summary>
 		/// オーディオ再生
 		/// </summary>
-		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
-		/// <param name="loop">trueなら自動ループ</param>
-		void PlayAudio(const int32_t& audioId, bool loop);
+		/// <param name="audioId">オーディオID(LoadAudioで取得)</param>
+		/// <param name="loop">ループ再生するか否か</param>
+		/// <returns>再生インスタンスID、失敗時は-1</returns>
+		int32_t PlayAudio(const int32_t& audioId, bool loop);
 
 		/// <summary>
-		/// オーディオ停止
+		/// 再生停止
 		/// </summary>
-		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
-		void StopAudio(const int32_t& audioId);
+		/// <param name="playId">再生インスタンスID</param>
+		void StopAudio(const int32_t& playId);
 
 		/// <summary>
-		/// オーディオボリューム設定
+		/// 音量設定
 		/// </summary>
-		/// <param name="audioId"Resource::LoadAudioで取得したオーディオID></param>
-		/// <param name="volume">0.0f～1.0f</param>
-		void SetAudioVolume(const int32_t& audioId, float volume);
+		/// <param name="playId">再生インスタンスID</param>
+		/// <param name="volume">音量 (0.0f~1.0f)</param>
+		void SetAudioVolume(const int32_t& playId, float volume);
 
 		/// <summary>
 		/// マスターボリューム設定
 		/// </summary>
-		/// <param name="volume">0.0f～1.0f</param>
+		/// <param name="volume">音量 (0.0f~1.0f)</param>
 		void SetMasterVolume(float volume);
 
 		/// <summary>
-		/// オーディオボリューム取得
+		/// 音量取得
 		/// </summary>
-		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
-		/// <returns>現在の音量</returns>
-		float GetVolume(const int32_t& audioId);
+		/// <param name="playId">再生インスタンスID</param>
+		/// <returns>音量 (0.0f~1.0f)</returns>
+		float GetVolume(const int32_t& playId);
 
 		/// <summary>
 		/// マスターボリューム取得
 		/// </summary>
-		/// <returns>現在のマスター音量</returns>
+		/// <returns>音量 (0.0f~1.0f)</returns>
 		float GetMasterVolume();
 
 		/// <summary>
-		/// オーディオが再生中か？
+		/// 再生中か？
 		/// </summary>
-		/// <param name="audioId">Resource::LoadAudioで取得したオーディオID</param>
-		/// <returns>bool </returns>
-		bool IsAudioPlaying(const int32_t& audioId);
+		/// <param name="playId">再生インスタンスID</param>
+		/// <returns>再生中か？</returns>
+		bool IsAudioPlaying(const int32_t& playId);
 	};
 
 	/// <summary>
@@ -475,6 +475,8 @@ namespace Game
 		{
 			/// <returns>カメラが向いてる座標</returns>
 			Vector3 GetCenter(int32_t cameraID);
+			/// <returns>カメラの向き</returns>
+			Vector3 GetCameraDirection(int32_t cameraID);
 			/// <returns>カメラのワールド座標</returns>
 			Vector3 GetTranslate(int32_t cameraID);
 			/// <returns>カメラのCenterまでの距離</returns>

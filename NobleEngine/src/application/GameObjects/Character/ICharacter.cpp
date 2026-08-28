@@ -62,7 +62,7 @@ void ICharacter::ApplyMove()
 	float dt = Game::Time::GetDeltaTime();
 	translate_.velocity += translate_.acceleration;		// 加速度を速度に反映
 	Vector3 movement = translate_.velocity;				// 移動量を計算
-	mapManager_->GetTerrain()->SweepAABB(aabb, movement);				// mapManager_に希望移動量を申請し修正してもらう
+	mapManager_->GetTerrain()->SweepAABB(aabb, movement);// mapManager_に希望移動量を申請し修正してもらう
 	if (movement.y == 0.0f)isGrounded_ = true;			// 移動後の接地判定
 	else isGrounded_ = false;
 	translate_.value += movement;			// 移動
@@ -94,7 +94,7 @@ void ICharacter::Move(const Vector3& direction, float speed)
 
 void ICharacter::SetBlock(BlockID id)
 {
-	//if (target_.type != RayHitResult::Type::Block) return;
+	if (target_.type != RayHitResult::Type::Block) return;
 	//
 	//lookAtBlock lab = target_.blockHit;
 	//
@@ -124,6 +124,11 @@ void ICharacter::DestroyBlockInAABB(const AABB& aabb)
 void ICharacter::DestroyBlockInOBB(const OBB& obb)
 {
 	mapManager_->GetTerrain()->ReplaceBlockInOBB(obb, BlockID::Air);
+}
+
+void ICharacter::DestroyBlockInSphere(const Sphere& sphere)
+{
+	mapManager_->GetTerrain()->ReplaceBlockInSphere(sphere, BlockID::Air);
 }
 
 void ICharacter::RegisterToMap()

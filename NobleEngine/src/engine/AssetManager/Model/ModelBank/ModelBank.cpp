@@ -19,7 +19,7 @@ int32_t ModelBank::IsModelDataExist(const std::string filePath) const
     return -1;
 }
 
-ModelData* ModelBank::GetModelData(int32_t modelID)
+const ModelData* ModelBank::GetModelData(int32_t modelID) const
 {
 	if (modelID >= 0 && modelID < static_cast<int32_t>(objects_.size()))
 	{

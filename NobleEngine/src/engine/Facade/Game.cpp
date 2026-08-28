@@ -33,7 +33,7 @@ namespace Game
 				return Engine::Instance().GetAssetManager()->GetModelManager()->GetModelCreater()->CreateModel(vertices, name, optimize);
 			}
 
-			ModelData* GetData(int32_t modelID)
+			const ModelData* GetData(int32_t modelID)
 			{
 				return Engine::Instance().GetAssetManager()->GetModelManager()->GetModelBank()->GetModelData(modelID);
 			}
@@ -64,7 +64,7 @@ namespace Game
 				return Engine::Instance().GetAssetManager()->GetTextureManager()->GetTextureLoader()->LoadTexture(filePath);
 			}
 
-			TextureData* GetData(int32_t textureID)
+			const TextureData* GetData(int32_t textureID)
 			{
 				return Engine::Instance().GetAssetManager()->GetTextureManager()->GetTextureBank()->GetTextureData(textureID);
 			}
@@ -77,7 +77,7 @@ namespace Game
 				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioLoader()->LoadAudio(filePath);
 			}
 
-			AudioData* GetData(int32_t audioID)
+			const AudioData* GetData(int32_t audioID)
 			{
 				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioBank()->GetAudioData(audioID);
 			}
@@ -160,33 +160,33 @@ namespace Game
 
 	namespace Audio
 	{
-		void PlayAudio(const int32_t& audioId, bool loop)
+		int32_t PlayAudio(const int32_t& audioId, bool loop)
 		{
-			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->PlayAudio(audioId, loop);
+			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->PlayAudio(audioId, loop);
 		}
-		void StopAudio(const int32_t& audioId)
+		void StopAudio(const int32_t& playId)
 		{
-			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->StopAudio(audioId);
+			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->StopAudio(playId);
 		}
-		void SetAudioVolume(const int32_t& audioId, float volume)
+		void SetAudioVolume(const int32_t& playId, float volume)
 		{
-			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetVolume(audioId, volume);
+			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetVolume(playId, volume);
 		}
 		void SetMasterVolume(float volume)
 		{
 			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetMasterVolume(volume);
 		}
-		float GetVolume(const int32_t& audioId)
+		float GetVolume(const int32_t& playId)
 		{
-			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetVolume(audioId);
+			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetVolume(playId);
 		}
 		float GetMasterVolume()
 		{
 			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetMasterVolume();
 		}
-		bool IsAudioPlaying(const int32_t& audioId)
+		bool IsAudioPlaying(const int32_t& playId)
 		{
-			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->IsAudioPlaying(audioId);
+			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->IsAudioPlaying(playId);
 		}
 	}
 
@@ -339,6 +339,10 @@ namespace Game
 			Vector3 GetCenter(int32_t cameraID)
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetCenter();
+			}
+			Vector3 GetCameraDirection(int32_t cameraID)
+			{
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetCameraDirection();
 			}
 			Vector3 GetTranslate(int32_t cameraID)
 			{

@@ -11,9 +11,9 @@ public:
 	// filePathが同じモデルデータが存在するか
 	int32_t IsModelDataExist(const std::string filePath) const;
 	// modelIDからモデルデータを取得
-	ModelData* GetModelData(int32_t modelID);
+	const ModelData* GetModelData(int32_t modelID) const;
 	// モデルリストを取得
-	std::vector<std::unique_ptr<ModelData>>& GetModelList() { return objects_; }
+	const std::vector<std::unique_ptr<ModelData>>& GetModelList() const { return objects_; }
 
 private:
 	// キー：テクスチャのファイルパス、値：ID

@@ -37,14 +37,14 @@ private:
 	Skeleton CreateSkeleton(const Node& node);
 	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parentIndex, std::vector<Joint>& joints);
 
-	// １，ColliderShape読み込み
-	ColliderShape LoadColliderShapes(const std::string& filePath, const std::vector<VertexData>& vertices);
-	// ２、ColliderShape.csvがあれば読み込み
-	ColliderShape LoadColliderShapesFromCSV(const std::string& filePath);
-	// ２，ColliderShape.csvがなければモデルデータから作成。AABBのみ。
-	AABB CreateLocalAABB(const std::vector<VertexData>& vertices);
-	// ３、ColliderShapeをCSVに保存
-	void SaveColliderShapesToCSV(const std::string& filePath, const ColliderShape& colliderShapes);
+	//// １，ColliderShape読み込み
+	//ColliderShape LoadColliderShapes(const std::string& filePath, const std::vector<VertexData>& vertices);
+	//// ２、ColliderShape.csvがあれば読み込み
+	//ColliderShape LoadColliderShapesFromCSV(const std::string& filePath);
+	//// ２，ColliderShape.csvがなければモデルデータから作成。AABBのみ。
+	//AABB CreateLocalAABB(const std::vector<VertexData>& vertices);
+	//// ３、ColliderShapeをCSVに保存
+	//void SaveColliderShapesToCSV(const std::string& filePath, const ColliderShape& colliderShapes);
 
 
 	// アップロード用一時リソースを保持するリスト

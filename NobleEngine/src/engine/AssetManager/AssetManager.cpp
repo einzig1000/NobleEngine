@@ -11,3 +11,8 @@ AssetManager::AssetManager(DirectXManager* dxManager)
 
 AssetManager::~AssetManager()
 {}
+
+void AssetManager::Update()
+{
+    audioManager_->Update();
+}

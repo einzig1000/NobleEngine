@@ -18,7 +18,7 @@ int32_t TextureBank::IsTextureDataExist(const std::string& filePath) const
 	return -1;
 }
 
-TextureData* TextureBank::GetTextureData(int32_t textureID)
+const TextureData* TextureBank::GetTextureData(int32_t textureID) const
 {
 	auto it = textures_.find(textureID);
 	if (it != textures_.end())

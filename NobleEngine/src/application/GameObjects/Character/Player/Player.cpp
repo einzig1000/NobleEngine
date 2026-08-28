@@ -6,15 +6,12 @@
 Player::Player()
 {
 	// プレイヤーデータ初期化
-	render_.modelID_ = Game::Asset::Model::Load("assets/engine/model/cube/cube.obj");
-	ModelData* modelData = Game::Asset::Model::GetData(render_.modelID_);
+	render_.modelID_ = Game::Asset::Model::Load("assets/application/Minecraft/player/player.obj");
+	const ModelData* modelData = Game::Asset::Model::GetData(render_.modelID_);
 	SetBoundingBox(modelData->colliderShape.aabbs[0]);
 	render_.psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	render_.psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_.SetupFromShaders();
-
-	//c_viewCameraID_ = Game::Camera::AddCamera("PlayerView");
-	//Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
 
 	swingMining_ = std::make_unique<SwingMining>(this);
 	rangeMining_ = std::make_unique<RangeMining>(this);
@@ -25,17 +22,17 @@ Player::~Player()
 
 void Player::Initialize()
 {
-	translate_.value = Vector3(0.0f, 20.0f, 0.0f);
-	translate_.velocity = Vector3(0.0f, -0.0f, 0.0f);
-	translate_.acceleration = Vector3(0.0f, Constexprs::GRAVITY, 0.0f);
+	translate_.value = Vector3{ 0.0f, 60.0f, 0.0f };
+	translate_.velocity = Vector3{ 0.0f, -0.0f, 0.0f };
+	translate_.acceleration = Vector3{ 0.0f, Constexprs::GRAVITY, 0.0f };
 
-	scale_.value = Vector3(1.0f, 1.0f, 1.0f);
-	scale_.velocity = Vector3(0.0f, 0.0f, 0.0f);
-	scale_.acceleration = Vector3(0.0f, 0.0f, 0.0f);
+	scale_.value = Vector3{ 1.0f, 1.0f, 1.0f };
+	scale_.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+	scale_.acceleration = Vector3{ 0.0f, 0.0f, 0.0f };
 
-	rotate_.value = Vector3(0.0f, 0.0f, 0.0f);
-	rotate_.velocity = Vector3(0.0f, 0.0f, 0.0f);
-	rotate_.acceleration = Vector3(0.0f, 0.0f, 0.0f);
+	rotate_.value = Vector3{ 0.0f, 0.0f, 0.0f };
+	rotate_.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
+	rotate_.acceleration = Vector3{ 0.0f, 0.0f, 0.0f };
 
 	RegisterToMap();
 
@@ -52,21 +49,19 @@ void Player::Update(int32_t cameraID)
 
 	previousHP_ = static_cast<float>(HP_);
 
-	// 移動系入力処理
+	// 入力に対する処理
 	UpdateInput(cameraID);
+
 	// マップ情報を見て適切に移動を適用する
 	ApplyMove();
 
 	// 移動後の視線レイ更新
 	ComputeViewRay(cameraID);
 
-	// ターゲットブロック取得
-	SetTargetBlock();
+	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, cameraID);
 
-	// 左クリックで起きるイベント更新(ブロック破壊とか)
-	UpdateLeftClick();
-	// 右クリックで起きるイベント更新(ブロック設置とか)
-	UpdateRightClick();
+	// 視線レイからターゲットブロック取得
+	SetTargetBlock();
 
 	// 持ってるアイテムの更新
 	UpdateHaveItem(cameraID);
@@ -84,11 +79,10 @@ void Player::Update(int32_t cameraID)
 		break;
 	}
 
-	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, cameraID);
 
 	Matrix4x4 wvpMatrix = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	int32_t texID = 2;
+	int32_t texID = Game::Asset::Texture::Load("assets/engine/texture/white1x1.png");
 
 	render_.SetCBufferData(0, ShaderType::VertexShader, &wvpMatrix);
 	render_.SetCBufferData(1, ShaderType::VertexShader, &worldMatrix_);
@@ -96,14 +90,13 @@ void Player::Update(int32_t cameraID)
 	render_.SetCBufferData(1, ShaderType::PixelShader, &texID);
 }
 
-void Player::UpdateLeftClick()
+void Player::UpdateInputLeftClick()
 {
 	if (!Game::IO::Mouse::IsHeld(0)) return;
 
-	//DestroyBlockInAABB(aabb);
 }
 
-void Player::UpdateRightClick()
+void Player::UpdateInputRightClick()
 {
 	if (!Game::IO::Mouse::IsJustPressed(1)) return;
 }
@@ -176,23 +169,21 @@ void Player::SetViewCamera(int32_t cameraID)
 }
 
 
-void Player::UpdateInputSpeed()
+void Player::UpdateInputWASD(int32_t cameraID)
 {
+	// ダッシュ解除
 	if (dash_ && Game::IO::Key::IsJustReleased('W'))
 	{
 		dash_ = false;
 		speed_ = normalSpeed_;
 	}
 
-	// 10フレーム以内の単タップを検知したら
-	if (Game::IO::Key::TestTapLong('W', 10))
-	{
-		dashBufferTimer_ = 30;
-	}
-	else if (dashBufferTimer_ > 0)
+	// ダッシュ開始可能
+	if (dashBufferTimer_ > 0)
 	{
 		dashBufferTimer_--;
 
+		// ダッシュ開始
 		if (Game::IO::Key::IsJustPressed('W'))
 		{
 			dash_ = true;
@@ -200,9 +191,13 @@ void Player::UpdateInputSpeed()
 			dashBufferTimer_ = 0;
 		}
 	}
-}
-void Player::UpdateInputMove(int32_t cameraID)
-{
+	// 10フレーム以内の単タップを検知したら
+	else if (Game::IO::Key::TestTapLong('W', 10))
+	{
+		// ダッシュ開始可能タイマーをセット
+		dashBufferTimer_ = 30;
+	}
+
 	// 移動処理
 	Vector2 input(0.0f, 0.0f);
 
@@ -216,9 +211,7 @@ void Player::UpdateInputMove(int32_t cameraID)
 
 	if (input.x != 0.0f || input.y != 0.0f)
 	{
-		Vector3 cameraPos = Game::Camera::Getter::GetTranslate(cameraID);
-		Vector3 cameraCenter = Game::Camera::Getter::GetCenter(cameraID);
-		Vector3 cameraDir = cameraCenter - cameraPos;
+		Vector3 cameraDir = Game::Camera::Getter::GetCameraDirection(cameraID);
 		cameraDir.y = 0.0f;
 		cameraDir.Normalize();
 
@@ -243,7 +236,7 @@ void Player::UpdateInputMove(int32_t cameraID)
 	}
 	Move(moveDir, speed_);
 }
-void Player::UpdateInputJump()
+void Player::UpdateInputSpace()
 {
 	// ジャンプ処置
 	if (Game::IO::Key::IsJustPressed(VK_SPACE))
@@ -251,10 +244,32 @@ void Player::UpdateInputJump()
 		Jump();
 	}
 }
+void Player::UpdateInputMouseCursor(int32_t cameraID)
+{
+	// マウスカーソル操作時の処理（視線操作）
+	Vector2 mouseDelta = Game::IO::Mouse::Get2DPositionDelta();
+	if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
+	{
+		// カメラの回転を更新
+		Game::Camera::Setter::SetRotate(Vector3(-mouseDelta.y * 0.01f, -mouseDelta.x * 0.01f, 0.0f), 0.0f, EaseType::IN_BACK, cameraID);
+	}
+
+	ImGui::Begin("moouseCursorDelta");
+	ImGui::Text("Mouse Delta: (%.2f, %.2f)", mouseDelta.x, mouseDelta.y);
+	ImGui::End();
+}
 
 void Player::UpdateInput(int32_t cameraID)
 {
-	UpdateInputSpeed();
-	UpdateInputJump();
-	UpdateInputMove(cameraID);
+	// マウスカーソル操作時の処理（視線操作）
+	UpdateInputMouseCursor(cameraID);
+	// SPACE入力時の処理(ジャンプ)
+	UpdateInputSpace();
+	// WASD入力時の処理(ダッシュ判定を含む移動)
+	UpdateInputWASD(cameraID);
+
+	// 左クリックで起きるイベント更新(ブロック破壊とか)
+	UpdateInputLeftClick();
+	// 右クリックで起きるイベント更新(ブロック設置とか)
+	UpdateInputRightClick();
 }

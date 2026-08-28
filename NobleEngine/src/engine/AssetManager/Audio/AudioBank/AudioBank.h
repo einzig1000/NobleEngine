@@ -16,9 +16,9 @@ public:
 	// 次のIDを取得
 	int32_t AllocateAudioID() const { return static_cast<int32_t>(audioList_.size()); }
 	// audioIDからオーディオデータを取得
-	AudioData* GetAudioData(int32_t audioID);
+	const AudioData* GetAudioData(int32_t audioID) const;
 	// オーディオリストを取得
-	std::vector<std::unique_ptr<AudioData>>& GetAudioList() { return audioList_; }
+	const std::vector<std::unique_ptr<AudioData>>& GetAudioList() const { return audioList_; }
 
 private:
 	// キー：オーディオのファイルパス、値：ID

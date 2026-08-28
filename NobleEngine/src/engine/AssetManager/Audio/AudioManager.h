@@ -12,6 +12,7 @@ class AudioManager
 public:
     AudioManager();
     ~AudioManager();
+	void Update();
 
 	AudioLoader* GetAudioLoader() const { return loader_.get(); }
 	AudioPlayer* GetAudioPlayer() const { return player_.get(); }

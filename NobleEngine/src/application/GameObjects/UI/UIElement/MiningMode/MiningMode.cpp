@@ -11,7 +11,7 @@ MiningMode::MiningMode()
 	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
 	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/MiningMode/mode1.png");
-	TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
+	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
 	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / -2.0f, 1.0f);
 	sprites_[0].transforms.translate = Vector3(280.0f, 360.0f, 1.0f);
 
@@ -23,8 +23,8 @@ MiningMode::MiningMode()
 	sprites_[1].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[1].render->SetupFromShaders();
 	sprites_[1].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/MiningMode/mode2.png");
-	textureData = Game::Asset::Texture::GetData(sprites_[1].textureID);
-	sprites_[1].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / -2.0f, 1.0f);
+	const TextureData* textureData2 = Game::Asset::Texture::GetData(sprites_[1].textureID);
+	sprites_[1].transforms.scale = Vector3(float(textureData2->metadata.width) / 2.0f, float(textureData2->metadata.height) / -2.0f, 1.0f);
 	sprites_[1].transforms.translate = Vector3(static_cast<float>(Game::Window::GetWidth()) - 280.0f, 360.0f, 1.0f);
 }
 

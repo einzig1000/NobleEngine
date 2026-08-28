@@ -57,10 +57,6 @@ void GameScenePhase::Update()
 	int32_t targetCameraID = c_player_;
 	Vector3 cameraPos = Game::Camera::Getter::GetCenter(targetCameraID);
 
-
-	// カメラ更新
-	cameraController_->Update(targetCameraID);
-
 	// UI更新
 	uiManager_->Update(targetCameraID);
 	// キャラクターマネージャー更新
@@ -69,6 +65,11 @@ void GameScenePhase::Update()
 	map_->Update(targetCameraID, cameraPos);
 
 	screenDrawer_->Update(targetCameraID);
+
+	// カメラ更新
+	//Game::Camera::Setter::SetCenter(charctorManager_->GetPlayer()->GetPosition(), 0.0f, EaseType::IN_BACK, targetCameraID);
+	cameraController_->Update(targetCameraID);
+
 }
 
 
@@ -78,10 +79,10 @@ void GameScenePhase::Draw()
 	int32_t rt_UI = screenDrawer_->GetUIRenderTexture();
 	int32_t rt_Background = screenDrawer_->GetBackgroundRenderTexture();
 
-	// マップ描画
-	map_->Draw(rt_Background, rt_3D);
 	// キャラクター描画
 	charctorManager_->Draw(rt_3D);
+	// マップ描画
+	map_->Draw(rt_Background, rt_3D);
 	// UI描画
 	uiManager_->Draw(rt_UI);
 

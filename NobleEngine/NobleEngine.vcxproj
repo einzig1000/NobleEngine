@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\ResourceLoader\Data\Item\Saver\ItemDataSaver.cpp" />
+    <ClCompile Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.cpp" />
     <ClCompile Include="src\application\GameObjects\EventBus\EventBus.cpp" />
     <ClCompile Include="src\engine\AssetManager\Font\FontManager.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\CharacterManager.cpp" />
@@ -144,6 +146,8 @@
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\ResourceLoader\Data\Item\Saver\ItemDataSaver.h" />
+    <ClInclude Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.h" />
     <ClInclude Include="src\application\GameObjects\EventBus\EventBus.h" />
     <ClInclude Include="externals\stb\stb_truetype.h" />
     <ClInclude Include="src\engine\AssetManager\Font\FontManager.h" />

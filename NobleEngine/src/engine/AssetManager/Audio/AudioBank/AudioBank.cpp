@@ -28,7 +28,7 @@ int32_t AudioBank::IsAudioDataExist(const std::string & filePath)
 	return -1;
 }
 
-AudioData* AudioBank::GetAudioData(int32_t audioID)
+const AudioData* AudioBank::GetAudioData(int32_t audioID) const
 {
 	if (audioID >= 0 && audioID < static_cast<int32_t>(audioList_.size()))
 	{
@@ -39,14 +39,6 @@ AudioData* AudioBank::GetAudioData(int32_t audioID)
 
 void AudioBank::CleanupAudioData(AudioData& entry)
 {
-    if (entry.pSourceVoice)
-    {
-        entry.pSourceVoice->Stop(0);
-        entry.pSourceVoice->FlushSourceBuffers();
-        entry.pSourceVoice->DestroyVoice();
-        entry.pSourceVoice = nullptr;
-    }
-
     if (entry.pWfx)
     {
         CoTaskMemFree(entry.pWfx);

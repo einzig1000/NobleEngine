@@ -19,7 +19,7 @@ void TexturePreview::Draw()
 void TexturePreview::DrawImGui()
 {
 	ImGui::Begin("Texture Preview");
-	std::unordered_map<int32_t, std::unique_ptr<TextureData>>& textureList = bank_->GetTextureList();
+	const std::unordered_map<int32_t, std::unique_ptr<TextureData>>& textureList = bank_->GetTextureMap();
 
 	if (ImGui::BeginListBox("##texture list"))
 	{
@@ -30,8 +30,8 @@ void TexturePreview::DrawImGui()
 			if (ImGui::Selectable(filePath.c_str(), textureID_ == texture.first))
 			{
 				textureID_ = texture.first;
-				size_t textureW = bank_->GetTextureList().at(textureID_)->metadata.width;
-				size_t textureH = bank_->GetTextureList().at(textureID_)->metadata.height;
+				size_t textureW = bank_->GetTextureMap().at(textureID_)->metadata.width;
+				size_t textureH = bank_->GetTextureMap().at(textureID_)->metadata.height;
 
 				// 長い方を512に合わせて正規化
 				bool isWidthLonger = textureW > textureH;

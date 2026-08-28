@@ -11,8 +11,8 @@
 #include <mfreadwrite.h>
 #include <mferror.h>
 
-AudioLoader::AudioLoader(AudioBank* bank, IXAudio2* pXAudio2)
-	: bank_(bank), pXAudio2_(pXAudio2)
+AudioLoader::AudioLoader(AudioBank* bank)
+	: bank_(bank)
 {}
 
 AudioLoader::~AudioLoader() {}
@@ -158,43 +158,6 @@ int32_t AudioLoader::LoadAudio(const std::string & filePath)
     // 読み込み完了後にメモリを安定化してから pAudioData を設定
     data->audioData.shrink_to_fit();
     data->audioBytes = totalAudioDataSize;
-
-    // XAudio2Bufferの設定
-    ZeroMemory(&data->xAudioBuffer, sizeof(data->xAudioBuffer));
-    data->xAudioBuffer.AudioBytes = data->audioBytes;
-    data->xAudioBuffer.pAudioData = data->audioData.data();
-    data->xAudioBuffer.LoopBegin = 0;
-    data->xAudioBuffer.LoopLength = 0;
-    data->xAudioBuffer.LoopCount = 0; // 0は1回再生
-
-    /// ソースボイスの作成
-    // XAudio2Create が成功し、pXAudio2 が有効であることを確認
-    if (!pXAudio2_)
-    {
-        Log("XAudio2 engine not initialized when trying to create source voice.");
-        if (data->pWfx) { CoTaskMemFree(data->pWfx); data->pWfx = nullptr; data->wfxSize = 0; }
-        return UINT32_MAX;
-    }
-
-    //Log("--- Debugging WAVEFORMATEX for CreateSourceVoice ---");
-    //Log("filePath: %s", filePath.c_str());
-    //Log("wFormatTag: 0x%X (0x1 = WAVE_FORMAT_PCM)", data->pWfx->wFormatTag);
-    //Log("nChannels: %u", data->pWfx->nChannels);
-    //Log("nSamplesPerSec: %u Hz", data->pWfx->nSamplesPerSec);
-    //Log("nAvgBytesPerSec: %u bytes/sec", data->pWfx->nAvgBytesPerSec);
-    //Log("nBlockAlign: %u bytes", data->pWfx->nBlockAlign);
-    //Log("wBitsPerSample: %u bits", data->pWfx->wBitsPerSample);
-    //Log("cbSize: %u bytes (extra info size)", data->pWfx->cbSize);
-    //Log("--------------------------------------------------");
-
-
-    hr = pXAudio2_->CreateSourceVoice(&data->pSourceVoice, data->pWfx, 0, XAUDIO2_DEFAULT_FREQ_RATIO, &voiceCallback);
-    if (FAILED(hr))
-    {
-        Log("Failed to create source voice: 0x%X", hr);
-        if (data->pWfx) { CoTaskMemFree(data->pWfx); data->pWfx = nullptr; data->wfxSize = 0; }
-        return UINT32_MAX;
-    }
 
     // マップに格納
     int32_t id = bank_->AllocateAudioID();

@@ -3,6 +3,7 @@
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include <DirectX/DirectXManager.h>
 #include <AssetManager/Model/ModelBank/ModelBank.h>
+#include <AssetManager/Model/ModelHelper/ModelHelper.h>
 #include <filesystem>
 #include <externals/meshoptimizer-1.1/meshoptimizer.h>
 
@@ -190,8 +191,8 @@ int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const
         modelData->meshlets.shrink_to_fit();
     }
 
-    // AABB作成
-    // ref->aabb = CreateLocalAABB(vertices);
+    // デフォルトコライダー作成
+	modelData->colliderShape.aabbs.push_back(ModelHelper::CreateDefaultAABB(modelData->vertices));
 
 	// 表記揺れを防ぐため小文字に変換してファイルパスとして扱う
     std::string filePath = name;

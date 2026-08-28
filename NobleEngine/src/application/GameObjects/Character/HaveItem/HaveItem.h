@@ -14,19 +14,17 @@ public:
 	void SetItem(ItemID itemID) { currentItemID_ = itemID; }
 	void SetParentWorldMatrix(const Matrix4x4& world) { parentWorldMatrix_ = world; }
 
-	const std::vector<AABB>& GetAABB() const { return itemAABB_; }
-	const std::vector<OBB>& GetOBB() const { return itemOBB_; }
+	const ColliderShape& GetWorldCollider() const { return worldCollider_; }
 
 private:
 	std::unique_ptr<RenderObject> render_;
-	std::vector<AABB> itemAABB_;
-	std::vector<OBB> itemOBB_;
 	ItemID currentItemID_ = ItemID::MAX;
+	ColliderShape worldCollider_;
 
 	Matrix4x4 parentWorldMatrix_;
 	EulerTransforms pivotTransform_;
 	EulerTransforms itemTransform_;
 
-	float startTime_;
+	float startTime_ = 0.0f;
 };
 

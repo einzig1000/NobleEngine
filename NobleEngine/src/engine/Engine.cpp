@@ -119,8 +119,11 @@ void Engine::BeginFrame()
 	// DirectXを更新
 	dxManager_->BeginFrame();
 
-	// インプット系を更新
+	// 入出力系を更新
 	ioManager_->Update();
+
+	// オーディオの再生完了ボイスを回収
+	assetManager_->Update();
 
 	// デバッグモードの時のみ呼び出す
 //#ifdef _DEBUG

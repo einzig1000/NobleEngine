@@ -1030,17 +1030,27 @@ struct TextureData
 #pragma region オーディオデータ構造体
 
 // オーディオデータとソースボイスを保持する構造体
+//struct AudioData
+//{
+//	// データ本体
+//    std::vector<BYTE> audioData;
+//    UINT32 audioBytes = 0;
+//
+//    WAVEFORMATEX* pWfx = nullptr;
+//    UINT32 wfxSize = 0;
+//
+//    IXAudio2SourceVoice* pSourceVoice = nullptr;
+//    XAUDIO2_BUFFER xAudioBuffer = {};
+//};
+
 struct AudioData
 {
-	// データ本体
+    // データ本体
     std::vector<BYTE> audioData;
     UINT32 audioBytes = 0;
 
     WAVEFORMATEX* pWfx = nullptr;
     UINT32 wfxSize = 0;
-
-    IXAudio2SourceVoice* pSourceVoice = nullptr;
-    XAUDIO2_BUFFER xAudioBuffer = {};
 };
 
 #pragma endregion
