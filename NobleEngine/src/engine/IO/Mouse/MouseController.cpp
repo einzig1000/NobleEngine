@@ -144,8 +144,6 @@ void MouseController::Compute2DPosition()
     // ゲームウィンドウが非アクティブならロックしない
     const bool isAppFocused = (::GetForegroundWindow() == hwnd_);
 
-	ImGui::Begin("Mouse Position");
-
 	// 非表示 && ウィンドウアクティブ時は画面中央にロック
     if (!isVisible_ && isAppFocused)
     {
@@ -163,8 +161,6 @@ void MouseController::Compute2DPosition()
         // position_ はクライアント座標で保持している前提なので、ここはクライアント中心値にする
         position_ = Vector2{ float((rc.left + rc.right) / 2), float((rc.top + rc.bottom) / 2) };
 
-        ImGui::Text("Cursor Locked to Center");
-        ImGui::End();
         return;
 	}
 
@@ -177,9 +173,6 @@ void MouseController::Compute2DPosition()
 
     // mousePosScreen.x, mousePosScreen.y がウィンドウ内のマウス座標
     position_ = Vector2{ float(mousePosScreen.x),float(mousePosScreen.y) };
-
-    ImGui::Text("Cursor UnLocked");
-    ImGui::End();
 }
 
 // マウスレイ取得

@@ -6,6 +6,7 @@
 #include "UIData.h"
 
 class EventBus;
+class ItemInventory;
 
 class UIManager
 {
@@ -21,9 +22,11 @@ public:
 	void ChangeScreen(UIMode mode);
 
 	void SetEventBus(EventBus* eventBus);
+	void SetInventory(const ItemInventory* inventory);
 
 private:
 	EventBus* eventBus_ = nullptr;
+	const ItemInventory* inventory_ = nullptr;
 
 	size_t currentUIMode_ = 0;
 	IUIScreen* currentScreen_ = nullptr;

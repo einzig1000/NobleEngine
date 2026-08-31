@@ -20,7 +20,7 @@ public:
 
 	virtual UIMode GetNextUIMode() const { return nextUIMode_; }
 
-	virtual void SetEventBus(EventBus* eventBus);
+	virtual void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; };
 
 	// エレメントの追加
 	virtual void AddElement(IUIElement* element) { uiElements_.push_back(element); }

@@ -41,8 +41,8 @@ public:
 
 public:
     // 情報取得
-    //Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix; }
-    Matrix4x4 GetViewProjectionMatrix();
+    Matrix4x4 GetViewProjectionMatrix() const { return viewProjectionMatrix; }
+    //Matrix4x4 GetViewProjectionMatrix();
     Matrix4x4 GetViewMatrix() const { return viewMatrix_; }
     Matrix4x4 GetViewportMatrix() const { return viewportMatrix; }
     Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }

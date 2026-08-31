@@ -22,27 +22,34 @@ ItemID ItemInventory::GetCurrentSelectedItemID() const
 void ItemInventory::AddItem(ItemID id)
 {
     // 既存スタックに追加
-    for (int32_t index = 0; index < 36; ++index)
+    for (int32_t index = 0; index < kSlotCount; ++index)
     {
         auto& slot = inventory_[index];
-        if (slot.itemID == id && slot.count < 64)
+        if (slot.itemID == id && slot.count < kMaxStackCount)
         {
             slot.count++;
             return;
         }
     }
-
+    
     // 空スロットに追加
-    for (int32_t index = 0; index < 36; ++index)
+    for (int32_t index = 0; index < kSlotCount; ++index)
     {
         auto& slot = inventory_[index];
         if (slot.itemID == ItemID::MAX || slot.count == 0)
         {
             slot.itemID = id;
             slot.count = 1;
-            //slot.iconTextureID = GetItemIconTextureID(id);
-            slot.iconTextureID = 3;
             return;
         }
     }
 }
+
+void ItemInventory::SetHotbarSelectedIndex(int32_t index)
+{
+    if (index < 0 || index >= kHotbarSlotCount) return;
+    hotbarSelectedIndex_ = index;
+}
+
+void ItemInventory::SwapSlot(int32_t a, int32_t b)
+{}

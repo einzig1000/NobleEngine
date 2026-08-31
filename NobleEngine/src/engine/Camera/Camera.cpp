@@ -402,16 +402,16 @@ bool Camera::InCamera(const AABB& aabb)
 	return true; // どの平面の外側にもない場合は、視錐台内にあると判定
 }
 
-Matrix4x4 Camera::GetViewProjectionMatrix()
-{
-	Vector3 localPos = CoordinateConverter::ToCartesian(sphericalEye_);
-	eye_ = center_ + localPos;
-
-	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
-	viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
-
-	return viewProjectionMatrix;
-}
+//Matrix4x4 Camera::GetViewProjectionMatrix()
+//{
+//	Vector3 localPos = CoordinateConverter::ToCartesian(sphericalEye_);
+//	eye_ = center_ + localPos;
+//
+//	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
+//	viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
+//
+//	return viewProjectionMatrix;
+//}
 
 // 実際に動かす
 void Camera::MovingCenter(float dt)

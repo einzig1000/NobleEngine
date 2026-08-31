@@ -49,7 +49,7 @@ void TestAnimation::Initialize()
 
 void TestAnimation::Update(int32_t cameraID)
 {
-	animationTime_ += Game::Time::GetDeltaTime();
+	animationTime_ += Game::Time::GetDeltaTimeMs();
 	//animationTime_ = 0.5f;
 
 	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);

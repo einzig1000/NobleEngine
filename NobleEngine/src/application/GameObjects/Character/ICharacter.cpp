@@ -13,11 +13,8 @@ void ICharacter::SetTargetBlock()
 
 void ICharacter::ComputeViewRay(int32_t cameraID)
 {
-	Vector3 cameraCenter = Game::Camera::Getter::GetCenter(cameraID);
-	Vector3 cameraDir = (cameraCenter - translate_.value).Normalized();
-
 	viewRay_.origin = translate_.value;
-	viewRay_.diff = cameraDir;
+	viewRay_.diff = Game::Camera::Getter::GetCameraDirection(cameraID);
 }
 
 std::optional<lookAtBlock> ICharacter::GetLookedAtBlock() const
@@ -59,7 +56,7 @@ void ICharacter::ApplyMove()
 	Vector3 aabbMin = aabb.min;
 	aabbMin.y += Constexprs::kBlockSize * 0.5f;			// 足元の判定を少し上げる
 	aabb.min = translate_.value + aabbMin;
-	float dt = Game::Time::GetDeltaTime();
+	float dt = Game::Time::GetDeltaTimeMs();
 	translate_.velocity += translate_.acceleration;		// 加速度を速度に反映
 	Vector3 movement = translate_.velocity;				// 移動量を計算
 	mapManager_->GetTerrain()->SweepAABB(aabb, movement);// mapManager_に希望移動量を申請し修正してもらう
@@ -115,17 +112,14 @@ void ICharacter::SetBlock(BlockID id)
 	//// アイテムを1つ消費
 	//haveItem_->RemoveCurrentSelectedItem(1);
 }
-
 void ICharacter::DestroyBlockInAABB(const AABB& aabb)
 {
 	mapManager_->GetTerrain()->ReplaceBlockInAABB(aabb, BlockID::Air);
 }
-
 void ICharacter::DestroyBlockInOBB(const OBB& obb)
 {
 	mapManager_->GetTerrain()->ReplaceBlockInOBB(obb, BlockID::Air);
 }
-
 void ICharacter::DestroyBlockInSphere(const Sphere& sphere)
 {
 	mapManager_->GetTerrain()->ReplaceBlockInSphere(sphere, BlockID::Air);

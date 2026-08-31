@@ -44,12 +44,26 @@ void UIManager::SetEventBus(EventBus* eventBus)
 {
 	eventBus_ = eventBus;
 
-	for (auto& screen : screens_)
+	for (const auto& element : elements_)
+	{
+		element->SetEventBus(eventBus_);
+	}
+
+	for (const auto& screen : screens_)
 	{
 		screen->SetEventBus(eventBus_);
 	}
 }
 
+void UIManager::SetInventory(const ItemInventory* inventory)
+{
+	inventory_ = inventory;
+
+	for (auto& element : elements_)
+	{
+		element->SetInventory(inventory_);
+	}
+}
 
 UIManager::~UIManager(){}
 

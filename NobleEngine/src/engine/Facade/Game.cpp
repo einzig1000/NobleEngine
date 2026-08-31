@@ -521,7 +521,7 @@ namespace Game
 
 	namespace Time
 	{
-		float GetDeltaTime()
+		float GetDeltaTimeMs()
 		{
 			return Engine::Instance().GetFixFPS()->GetClampedDeltaTimeMs();
 		}

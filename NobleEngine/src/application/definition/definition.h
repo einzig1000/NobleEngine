@@ -232,6 +232,9 @@ struct ItemInfo
 	int32_t textureID = -1;
 	// モデル
 	int32_t modelID = -1;
+
+	// アイコン
+	int32_t iconID = -1;
 };
 
 

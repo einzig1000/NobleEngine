@@ -3,6 +3,7 @@
 #include <GameObjects/UI/UIData.h>
 
 class EventBus;
+class ItemInventory;
 
 struct ElementData
 {
@@ -27,11 +28,13 @@ public:
 	virtual void Draw(int32_t rt_ID) = 0;
 
 	virtual void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; }
+	virtual void SetInventory(const ItemInventory* inventory) { inventory_ = inventory; }
 	virtual void SetNextUIMode(UIMode* nextUIMode) { nextUIMode_ = nextUIMode; }
 
 protected:
 	EventBus* eventBus_ = nullptr;
 	UIMode* nextUIMode_ = nullptr;
+	const ItemInventory* inventory_ = nullptr;
 
 	std::vector<ElementData> sprites_;
 };

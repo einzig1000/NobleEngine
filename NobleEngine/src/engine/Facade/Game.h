@@ -595,7 +595,7 @@ namespace Game
 			/// <param name="t"> 0.0f～1.0f の補完値 </param>
 			/// <returns> イージング後の値 </returns>
 			template<typename T>
-			float Easing(T start, T end, EaseType easeType, float t)
+			T Easing(T start, T end, EaseType easeType, float t)
 			{
 				return Easing::EasingValue(start, end, easeType, t);
 			}
@@ -674,7 +674,7 @@ namespace Game
 	namespace Time
 	{
 		/// <returns>デルタタイム</returns>
-		float GetDeltaTime();
+		float GetDeltaTimeMs();
 
 		/// <returns>起動からの経過時間取得</returns>
 		uint32_t GetElapsedTime();

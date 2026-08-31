@@ -356,7 +356,7 @@ void TestParticle::Update(int32_t cameraID)
 	}
 
 
-	float deltaTime = Game::Time::GetDeltaTime();
+	float deltaTime = Game::Time::GetDeltaTimeMs();
 	emitterSphere.frequencyTime += deltaTime;
 	if (emitterSphere.frequency <= emitterSphere.frequencyTime)
 	{

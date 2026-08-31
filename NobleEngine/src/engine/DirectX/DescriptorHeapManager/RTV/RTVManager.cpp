@@ -11,7 +11,7 @@ RTVManager::RTVManager(ID3D12Device2* device)
 	descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	// RTV用のディスクリプタヒープ作成
-	capacity_ = 32;
+	capacity_ = 256;
 	nextIndex_ = 0;
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = capacity_;

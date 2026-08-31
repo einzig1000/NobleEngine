@@ -19,15 +19,16 @@ GameScenePhase::GameScenePhase()
 	screenDrawer_ = std::make_unique<ScreenDrawer>();
 	screenDrawer_->SetEventBus(eventBus_.get());
 
-	// UIマネージャー生成
-	uiManager_ = std::make_unique<UIManager>();
-	uiManager_->SetEventBus(eventBus_.get());
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
 	map_->SetEventBus(eventBus_.get());
 	// キャラクターマネージャー生成
 	charctorManager_ = std::make_unique<CharacterManager>(map_.get());
 	charctorManager_->SetEventBus(eventBus_.get());
+	// UIマネージャー生成
+	uiManager_ = std::make_unique<UIManager>();
+	uiManager_->SetEventBus(eventBus_.get());
+	uiManager_->SetInventory(charctorManager_->GetPlayer()->GetInventory());
 
 
 

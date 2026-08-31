@@ -77,12 +77,16 @@ public:
 	virtual AABB GetBlockWorldAABB(const Vector3int& chunkIndex, const Vector3int& localIndex) const;
 
 
+	// インベントリの読み取り専用参照
+	virtual const ItemInventory* GetInventory() const { return &inventory_; }
 	// アイテム獲得
 	virtual void AddItem(ItemID id) { inventory_.AddItem(id); }
 	// 手に持っているアイテムを取得
-	virtual ItemID GetHaveItem() const { return inventory_.GetCurrentSelectedItemID(); }
+	virtual const ItemID GetHaveItem() const { return inventory_.GetCurrentSelectedItemID(); }
+
 	// 手に持っているアイテムのコライダーを取得
 	virtual const ColliderShape& GetHaveItemWorldCollider() const { return haveItem_.GetWorldCollider(); }
+
 
 protected:
 	EventBus* eventBus_ = nullptr;
@@ -102,5 +106,9 @@ protected:
 	VectorDynamics translate_;
 	VectorDynamics scale_;
 	VectorDynamics rotate_;
+
+	float viewPhi_ = 0.0f;
+	float viewTheta_ = 0.0f;	// std::numbers::pi_v<float> / 2.0f;
+	float lookSensitivity_ = 0.003f;			// マウス感度（ラジアン/ピクセル）
 };
 

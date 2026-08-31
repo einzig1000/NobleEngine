@@ -11,7 +11,7 @@ SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // SRV用ディスクリプタヒープ作成
-	textureCapacity_ = 128;
+	textureCapacity_ = 256;
 	textureCubeCapacity_ = 16;
 	bufferCapacity_ = 1024 * 16 * 4;
     capacity_ = textureCapacity_ + textureCubeCapacity_ + bufferCapacity_;

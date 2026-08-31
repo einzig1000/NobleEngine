@@ -8,8 +8,8 @@
 
 GameManager::GameManager() 
 {
-	currentPhase_ = CreatePhase(PHASE::Phase_GameScene);
-	//currentPhase_ = CreatePhase(PHASE::Phase_Title);
+	//currentPhase_ = CreatePhase(PHASE::Phase_GameScene);
+	currentPhase_ = CreatePhase(PHASE::Phase_Title);
 	currentPhase_->SetContext(&phaseContext_);
 	currentPhase_->Initialize();
 

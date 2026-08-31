@@ -34,9 +34,6 @@ TitlePhase::TitlePhase()
 	// カメラ作成
 	c_title_ = cameraController_->AddCamera("TitlePhaseCamera");
 
-	// Font読み込み
-	Game::Asset::Font::Load("Assets/engine/fonts/DotGothic16/DotGothic16-Regular.ttf");
-
 	//buttonModelID_ = Game::Asset::Model::Load("assets/application/model/buttonPlane/buttonPlane.obj");
 	buttonColliderModelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	buttonModelID_ = buttonColliderModelID_;

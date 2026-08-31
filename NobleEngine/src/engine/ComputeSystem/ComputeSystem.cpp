@@ -16,6 +16,10 @@ ComputeSystem::~ComputeSystem()
 
 void ComputeSystem::Reset()
 {
+	// CBアロケータをリセット
+	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	cbAllocators_[backBufferIndex].Reset();
+
 	computeObjects_.clear();
 }
 

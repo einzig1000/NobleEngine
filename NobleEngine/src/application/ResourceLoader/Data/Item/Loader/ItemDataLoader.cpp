@@ -42,129 +42,6 @@ void ItemDataLoader::Load()
 		if (id == ObjectID::MAX) continue;
 		Load(id);
 	}
-
-	//// ブロック情報の読み込み
-	//std::vector<std::string> blockKeys;
-	//JsonManager::Load("assets/application/json/BlockConfig.json", "/Keys", blockKeys);
-	// 
-	//for (const std::string& blockIDStr : blockKeys)
-	//{
-	//	auto e = magic_enum::enum_cast<BlockID>(blockIDStr);
-	//	if (!e.has_value())
-	//	{
-	//		__debugbreak();
-	//		continue;
-	//	}
-	// 
-	//	BlockInfo info;
-	// 
-	//	info.ID = e.value();
-	// 
-	//	JsonManager::Load("assets/application/json/BlockConfig.json", "/" + blockIDStr + "/color", info.color);
-	//	JsonManager::Load("assets/application/json/BlockConfig.json", "/" + blockIDStr + "/durability", info.durability);
-	//	JsonManager::Load("assets/application/json/BlockConfig.json", "/" + blockIDStr + "/isTransparent", info.isTransparent);
-	// 
-	//	bank_->SetBlockInfo(info.ID, info);
-	//}
-	// 
-	//bank_->CreateBlockInfoTable();
-	// 
-	// 
-	//// ツール情報の読み込み
-	//std::vector<std::string> toolKeys;
-	//JsonManager::Load("assets/application/json/ToolConfig.json", "/Keys", toolKeys);
-	// 
-	//for (const std::string& toolIDStr : toolKeys)
-	//{
-	//	auto e = magic_enum::enum_cast<ToolID>(toolIDStr);
-	//	if (!e.has_value())
-	//	{
-	//		__debugbreak();
-	//		continue;
-	//	}
-	// 
-	//	ToolInfo info;
-	//	ToolID toolID = e.value();
-	// 
-	//	JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/durability", info.durability);
-	//	JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/attackPower", info.attackPower);
-	//	JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/miningSpeed", info.miningSpeed);
-	//	//JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/modelID", info.modelPath);
-	//	//info.modelID = Game::Asset::Model::Load(info.modelPath);
-	//	//info.colliderShape = Game::Asset::Model::GetData(info.modelID)->colliderShape;
-	//	//JsonManager::Load("assets/application/json/ToolConfig.json", "/" + toolIDStr + "/textureID", info.texturePath);
-	//	//info.textureID = Game::Asset::Texture::Load(info.texturePath);
-	//
-	//	bank_->SetToolInfo(toolID, info);
-	//}
-	// 
-	// 
-	//// アイテム情報の読み込み
-	//std::vector<std::string> itemKeys;
-	//JsonManager::Load("assets/application/json/ItemConfig.json", "/Keys", itemKeys);
-	// 
-	//for (const std::string& itemIDStr : itemKeys)
-	//{
-	//	auto e = magic_enum::enum_cast<ItemID>(itemIDStr);
-	//	if (!e.has_value())
-	//	{
-	//		__debugbreak();
-	//		continue;
-	//	}
-	// 
-	//	ItemInfo info;
-	//	info.id = e.value();
-	// 
-	//	std::string itemGenreStr;
-	//	std::string blockIDStr;
-	//	std::string toolIDStr;
-	//	std::string objectIDStr;
-	// 
-	//	JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/itemGenre", itemGenreStr);
-	//	JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/blockID", blockIDStr);
-	//	JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/toolID", toolIDStr);
-	//	JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/objectID", objectIDStr);
-	//	JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/modelPath", info.modelPath);
-	//	info.modelID = Game::Asset::Model::Load(info.modelPath);
-	//	JsonManager::Load("assets/application/json/ItemConfig.json", "/" + itemIDStr + "/texturePath", info.texturePath);
-	//	info.textureID = Game::Asset::Texture::Load(info.texturePath);
-	// 
-	//	auto genreEnum = magic_enum::enum_cast<ItemGenre>(itemGenreStr);
-	//	if (!genreEnum.has_value())
-	//	{
-	//		info.genre = ItemGenre::MAX;
-	//	}
-	//	else
-	//	{
-	//		info.genre = genreEnum.value();
-	//	}
-	// 
-	//	auto blockEnum = magic_enum::enum_cast<BlockID>(blockIDStr);
-	//	if (!blockEnum.has_value())
-	//	{
-	//		__debugbreak();
-	//		continue;
-	//	}
-	//	info.blockID = blockEnum.value();
-	// 
-	//	auto objectEnum = magic_enum::enum_cast<ObjectID>(objectIDStr);
-	//	if (!objectEnum.has_value())
-	//	{
-	//		__debugbreak();
-	//		continue;
-	//	}
-	//	info.objectID = objectEnum.value();
-	// 
-	//	auto toolEnum = magic_enum::enum_cast<ToolID>(toolIDStr);
-	//	if (!toolEnum.has_value())
-	//	{
-	//		__debugbreak();
-	//		continue;
-	//	}
-	//	info.toolID = toolEnum.value();
-	// 
-	//	bank_->SetItemInfo(info.id, info);
-	//}
 }
 
 void ItemDataLoader::Load(ToolID id)
@@ -228,6 +105,9 @@ void ItemDataLoader::Load(ItemID id)
 	info.modelID = Game::Asset::Model::Load(modelPath);
 	JsonManager::Load(path, "/" + idStr + "/texturePath", texturePath);
 	info.textureID = Game::Asset::Texture::Load(texturePath);
+
+	//std::string tag = std::string("itemIcon_") + idStr;
+	//info.iconID = Game::Asset::RenderTexture::CreateRenderTexture(32, 32, tag);
 
 	auto genreEnum = magic_enum::enum_cast<ItemGenre>(itemGenreStr);
 	if (!genreEnum.has_value())

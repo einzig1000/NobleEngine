@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <limits>
+#include <GameObjects/EventBus/EventBus.h>
 
 namespace
 {
@@ -461,6 +462,18 @@ bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIn
 	// キャラクターと重なってたら設置できない
 	const AABB placeAabb = GetAABB(chunkPos, localIndex);
 	if (IsOverlappingAnyCharacter(placeAabb)) return false;
+
+	if (eventBus_ && *targetBlockID != BlockID::Air)
+	{
+		ItemID itemID = BlockIDtoItemID(*targetBlockID);
+		Event event;
+		event.type = EventType::ItemPickup;
+		event.value.resize(2);
+		event.value[0] = static_cast<int32_t>(itemID);
+		event.value[1] = 1;
+
+		eventBus_->Notify(event);
+	}
 
 	// ブロック設置
 	chunk->SetBlock(localIndex, id);

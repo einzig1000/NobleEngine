@@ -4,12 +4,16 @@
 
 enum class EventType
 {
+	// プレイヤーHPが変動した
+	PlayerHPChanged,
 	// プレイヤーがダメージを受けた
-    PlayerDamaged,
+	PlayerDamaged,
 	// プレイヤーがアイテムを取得した
     ItemPickup,
 	// 採掘モードが変更された
 	MiningModeChanged,
+	// 採掘中
+	Mining,
 
 	MAX
 };

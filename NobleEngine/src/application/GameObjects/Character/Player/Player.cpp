@@ -2,6 +2,8 @@
 #include <GameObjects/Character/SwingMining/SwingMining.h>
 #include <GameObjects/Character/RangeMining/RangeMining.h>
 #include <GameObjects/EventBus/EventBus.h>
+#include <numbers>
+#include <algorithm>
 
 Player::Player()
 {
@@ -90,28 +92,56 @@ void Player::Update(int32_t cameraID)
 	render_.SetCBufferData(1, ShaderType::PixelShader, &texID);
 }
 
-void Player::UpdateInputLeftClick()
-{
-	if (!Game::IO::Mouse::IsHeld(0)) return;
-
-}
-
-void Player::UpdateInputRightClick()
-{
-	if (!Game::IO::Mouse::IsJustPressed(1)) return;
-}
 
 void Player::CheckExternalEvents()
 {
 	if (eventBus_)
 	{
-		const std::vector<Event>& events = eventBus_->GetEvents(EventType::MiningModeChanged);
-		if (!events.empty())
+		// 採掘モード切り替えイベント
+		const std::vector<Event>& miningModeEvents = eventBus_->GetEvents(EventType::MiningModeChanged);
+		if (!miningModeEvents.empty())
 		{
 			// 1Fに一回しか変更フラグはされない
-			events[0].value[0] == 0 ? miningMode_ = MiningPattern::Swing : miningMode_ = MiningPattern::Range;
+			miningModeEvents[0].value[0] == 0 ? miningMode_ = MiningPattern::Swing : miningMode_ = MiningPattern::Range;
 
 			eventBus_->Clear(EventType::MiningModeChanged);
+		}
+
+		// アイテム取得イベント
+		const std::vector<Event>& itemPickupEvents = eventBus_->GetEvents(EventType::ItemPickup);
+		if (!itemPickupEvents.empty())
+		{
+			for (const Event& event : itemPickupEvents)
+			{
+				ItemID itemID = static_cast<ItemID>(event.value[0]);
+				int32_t amount = event.value[1];
+
+				for (int32_t i = 0; i < amount; ++i)
+				{
+					AddItem(itemID);
+				}
+			}
+
+			eventBus_->Clear(EventType::ItemPickup);
+		}
+
+		// HP変動イベント
+		const std::vector<Event>& hpChangedEvents = eventBus_->GetEvents(EventType::PlayerHPChanged);
+		if (!hpChangedEvents.empty())
+		{
+			for (const Event& event : hpChangedEvents)
+			{
+				HP_ += event.value[0];
+				if (HP_ < 0) HP_ = 0;
+				if (HP_ > maxHP_) HP_ = maxHP_;
+
+				if (event.value[0] < 0)
+				{
+					eventBus_->Notify(Event{ EventType::PlayerDamaged, {  } });
+				}
+			}
+
+			eventBus_->Clear(EventType::PlayerHPChanged);
 		}
 	}
 }
@@ -168,6 +198,22 @@ void Player::SetViewCamera(int32_t cameraID)
 	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
 }
 
+
+
+void Player::UpdateInput(int32_t cameraID)
+{
+	// マウスカーソル操作時の処理（視線操作）
+	UpdateInputMouseCursor(cameraID);
+	// SPACE入力時の処理(ジャンプ)
+	UpdateInputSpace();
+	// WASD入力時の処理(ダッシュ判定を含む移動)
+	UpdateInputWASD(cameraID);
+
+	// 左クリックで起きるイベント更新(ブロック破壊とか)
+	UpdateInputLeftClick();
+	// 右クリックで起きるイベント更新(ブロック設置とか)
+	UpdateInputRightClick();
+}
 
 void Player::UpdateInputWASD(int32_t cameraID)
 {
@@ -246,30 +292,28 @@ void Player::UpdateInputSpace()
 }
 void Player::UpdateInputMouseCursor(int32_t cameraID)
 {
-	// マウスカーソル操作時の処理（視線操作）
-	Vector2 mouseDelta = Game::IO::Mouse::Get2DPositionDelta();
-	if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
-	{
-		// カメラの回転を更新
-		Game::Camera::Setter::SetRotate(Vector3(-mouseDelta.y * 0.01f, -mouseDelta.x * 0.01f, 0.0f), 0.0f, EaseType::IN_BACK, cameraID);
-	}
+	// マウス移動量（前フレームからの相対値。dtは掛けない）
+	const Vector2 mouseDelta = Game::IO::Mouse::Get2DPositionDelta();
 
-	ImGui::Begin("moouseCursorDelta");
-	ImGui::Text("Mouse Delta: (%.2f, %.2f)", mouseDelta.x, mouseDelta.y);
-	ImGui::End();
+	viewTheta_ -= mouseDelta.x * lookSensitivity_;
+	viewPhi_ += mouseDelta.y * lookSensitivity_;
+
+	constexpr float limit = std::numbers::pi_v<float> / 2.0f - 0.01f;
+	viewPhi_ = std::clamp(viewPhi_, -limit, limit);
+
+	if (viewTheta_ > std::numbers::pi_v<float>) viewTheta_ -= std::numbers::pi_v<float> * 2.0f;
+	if (viewTheta_ < -std::numbers::pi_v<float>) viewTheta_ += std::numbers::pi_v<float> * 2.0f;
+
+	Game::Camera::Setter::SetRotate(Vector3(viewPhi_, viewTheta_, 0.0f), 0.0f, EaseType::LINEAR, cameraID);
 }
-
-void Player::UpdateInput(int32_t cameraID)
+void Player::UpdateInputLeftClick()
 {
-	// マウスカーソル操作時の処理（視線操作）
-	UpdateInputMouseCursor(cameraID);
-	// SPACE入力時の処理(ジャンプ)
-	UpdateInputSpace();
-	// WASD入力時の処理(ダッシュ判定を含む移動)
-	UpdateInputWASD(cameraID);
+	if (!Game::IO::Mouse::IsHeld(0)) return;
 
-	// 左クリックで起きるイベント更新(ブロック破壊とか)
-	UpdateInputLeftClick();
-	// 右クリックで起きるイベント更新(ブロック設置とか)
-	UpdateInputRightClick();
 }
+void Player::UpdateInputRightClick()
+{
+	if (!Game::IO::Mouse::IsJustPressed(1)) return;
+}
+
+//C:\Users\K024G\AppData\Local\Temp\DevHub.DMP
