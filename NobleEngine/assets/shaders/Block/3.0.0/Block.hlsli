@@ -13,6 +13,16 @@ struct BakedFace
     uint blockId;
 };
 
+static const float kFaceShade[6] =
+{
+    0.60f,
+    0.60f,
+    1.00f,
+    0.50f,
+    0.80f,
+    0.80f,
+};
+
 static const FaceInfo kFaceInfos[6] =
 {
     { int3(1, 0, 0), uint4(1, 3, 7, 5), float3(1, 0, 0) },

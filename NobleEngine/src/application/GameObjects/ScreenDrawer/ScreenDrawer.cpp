@@ -9,7 +9,7 @@ ScreenDrawer::ScreenDrawer()
 	rt_Background_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Background");
 	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		rt_PostEffect_.push_back(Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "PostEffect" + std::to_string(i)));
 	}
@@ -48,6 +48,12 @@ ScreenDrawer::ScreenDrawer()
 	draw_3D_GrayScale_->psoConfig_.ps = "assets/shaders/FullScreen/GrayScale.PS.hlsl";
 	draw_3D_GrayScale_->modelID_ = m_plane;
 	draw_3D_GrayScale_->SetupFromShaders();
+
+	draw_3D_DistanceFog_ = std::make_unique<RenderObject>();
+	draw_3D_DistanceFog_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	draw_3D_DistanceFog_->psoConfig_.ps = "assets/shaders/FullScreen/DistanceFog.PS.hlsl";
+	draw_3D_DistanceFog_->modelID_ = m_plane;
+	draw_3D_DistanceFog_->SetupFromShaders();
 
 	draw_UI_ = std::make_unique<RenderObject>();
 	draw_UI_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
@@ -112,41 +118,50 @@ void ScreenDrawer::Update(int32_t cameraID)
 	draw_3D_DepthBasedOutline_->SetCBufferData(2, ShaderType::PixelShader, &projectionInverse);
 	draw_3D_DepthBasedOutline_->Draw(rt_PostEffect_[1], { rt_PostEffect_[0], rt_3D_depth_ });
 
+	// フォグ描画
+	// 参照元：rt_PostEffect_[1], rt_3D_depth_
+	// 書き込み先：rt_PostEffect_[2]
+	draw_3D_DistanceFog_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[1]);
+	draw_3D_DistanceFog_->SetCBufferData(1, ShaderType::PixelShader, &rt_3D_depth_);
+	draw_3D_DistanceFog_->SetCBufferData(2, ShaderType::PixelShader, &projectionInverse);
+	draw_3D_DistanceFog_->SetCBufferData(3, ShaderType::PixelShader, &fogParams_);
+	draw_3D_DistanceFog_->Draw(rt_PostEffect_[2], { rt_PostEffect_[1], rt_3D_depth_ });
+
 	// vignette描画
 	// 書き込み先：rt_PostEffect_[1]
 	// 参照元：rt_PostEffect_[0]
-	draw_3D_Vignette_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[1]);
+	draw_3D_Vignette_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[2]);
 	draw_3D_Vignette_->SetCBufferData(1, ShaderType::PixelShader, &vignette_Brightness);
-	draw_3D_Vignette_->Draw(rt_PostEffect_[2], { rt_PostEffect_[1] });
+	draw_3D_Vignette_->Draw(rt_PostEffect_[3], { rt_PostEffect_[2] });
 
 	// ガウシアンフィルタ描画
 	// 書き込み先：rt_PostEffect_[2]
 	// 参照元：rt_PostEffect_[1]
-	draw_3D_GaussianFilter_[0]->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[2]);
+	draw_3D_GaussianFilter_[0]->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[3]);
 	draw_3D_GaussianFilter_[0]->SetCBufferData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
 	draw_3D_GaussianFilter_[0]->SetCBufferData(2, ShaderType::PixelShader, &texelSize);
-	draw_3D_GaussianFilter_[0]->Draw(rt_PostEffect_[3], { rt_PostEffect_[2] });
+	draw_3D_GaussianFilter_[0]->Draw(rt_PostEffect_[4], { rt_PostEffect_[3] });
 
 	// ガウシアンフィルタ描画
 	// 書き込み先：rt_PostEffect_[3]
 	// 参照元：rt_PostEffect_[2]
-	draw_3D_GaussianFilter_[1]->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[3]);
+	draw_3D_GaussianFilter_[1]->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[4]);
 	draw_3D_GaussianFilter_[1]->SetCBufferData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
 	draw_3D_GaussianFilter_[1]->SetCBufferData(2, ShaderType::PixelShader, &texelSize);
-	draw_3D_GaussianFilter_[1]->Draw(rt_PostEffect_[4], { rt_PostEffect_[3] });
+	draw_3D_GaussianFilter_[1]->Draw(rt_PostEffect_[5], { rt_PostEffect_[4] });
 
 	// グレースケール描画
 	// 書き込み先：rt_PostEffect_[4]
 	// 参照元：rt_PostEffect_[3]
-	draw_3D_GrayScale_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[4]);
+	draw_3D_GrayScale_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[5]);
 	draw_3D_GrayScale_->SetCBufferData(1, ShaderType::PixelShader, &grayScale_Scale);
-	draw_3D_GrayScale_->Draw(rt_main_, { rt_UI_, rt_PostEffect_[4] });
+	draw_3D_GrayScale_->Draw(rt_main_, { rt_UI_, rt_PostEffect_[5] });
 
 	// UI描画
 	// 書き込み先：rt_main_
 	// 参照元：rt_Background_, rt_UI_, rt_PostEffect_[4]
 	draw_UI_->SetCBufferData(0, ShaderType::PixelShader, &rt_UI_);
-	draw_UI_->Draw(rt_main_, { rt_UI_, rt_PostEffect_[4] });
+	draw_UI_->Draw(rt_main_, { rt_UI_, rt_PostEffect_[5] });
 
 	// メイン描画
 	// 書き込み先：エンジンのデフォルトレンダーターゲット
@@ -162,9 +177,15 @@ void ScreenDrawer::Draw()
 void ScreenDrawer::DrawImGui()
 {
 	ImGui::Begin("ScreenDrawer");
-	ImGui::DragFloat("Vignette Brightness", &vignette_Brightness);
-	ImGui::DragFloat("GrayScale Scale", &grayScale_Scale, 0.01f);
-	ImGui::DragInt("GaussianFilter Radius", &gaussianFilter_Radius_, 1, 1, 100);
+	//ImGui::DragFloat("Vignette Brightness", &vignette_Brightness);
+	//ImGui::DragFloat("GrayScale Scale", &grayScale_Scale, 0.01f);
+	//ImGui::DragInt("GaussianFilter Radius", &gaussianFilter_Radius_, 1, 1, 100);
+	ImGui::Selectable("fogParams");
+	ImGui::DragFloat("fogStart", &fogParams_.fogStart, 0.01f);
+	ImGui::DragFloat("fogEnd", &fogParams_.fogEnd, 0.01f);
+	ImGui::DragFloat("fogDensity", &fogParams_.fogDensity, 0.01f);
+	ImGui::ColorEdit3("fogColor", &fogParams_.fogColor.x);
+
 	ImGui::End();
 }
 

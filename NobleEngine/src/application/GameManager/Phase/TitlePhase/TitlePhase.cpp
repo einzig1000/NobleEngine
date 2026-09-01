@@ -62,9 +62,6 @@ void TitlePhase::Initialize()
 
 	LoadButtonData();
 
-	Vector3 rotate = Game::Math::YawPitchFromDirection(buttons_[0].transforms.translate - Game::Camera::Getter::GetTranslate(c_title_));
-	buttons_[0].transforms.rotate = rotate;
-
 	Vector3 pos = Vector3{ 0.0f, 25.0f, 0.0f };
 	map_->GetTerrain()->GenerateChunks(pos);
 }

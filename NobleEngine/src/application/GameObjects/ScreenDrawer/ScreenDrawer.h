@@ -4,6 +4,14 @@
 
 class EventBus;
 
+struct FogParams
+{
+	Vector3 fogColor = Vector3(0.5f, 0.5f, 0.5f);
+	float fogDensity = 0.06f;
+	float fogStart = 20.0f;
+	float fogEnd = 50.0f;
+};
+
 class ScreenDrawer
 {
 public:
@@ -52,6 +60,9 @@ private:
 	std::unique_ptr<RenderObject> draw_3D_GrayScale_;
 	float grayScale_Scale = 0.0f;
 
+	// ふぉｇ
+	std::unique_ptr<RenderObject> draw_3D_DistanceFog_;
+	FogParams fogParams_;
 
 	std::unique_ptr<RenderObject> draw_3D_;
 	std::unique_ptr<RenderObject> draw_UI_;

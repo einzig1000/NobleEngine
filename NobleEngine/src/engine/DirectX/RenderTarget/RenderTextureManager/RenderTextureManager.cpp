@@ -69,7 +69,7 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	idToIndexMap_[rt->depthsrvAlloc.index] = id;
 	renderTargets_.push_back(std::move(rt));
 
-    Log("成功");
+    Log("成功 %d", renderTargets_.back()->colorsrvAlloc.index);
 
 	return renderTargets_.back()->colorsrvAlloc.index;
 }

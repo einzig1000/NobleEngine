@@ -86,10 +86,10 @@ private:
 
 
     std::vector<uint8_t> fontFileBuffer_;
-    std::unique_ptr<stbtt_fontinfo> fontInfo_;
-
     Microsoft::WRL::ComPtr<ID3D12Resource> atlasResource_;
     int32_t atlasSrvIndex_ = -1;
+    std::unique_ptr<stbtt_fontinfo> fontInfo_;
+
     static constexpr int32_t kAtlasSize = 1024;
 
     std::unordered_map<GlyphKey, GlyphInfo, GlyphKeyHash> glyphCache_;

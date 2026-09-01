@@ -48,8 +48,61 @@ namespace
 FontManager::FontManager(DirectXManager* dxManager, ModelManager* modelManager)
     : dxManager_(dxManager)
 {
+    //auto* device = dxManager_->GetDevice();
+    //auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+
+ //   DirectX::TexMetadata meta{};
+ //   meta.width = kAtlasSize;
+ //   meta.height = kAtlasSize;
+ //   meta.depth = 1;
+ //   meta.arraySize = 1;
+ //   meta.mipLevels = 1;
+ //   meta.format = DXGI_FORMAT_R8_UNORM;
+ //   meta.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
+
+ //   atlasResource_ = Dx12ResourceFactory::CreateTextureResource(device, meta);
+
+ //   auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+ //   auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+	//Dx12ResourceTransition::Transition(cmdList, atlasResource_.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_GENERIC_READ);
+
+    //std::vector<uint8_t> clearPixels(static_cast<size_t>(kAtlasSize) * kAtlasSize, 0);
+    //UpdateAtlasRegion(0, 0, kAtlasSize, kAtlasSize, clearPixels.data());
+
+
+
+ //   Log("フォントアトラス作成開始");
+ //   atlasSrvIndex_ = srvManager->CreateSRVforTexture(atlasResource_.Get(), meta).index;
+	//Log("成功 ID:%d", atlasSrvIndex_);
+
+	planeModelID_ = modelManager->GetModelLoader()->LoadModel("assets/engine/model/plane/plane.obj");
+}
+
+FontManager::~FontManager()
+{
+    pendingUploadResources_.clear();
+}
+
+bool FontManager::Load(const std::string& filePath)
+{
+    Log("フォント読み込み開始:%s", filePath.c_str());
+
     auto* device = dxManager_->GetDevice();
     auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+
+    std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+    if (!file)
+    {
+		Log("ファイルが見つかりませんでした: %s", filePath.c_str());
+        return false;
+    }
+
+    size_t size = static_cast<size_t>(file.tellg());
+    fontFileBuffer_.resize(size);
+    file.seekg(0);
+    file.read(reinterpret_cast<char*>(fontFileBuffer_.data()), size);
 
     DirectX::TexMetadata meta{};
     meta.width = kAtlasSize;
@@ -62,35 +115,10 @@ FontManager::FontManager(DirectXManager* dxManager, ModelManager* modelManager)
 
     atlasResource_ = Dx12ResourceFactory::CreateTextureResource(device, meta);
 
-    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-    auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
-	Dx12ResourceTransition::Transition(cmdList, atlasResource_.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_GENERIC_READ);
+    Dx12ResourceTransition::Transition(cmdList, atlasResource_.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_GENERIC_READ);
 
     std::vector<uint8_t> clearPixels(static_cast<size_t>(kAtlasSize) * kAtlasSize, 0);
     UpdateAtlasRegion(0, 0, kAtlasSize, kAtlasSize, clearPixels.data());
-
-
-
-
-    atlasSrvIndex_ = srvManager->CreateSRVforTexture(atlasResource_.Get(), meta).index;
-
-	planeModelID_ = modelManager->GetModelLoader()->LoadModel("assets/engine/model/plane/plane.obj");
-}
-
-FontManager::~FontManager()
-{
-    pendingUploadResources_.clear();
-}
-
-bool FontManager::Load(const std::string& filePath)
-{
-    std::ifstream file(filePath, std::ios::binary | std::ios::ate);
-    if (!file) return false;
-
-    size_t size = static_cast<size_t>(file.tellg());
-    fontFileBuffer_.resize(size);
-    file.seekg(0);
-    file.read(reinterpret_cast<char*>(fontFileBuffer_.data()), size);
 
     fontInfo_ = std::make_unique<stbtt_fontinfo>();
     if (!stbtt_InitFont(fontInfo_.get(), fontFileBuffer_.data(), 0))
@@ -98,6 +126,10 @@ bool FontManager::Load(const std::string& filePath)
         Log("FontManager: フォント初期化に失敗しました: %s", filePath.c_str());
         return false;
     }
+
+    atlasSrvIndex_ = srvManager->CreateSRVforTexture(atlasResource_.Get(), meta).index;
+    Log("成功 ID:%d", atlasSrvIndex_);
+
     return true;
 }
 

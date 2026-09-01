@@ -29,7 +29,7 @@ New-Item -ItemType File -Path $readmePath | Out-Null
 Copy-Item (Join-Path $releaseDir "NobleEngine.exe")  -Destination $exeFolder
 Copy-Item (Join-Path $releaseDir "dxcompiler.dll")    -Destination $exeFolder
 Copy-Item (Join-Path $releaseDir "dxil.dll")          -Destination $exeFolder
-Copy-Item (Join-Path $projectRoot "NobleEngine\resources") -Destination $exeFolder -Recurse
+Copy-Item (Join-Path $projectRoot "NobleEngine\assets") -Destination $exeFolder -Recurse
 
 # ===== 要求3・4: 実行可能なソースコード・アセット一覧 =====
 # NobleEngineフォルダは Dumps / generated / imgui.ini を除外してコピー

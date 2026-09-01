@@ -112,12 +112,13 @@ void main(
         (face.packedVoxelPos >> 8) & 0xFF,
         (face.packedVoxelPos >> 16) & 0xFF);
     // このブロックの座標を計算
-    float3 worldVoxelOrigin = chunkWorldOrigin + float3(voxelPos) * blockSize;
+    float3 worldVoxelOrigin = chunkWorldOrigin + float3(voxelPos) * blockSize;    
     // このブロックの色を取得
     float4 color = UnpackColor(blockInfoTable[face.blockId].x);
-    color.x += rand3dTo1d(voxelPos) * 0.1;
-    color.y += rand3dTo1d(voxelPos) * 0.1;
-    color.z += rand3dTo1d(voxelPos) * 0.1;
+    // ブロックごとの色のばらつき
+    color.rgb += rand3dTo1d(voxelPos) * 0.1f;
+    // 面の向きによる陰影
+    color.rgb *= kFaceShade[face.faceIndex];
 
     // 頂点配列のユニークなインデックスを計算
     uint vBase = threadID * 4;

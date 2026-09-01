@@ -38,7 +38,7 @@ public:
     uint32_t GetDescriptorSizeSRV() const { return descriptorSize_; }
 
     // 空いてるスロットインデックスを取得しnextIndex_をインクリメント
-    uint32_t Allocate(ResourceType type = ResourceType::Texture2D);
+    uint32_t Allocate();
 
     // Allocate()で取得したスロットインデックスのCPU/GPUハンドルを取得
     D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandleAt(uint32_t index) const;
@@ -55,8 +55,8 @@ public:
 
 private:
     // SRV・UAVの作成とスロットの割り当て
-    Allocation CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc, ResourceType type);
-    Allocation CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc, ResourceType type);
+    Allocation CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc);
+    Allocation CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc);
 
     // デバイス
     ID3D12Device2* device_ = nullptr;
@@ -68,11 +68,6 @@ private:
     uint32_t descriptorSize_;
     // 最大スロット数
     uint32_t capacity_ = 0;
-    uint32_t textureCapacity_ = 0;
-    uint32_t textureCubeCapacity_ = 0;
-    uint32_t bufferCapacity_ = 0;
     // 次のスロットインデックス
-    uint32_t nextTextureIndex_ = 0;
-	uint32_t nextTextureCubeIndex_ = 0;
     uint32_t nextBufferIndex_ = 0;
 };

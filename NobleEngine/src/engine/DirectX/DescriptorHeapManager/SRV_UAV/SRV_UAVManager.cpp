@@ -11,13 +11,8 @@ SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // SRV用ディスクリプタヒープ作成
-	textureCapacity_ = 256;
-	textureCubeCapacity_ = 16;
-	bufferCapacity_ = 1024 * 16 * 4;
-    capacity_ = textureCapacity_ + textureCubeCapacity_ + bufferCapacity_;
-    nextTextureIndex_ = 0;
-	nextTextureCubeIndex_ = textureCapacity_;
-	nextBufferIndex_ = textureCapacity_ + textureCubeCapacity_;
+    capacity_ = 1024 * 16 * 8;
+	nextBufferIndex_ = 0;
     D3D12_DESCRIPTOR_HEAP_DESC DescriptorHeapDesc{};
     DescriptorHeapDesc.NumDescriptors = capacity_;
     DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -33,42 +28,15 @@ SRV_UAVManager::~SRV_UAVManager()
     Log("デストラクタ実行成功 : SRV_UAVManager");
 }
   
-uint32_t SRV_UAVManager::Allocate(ResourceType type)
+uint32_t SRV_UAVManager::Allocate()
 {
-    switch (type)
+    if (nextBufferIndex_ >= capacity_)
     {
-    case SRV_UAVManager::ResourceType::Texture2D:
-		if (nextTextureIndex_ >= textureCapacity_)
-        {
-            Log("SRVのテクスチャスロットが足りません。容量を増やしてください。");
-            assert(false);
-            return UINT32_MAX;
-        }
-		return nextTextureIndex_++;
-        break;
-    case SRV_UAVManager::ResourceType::TextureCube:
-        if (nextTextureCubeIndex_ >= textureCapacity_ + textureCubeCapacity_)
-        {
-            Log("SRVのテクスチャキューブスロットが足りません。容量を増やしてください。");
-            assert(false);
-            return UINT32_MAX;
-		}
-		return nextTextureCubeIndex_++;
-        break;
-    case SRV_UAVManager::ResourceType::StructuredBuffer:
-        if (nextBufferIndex_ >= capacity_)
-        {
-            Log("SRVのバッファスロットが足りません。容量を増やしてください。");
-            assert(false);
-            return UINT32_MAX;
-		}
-		return nextBufferIndex_++;
-        break;
-    default:
+        Log("SRVスロットが足りません。容量を増やしてください。");
         assert(false);
-		return UINT32_MAX;
-        break;
+        return UINT32_MAX;
     }
+    return nextBufferIndex_++;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE SRV_UAVManager::GetCPUHandleAt(uint32_t i) const
@@ -85,23 +53,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE SRV_UAVManager::GetGPUHandleAt(uint32_t i) const
     return handle;
 }
 
-SRV_UAVManager::Allocation SRV_UAVManager::CreateUAVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride)
-{
-    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
-    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-    uavDesc.Buffer.FirstElement = 0;
-    uavDesc.Buffer.NumElements = numElements;
-    uavDesc.Buffer.StructureByteStride = structureByteStride;
-    uavDesc.Buffer.CounterOffsetInBytes = 0;
-    uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-    return CreateUAV(resource, &uavDesc, ResourceType::StructuredBuffer);
-}
-
-SRV_UAVManager::Allocation SRV_UAVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc, ResourceType type)
+SRV_UAVManager::Allocation SRV_UAVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc)
 {
     // 次スロットのインデックス取得
-    uint32_t index = Allocate(type);
+    uint32_t index = Allocate();
 
     // ハンドル取得
     D3D12_CPU_DESCRIPTOR_HANDLE cpu = GetCPUHandleAt(index);
@@ -113,10 +68,10 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRV(ID3D12Resource* resource, c
     Allocation alloc{ index, cpu, gpu, ViewType::SRV };
     return alloc;
 }
-SRV_UAVManager::Allocation SRV_UAVManager::CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc, ResourceType type)
+SRV_UAVManager::Allocation SRV_UAVManager::CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc)
 {
     // 次スロットのインデックス取得
-    uint32_t index = Allocate(type);
+    uint32_t index = Allocate();
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpu = GetCPUHandleAt(index);
     D3D12_GPU_DESCRIPTOR_HANDLE gpu = GetGPUHandleAt(index);
@@ -128,6 +83,19 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateUAV(ID3D12Resource* resource, c
     return alloc;
 }
 
+SRV_UAVManager::Allocation SRV_UAVManager::CreateUAVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride)
+{
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    uavDesc.Buffer.FirstElement = 0;
+    uavDesc.Buffer.NumElements = numElements;
+    uavDesc.Buffer.StructureByteStride = structureByteStride;
+    uavDesc.Buffer.CounterOffsetInBytes = 0;
+    uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+    return CreateUAV(resource, &uavDesc);
+}
+
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforTexture(ID3D12Resource* resource, const DirectX::TexMetadata& metadata)
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -135,7 +103,7 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforTexture(ID3D12Resource* r
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-    return CreateSRV(resource, &srvDesc, ResourceType::Texture2D);
+    return CreateSRV(resource, &srvDesc);
 }
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforDDS(ID3D12Resource* resource, const DirectX::TexMetadata& metadata)
 {
@@ -146,7 +114,7 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforDDS(ID3D12Resource* resou
 	srvDesc.TextureCube.MostDetailedMip = 0;
     srvDesc.TextureCube.MipLevels = UINT_MAX;
 	srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
-    return CreateSRV(resource, &srvDesc, ResourceType::TextureCube);
+    return CreateSRV(resource, &srvDesc);
 }
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforRenderTarget(ID3D12Resource* resource)
 {
@@ -157,7 +125,7 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforRenderTarget(ID3D12Resour
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = 1;
-    return CreateSRV(resource, &srvDesc, ResourceType::Texture2D);
+    return CreateSRV(resource, &srvDesc);
 }
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforDepthTexture(ID3D12Resource* resource)
 {
@@ -166,7 +134,7 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforDepthTexture(ID3D12Resour
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = 1;
-    return CreateSRV(resource, &srvDesc, ResourceType::Texture2D);
+    return CreateSRV(resource, &srvDesc);
 }
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride)
 {
@@ -178,7 +146,7 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRVforStructuredBuffer(ID3D12Re
     srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
     srvDesc.Buffer.NumElements = numElements;
     srvDesc.Buffer.StructureByteStride = structureByteStride;
-	return CreateSRV(resource, &srvDesc, ResourceType::StructuredBuffer);
+	return CreateSRV(resource, &srvDesc);
 }
 
 
