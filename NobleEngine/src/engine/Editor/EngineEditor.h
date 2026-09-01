@@ -16,7 +16,7 @@ class AssetManager;
 class ModelPreview;
 class TexturePreview;
 
-class FixFPS;
+class TimeManager;
 class TimeEditor;
 
 class EngineEditor
@@ -29,7 +29,7 @@ public:
 		IOManager* ioManager, 
 		CameraManager* cameraManager, 
 		AssetManager* assetManager,
-		FixFPS* fixFPS);
+		TimeManager* timeManager);
 	~EngineEditor();
 
 	void Initialize();

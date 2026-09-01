@@ -8,7 +8,7 @@
 #include <IO/Keyboard/KeyboardController.h>
 #include <IO/Pad/PadController.h>
 #include <IO/Mouse/MouseController.h>
-#include <FixFPS/FixFPS.h>
+#include <TimeManager/TimeManager.h>
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
 #include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
@@ -521,19 +521,24 @@ namespace Game
 
 	namespace Time
 	{
-		float GetDeltaTimeMs()
-		{
-			return Engine::Instance().GetFixFPS()->GetClampedDeltaTimeMs();
-		}
-
 		float GetFrameRate()
 		{
-			return Engine::Instance().GetFixFPS()->GetClampedFPS();
+			return Engine::Instance().GetTimeManager()->GetFixFPS()->GetClampedFPS();
+		}
+
+		void SetTimeScale(float timeScale)
+		{
+			Engine::Instance().GetTimeManager()->SetTimeScale(timeScale);
+		}
+
+		float GetScaledDeltaTimeMs()
+		{
+			return Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs();
 		}
 
 		uint32_t GetElapsedTime()
 		{
-			return Engine::Instance().GetFixFPS()->GetFrameCount();
+			return Engine::Instance().GetTimeManager()->GetFixFPS()->GetFrameCount();
 		}
 	}
 

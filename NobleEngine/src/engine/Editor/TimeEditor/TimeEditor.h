@@ -1,17 +1,17 @@
 #pragma once
 
-class FixFPS;
+class TimeManager;
 class FrameProfiler;
 
 class TimeEditor
 {
 public:
-	TimeEditor(FixFPS* fixFPS, FrameProfiler* frameProfiler);
+	TimeEditor(TimeManager* timeManager, FrameProfiler* frameProfiler);
 	~TimeEditor();
 	void DrawImGui();
 
 private:
-	FixFPS* fixFPS_ = nullptr;
+	TimeManager* timeManager_ = nullptr;
 	FrameProfiler* frameProfiler_ = nullptr;
 
 };

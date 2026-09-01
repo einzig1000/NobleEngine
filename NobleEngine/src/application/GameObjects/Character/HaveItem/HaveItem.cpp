@@ -169,7 +169,7 @@ void HaveItem::Update(int32_t cameraID)
 
 	if (stage_ == 1)
 	{
-		startTime_ += Game::Time::GetDeltaTimeMs();
+		startTime_ += Game::Time::GetScaledDeltaTimeMs();
 		float t = startTime_ / 100.0f;
 		if (t > 1.0f)
 		{
@@ -182,7 +182,7 @@ void HaveItem::Update(int32_t cameraID)
 	}
 	else if (stage_ == 2)
 	{
-		startTime_ += Game::Time::GetDeltaTimeMs();
+		startTime_ += Game::Time::GetScaledDeltaTimeMs();
 		float t = startTime_ / 1000.0f;
 		if (t > 1.0f)
 		{
@@ -195,7 +195,7 @@ void HaveItem::Update(int32_t cameraID)
 	}
 	else if (stage_ == 3)
 	{
-		startTime_ += Game::Time::GetDeltaTimeMs();
+		startTime_ += Game::Time::GetScaledDeltaTimeMs();
 		float t = startTime_ / 500.0f;
 		if (t > 1.0f)
 		{

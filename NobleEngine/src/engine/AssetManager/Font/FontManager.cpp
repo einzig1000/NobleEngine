@@ -1,6 +1,6 @@
 #include "FontManager.h"
 #include <Engine.h>
-#include <FixFPS/FixFPS.h>
+#include <TimeManager/TimeManager.h>
 #include <DirectX/DirectXManager.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include <DrawSystem/RenderData/RenderObject.h>
@@ -291,7 +291,7 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
     struct { int32_t atlasTextureIndex; float pad0[3]; } psConstants{};
     psConstants.atlasTextureIndex = atlasSrvIndex_;
 
-	uint32_t elapsedTime = Engine::Instance().GetFixFPS()->GetFrameCount();
+	uint32_t elapsedTime = Engine::Instance().GetTimeManager()->GetFixFPS()->GetFrameCount();
 
     for (auto& render : fontRenders_)
     {

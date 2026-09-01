@@ -13,7 +13,7 @@ class IOManager;
 class CameraManager;
 class ImGuiManager;
 class AssetManager;
-class FixFPS;
+class TimeManager;
 class EngineEditor;
 
 class Engine
@@ -46,7 +46,7 @@ public:
 	AssetManager* GetAssetManager() { return assetManager_.get(); }
 	CameraManager* GetCameraManager() { return cameraManager_.get(); }
 	StructuredBufferManager* GetStructuredBufferManager() { return structuredBufferManager_.get(); }
-	FixFPS* GetFixFPS() { return fixFPS_.get(); }
+	TimeManager* GetTimeManager() { return timeManager_.get(); }
 
 private:
 	Engine() = default;
@@ -70,9 +70,8 @@ private:
 	std::unique_ptr<ImGuiManager> imguiManager_;
 	// リソース管理
 	std::unique_ptr<AssetManager> assetManager_;
-	// フレームレート制御
-	std::unique_ptr<FixFPS> fixFPS_;
-
+	// 時間制御
+	std::unique_ptr<TimeManager> timeManager_;
 	// エディタ
 	std::unique_ptr<EngineEditor> engineEditor_;
 };

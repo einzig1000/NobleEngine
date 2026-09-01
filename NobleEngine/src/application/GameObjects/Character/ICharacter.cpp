@@ -56,7 +56,7 @@ void ICharacter::ApplyMove()
 	Vector3 aabbMin = aabb.min;
 	aabbMin.y += Constexprs::kBlockSize * 0.5f;			// 足元の判定を少し上げる
 	aabb.min = translate_.value + aabbMin;
-	float dt = Game::Time::GetDeltaTimeMs();
+	float dt = Game::Time::GetScaledDeltaTimeMs();
 	translate_.velocity += translate_.acceleration;		// 加速度を速度に反映
 	Vector3 movement = translate_.velocity;				// 移動量を計算
 	mapManager_->GetTerrain()->SweepAABB(aabb, movement);// mapManager_に希望移動量を申請し修正してもらう

@@ -8,7 +8,7 @@
 #include <Camera/CameraManager.h>
 #include <imGuiManager/ImGuiManager.h>
 #include <AssetManager/AssetManager.h>
-#include <FixFPS/FixFPS.h>
+#include <TimeManager/TimeManager.h>
 #include <Editor/EngineEditor.h>
 
 #include <windows.h>
@@ -70,7 +70,7 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd());
 	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), assetManager_.get());
 	computeSystem_ = std::make_unique<ComputeSystem>(dxManager_.get(), structuredBufferManager_.get());
-	fixFPS_ = std::make_unique<FixFPS>();
+	timeManager_ = std::make_unique<TimeManager>();
 
 	windowManager_->AttachMouseController(ioManager_->GetMouseController());
 
@@ -82,7 +82,7 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 		ioManager_.get(),
 		cameraManager_.get(),
 		assetManager_.get(),
-		fixFPS_.get());
+		timeManager_.get());
 //#endif
 
 	// DirectX終了処理
@@ -165,7 +165,7 @@ void Engine::EndFrame()
 	dxManager_->EndFrame();
 
 	// FPS制限
-	fixFPS_->Update();
+	timeManager_->Update();
 }
 void Engine::Quit()
 {
@@ -182,8 +182,8 @@ void Engine::Finalize()
 
 	// エディタ
 	engineEditor_.reset();
-	// フレームレート制御
-	fixFPS_.reset();
+	// 時間制御
+	timeManager_.reset();
 	// GPU計算関連
 	computeSystem_.reset();
 	// 描画関連

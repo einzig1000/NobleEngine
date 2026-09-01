@@ -10,7 +10,7 @@
 #include <AssetManager/AssetManager.h>
 #include <DrawSystem/DrawSystem.h>
 #include <Camera/CameraManager.h>
-
+#include <TimeManager/TimeManager.h>
 
 EngineEditor::EngineEditor(
 	WindowManager* windowManager,
@@ -19,14 +19,14 @@ EngineEditor::EngineEditor(
 	IOManager* ioManager, 
 	CameraManager* cameraManager, 
 	AssetManager* assetManager,
-	FixFPS* fixFPS)
+	TimeManager* timeManager)
 {
 	modelEditor_ = std::make_unique<ModelPreview>(dxManager, cameraManager, assetManager->GetModelManager()->GetModelBank());
 	textureEditor_ = std::make_unique<TexturePreview>(dxManager, assetManager->GetTextureManager()->GetTextureBank());
 
 	renderTexturePreview_ = std::make_unique<RenderTexturePreview>(dxManager);
 
-	timeEditor_ = std::make_unique<TimeEditor>(fixFPS, dxManager->GetFrameProfiler());
+	timeEditor_ = std::make_unique<TimeEditor>(timeManager, dxManager->GetFrameProfiler());
 }
 
 EngineEditor::~EngineEditor()

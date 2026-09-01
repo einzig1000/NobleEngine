@@ -75,7 +75,7 @@
     <ClCompile Include="src\engine\Facade\Game.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\FixFPS\FixFPS.cpp">
+    <ClCompile Include="src\engine\TimeManager\FixFPS\FixFPS.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\ImGuiManager\ImGuiManager.cpp">
@@ -414,6 +414,12 @@
     <ClCompile Include="src\application\ResourceLoader\Data\Item\Saver\ItemDataSaver.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\TimeManager\TimeManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Camera\Camera.h">
@@ -479,7 +485,7 @@
     <ClInclude Include="src\engine\Facade\Game.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\FixFPS\FixFPS.h">
+    <ClInclude Include="src\engine\TimeManager\FixFPS\FixFPS.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\ImGuiManager\ImGuiManager.h">
@@ -1275,6 +1281,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\ResourceLoader\Data\Item\Saver\ItemDataSaver.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\TimeManager\TimeManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\TimeManager\TimeScaler\TimeScaler.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

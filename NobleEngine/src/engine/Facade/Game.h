@@ -671,10 +671,13 @@ namespace Game
 		Vector3 YawPitchFromDirection(const Vector3& dir);
 	};
 
+
 	namespace Time
 	{
-		/// <returns>デルタタイム</returns>
-		float GetDeltaTimeMs();
+		void SetTimeScale(float timeScale);
+
+		/// <returns>スケールタイム適用済デルタタイム</returns>
+		float GetScaledDeltaTimeMs();
 
 		/// <returns>起動からの経過時間取得</returns>
 		uint32_t GetElapsedTime();

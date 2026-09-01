@@ -4,7 +4,7 @@
 #include <IO/IOManager.h>
 #include <IO/Mouse/MouseController.h>
 #include <IO/Keyboard/KeyboardController.h>
-#include <FixFPS/FixFPS.h>
+#include <TimeManager/TimeManager.h>
 #include <Window/WindowManager.h>
 #include <algorithm>
 #include <numbers>
@@ -69,7 +69,7 @@ void Camera::Update()
 
 void Camera::Update_Orbit()
 {
-	float dt = Engine::Instance().GetFixFPS()->GetClampedDeltaTimeMs();
+	float dt = Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs();
 
 	if (enableControl_)
 	{
