@@ -1,5 +1,10 @@
 #include "EventBus.h"
 
+void EventBus::Update()
+{
+	ClearAll();
+}
+
 std::vector<Event> EventBus::GetAllEvents() const
 {
     std::vector<Event> all;

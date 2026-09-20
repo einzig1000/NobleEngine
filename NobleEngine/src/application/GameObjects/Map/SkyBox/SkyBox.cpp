@@ -28,8 +28,8 @@ void SkyBox::Update(int32_t cameraID)
 	noTranslateViewMatrix.m[3][2] = 0.0f;
 	Matrix4x4 noTranslateViewProjection = noTranslateViewMatrix * projectionMatrix;
 
-	render_->SetCBufferData(0, ShaderType::PixelShader, &textureID_);
-	render_->SetCBufferData(0, ShaderType::VertexShader, &noTranslateViewProjection);
+	render_->SetBRegisterData(0, ShaderType::PixelShader, &textureID_);
+	render_->SetBRegisterData(0, ShaderType::VertexShader, &noTranslateViewProjection);
 }
 
 void SkyBox::Draw(int32_t renderTargetID)

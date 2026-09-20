@@ -51,9 +51,25 @@ namespace Game
 				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationBank()->GetAnimationData(animationID);
 			}
 
-			void ComputeAnimationData(int32_t animationID, Skeleton& skeleton, SkinCluster& skinCluster, float& time)
+			SkinInstance CreateSkinInstance(int32_t modelID)
 			{
-				Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationComputer()->UpdateAnimation(animationID, skeleton, skinCluster, time);
+				const ModelData* modelData = Game::Asset::Model::GetData(modelID);
+
+				SkinInstance inst;
+				inst.skeleton = modelData->skeleton;
+				inst.palette.resize(modelData->skeleton.joints.size());
+				inst.paletteHandle = Engine::Instance().GetStructuredBufferManager()->CreateDynamic();
+				return inst;
+			}
+
+			void ComputeAnimationData(int32_t animationID, SkinInstance& skin, const SkinBindData& bind, float& time)
+			{
+				Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationComputer()->ComputeAnimationData(animationID, skin, bind, time);
+			}
+
+			Matrix4x4 SampleNodeHierarchy(int32_t animationID, const std::string& nodeName, float& time)
+			{
+				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationComputer()->SampleNodeHierarchy(animationID, nodeName, time);
 			}
 		}
 
@@ -80,6 +96,36 @@ namespace Game
 			const AudioData* GetData(int32_t audioID)
 			{
 				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioBank()->GetAudioData(audioID);
+			}
+
+
+			int32_t PlayAudio(const int32_t& audioId, bool loop, float volume)
+			{
+				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->PlayAudio(audioId, loop, volume);
+			}
+			void StopAudio(const int32_t& playId)
+			{
+				Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->StopAudio(playId);
+			}
+			void SetAudioVolume(const int32_t& playId, float volume)
+			{
+				Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetVolume(playId, volume);
+			}
+			void SetMasterVolume(float volume)
+			{
+				Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetMasterVolume(volume);
+			}
+			float GetVolume(const int32_t& playId)
+			{
+				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetVolume(playId);
+			}
+			float GetMasterVolume()
+			{
+				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetMasterVolume();
+			}
+			bool IsAudioPlaying(const int32_t& playId)
+			{
+				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->IsAudioPlaying(playId);
 			}
 		}
 
@@ -156,38 +202,6 @@ namespace Game
 		//{
 		//	Engine::Instance().GetDrawSystem()->AddDebugLineList(start, end, color);
 		//}
-	}
-
-	namespace Audio
-	{
-		int32_t PlayAudio(const int32_t& audioId, bool loop)
-		{
-			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->PlayAudio(audioId, loop);
-		}
-		void StopAudio(const int32_t& playId)
-		{
-			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->StopAudio(playId);
-		}
-		void SetAudioVolume(const int32_t& playId, float volume)
-		{
-			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetVolume(playId, volume);
-		}
-		void SetMasterVolume(float volume)
-		{
-			Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetMasterVolume(volume);
-		}
-		float GetVolume(const int32_t& playId)
-		{
-			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetVolume(playId);
-		}
-		float GetMasterVolume()
-		{
-			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetMasterVolume();
-		}
-		bool IsAudioPlaying(const int32_t& playId)
-		{
-			return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->IsAudioPlaying(playId);
-		}
 	}
 
 	namespace IO
@@ -344,7 +358,7 @@ namespace Game
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetCameraDirection();
 			}
-			Vector3 GetTranslate(int32_t cameraID)
+			Vector3 GetWorldPosition(int32_t cameraID)
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetTranslate();
 			}
@@ -376,37 +390,42 @@ namespace Game
 
 		namespace Setter
 		{
-			void SetCenter(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID)
+			void CenterTarget(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCenterTarget(target, durationSec, easetype);
 			}
 
-			void SetRotate(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID)
+			void PhiTarget(float target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
-				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetRotateTarget(target, durationSec, easetype);
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetPhiTarget(target, durationSec, easetype);
 			}
 
-			void SetDistance(float target, float durationSec, EaseType easetype, int32_t cameraID)
+			void ThetaTarget(float target, float durationSec, EaseType easetype, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetThetaTarget(target, durationSec, easetype);
+			}
+
+			void DistanceTarget(float target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetDistanceTarget(target, durationSec, easetype);
 			}
 
-			void SetScreenSize(Vector2 target, float durationSec, EaseType easetype, int32_t cameraID)
+			void ScreenSizeTarget(Vector2 target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetScreenSizeTarget(target, durationSec, easetype);
 			}
 
-			void SetFovTarget(float target, float durationSec, EaseType easetype, int32_t cameraID)
+			void FovTarget(float target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetFovTarget(target, durationSec, easetype);
 			}
 
-			void SetEnableControl(bool enable, int32_t cameraID)
+			void EnableControl(bool enable, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetEnableControl(enable);
 			}
 
-			void SetCameraMode(CameraMode_ORBIT_FPS mode, int32_t cameraID)
+			void CameraMode(CameraMode_ORBIT_FPS mode, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCameraMode(mode);
 			}
@@ -561,7 +580,7 @@ namespace Game
 
 			// DirectXのリサイズ処理
 			Engine::Instance().GetDirectXManager()->Resize();
-			
+
 			// カメラのアスペクト比更新
 			//Engine::Instance().GetCameraManager()->Resize();
 		}
@@ -581,11 +600,6 @@ namespace Game
 		void ZeroFillCompute(int32_t resourceID, size_t bytes)
 		{
 			Engine::Instance().GetStructuredBufferManager()->ZeroFillCompute(resourceID, bytes);
-		}
-
-		void UpdateData(int32_t resourceID, const void* data, size_t elementSize, size_t elementCount)
-		{
-			Engine::Instance().GetStructuredBufferManager()->UpdateData(resourceID, data, elementSize, elementCount);
 		}
 
 		uint32_t GetSRV(int32_t resourceID)
@@ -613,5 +627,4 @@ namespace Game
 	{
 		Engine::Instance().Quit();
 	}
-
 }

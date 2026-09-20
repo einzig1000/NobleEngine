@@ -11,7 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\Saver\ItemDataSaver.cpp" />
+    <ClCompile Include="src\application\Test\TestParticle\Particle.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\Item\Saver\ItemDataSaver.cpp" />
     <ClCompile Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.cpp" />
     <ClCompile Include="src\application\GameObjects\EventBus\EventBus.cpp" />
     <ClCompile Include="src\engine\AssetManager\Font\FontManager.cpp" />
@@ -28,10 +30,10 @@
     <ClCompile Include="src\application\Editor\Editor.cpp" />
     <ClCompile Include="src\application\Facade\App.cpp" />
     <ClCompile Include="src\application\Application.cpp" />
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\ItemDataManager.cpp" />
-    <ClCompile Include="src\application\ResourceLoader\Data\DataManager.cpp" />
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.cpp" />
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\Item\ItemDataManager.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\DataManager.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\Item\Loader\ItemDataLoader.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\Item\Bank\ItemDataBank.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\HaveItem\HaveItem.cpp" />
     <ClCompile Include="src\application\GameObjects\Camera\CameraController.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\ICharacter.cpp" />
@@ -80,7 +82,6 @@
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\MapManager.cpp" />
-    <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp" />
     <ClCompile Include="src\engine\AssetManager\Audio\AudioPlayer\AudioPlayer.cpp" />
     <ClCompile Include="src\engine\AssetManager\Audio\AudioLoader\AudioLoader.cpp" />
     <ClCompile Include="src\engine\AssetManager\Audio\AudioBank\AudioBank.cpp" />
@@ -136,7 +137,6 @@
     <ClCompile Include="src\engine\Utilities\PerlinNoise.cpp" />
     <ClCompile Include="src\engine\Utilities\Random\Random.cpp" />
     <ClCompile Include="src\engine\Window\WindowManager.cpp" />
-    <ClCompile Include="src\application\Test\TestAnimation\TestAnimation.cpp" />
     <ClCompile Include="src\application\Test\TestParticle\TestParticle.cpp" />
     <ClCompile Include="src\engine\AssetManager\Texture\TextureBank\TextureBank.cpp" />
     <ClCompile Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.cpp" />
@@ -148,7 +148,9 @@
     <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\Saver\ItemDataSaver.h" />
+    <ClInclude Include="src\application\Test\TestParticle\Particle.h" />
+    <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\Item\Saver\ItemDataSaver.h" />
     <ClInclude Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.h" />
     <ClInclude Include="src\application\GameObjects\EventBus\EventBus.h" />
     <ClInclude Include="externals\stb\stb_truetype.h" />
@@ -166,10 +168,10 @@
     <ClInclude Include="src\application\Editor\Editor.h" />
     <ClInclude Include="src\application\Facade\App.h" />
     <ClInclude Include="src\application\Application.h" />
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\ItemDataManager.h" />
-    <ClInclude Include="src\application\ResourceLoader\Data\DataManager.h" />
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.h" />
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\Item\ItemDataManager.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\DataManager.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\Item\Loader\ItemDataLoader.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\Item\Bank\ItemDataBank.h" />
     <ClInclude Include="src\application\GameObjects\Character\HaveItem\HaveItem.h" />
     <ClInclude Include="src\application\GameObjects\Camera\CameraController.h" />
     <ClInclude Include="src\application\GameObjects\Character\ICharacter.h" />
@@ -369,7 +371,6 @@
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h" />
     <ClInclude Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.h" />
     <ClInclude Include="src\application\GameObjects\Map\MapManager.h" />
-    <ClInclude Include="src\application\ResourceLoader\ResourceID.h" />
     <ClInclude Include="src\engine\AssetManager\Audio\AudioPlayer\AudioPlayer.h" />
     <ClInclude Include="src\engine\AssetManager\Audio\AudioLoader\AudioLoader.h" />
     <ClInclude Include="src\engine\AssetManager\Audio\AudioBank\AudioBank.h" />
@@ -427,7 +428,6 @@
     <ClInclude Include="src\engine\Utilities\PerlinNoise.h" />
     <ClInclude Include="src\engine\Utilities\Random\Random.h" />
     <ClInclude Include="src\engine\Window\WindowManager.h" />
-    <ClInclude Include="src\application\Test\TestAnimation\TestAnimation.h" />
     <ClInclude Include="src\application\Test\TestParticle\TestParticle.h" />
     <ClInclude Include="src\engine\AssetManager\Texture\TextureBank\TextureBank.h" />
     <ClInclude Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.h" />

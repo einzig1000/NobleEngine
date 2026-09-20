@@ -803,6 +803,10 @@ struct EulerTransforms
     Vector3 scale = { 1,1,1 };
     Vector3 rotate = { 0,0,0 };
     Vector3 translate = { 0,0,0 };
+	Matrix4x4 GetWorldMatrix()
+	{
+		return Matrix4x4::MakeAffineMatrix(scale, rotate, translate);
+	}
 };
 struct QuaternionTransforms
 {
@@ -870,10 +874,18 @@ struct NodeAnimation
     AnimationCurve<Vector3> scale;
 };
 
+struct AnimationNodeHierarchy
+{
+    bool hasParent = false;
+    std::string parentName;
+    QuaternionTransforms restTransform;   // アニメーションが無いノードはこの姿勢を使う
+};
+
 struct AnimationData
 {
     float duration = 0.0f;  // アニメーション全体の長さ(秒)
-    std::map<std::string, NodeAnimation> nodeAnimations;
+    std::unordered_map<std::string, NodeAnimation> nodeAnimations;
+    std::unordered_map<std::string, AnimationNodeHierarchy> hierarchy;
 };
 
 
@@ -919,17 +931,23 @@ struct WellForGPU
 	Matrix4x4 skeletonSpaceInverseTransposeMatrix;
 };
 
-struct SkinCluster
+// モデルが所有。ロード後は不変。全インスタンスで共有するのでコピーしない
+struct SkinBindData
 {
-	std::vector<Matrix4x4> inverseBindPoseMatrices;
+    std::vector<Matrix4x4> inverseBindPoseMatrices;          // ジョイントのバインドポーズ逆行列
+    Microsoft::WRL::ComPtr<ID3D12Resource> influenceBuffer;  // DEFAULTヒープ(Step 5)
+    uint32_t influenceHeapSlot = UINT32_MAX;                 // StructuredBufferとしてのSRVインデックス
+};
 
-    Microsoft::WRL::ComPtr<ID3D12Resource> influenceResource;
-	D3D12_VERTEX_BUFFER_VIEW influenceBufferView;
-	std::span<VertexInfluence> mappedInfluences;
-
-    Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
-	std::span<WellForGPU> mappedPalette;
-	std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> paletteSrvHandle;
+// インスタンスが所有。アニメーションの再生状態そのもの
+struct SkinInstance
+{
+    Skeleton skeleton;                   // 骨の姿勢。vectorなので深いコピーで正しくper-instance
+    std::vector<WellForGPU> palette;     // CPU側の作業バッファ(キャッシュ可能なメモリ)
+    int32_t paletteHandle = -1;          // Game::Resource::CreateDynamic() のハンドル(フレームリング済み)
+    std::vector<const NodeAnimation*> boundChannels; // joints_と同じ並び
+    int32_t boundAnimationID = -1;
+    float boundDuration = 0.0f;
 };
 
 // 材質データ(今はテクスチャパスしかいれてない.質感とか追加するようになったら使うのかも)
@@ -997,7 +1015,7 @@ struct ModelData
 	Node rootNode;                      // ノード
 	Skeleton skeleton;                  // スケルトン
 	uint32_t materialID = 0;            // マテリアルID
-	SkinCluster skinCluster;            // スキンクラスタ(あにめーしょんデータに移行する予定)
+    SkinBindData skinBindData;          // スキンバインドデータ
 	std::map<std::string, JointWeightData> skinClusterData; // ジョイントのウェイトデータ
 
     // ファイルパス

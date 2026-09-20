@@ -159,9 +159,6 @@
     <ClCompile Include="src\engine\AssetManager\Animation\AnimationManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\Test\TestAnimation\TestAnimation.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="src\application\Test\TestParticle\TestParticle.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -199,9 +196,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="src\application\ResourceLoader\ResourceID.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.cpp">
@@ -348,16 +342,16 @@
     <ClCompile Include="src\application\GameObjects\Character\HaveItem\HaveItem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.cpp">
+    <ClCompile Include="src\application\System\ResourceLoader\Data\Item\Bank\ItemDataBank.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.cpp">
+    <ClCompile Include="src\application\System\ResourceLoader\Data\Item\Loader\ItemDataLoader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\ResourceLoader\Data\DataManager.cpp">
+    <ClCompile Include="src\application\System\ResourceLoader\Data\DataManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\ItemDataManager.cpp">
+    <ClCompile Include="src\application\System\ResourceLoader\Data\Item\ItemDataManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\Application.cpp">
@@ -411,13 +405,19 @@
     <ClCompile Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\ResourceLoader\Data\Item\Saver\ItemDataSaver.cpp">
+    <ClCompile Include="src\application\System\ResourceLoader\Data\Item\Saver\ItemDataSaver.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\TimeManager\TimeManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\Test\TestParticle\Particle.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -569,9 +569,6 @@
     <ClInclude Include="src\engine\AssetManager\Animation\AnimationManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\Test\TestAnimation\TestAnimation.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="src\application\Test\TestParticle\TestParticle.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -612,9 +609,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="src\application\ResourceLoader\ResourceID.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.h">
@@ -1214,16 +1208,16 @@
     <ClInclude Include="src\application\GameObjects\Character\HaveItem\HaveItem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\Bank\ItemDataBank.h">
+    <ClInclude Include="src\application\System\ResourceLoader\Data\Item\Bank\ItemDataBank.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\Loader\ItemDataLoader.h">
+    <ClInclude Include="src\application\System\ResourceLoader\Data\Item\Loader\ItemDataLoader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\ResourceLoader\Data\DataManager.h">
+    <ClInclude Include="src\application\System\ResourceLoader\Data\DataManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\ItemDataManager.h">
+    <ClInclude Include="src\application\System\ResourceLoader\Data\Item\ItemDataManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\Application.h">
@@ -1280,13 +1274,19 @@
     <ClInclude Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\ResourceLoader\Data\Item\Saver\ItemDataSaver.h">
+    <ClInclude Include="src\application\System\ResourceLoader\Data\Item\Saver\ItemDataSaver.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\TimeManager\TimeManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\TimeManager\TimeScaler\TimeScaler.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\Test\TestParticle\Particle.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,5 +1,4 @@
 #include "GameScenePhase.h"
-#include <ResourceLoader/ResourceID.h>
 #include <GameObjects/EventBus/EventBus.h>
 #include <GameObjects/Map/MapManager.h>
 #include <GameObjects/Character/CharacterManager.h>
@@ -32,7 +31,6 @@ GameScenePhase::GameScenePhase()
 
 
 
-	c_debug_ = cameraController_->AddCamera("DebugCamera");
 	c_player_ = cameraController_->AddCamera("PlayerCamera");
 
 	charctorManager_->SetViewCamera(c_player_);
@@ -42,7 +40,7 @@ GameScenePhase::~GameScenePhase() {}
 
 void GameScenePhase::Initialize()
 {
-	nextPhase_ = PHASE::Phase_None;
+	nextPhase_ = Phase::Phase_None;
 
 	map_->Initialize();
 	uiManager_->Initialize();
@@ -54,23 +52,23 @@ void GameScenePhase::Initialize()
 
 void GameScenePhase::Update()
 {
-	//int32_t targetCameraID = c_debug_;
+	eventBus_->Update();
+
 	int32_t targetCameraID = c_player_;
 	Vector3 cameraPos = Game::Camera::Getter::GetCenter(targetCameraID);
 
-	// UI更新
-	uiManager_->Update(targetCameraID);
 	// キャラクターマネージャー更新
 	charctorManager_->Update(targetCameraID);
 	// マップ更新
 	map_->Update(targetCameraID, cameraPos);
+	// UI更新
+	uiManager_->Update(targetCameraID);
 
+	// ポストエフェクト更新
 	screenDrawer_->Update(targetCameraID);
 
 	// カメラ更新
-	//Game::Camera::Setter::SetCenter(charctorManager_->GetPlayer()->GetPosition(), 0.0f, EaseType::IN_BACK, targetCameraID);
 	cameraController_->Update(targetCameraID);
-
 }
 
 

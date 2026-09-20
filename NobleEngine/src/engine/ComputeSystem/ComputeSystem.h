@@ -18,12 +18,16 @@ public:
 	// リストに追加されたComputeObjectをすべて実行する
 	void DispatchComputeObjects();
 
+	D3D12_GPU_VIRTUAL_ADDRESS GetCurrentFrameCbGpuAddress(size_t sizeBytes, const void* data);
+
 private:
+	DirectXManager* dxManager_ = nullptr;
+	StructuredBufferManager* structuredBufferManager_ = nullptr;
+	UINT backBufferIndex_ = 0;
+
 	// 実際にコンピューターシェーダーをぶん回す
 	void DispatchComputeObject(const ComputeObject* computeObject);
 
-	DirectXManager* dxManager_ = nullptr;
-	StructuredBufferManager* structuredBufferManager_ = nullptr;
 	FrameCbAllocator cbAllocators_[Constexprs::kFrameCount]{};
 	std::vector<const ComputeObject*> computeObjects_{};
 

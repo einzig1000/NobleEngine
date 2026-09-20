@@ -9,7 +9,7 @@
 
 
 // ゲームのフェーズ
-enum class PHASE
+enum class Phase
 {
     Phase_None,
     Phase_Test,
@@ -54,11 +54,11 @@ enum class ItemID
 	Tool_Sword_of_Gold,
 	Tool_Sword_of_Diamond,
 
-	Tool_Pickel_of_Wood,
-	Tool_Pickel_of_Stone,
-	Tool_Pickel_of_Iron,
-	Tool_Pickel_of_Gold,
-	Tool_Pickel_of_Diamond,
+	Tool_Hammer_of_Wood,
+	Tool_Hammer_of_Stone,
+	Tool_Hammer_of_Iron,
+	Tool_Hammer_of_Gold,
+	Tool_Hammer_of_Diamond,
 
 	Tool_Axe_of_Wood,
 	Tool_Axe_of_Stone,
@@ -141,11 +141,11 @@ enum class ToolID
 	Sword_of_Iron,
 	Sword_of_Gold,
 	Sword_of_Diamond,
-	Pickel_of_Wood,
-	Pickel_of_Stone,
-	Pickel_of_Iron,
-	Pickel_of_Gold,
-	Pickel_of_Diamond,
+	Hammer_of_Wood,
+	Hammer_of_Stone,
+	Hammer_of_Iron,
+	Hammer_of_Gold,
+	Hammer_of_Diamond,
 	Axe_of_Wood,
 	Axe_of_Stone,
 	Axe_of_Iron,

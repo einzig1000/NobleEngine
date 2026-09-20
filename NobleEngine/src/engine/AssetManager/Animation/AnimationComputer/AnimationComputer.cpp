@@ -57,25 +57,98 @@ AnimationComputer::AnimationComputer(AnimationBank* bank)
 AnimationComputer::~AnimationComputer()
 {}
 
-void AnimationComputer::UpdateAnimation(int32_t animationID, Skeleton& skeleton, SkinCluster& skinCluster, float& time)
+
+Matrix4x4 AnimationComputer::SampleNodeHierarchy(int32_t animationID, const std::string& nodeName, float& time)
 {
 	AnimationData* animationData = bank_->GetAnimationData(animationID);
 	time = fmod(time, animationData->duration);
-	ApplyAnimation(skeleton, *animationData, time);
-	UpdateSkeleton(skeleton);
-	UpdateSkinCluster(skeleton, skinCluster);
+
+	Matrix4x4 result = Matrix4x4::MakeIdentity4x4();
+	std::string currentName = nodeName;
+
+	while (!currentName.empty())
+	{
+		QuaternionTransforms local{};
+
+		auto animIt = animationData->nodeAnimations.find(currentName);
+		if (animIt != animationData->nodeAnimations.end())
+		{
+			local.translate = CalculateValue(time, animIt->second.translate);
+			local.rotate = CalculateValue(time, animIt->second.rotate);
+			local.scale = CalculateValue(time, animIt->second.scale);
+		}
+
+		auto hierIt = animationData->hierarchy.find(currentName);
+		if (hierIt == animationData->hierarchy.end())
+		{
+			break;
+		}
+
+		if (animIt == animationData->nodeAnimations.end())
+		{
+			local = hierIt->second.restTransform;
+		}
+
+		result = result * Matrix4x4::MakeAffineMatrix(local.scale, local.rotate, local.translate);
+
+		currentName = hierIt->second.hasParent ? hierIt->second.parentName : "";
+	}
+
+	return result;
 }
 
-void AnimationComputer::ApplyAnimation(Skeleton& skeleton, const AnimationData& animation, float time)
+
+void AnimationComputer::ComputeAnimationData(int32_t animationID, SkinInstance& skin, const SkinBindData& bind, float& time)
 {
-	for (Joint& joint : skeleton.joints)
+	if (skin.boundAnimationID != animationID)
 	{
-		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end())
+		AnimationData* animationData = bank_->GetAnimationData(animationID);
+		BindChannels(skin, *animationData, animationID);
+		skin.boundDuration = animationData->duration;
+	}
+
+	time = fmod(time, skin.boundDuration);
+	ApplyAnimation(skin, time);
+	UpdateSkeleton(skin.skeleton);
+	UpdatePalette(skin.skeleton, bind, skin.palette);
+}
+
+void AnimationComputer::BindChannels(SkinInstance& skin, const AnimationData& animation, int32_t animationID)
+{
+	skin.boundChannels.resize(skin.skeleton.joints.size());
+
+	for (size_t i = 0; i < skin.skeleton.joints.size(); ++i)
+	{
+		auto it = animation.nodeAnimations.find(skin.skeleton.joints[i].name);
+		skin.boundChannels[i] = (it != animation.nodeAnimations.end()) ? &it->second : nullptr;
+	}
+
+	skin.boundAnimationID = animationID;
+}
+
+void AnimationComputer::UpdatePalette(const Skeleton& skeleton, const SkinBindData& bind, std::vector<WellForGPU>& palette)
+{
+	for (size_t jointIndex = 0; jointIndex < skeleton.joints.size(); ++jointIndex)
+	{
+		assert(jointIndex < bind.inverseBindPoseMatrices.size());
+
+		const Matrix4x4 skeletonSpace = bind.inverseBindPoseMatrices[jointIndex] * skeleton.joints[jointIndex].skeletonSpaceMatrix;
+
+		palette[jointIndex].skeletonSpaceMatrix = skeletonSpace;
+		palette[jointIndex].skeletonSpaceInverseTransposeMatrix = skeletonSpace.Inverse().Transpose();
+	}
+}
+
+void AnimationComputer::ApplyAnimation(SkinInstance& skin, float time)
+{
+	for (size_t i = 0; i < skin.skeleton.joints.size(); ++i)
+	{
+		Joint& joint = skin.skeleton.joints[i];
+		if (const NodeAnimation* na = skin.boundChannels[i])
 		{
-			const NodeAnimation& nodeAnimation = it->second;
-			joint.transform.translate = CalculateValue(time, nodeAnimation.translate);
-			joint.transform.rotate = CalculateValue(time, nodeAnimation.rotate);
-			joint.transform.scale = CalculateValue(time, nodeAnimation.scale);
+			joint.transform.translate = CalculateValue(time, na->translate);
+			joint.transform.rotate = CalculateValue(time, na->rotate);
+			joint.transform.scale = CalculateValue(time, na->scale);
 		}
 	}
 }
@@ -93,17 +166,5 @@ void AnimationComputer::UpdateSkeleton(Skeleton& skeleton)
 		{
 			joint.skeletonSpaceMatrix = joint.localMatrix;
 		}
-	}
-}
-
-void AnimationComputer::UpdateSkinCluster(const Skeleton& skeleton, SkinCluster& skinCluster)
-{
-	for (size_t jointIndex = 0; jointIndex < skeleton.joints.size(); ++jointIndex)
-	{
-		assert(jointIndex < skinCluster.inverseBindPoseMatrices.size());
-		skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix =
-			skinCluster.inverseBindPoseMatrices[jointIndex] * skeleton.joints[jointIndex].skeletonSpaceMatrix;
-		skinCluster.mappedPalette[jointIndex].skeletonSpaceInverseTransposeMatrix =
-			skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix.Inverse().Transpose();
 	}
 }

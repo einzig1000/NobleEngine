@@ -21,7 +21,6 @@ UIManager::UIManager()
 	elements_[static_cast<size_t>(UIElementType::Hotbar)] = std::make_unique<Hotbar>();
 	elements_[static_cast<size_t>(UIElementType::MiningMode)] = std::make_unique<MiningMode>();
 
-
 	screens_.resize(static_cast<size_t>(UIMode::MAX));
 	screens_[static_cast<size_t>(UIMode::Playing)] = std::make_unique<PlayingScreen>();
 	screens_[static_cast<size_t>(UIMode::Inventory)] = std::make_unique<InventoryScreen>();

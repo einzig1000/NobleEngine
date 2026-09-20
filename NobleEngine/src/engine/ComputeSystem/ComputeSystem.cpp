@@ -17,8 +17,8 @@ ComputeSystem::~ComputeSystem()
 void ComputeSystem::Reset()
 {
 	// CBアロケータをリセット
-	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	cbAllocators_[backBufferIndex].Reset();
+	backBufferIndex_ = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	cbAllocators_[backBufferIndex_].Reset();
 
 	computeObjects_.clear();
 }
@@ -58,11 +58,16 @@ void ComputeSystem::DispatchComputeObjects()
 	}
 }
 
+D3D12_GPU_VIRTUAL_ADDRESS ComputeSystem::GetCurrentFrameCbGpuAddress(size_t sizeBytes, const void* data)
+{
+	const auto alloc = cbAllocators_[backBufferIndex_].Allocate(sizeBytes);
+	std::memcpy(alloc.cpu, data, static_cast<size_t>(sizeBytes));
+	return alloc.gpu;
+}
+
 void ComputeSystem::DispatchComputeObject(const ComputeObject* computeObject)
 {
-	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
-	auto& cb = cbAllocators_[backBufferIndex];
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex_);
 	auto* srvUavManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
 	// 1) RootSignatureセット
@@ -70,7 +75,6 @@ void ComputeSystem::DispatchComputeObject(const ComputeObject* computeObject)
 	// 2) PSOセット
 	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetComputePipelineState(computeObject->psoConfig_, computeObject->GetRootParams()).Get());
 	// 3) CBV・SRVセット
-	const auto& cpuStorage = computeObject->GetCpuStorage();
 	const auto& rootParams = computeObject->GetRootParams();
 	for (size_t i = 0; i < rootParams.size(); ++i)
 	{
@@ -78,19 +82,18 @@ void ComputeSystem::DispatchComputeObject(const ComputeObject* computeObject)
 
 		if (param.paramType == ParamType::CBV)
 		{
-			const auto alloc = cb.Allocate(param.sizeBytes);
-			std::memcpy(alloc.cpu, cpuStorage.data() + param.offsetBytes, param.sizeBytes);
-			cmdList->SetComputeRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
+			assert(param.gpuAddress != 0);
+			cmdList->SetComputeRootConstantBufferView(static_cast<UINT>(i), param.gpuAddress);
 		}
 		else if (param.paramType == ParamType::SRV)
 		{
-			assert(param.srvAllocIndex != UINT32_MAX);
-			cmdList->SetComputeRootDescriptorTable(static_cast<UINT>(i), srvUavManager->GetGPUHandleAt(param.srvAllocIndex));
+			assert(param.allocIndex != UINT32_MAX);
+			cmdList->SetComputeRootDescriptorTable(static_cast<UINT>(i), srvUavManager->GetGPUHandleAt(param.allocIndex));
 		}
 		else if (param.paramType == ParamType::UAV)
 		{
-			assert(param.uavAllocIndex != UINT32_MAX);
-			cmdList->SetComputeRootDescriptorTable(static_cast<UINT>(i), srvUavManager->GetGPUHandleAt(param.uavAllocIndex));
+			assert(param.allocIndex != UINT32_MAX);
+			cmdList->SetComputeRootDescriptorTable(static_cast<UINT>(i), srvUavManager->GetGPUHandleAt(param.allocIndex));
 		}
 	}
 

@@ -33,9 +33,9 @@ DrawSystem::~DrawSystem()
 
 void DrawSystem::Reset()
 {
+	backBufferIndex_ = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
 	// CBアロケータをリセット
-	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	cbAllocators_[backBufferIndex].Reset();
+	cbAllocators_[backBufferIndex_].Reset();
 
 	drawNodes_.clear();
 }
@@ -124,9 +124,7 @@ std::vector<int32_t> DrawSystem::SortNodes()
 
 void DrawSystem::DrawObject(const RenderObject* renderObject)
 {
-	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
-	auto& cb = cbAllocators_[backBufferIndex];
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex_);
 	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
 	// 1) RootSignatureセット
@@ -134,7 +132,6 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	// 2) PSOセット
 	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
 	// 3) CBV・SRVセット
-	const auto& cpuStrage = renderObject->GetCpuStorage();
 	const auto& rootParams = renderObject->GetRootParams();
 	for (size_t i = 0; i < rootParams.size(); ++i)
 	{
@@ -142,14 +139,13 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 
 		if (param.paramType == ParamType::CBV)
 		{
-			const auto alloc = cb.Allocate(param.sizeBytes);
-			std::memcpy(alloc.cpu, cpuStrage.data() + param.offsetBytes, param.sizeBytes);
-			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), alloc.gpu);
+			assert(param.gpuAddress != 0);
+			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), param.gpuAddress);
 		}
 		else if (param.paramType == ParamType::SRV)
 		{
-			assert(param.srvAllocIndex != UINT32_MAX);
-			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.srvAllocIndex));
+			assert(param.allocIndex != UINT32_MAX);
+			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.allocIndex));
 		}
 	}
 
@@ -199,9 +195,16 @@ void DrawSystem::Execute()
 	}
 }
 
+D3D12_GPU_VIRTUAL_ADDRESS DrawSystem::GetCurrentFrameCbGpuAddress(size_t sizeBytes, const void* data)
+{
+	const auto alloc = cbAllocators_[backBufferIndex_].Allocate(sizeBytes);
+	std::memcpy(alloc.cpu, data, static_cast<size_t>(sizeBytes));
+	return alloc.gpu;
+}
+
 void DrawSystem::ScreenDraw()
 {
-	screenRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
+	screenRenderObject_->SetBRegisterData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
 	DrawObject(screenRenderObject_.get());
 
 #ifdef _DEBUG

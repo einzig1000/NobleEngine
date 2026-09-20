@@ -79,7 +79,7 @@ void AudioPlayer::Update()
 }
 
 
-int32_t AudioPlayer::PlayAudio(const int32_t& audioId, bool loop)
+int32_t AudioPlayer::PlayAudio(const int32_t& audioId, bool loop, float volume)
 {
     const AudioData* audioData = bank_->GetAudioData(audioId);
     if (!audioData)
@@ -121,6 +121,8 @@ int32_t AudioPlayer::PlayAudio(const int32_t& audioId, bool loop)
         assert(0);
         return -1;
     }
+
+	voice->SetVolume(volume);
 
     int32_t playId = nextPlayId_++;
     activeVoices_[playId] = voice;

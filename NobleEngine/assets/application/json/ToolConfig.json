@@ -34,40 +34,40 @@
     "modelID": "assets/application/Minecraft/Item/tool/axe/axe.obj",
     "textureID": "assets/application/Minecraft/Item/tool/axe/axe.png"
   },
-  "Pickel_of_Diamond": {
+  "Hammer_of_Diamond": {
     "attackPower": 1.0,
     "durability": 1.0,
     "miningSpeed": 1.0,
-    "modelID": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
-    "textureID": "assets/application/Minecraft/Item/tool/pickel/pickel.png"
+    "modelID": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
+    "textureID": "assets/application/Minecraft/Item/tool/hammer/hammer.png"
   },
-  "Pickel_of_Gold": {
+  "Hammer_of_Gold": {
     "attackPower": 1.0,
     "durability": 1.0,
     "miningSpeed": 1.0,
-    "modelID": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
-    "textureID": "assets/application/Minecraft/Item/tool/pickel/pickel.png"
+    "modelID": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
+    "textureID": "assets/application/Minecraft/Item/tool/hammer/hammer.png"
   },
-  "Pickel_of_Iron": {
+  "Hammer_of_Iron": {
     "attackPower": 1.0,
     "durability": 1.0,
     "miningSpeed": 1.0,
-    "modelID": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
-    "textureID": "assets/application/Minecraft/Item/tool/pickel/pickel.png"
+    "modelID": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
+    "textureID": "assets/application/Minecraft/Item/tool/hammer/hammer.png"
   },
-  "Pickel_of_Stone": {
+  "Hammer_of_Stone": {
     "attackPower": 1.0,
     "durability": 1.0,
     "miningSpeed": 1.0,
-    "modelID": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
-    "textureID": "assets/application/Minecraft/Item/tool/pickel/pickel.png"
+    "modelID": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
+    "textureID": "assets/application/Minecraft/Item/tool/hammer/hammer.png"
   },
-  "Pickel_of_Wood": {
+  "Hammer_of_Wood": {
     "attackPower": 1.0,
     "durability": 1.0,
     "miningSpeed": 1.0,
-    "modelID": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
-    "textureID": "assets/application/Minecraft/Item/tool/pickel/pickel.png"
+    "modelID": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
+    "textureID": "assets/application/Minecraft/Item/tool/hammer/hammer.png"
   },
   "Sword_of_Diamond": {
     "attackPower": 1.0,

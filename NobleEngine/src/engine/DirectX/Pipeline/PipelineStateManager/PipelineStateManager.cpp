@@ -417,7 +417,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
             range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
             const UINT reg = static_cast<UINT>(param.key);
             range.BaseShaderRegister = reg;
-            if (param.srvAllocIndex == 0)
+            if (param.allocIndex == 0)
             {
                 range.NumDescriptors = UINT_MAX;
             }
@@ -614,8 +614,11 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
     /// これからシェーダーをコンパイルする旨をログに出す
     Log("シェーダーコンパイル開始 パス:%s", StringConverter::Convert(filePath).c_str());
     // hlslファイルを読む
+
+    // hlslファイルを読む
     IDxcBlobEncoding* shaderSource = nullptr;
-    HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+    UINT32 codePage = DXC_CP_UTF8;
+    HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), &codePage, &shaderSource);
     // 読めなかったら停止する
     if (FAILED(hr))
     {

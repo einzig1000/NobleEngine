@@ -42,6 +42,11 @@ void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 		| aiProcess_GenSmoothNormals        // 法線データが存在しないときに自動生成する
 		| aiProcess_JoinIdenticalVertices   // 重複頂点を結合する
 	);
+	if (!scene)
+	{
+		Log("%s", importer.GetErrorString());
+		assert(false);
+	}
 	assert(scene->HasAnimations());
 
 	aiAnimation* animationAssimp = scene->mAnimations[0];
@@ -60,6 +65,8 @@ void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 	}
 
 	assert(animationAssimp);
+
+	ReadHierarchy(scene->mRootNode, "", false, animationData);
 
 	animationData->duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);
 
@@ -92,5 +99,29 @@ void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 			keyframe.value = { keyAssimp.mValue.x, keyAssimp.mValue.y, keyAssimp.mValue.z };
 			nodeAnimation.scale.keyFrames.push_back(keyframe);
 		}
+	}
+}
+
+void AnimationLoader::ReadHierarchy(const aiNode* node, const std::string& parentName, bool hasParent, AnimationData* animationData)
+{
+	std::string name = node->mName.C_Str();
+
+	AnimationNodeHierarchy hierarchyNode;
+	hierarchyNode.hasParent = hasParent;
+	hierarchyNode.parentName = parentName;
+
+	aiVector3D scale;
+	aiQuaternion rotate;
+	aiVector3D translate;
+	node->mTransformation.Decompose(scale, rotate, translate);
+	hierarchyNode.restTransform.scale = { scale.x, scale.y, scale.z };
+	hierarchyNode.restTransform.rotate = { rotate.x, rotate.y, rotate.z, rotate.w };
+	hierarchyNode.restTransform.translate = { translate.x, translate.y, translate.z };
+
+	animationData->hierarchy[name] = hierarchyNode;
+
+	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
+	{
+		ReadHierarchy(node->mChildren[childIndex], name, true, animationData);
 	}
 }

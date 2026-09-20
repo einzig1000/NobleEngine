@@ -119,7 +119,7 @@ namespace ShaderReflection
 
 
 
-    void BuildRootParamsFromShader(IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams, uint32_t& currentCBVOffsetBytes)
+    void BuildRootParamsFromShader(IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams)
     {
         Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
         HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
@@ -165,9 +165,7 @@ namespace ShaderReflection
                 p.ComputeHash();
 
                 p.sizeBytes = cbDesc.Size;
-                p.offsetBytes = currentCBVOffsetBytes;
 
-                currentCBVOffsetBytes += cbDesc.Size;
 				outParams.push_back(p);
             }
 			// SRV
@@ -207,11 +205,11 @@ namespace ShaderReflection
                 switch (bind.Dimension)
                 {
                 case D3D_SRV_DIMENSION_TEXTURE2D:
-                    p.srvAllocIndex = 0;
+                    p.allocIndex = 0;
                     break;
 
                 case D3D_SRV_DIMENSION_TEXTURECUBE:
-                    p.srvAllocIndex = 0;
+                    p.allocIndex = 0;
                     break;
 
                 default:

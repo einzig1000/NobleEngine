@@ -53,7 +53,7 @@ namespace Game
 			/// <param name="animationName">アニメーション名</param>
 			/// <returns>アニメーションID</returns>
 			int32_t Load(const std::string& filePath, const std::string& animationName);
-		
+
 			/// <summary>
 			/// アニメーションデータ取得
 			/// </summary>
@@ -61,14 +61,25 @@ namespace Game
 			/// <returns>アニメーションデータ</returns>
 			AnimationData* GetData(int32_t animationID);
 
+			SkinInstance CreateSkinInstance(int32_t modelID);
+
 			/// <summary>
 			/// アニメーションの再生
 			/// </summary>
 			/// <param name="animationID">アニメーションID</param>
-			/// <param name="skeleton">スケルトン</param>
-			/// <param name="skinCluster">スキンクラスター</param>
+			/// <param name="skin">CreateSkinInstanceで作成したスキンインスタンス</param>
+			/// <param name="bind"></param>
 			/// <param name="time">時間</param>
-			void ComputeAnimationData(int32_t animationID, Skeleton& skeleton, SkinCluster& skinCluster, float& time);
+			void ComputeAnimationData(int32_t animationID, SkinInstance& skin, const SkinBindData& bind, float& time);
+
+			/// <summary>
+			/// 指定したノードの最終的なlocal行列を取得する
+			/// </summary>
+			/// <param name="animationID">アニメーションID</param>
+			/// <param name="nodeName">ノード名</param>
+			/// <param name="time">時間</param>
+			/// <returns>親の影響も受けたlocal行列</returns>
+			Matrix4x4 SampleNodeHierarchy(int32_t animationID, const std::string& nodeName, float& time);
 		}
 
 		namespace Texture
@@ -103,6 +114,55 @@ namespace Game
 			/// <param name="audioID">オーディオID</param>
 			/// <returns>オーディオデータ</returns>
 			const AudioData* GetData(int32_t audioID);
+
+
+			/// <summary>
+			/// オーディオ再生
+			/// </summary>
+			/// <param name="audioId">オーディオID(LoadAudioで取得)</param>
+			/// <param name="loop">ループ再生するか否か</param>
+			/// <param name="volume">音量(0.0f～1.0f)</param>
+			/// <returns>再生インスタンスID、失敗時は-1</returns>
+			int32_t PlayAudio(const int32_t& audioId, bool loop, float volume = 1.0f);
+
+			/// <summary>
+			/// 再生停止
+			/// </summary>
+			/// <param name="playId">再生インスタンスID</param>
+			void StopAudio(const int32_t& playId);
+
+			/// <summary>
+			/// 音量設定
+			/// </summary>
+			/// <param name="playId">再生インスタンスID</param>
+			/// <param name="volume">音量 (0.0f~1.0f)</param>
+			void SetAudioVolume(const int32_t& playId, float volume);
+
+			/// <summary>
+			/// マスターボリューム設定
+			/// </summary>
+			/// <param name="volume">音量 (0.0f~1.0f)</param>
+			void SetMasterVolume(float volume);
+
+			/// <summary>
+			/// 音量取得
+			/// </summary>
+			/// <param name="playId">再生インスタンスID</param>
+			/// <returns>音量 (0.0f~1.0f)</returns>
+			float GetVolume(const int32_t& playId);
+
+			/// <summary>
+			/// マスターボリューム取得
+			/// </summary>
+			/// <returns>音量 (0.0f~1.0f)</returns>
+			float GetMasterVolume();
+
+			/// <summary>
+			/// 再生中か？
+			/// </summary>
+			/// <param name="playId">再生インスタンスID</param>
+			/// <returns>再生中か？</returns>
+			bool IsAudioPlaying(const int32_t& playId);
 		}
 
 		namespace Font
@@ -233,59 +293,6 @@ namespace Game
 		/// <param name="end">線分終了座標</param>
 		/// <param name="color">色</param>
 		void AddLine(Vector3 start, Vector3 end, uint32_t color);
-	};
-
-	/// <summary>
-	/// オーディオの再生
-	/// </summary>
-	namespace Audio
-	{
-		/// <summary>
-		/// オーディオ再生
-		/// </summary>
-		/// <param name="audioId">オーディオID(LoadAudioで取得)</param>
-		/// <param name="loop">ループ再生するか否か</param>
-		/// <returns>再生インスタンスID、失敗時は-1</returns>
-		int32_t PlayAudio(const int32_t& audioId, bool loop);
-
-		/// <summary>
-		/// 再生停止
-		/// </summary>
-		/// <param name="playId">再生インスタンスID</param>
-		void StopAudio(const int32_t& playId);
-
-		/// <summary>
-		/// 音量設定
-		/// </summary>
-		/// <param name="playId">再生インスタンスID</param>
-		/// <param name="volume">音量 (0.0f~1.0f)</param>
-		void SetAudioVolume(const int32_t& playId, float volume);
-
-		/// <summary>
-		/// マスターボリューム設定
-		/// </summary>
-		/// <param name="volume">音量 (0.0f~1.0f)</param>
-		void SetMasterVolume(float volume);
-
-		/// <summary>
-		/// 音量取得
-		/// </summary>
-		/// <param name="playId">再生インスタンスID</param>
-		/// <returns>音量 (0.0f~1.0f)</returns>
-		float GetVolume(const int32_t& playId);
-
-		/// <summary>
-		/// マスターボリューム取得
-		/// </summary>
-		/// <returns>音量 (0.0f~1.0f)</returns>
-		float GetMasterVolume();
-
-		/// <summary>
-		/// 再生中か？
-		/// </summary>
-		/// <param name="playId">再生インスタンスID</param>
-		/// <returns>再生中か？</returns>
-		bool IsAudioPlaying(const int32_t& playId);
 	};
 
 	/// <summary>
@@ -478,7 +485,7 @@ namespace Game
 			/// <returns>カメラの向き</returns>
 			Vector3 GetCameraDirection(int32_t cameraID);
 			/// <returns>カメラのワールド座標</returns>
-			Vector3 GetTranslate(int32_t cameraID);
+			Vector3 GetWorldPosition(int32_t cameraID);
 			/// <returns>カメラのCenterまでの距離</returns>
 			float GetDistance(int32_t cameraID);
 			/// <returns>カメラのビュープロジェクション行列</returns>
@@ -501,15 +508,26 @@ namespace Game
 			/// <param name="target">目標座標</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetCenter(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID);
-			
+			/// </param name="cameraID">カメラID</param>
+			void CenterTarget(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID);
+
 			/// <summary>
 			///	カメラの回転量変更
 			/// </summary>
 			/// <param name="target">目標回転量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetRotate(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID);
+			/// </param name="cameraID">カメラID</param>
+			void PhiTarget(float target, float durationSec, EaseType easetype, int32_t cameraID);
+
+			/// <summary>
+			///	カメラの回転量変更
+			/// </summary>
+			/// <param name="target">目標回転量</param>
+			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
+			/// <param name="easeType">変更補完イージングタイプ</param>
+			/// </param name="cameraID">カメラID</param>
+			void ThetaTarget(float target, float durationSec, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			///  カメラの回転中心からの距離(ズーム量)変更
@@ -517,7 +535,8 @@ namespace Game
 			/// <param name="target">目標ズーム量</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
-			void SetDistance(float target, float durationSec, EaseType easetype, int32_t cameraID);
+			/// </param name="cameraID">カメラID</param>
+			void DistanceTarget(float target, float durationSec, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			/// カメラのスクリーンサイズ変更
@@ -526,8 +545,8 @@ namespace Game
 			/// <param name="spendFrame">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetScreenSize(Vector2 target, float durationSec, EaseType easetype, int32_t cameraID);
-			
+			void ScreenSizeTarget(Vector2 target, float durationSec, EaseType easetype, int32_t cameraID);
+
 			/// <summary>
 			/// カメラのfovY変更
 			/// </summary>
@@ -535,18 +554,20 @@ namespace Game
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easetype">変更補完イージングタイプ</param>
 			/// <param name="cameraID">カメラID</param>
-			void SetFovTarget(float target, float durationSec, EaseType easetype, int32_t cameraID);
+			void FovTarget(float target, float durationSec, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			/// カメラコントロールの有効無効設定
 			/// </summary>
-			void SetEnableControl(bool enable, int32_t cameraID);
+			/// </param name="cameraID">カメラID</param>
+			void EnableControl(bool enable, int32_t cameraID);
 
 			/// <summary>
 			/// カメラモード(オービット or FPS)切り替え
 			/// </summary>
 			/// <param name="mode">カメラモード</param>
-			void SetCameraMode(CameraMode_ORBIT_FPS mode, int32_t cameraID);
+			/// </param name="cameraID">カメラID</param>
+			void CameraMode(CameraMode_ORBIT_FPS mode, int32_t cameraID);
 		}
 
 		namespace Shake
@@ -740,14 +761,26 @@ namespace Game
 		/// <param name="bytes">初期化するバイト数</param>
 		void ZeroFillCompute(int32_t resourceID, size_t bytes);
 
+		///// <summary>
+		///// 動的リソースの更新
+		///// </summary>
+		///// <param name="resourceID">リソースID</param>
+		///// <param name="data">更新するデータ</param>
+		//template<typename T>
+		//void UpdateData(int32_t resourceID, const std::vector<T>& data)
+		//{
+		//	Engine::Instance().GetStructuredBufferManager()->UpdateData(resourceID, data.data(), sizeof(T), data.size());
+		//}
 		/// <summary>
-		/// 動的リソースの更新
+		/// 連続コンテナ全体を送る。vector / 生配列 / std::array / span すべて受け付ける
 		/// </summary>
-		/// <param name="resourceID">リソースID</param>
-		/// <param name="data">更新するデータ</param>
-		/// <param name="elementSize">要素のサイズ</param>
-		/// <param name="elementCount">要素の数</param>
-		void UpdateData(int32_t resourceID, const void* data, size_t elementSize, size_t elementCount);
+		template<typename Range>
+			requires requires(const Range& r) { std::data(r); std::size(r); }
+		void UpdateData(int32_t resourceID, const Range& data)
+		{
+			using T = std::remove_cvref_t<decltype(*std::data(data))>;
+			Engine::Instance().GetStructuredBufferManager()->UpdateData(resourceID, std::data(data), sizeof(T), std::size(data));
+		}
 
 		/// <summary>
 		/// リソースのSRVを取得

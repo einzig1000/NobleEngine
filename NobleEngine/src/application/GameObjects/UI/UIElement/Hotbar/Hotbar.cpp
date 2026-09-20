@@ -53,10 +53,10 @@ void Hotbar::Update(int32_t cameraID)
 		Matrix4x4 wvp = world * orthographic;
 		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
-		sprite.render->SetCBufferData(0, ShaderType::VertexShader, &wvp);
-		sprite.render->SetCBufferData(1, ShaderType::VertexShader, &world);
-		sprite.render->SetCBufferData(0, ShaderType::PixelShader, &color);
-		sprite.render->SetCBufferData(1, ShaderType::PixelShader, &sprite.textureID);
+		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
+		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
+		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
+		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
 	}
 
 	if (!inventory_) return;
@@ -91,10 +91,10 @@ void Hotbar::Update(int32_t cameraID)
 		Matrix4x4 wvp = world * orthographic;
 		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
-		icon.render->SetCBufferData(0, ShaderType::VertexShader, &wvp);
-		icon.render->SetCBufferData(1, ShaderType::VertexShader, &world);
-		icon.render->SetCBufferData(0, ShaderType::PixelShader, &color);
-		icon.render->SetCBufferData(1, ShaderType::PixelShader, &icon.textureID);
+		icon.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
+		icon.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
+		icon.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
+		icon.render->SetBRegisterData(1, ShaderType::PixelShader, &icon.textureID);
 	}
 }
 

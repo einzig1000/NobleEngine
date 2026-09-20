@@ -46,7 +46,7 @@ TitlePhase::~TitlePhase()
 void TitlePhase::Initialize()
 {
 	// フェーズ初期化
-	nextPhase_ = PHASE::Phase_None;
+	nextPhase_ = Phase::Phase_None;
 
 	map_->Initialize();
 	map_->GetTerrain()->SetDrawRadius(Vector3int{8,1,12});
@@ -55,9 +55,10 @@ void TitlePhase::Initialize()
 
 
 	Game::IO::Mouse::ShowCursor(true);
-	Game::Camera::Setter::SetCenter(Vector3{ 0.0f, 18.0f, 30.0f }, 0.0f, EaseType::LINEAR, c_title_);
-	Game::Camera::Setter::SetRotate(Vector3{ 0.7f, 1.37f, 0.0f }, 0.0f, EaseType::LINEAR, c_title_);
-	Game::Camera::Setter::SetDistance(25.0f, 0.0f, EaseType::LINEAR, c_title_);
+	Game::Camera::Setter::CenterTarget(Vector3{ 0.0f, 18.0f, 30.0f }, 0.0f, EaseType::LINEAR, c_title_);
+	Game::Camera::Setter::ThetaTarget(1.37f, 0.0f, EaseType::LINEAR, c_title_);
+	Game::Camera::Setter::PhiTarget(0.7f, 0.0f, EaseType::LINEAR, c_title_);
+	Game::Camera::Setter::DistanceTarget(25.0f, 0.0f, EaseType::LINEAR, c_title_);
 	cameraController_->Update(c_title_);
 
 	LoadButtonData();
@@ -108,11 +109,11 @@ void TitlePhase::Update()
 		}
 
 		Matrix4x4 wvp = worldMatrix * viewProjection;
-		buttons_[i].render_->SetCBufferData(0, ShaderType::VertexShader, &wvp);
-		buttons_[i].render_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+		buttons_[i].render_->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
+		buttons_[i].render_->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix);
 		Vector4 color = Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
-		buttons_[i].render_->SetCBufferData(0, ShaderType::PixelShader, &color);
-		buttons_[i].render_->SetCBufferData(1, ShaderType::PixelShader, &buttons_[i].textureID);
+		buttons_[i].render_->SetBRegisterData(0, ShaderType::PixelShader, &color);
+		buttons_[i].render_->SetBRegisterData(1, ShaderType::PixelShader, &buttons_[i].textureID);
 	}
 }
 
@@ -314,7 +315,7 @@ void TitlePhase::OnClickButton(std::string buttonLabel)
 	}
 	else if (buttonLabel == "CreateNewWorld")
 	{
-		nextPhase_ = PHASE::Phase_GameScene;
+		nextPhase_ = Phase::Phase_GameScene;
 	}
 
 }
@@ -326,24 +327,30 @@ void TitlePhase::MoveCamera(Stage stage, float duration)
 	case Stage::None:
 		break;
 	case Stage::Title:
-		Game::Camera::Setter::SetCenter(Vector3{ 0.0f, 18.0f, 30.0f }, duration, EaseType::LINEAR, c_title_);
-		Game::Camera::Setter::SetRotate(Vector3{ 0.7f, 1.37f, 0.0f }, duration, EaseType::LINEAR, c_title_);
-		Game::Camera::Setter::SetDistance(25.0f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::CenterTarget(Vector3{ 0.0f, 18.0f, 30.0f }, duration, EaseType::LINEAR, c_title_);
+		//Game::Camera::Setter::Rotate(Vector3{ 0.7f, 1.37f, 0.0f }, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::ThetaTarget(1.37f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::PhiTarget(0.7f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::DistanceTarget(25.0f, duration, EaseType::LINEAR, c_title_);
 		break;
 	case Stage::Menu:
-		Game::Camera::Setter::SetCenter(Vector3{ 0.0f, 17.0f, 3.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		Game::Camera::Setter::SetRotate(Vector3{ 0.1f, -1.5f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		Game::Camera::Setter::SetDistance(10.0f, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::CenterTarget(Vector3{ 0.0f, 17.0f, 3.0f }, duration, EaseType::OUT_CUBIC, c_title_);
+		//Game::Camera::Setter::Rotate(Vector3{ 0.1f, -1.5f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::ThetaTarget(-1.5f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::PhiTarget(0.1f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::DistanceTarget(10.0f, duration, EaseType::OUT_CUBIC, c_title_);
 		break;
 	case Stage::WorldSelect:
-		Game::Camera::Setter::SetCenter(Vector3{ -1.0f, 17.0f, 2.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		Game::Camera::Setter::SetRotate(Vector3{ 0.1f, -2.0f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		Game::Camera::Setter::SetDistance(15.0f, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::CenterTarget(Vector3{ -1.0f, 17.0f, 2.0f }, duration, EaseType::OUT_CUBIC, c_title_);
+		//Game::Camera::Setter::Rotate(Vector3{ 0.1f, -2.0f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::ThetaTarget(-2.0f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::PhiTarget(0.1f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::DistanceTarget(15.0f, duration, EaseType::OUT_CUBIC, c_title_);
 		break;
 	case Stage::CreateNewWorld:
-		//Game::Camera::Setter::SetCenter(Vector3{ -1.0f, 17.0f, 2.0f }, duration, EaseType::OUT_CUBIC, c_title_);
+		//Game::Camera::Setter::CenterTarget(Vector3{ -1.0f, 17.0f, 2.0f }, duration, EaseType::OUT_CUBIC, c_title_);
 		//Game::Camera::Setter::SetRotate(Vector3{ 0.1f, -2.0f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		//Game::Camera::Setter::SetDistance(15.0f, duration, EaseType::OUT_CUBIC, c_title_);
+		//Game::Camera::Setter::DistanceTarget(15.0f, duration, EaseType::OUT_CUBIC, c_title_);
 		break;
 	default:
 		break;

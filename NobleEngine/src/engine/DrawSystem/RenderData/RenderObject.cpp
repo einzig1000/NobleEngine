@@ -12,9 +12,6 @@ void RenderObject::SetupFromShaders()
 {
 	rootParams_.clear();
 	rootParamHashToIndexMap_.clear();
-	cpuStorage_.clear();
-
-	uint32_t cbvSizeOffset = 0;
 
 	if (psoConfig_.as != "unknown")
 	{
@@ -22,7 +19,7 @@ void RenderObject::SetupFromShaders()
 		auto asBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(asPath.c_str(), L"as_6_6");
 
 		// ASのルートパラメータを取得
-		ShaderReflection::BuildRootParamsFromShader(asBlob.Get(), ShaderType::AmplificationShader, rootParams_, cbvSizeOffset);
+		ShaderReflection::BuildRootParamsFromShader(asBlob.Get(), ShaderType::AmplificationShader, rootParams_);
 	}
 	if (psoConfig_.vs != "unknown")
 	{
@@ -30,7 +27,7 @@ void RenderObject::SetupFromShaders()
 		auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(vsPath.c_str(), L"vs_6_6");
 
 		// VSのルートパラメータを取得
-		ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_, cbvSizeOffset);
+		ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_);
 	}
 	else if (psoConfig_.ms != "unknown")
 	{
@@ -38,14 +35,14 @@ void RenderObject::SetupFromShaders()
 		auto msBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(msPath.c_str(), L"ms_6_6");
 
 		// MSのルートパラメータを取得
-		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_, cbvSizeOffset);
+		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_);
 	}
 	{
 		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
 		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(psPath.c_str(), L"ps_6_6");
 
 		// PSのルートパラメータを取得
-		ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_, cbvSizeOffset);
+		ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_);
 	}
 
 	
@@ -74,11 +71,9 @@ void RenderObject::SetupFromShaders()
 	}
 
 #endif
-
-	cpuStorage_.resize(cbvSizeOffset);
 }
 
-void RenderObject::SetCBufferData(const uint32_t key, ShaderType shaderType, const void* data, uint32_t space)
+void RenderObject::SetBRegisterData(const uint32_t key, ShaderType shaderType, const void* data, uint32_t space)
 {
 	RootParam tempParam{};
 	tempParam.paramType = ParamType::CBV;
@@ -89,13 +84,13 @@ void RenderObject::SetCBufferData(const uint32_t key, ShaderType shaderType, con
 
 	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
 	if (it == rootParamHashToIndexMap_.end()) return;
-	const auto& param = rootParams_.at(it->second);
+	auto& param = rootParams_.at(it->second);
 
-	std::memcpy(cpuStorage_.data() + param.offsetBytes, data, param.sizeBytes);
+	param.gpuAddress = Engine::Instance().GetDrawSystem()->GetCurrentFrameCbGpuAddress(param.sizeBytes, data);
 	return;
 }
 
-void RenderObject::SetSBufferData(const uint32_t key, ShaderType shaderType, const uint32_t srvAllocIndex, uint32_t space)
+void RenderObject::SetTRegisterData(const uint32_t key, ShaderType shaderType, const uint32_t allocIndex, uint32_t space)
 {
 	RootParam tempParam{};
 	tempParam.paramType = ParamType::SRV;
@@ -108,7 +103,7 @@ void RenderObject::SetSBufferData(const uint32_t key, ShaderType shaderType, con
 	if (it == rootParamHashToIndexMap_.end()) return;
 	auto& param = rootParams_.at(it->second);
 
-	param.srvAllocIndex = srvAllocIndex;
+	param.allocIndex = allocIndex;
 }
 
 

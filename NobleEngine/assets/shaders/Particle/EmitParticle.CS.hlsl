@@ -56,7 +56,7 @@ ConstantBuffer<EmitterSphere> gEmitter : register(b0);
 ConstantBuffer<Seed> gSeed : register(b1);
 RWStructuredBuffer<Particle> gParticles : register(u0);
 RWStructuredBuffer<int32_t> gFreeListIndex : register(u1);
-RWStructuredBuffer<uint32_t> gFreeList : register(u2);
+RWStructuredBuffer<int32_t> gFreeList : register(u2);
 
 // 今回スレッド数は1。複数のEmitterを扱い、同時に処理したいような場合は適宜スレッド数を増やすと良い
 [numthreads(1, 1, 1)]

@@ -30,11 +30,11 @@ ItemID ToolIDtoItemID(ToolID id)
 	case ToolID::Sword_of_Iron:	return ItemID::Tool_Sword_of_Iron; break;
 	case ToolID::Sword_of_Gold:	return ItemID::Tool_Sword_of_Gold; break;
 	case ToolID::Sword_of_Diamond:	return ItemID::Tool_Sword_of_Diamond; break;
-	case ToolID::Pickel_of_Wood:	return ItemID::Tool_Pickel_of_Wood; break;
-	case ToolID::Pickel_of_Stone:	return ItemID::Tool_Pickel_of_Stone; break;
-	case ToolID::Pickel_of_Iron:	return ItemID::Tool_Pickel_of_Iron; break;
-	case ToolID::Pickel_of_Gold:	return ItemID::Tool_Pickel_of_Gold; break;
-	case ToolID::Pickel_of_Diamond:	return ItemID::Tool_Pickel_of_Diamond; break;
+	case ToolID::Hammer_of_Wood:	return ItemID::Tool_Hammer_of_Wood; break;
+	case ToolID::Hammer_of_Stone:	return ItemID::Tool_Hammer_of_Stone; break;
+	case ToolID::Hammer_of_Iron:	return ItemID::Tool_Hammer_of_Iron; break;
+	case ToolID::Hammer_of_Gold:	return ItemID::Tool_Hammer_of_Gold; break;
+	case ToolID::Hammer_of_Diamond:	return ItemID::Tool_Hammer_of_Diamond; break;
 	case ToolID::Axe_of_Wood:	return ItemID::Tool_Axe_of_Wood; break;
 	case ToolID::Axe_of_Stone:	return ItemID::Tool_Axe_of_Stone; break;
 	case ToolID::Axe_of_Iron:	return ItemID::Tool_Axe_of_Iron; break;

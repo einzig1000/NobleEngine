@@ -8,6 +8,7 @@
 Player::Player()
 {
 	// プレイヤーデータ初期化
+	t_player_ = Game::Asset::Texture::Load("assets/engine/texture/white1x1.png");
 	render_.modelID_ = Game::Asset::Model::Load("assets/application/Minecraft/player/player.obj");
 	const ModelData* modelData = Game::Asset::Model::GetData(render_.modelID_);
 	SetBoundingBox(modelData->colliderShape.aabbs[0]);
@@ -38,7 +39,7 @@ void Player::Initialize()
 
 	RegisterToMap();
 
-	AddItem(ItemID::Tool_Pickel_of_Iron);
+	AddItem(ItemID::Tool_Hammer_of_Iron);
 }
 
 //void Player::Update(int32_t 俯瞰カメラID, int32_t 自身の視点カメラID)
@@ -60,7 +61,7 @@ void Player::Update(int32_t cameraID)
 	// 移動後の視線レイ更新
 	ComputeViewRay(cameraID);
 
-	Game::Camera::Setter::SetCenter(translate_.value, 0, EaseType::IN_BACK, cameraID);
+	Game::Camera::Setter::CenterTarget(translate_.value, 0, EaseType::IN_BACK, cameraID);
 
 	// 視線レイからターゲットブロック取得
 	SetTargetBlock();
@@ -82,14 +83,8 @@ void Player::Update(int32_t cameraID)
 	}
 
 
-	Matrix4x4 wvpMatrix = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	wvpMatrix_ = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	int32_t texID = Game::Asset::Texture::Load("assets/engine/texture/white1x1.png");
-
-	render_.SetCBufferData(0, ShaderType::VertexShader, &wvpMatrix);
-	render_.SetCBufferData(1, ShaderType::VertexShader, &worldMatrix_);
-	render_.SetCBufferData(0, ShaderType::PixelShader, &color);
-	render_.SetCBufferData(1, ShaderType::PixelShader, &texID);
 }
 
 
@@ -103,8 +98,6 @@ void Player::CheckExternalEvents()
 		{
 			// 1Fに一回しか変更フラグはされない
 			miningModeEvents[0].value[0] == 0 ? miningMode_ = MiningPattern::Swing : miningMode_ = MiningPattern::Range;
-
-			eventBus_->Clear(EventType::MiningModeChanged);
 		}
 
 		// アイテム取得イベント
@@ -121,8 +114,6 @@ void Player::CheckExternalEvents()
 					AddItem(itemID);
 				}
 			}
-
-			eventBus_->Clear(EventType::ItemPickup);
 		}
 
 		// HP変動イベント
@@ -134,24 +125,19 @@ void Player::CheckExternalEvents()
 				HP_ += event.value[0];
 				if (HP_ < 0) HP_ = 0;
 				if (HP_ > maxHP_) HP_ = maxHP_;
-
-				if (event.value[0] < 0)
-				{
-					eventBus_->Notify(Event{ EventType::PlayerDamaged, {  } });
-				}
 			}
-
-			eventBus_->Clear(EventType::PlayerHPChanged);
 		}
 	}
 }
 
-
-
-
 void Player::Draw(int32_t renderTextureID)
 {
 	// プレイヤー描画
+	//Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//render_.SetBRegisterData(0, ShaderType::VertexShader, &wvpMatrix_);
+	//render_.SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix_);
+	//render_.SetBRegisterData(0, ShaderType::PixelShader, &color);
+	//render_.SetBRegisterData(1, ShaderType::PixelShader, &t_player_);
 	//render_.Draw(renderTextureID);
 
 	DrawHaveItem(renderTextureID);
@@ -195,7 +181,7 @@ void Player::SetMiningPattern(MiningPattern pattern)
 void Player::SetViewCamera(int32_t cameraID)
 {
 	c_viewCameraID_ = cameraID;
-	Game::Camera::Setter::SetDistance(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
+	Game::Camera::Setter::DistanceTarget(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
 }
 
 
@@ -304,7 +290,10 @@ void Player::UpdateInputMouseCursor(int32_t cameraID)
 	if (viewTheta_ > std::numbers::pi_v<float>) viewTheta_ -= std::numbers::pi_v<float> * 2.0f;
 	if (viewTheta_ < -std::numbers::pi_v<float>) viewTheta_ += std::numbers::pi_v<float> * 2.0f;
 
-	Game::Camera::Setter::SetRotate(Vector3(viewPhi_, viewTheta_, 0.0f), 0.0f, EaseType::LINEAR, cameraID);
+	//Game::Camera::Setter::SetRotate(Vector3(viewPhi_, viewTheta_, 0.0f), 0.0f, EaseType::LINEAR, cameraID);
+	Game::Camera::Setter::ThetaTarget(viewTheta_, 0.0f, EaseType::LINEAR, cameraID);
+	Game::Camera::Setter::PhiTarget(viewPhi_, 0.0f, EaseType::LINEAR, cameraID);
+
 }
 void Player::UpdateInputLeftClick()
 {

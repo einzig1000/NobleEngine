@@ -30,10 +30,10 @@ void Craft::Update(int32_t cameraID)
 		Matrix4x4 wvp = world * orthographic;
 		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
-		sprite.render->SetCBufferData(0, ShaderType::VertexShader, &wvp);
-		sprite.render->SetCBufferData(1, ShaderType::VertexShader, &world);
-		sprite.render->SetCBufferData(0, ShaderType::PixelShader, &color);
-		sprite.render->SetCBufferData(1, ShaderType::PixelShader, &sprite.textureID);
+		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
+		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
+		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
+		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
 	}
 }
 

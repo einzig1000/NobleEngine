@@ -26,11 +26,11 @@ public:
 	virtual	void Draw() = 0;
 	virtual void DrawImGui() = 0;
 
-	virtual void ChangePhase(PHASE phase);
-	virtual PHASE GetNextPhase();
+	virtual void ChangePhase(Phase phase);
+	virtual Phase GetNextPhase();
 
 protected:
-	PHASE nextPhase_ = PHASE::Phase_None;
+	Phase nextPhase_ = Phase::Phase_None;
 
 	PhaseContext* context_ = nullptr;
 };

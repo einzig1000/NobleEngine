@@ -106,9 +106,9 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex, FaceData
 
 	// myPagesResourceID_のSRVを最初から有効にしておく
 	// (初回Bake完了前にAS/MSが実行されてUINT32_MAXを掴むのを防ぐため。ダミーで1ページ分(page 0)だけ入れておく)
-	uint32_t dummyPage = 0;
-	Game::Resource::UpdateData(myPagesResourceID_[0], &dummyPage, sizeof(uint32_t), 1);
-	Game::Resource::UpdateData(myPagesResourceID_[1], &dummyPage, sizeof(uint32_t), 1);
+	std::vector<uint32_t> dummyPage = { 0 };
+	Game::Resource::UpdateData(myPagesResourceID_[0], dummyPage);
+	Game::Resource::UpdateData(myPagesResourceID_[1], dummyPage);
 
 	// faceCountResourceID_ / groupOffsetResourceID_ も同じ理由(初回Bake完了前にAS/MSから読まれる)で0クリア
 	Game::Resource::ZeroFillCompute(faceCountResourceID_[0], sizeof(uint32_t) * Constexprs::kGroupCount);
@@ -483,6 +483,7 @@ void Chunk::Update(int32_t cameraID)
 	switch (bakeState_)
 	{
 	case BakeState::Idle:
+	{
 		// ブロック配列に更新が来ている かつ 
 		if (blockIdsDirty_ && pendingActiveSlot_ == -1)
 		{
@@ -490,6 +491,7 @@ void Chunk::Update(int32_t cameraID)
 			DispatchCountPhase();
 		}
 		break;
+	}
 	case BakeState::WaitingForCount:
 	{
 		uint32_t totalFaces = 0;
@@ -510,16 +512,10 @@ void Chunk::Update(int32_t cameraID)
 	}
 	}
 
-	//// 仕方ない
-	//if (!myPages_[activeSlot_].empty())
-	//{
-	//	Game::Resource::UpdateData(myPagesResourceID_[activeSlot_], myPages_[activeSlot_].data(), sizeof(uint32_t), myPages_[activeSlot_].size());
-	//}
-
 	//if (pendingActiveSlot_ != -1)
 	if (pendingActiveSlot_ >= 0)
 	{
-		Game::Resource::UpdateData(myPagesResourceID_[pendingActiveSlot_],myPages_[pendingActiveSlot_].data(),sizeof(uint32_t),myPages_[pendingActiveSlot_].size());
+		Game::Resource::UpdateData(myPagesResourceID_[pendingActiveSlot_],myPages_[pendingActiveSlot_]);
 		
 		--pendingSlotUpdateCount_;
 
@@ -532,27 +528,7 @@ void Chunk::Update(int32_t cameraID)
 	}
 
 
-	Matrix4x4 viewPro = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-
-	uint32_t asHeapSlotTable = Game::Resource::GetSRV(faceCountResourceID_[activeSlot_]);
-	render_->SetCBufferData(0, ShaderType::AmplificationShader, &asHeapSlotTable);
-	render_->SetCBufferData(1, ShaderType::AmplificationShader, &chunkInfo_);
-	render_->SetCBufferData(2, ShaderType::AmplificationShader, &viewPro);
-
-
-	Vector4uint msSrvIndexTable = Vector4uint(
-		App::Data::Item::GetBlockInfoTableHeapSlot(),
-		Game::Resource::GetSRV(pagePool_->GetSharedBufferResourceID()),
-		Game::Resource::GetSRV(faceCountResourceID_[activeSlot_]),
-		Game::Resource::GetSRV(groupOffsetResourceID_[activeSlot_]));
-	Vector2uint msPagePoolTable = Vector2uint(
-		Game::Resource::GetSRV(myPagesResourceID_[activeSlot_]),
-		FaceDataPagePool::kPageSize);
-	render_->SetCBufferData(0, ShaderType::MeshShader, &msSrvIndexTable);
-	render_->SetCBufferData(1, ShaderType::MeshShader, &chunkInfo_);
-	render_->SetCBufferData(2, ShaderType::MeshShader, &viewPro);
-	render_->SetCBufferData(3, ShaderType::MeshShader, &msPagePoolTable);
-
+	viewProjectionMatrix_ = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	inCamera_ = Game::Camera::InCamera(chunkAABB_, cameraID);
 }
 
@@ -560,7 +536,7 @@ void Chunk::Update(int32_t cameraID)
 void Chunk::DispatchCountPhase()
 {
 	// blockIds_を更新
-	Game::Resource::UpdateData(blockIDsResourceID_, blockIds_, sizeof(uint32_t), Constexprs::kMaxFacesPerChunkPlusHalo);
+	Game::Resource::UpdateData(blockIDsResourceID_, blockIds_);
 
 	// Bakeは常に「今表示していない裏側」のスロットに対して行う
 	const int32_t unActiveSlot = 1 - activeSlot_;
@@ -573,11 +549,11 @@ void Chunk::DispatchCountPhase()
 		App::Data::Item::GetBlockInfoTableHeapSlot(),
 		Game::Resource::GetSRV(blockIDsResourceID_));
 	Vector3int toCSChunkInfo = Vector3int(Constexprs::kChunkBlockCountX, Constexprs::kChunkBlockCountY, Constexprs::kChunkBlockCountZ);
-	countCompute_->SetCBufferData(0, &csHeapSlotTable);
-	countCompute_->SetCBufferData(1, &toCSChunkInfo);
-	countCompute_->SetUAVData(0, Game::Resource::GetUAV(faceCountResourceID_[unActiveSlot]));
-	countCompute_->SetUAVData(1, Game::Resource::GetUAV(faceWriteCounterResourceID_));
-	countCompute_->SetUAVData(2, Game::Resource::GetUAV(groupOffsetResourceID_[unActiveSlot]));
+	countCompute_->SetBRegisterData(0, &csHeapSlotTable);
+	countCompute_->SetBRegisterData(1, &toCSChunkInfo);
+	countCompute_->SetURegisterData(0, Game::Resource::GetUAV(faceCountResourceID_[unActiveSlot]));
+	countCompute_->SetURegisterData(1, Game::Resource::GetUAV(faceWriteCounterResourceID_));
+	countCompute_->SetURegisterData(2, Game::Resource::GetUAV(groupOffsetResourceID_[unActiveSlot]));
 	countCompute_->Dispatch();
 
 	// カウントした総面数をReadBack要請
@@ -626,9 +602,9 @@ void Chunk::FinishBakeWithPageAssignment(uint32_t totalFaces)
 	}
 
 	// ページ番号一覧を更新
-	Game::Resource::UpdateData(myPagesResourceID_[unActiveSlot], myPages_[unActiveSlot].data(), sizeof(uint32_t), myPages_[unActiveSlot].size());
+	Game::Resource::UpdateData(myPagesResourceID_[unActiveSlot], myPages_[unActiveSlot]);
 	// blockIds_も更新
-	Game::Resource::UpdateData(blockIDsResourceID_, blockIds_, sizeof(uint32_t), Constexprs::kMaxFacesPerChunkPlusHalo);
+	Game::Resource::UpdateData(blockIDsResourceID_, blockIds_);
 
 	// 取得したページに面を書きこむ
 	Vector4uint writeHeapSlotTable = Vector4uint(
@@ -641,9 +617,9 @@ void Chunk::FinishBakeWithPageAssignment(uint32_t totalFaces)
 		Constexprs::kChunkBlockCountY,
 		Constexprs::kChunkBlockCountZ,
 		FaceDataPagePool::kPageSize);
-	writeCompute_->SetCBufferData(0, &writeHeapSlotTable);
-	writeCompute_->SetCBufferData(1, &writeChunkInfo);
-	writeCompute_->SetUAVData(0, Game::Resource::GetUAV(pagePool_->GetSharedBufferResourceID()));
+	writeCompute_->SetBRegisterData(0, &writeHeapSlotTable);
+	writeCompute_->SetBRegisterData(1, &writeChunkInfo);
+	writeCompute_->SetURegisterData(0, Game::Resource::GetUAV(pagePool_->GetSharedBufferResourceID()));
 	writeCompute_->Dispatch();
 
 
@@ -658,6 +634,25 @@ void Chunk::Draw(int32_t renderTargetID)
 {
 	if (inCamera_)
 	{
+		uint32_t asHeapSlotTable = Game::Resource::GetSRV(faceCountResourceID_[activeSlot_]);
+		render_->SetBRegisterData(0, ShaderType::AmplificationShader, &asHeapSlotTable);
+		render_->SetBRegisterData(1, ShaderType::AmplificationShader, &chunkInfo_);
+		render_->SetBRegisterData(2, ShaderType::AmplificationShader, &viewProjectionMatrix_);
+
+
+		Vector4uint msSrvIndexTable = Vector4uint(
+			App::Data::Item::GetBlockInfoTableHeapSlot(),
+			Game::Resource::GetSRV(pagePool_->GetSharedBufferResourceID()),
+			Game::Resource::GetSRV(faceCountResourceID_[activeSlot_]),
+			Game::Resource::GetSRV(groupOffsetResourceID_[activeSlot_]));
+		Vector2uint msPagePoolTable = Vector2uint(
+			Game::Resource::GetSRV(myPagesResourceID_[activeSlot_]),
+			FaceDataPagePool::kPageSize);
+		render_->SetBRegisterData(0, ShaderType::MeshShader, &msSrvIndexTable);
+		render_->SetBRegisterData(1, ShaderType::MeshShader, &chunkInfo_);
+		render_->SetBRegisterData(2, ShaderType::MeshShader, &viewProjectionMatrix_);
+		render_->SetBRegisterData(3, ShaderType::MeshShader, &msPagePoolTable);
+
 		render_->Draw(renderTargetID);
 	}
 }

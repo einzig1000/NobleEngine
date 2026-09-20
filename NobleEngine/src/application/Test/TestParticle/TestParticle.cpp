@@ -272,9 +272,9 @@ TestParticle::TestParticle()
 	initializeCompute_ = std::make_unique<ComputeObject>();
 	initializeCompute_->psoConfig_.cs = "assets/shaders/Particle/InitializeParticle.CS.hlsl";
 	initializeCompute_->SetupFromShaders();
-	initializeCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
-	initializeCompute_->SetUAVData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
-	initializeCompute_->SetUAVData(2, Game::Resource::GetUAV(freeListSRVID_));
+	initializeCompute_->SetURegisterData(0, Game::Resource::GetUAV(particleSRVID_));
+	initializeCompute_->SetURegisterData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
+	initializeCompute_->SetURegisterData(2, Game::Resource::GetUAV(freeListSRVID_));
 	initializeCompute_->RegisterOutput(particleSRVID_);
 	initializeCompute_->RegisterOutput(freeListIndexSRVID_);
 	initializeCompute_->RegisterOutput(freeListSRVID_);
@@ -314,10 +314,10 @@ void TestParticle::Update(int32_t cameraID)
 
 		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(planeTransforms[i].scale, planeTransforms[i].rotate, planeTransforms[i].translate);
 		Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
-		renderPlanes_[i]->SetCBufferData(0, ShaderType::PixelShader, &planeColors[i]);
-		renderPlanes_[i]->SetCBufferData(1, ShaderType::PixelShader, &t_circle2);
-		renderPlanes_[i]->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
-		renderPlanes_[i]->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+		renderPlanes_[i]->SetBRegisterData(0, ShaderType::PixelShader, &planeColors[i]);
+		renderPlanes_[i]->SetBRegisterData(1, ShaderType::PixelShader, &t_circle2);
+		renderPlanes_[i]->SetBRegisterData(0, ShaderType::VertexShader, &worldViewProjection);
+		renderPlanes_[i]->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix);
 	}
 
 	for (int32_t i = 0; i < 10; ++i)
@@ -329,30 +329,30 @@ void TestParticle::Update(int32_t cameraID)
 		}
 		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(ringTransforms[i].scale, ringTransforms[i].rotate, ringTransforms[i].translate);
 		Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
-		renderRings_[i]->SetCBufferData(0, ShaderType::PixelShader, &ringColors[i]);
-		renderRings_[i]->SetCBufferData(1, ShaderType::PixelShader, &t_gradationLine);
-		renderRings_[i]->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
-		renderRings_[i]->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+		renderRings_[i]->SetBRegisterData(0, ShaderType::PixelShader, &ringColors[i]);
+		renderRings_[i]->SetBRegisterData(1, ShaderType::PixelShader, &t_gradationLine);
+		renderRings_[i]->SetBRegisterData(0, ShaderType::VertexShader, &worldViewProjection);
+		renderRings_[i]->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix);
 	}
 
 	{
 		cylinderTransform.rotate.y += 0.002f;
 		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(cylinderTransform.scale, cylinderTransform.rotate, cylinderTransform.translate);
 		Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
-		renderCylinder_->SetCBufferData(0, ShaderType::PixelShader, &cylinderColor);
-		renderCylinder_->SetCBufferData(1, ShaderType::PixelShader, &t_gradationLine);
-		renderCylinder_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
-		renderCylinder_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+		renderCylinder_->SetBRegisterData(0, ShaderType::PixelShader, &cylinderColor);
+		renderCylinder_->SetBRegisterData(1, ShaderType::PixelShader, &t_gradationLine);
+		renderCylinder_->SetBRegisterData(0, ShaderType::VertexShader, &worldViewProjection);
+		renderCylinder_->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix);
 	}
 
 	{
 		sphereTransform.rotate.y += 0.002f;
 		Matrix4x4 worldMatrix = Matrix4x4::MakeAffineMatrix(sphereTransform.scale, sphereTransform.rotate, sphereTransform.translate);
 		Matrix4x4 worldViewProjection = worldMatrix * viewProjection;
-		renderSphere_->SetCBufferData(0, ShaderType::PixelShader, &sphereColor);
-		renderSphere_->SetCBufferData(1, ShaderType::PixelShader, &t_uvChecker);
-		renderSphere_->SetCBufferData(0, ShaderType::VertexShader, &worldViewProjection);
-		renderSphere_->SetCBufferData(1, ShaderType::VertexShader, &worldMatrix);
+		renderSphere_->SetBRegisterData(0, ShaderType::PixelShader, &sphereColor);
+		renderSphere_->SetBRegisterData(1, ShaderType::PixelShader, &t_uvChecker);
+		renderSphere_->SetBRegisterData(0, ShaderType::VertexShader, &worldViewProjection);
+		renderSphere_->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix);
 	}
 
 
@@ -368,24 +368,24 @@ void TestParticle::Update(int32_t cameraID)
 		emitterSphere.emit = 0;
 	}
 
-	emitCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
-	emitCompute_->SetUAVData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
-	emitCompute_->SetUAVData(2, Game::Resource::GetUAV(freeListSRVID_));
-	emitCompute_->SetCBufferData(0, &emitterSphere);
+	emitCompute_->SetURegisterData(0, Game::Resource::GetUAV(particleSRVID_));
+	emitCompute_->SetURegisterData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
+	emitCompute_->SetURegisterData(2, Game::Resource::GetUAV(freeListSRVID_));
+	emitCompute_->SetBRegisterData(0, &emitterSphere);
 	Vector3 rand = { Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1), Game::Math::Rand::RandFloat(-1.0f, 1.0f, 1) };
-	emitCompute_->SetCBufferData(1, &rand);
+	emitCompute_->SetBRegisterData(1, &rand);
 
 	//updateCompute_->size.x = 1024;
-	updateCompute_->SetUAVData(0, Game::Resource::GetUAV(particleSRVID_));
-	updateCompute_->SetUAVData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
-	updateCompute_->SetUAVData(2, Game::Resource::GetUAV(freeListSRVID_));
-	updateCompute_->SetCBufferData(0, &deltaTime);
+	updateCompute_->SetURegisterData(0, Game::Resource::GetUAV(particleSRVID_));
+	updateCompute_->SetURegisterData(1, Game::Resource::GetUAV(freeListIndexSRVID_));
+	updateCompute_->SetURegisterData(2, Game::Resource::GetUAV(freeListSRVID_));
+	updateCompute_->SetBRegisterData(0, &deltaTime);
 	
 	TransformationMatrix perView;
 	perView.WVP = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 	perView.World = Game::Camera::Getter::GetBillboardMatrix(cameraID);
-	particle_->SetSBufferData(0, ShaderType::VertexShader, Game::Resource::GetSRV(particleSRVID_));
-	particle_->SetCBufferData(0, ShaderType::VertexShader, &perView);
+	particle_->SetTRegisterData(0, ShaderType::VertexShader, Game::Resource::GetSRV(particleSRVID_));
+	particle_->SetBRegisterData(0, ShaderType::VertexShader, &perView);
 }
 
 void TestParticle::Draw(int32_t renderTextureID)

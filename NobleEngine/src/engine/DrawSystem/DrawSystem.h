@@ -32,6 +32,8 @@ public:
 	void AddDrawList(const RenderObject* renderObject, int32_t RenderTargetID, const std::vector<int32_t>& deps);
 	void Execute(); // 旧SceneDraw/PostEffectDraw/PreScreenDrawをこれ1つに統合
 
+	D3D12_GPU_VIRTUAL_ADDRESS GetCurrentFrameCbGpuAddress(size_t sizeBytes, const void* data);
+
 private:
 	std::vector<int32_t> SortNodes(); // トポロジカルソート＋循環検出
 	// <書き込み先RenderTextureID, DrawNode>マップ
@@ -40,6 +42,7 @@ private:
 private:
 	DirectXManager* dxManager_ = nullptr;
 	AssetManager* assetManager_ = nullptr;
+	UINT backBufferIndex_ = 0;
 
 	// 描画オブジェクトをRenderTextureに描画する。
 	void DrawObject(const RenderObject* renderObject);

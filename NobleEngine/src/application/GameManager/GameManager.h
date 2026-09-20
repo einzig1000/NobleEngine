@@ -19,7 +19,7 @@ private:
 	// フェーズクラス
 	std::unique_ptr<IPhase> currentPhase_;
 
-	std::unique_ptr<IPhase> CreatePhase(PHASE phase);
+	std::unique_ptr<IPhase> CreatePhase(Phase phase);
 
 	PhaseContext phaseContext_;
 

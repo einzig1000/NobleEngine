@@ -38,13 +38,12 @@ struct RootParam
 	uint32_t registerSpace = 0; // space0, space1 など。2Dテクスチャバインドレスとddsテクスチャバインドレスで区別
     uint32_t hash = 0;          // paramType･shaderType･key･registerSpace のハッシュ
 
-	// CBuffer用
-	uint32_t sizeBytes = 0;     // 自身のサイズ。CBuffer用ストレージ内でどれだけのサイズが必要か。
-	uint32_t offsetBytes = 0;   // cpuStorage_ 内オフセット
+    // CBuffer用
+    uint32_t sizeBytes = 0;     // 自身のサイズ。CBuffer用ストレージ内でどれだけのサイズが必要か。
+    D3D12_GPU_VIRTUAL_ADDRESS gpuAddress = 0; // RenderObject側:このフレームに書き込み済みのCB GPUアドレス
 
     // SRV/UAV用 Allocation.index
-    uint32_t srvAllocIndex = UINT32_MAX;
-    uint32_t uavAllocIndex = UINT32_MAX;
+    uint32_t allocIndex = UINT32_MAX;
 
     void ComputeHash()
     {
@@ -107,6 +106,17 @@ enum class DSVFormatID : uint8_t
 {
 	D24,
 	Unknown,
+};
+
+struct DrawPacket
+{
+    ID3D12RootSignature* rootSignature = nullptr;
+    ID3D12PipelineState* pso = nullptr;
+    std::vector<RootParam> rootParams;
+    int32_t modelID = -1;
+    uint32_t instanceNum = 1;
+    bool isMeshShader = false;
+    D3D12_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 };
 
 struct GraphicsPSOConfig

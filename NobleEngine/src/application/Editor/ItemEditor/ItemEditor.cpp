@@ -1,5 +1,5 @@
 #include "ItemEditor.h"
-#include <ResourceLoader/Data/DataManager.h>
+#include <System/ResourceLoader/Data/DataManager.h>
 #include <Utilities/Json/JsonManager.h>
 #include <App.h>
 
@@ -12,7 +12,7 @@ ItemEditor::ItemEditor(DataManager* dataManager)
 
 	renderTextureID_ = Game::Asset::RenderTexture::CreateRenderTexture(512, 512, "ItemEditorTexture");
 	cameraID_ = Game::Camera::AddCamera("ItemEditorCamera");
-	Game::Camera::Setter::SetScreenSize(Vector2(512, 512), 0, EaseType::IN_BACK, cameraID_);
+	Game::Camera::Setter::ScreenSizeTarget(Vector2(512, 512), 0, EaseType::IN_BACK, cameraID_);
 }
 
 ItemEditor::~ItemEditor()
@@ -26,10 +26,10 @@ void ItemEditor::Update()
 
 	Matrix4x4 world = Matrix4x4::MakeAffineMatrix(transforms_.scale, transforms_.rotate, transforms_.translate);
 	Matrix4x4 wpv = world * Game::Camera::Getter::GetViewProjectionMatrix(cameraID_);
-	renderObject_->SetCBufferData(0, ShaderType::PixelShader, &color_);
-	renderObject_->SetCBufferData(1, ShaderType::PixelShader, &textureID_);
-	renderObject_->SetCBufferData(0, ShaderType::VertexShader, &wpv);
-	renderObject_->SetCBufferData(1, ShaderType::VertexShader, &world);
+	renderObject_->SetBRegisterData(0, ShaderType::PixelShader, &color_);
+	renderObject_->SetBRegisterData(1, ShaderType::PixelShader, &textureID_);
+	renderObject_->SetBRegisterData(0, ShaderType::VertexShader, &wpv);
+	renderObject_->SetBRegisterData(1, ShaderType::VertexShader, &world);
 }
 
 void ItemEditor::Draw()

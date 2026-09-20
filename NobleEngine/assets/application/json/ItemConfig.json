@@ -287,45 +287,45 @@
     "texturePath": "assets/application/Minecraft/Item/tool/axe/axe.png",
     "toolID": "Axe_of_Wood"
   },
-  "Tool_Pickel_of_Diamond": {
+  "Tool_Hammer_of_Diamond": {
     "blockID": "MAX",
     "itemGenre": "Tool",
-    "modelPath": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
+    "modelPath": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
     "objectID": "MAX",
-    "texturePath": "assets/application/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "Pickel_of_Diamond"
+    "texturePath": "assets/application/Minecraft/Item/tool/hammer/hammer.png",
+    "toolID": "Hammer_of_Diamond"
   },
-  "Tool_Pickel_of_Gold": {
+  "Tool_Hammer_of_Gold": {
     "blockID": "MAX",
     "itemGenre": "Tool",
-    "modelPath": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
+    "modelPath": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
     "objectID": "MAX",
-    "texturePath": "assets/application/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "Pickel_of_Gold"
+    "texturePath": "assets/application/Minecraft/Item/tool/hammer/hammer.png",
+    "toolID": "Hammer_of_Gold"
   },
-  "Tool_Pickel_of_Iron": {
+  "Tool_Hammer_of_Iron": {
     "blockID": "MAX",
     "itemGenre": "Tool",
-    "modelPath": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
+    "modelPath": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
     "objectID": "MAX",
-    "texturePath": "assets/application/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "Pickel_of_Iron"
+    "texturePath": "assets/application/Minecraft/Item/tool/hammer/hammer.png",
+    "toolID": "Hammer_of_Iron"
   },
-  "Tool_Pickel_of_Stone": {
+  "Tool_Hammer_of_Stone": {
     "blockID": "MAX",
     "itemGenre": "Tool",
-    "modelPath": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
+    "modelPath": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
     "objectID": "MAX",
-    "texturePath": "assets/application/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "Pickel_of_Stone"
+    "texturePath": "assets/application/Minecraft/Item/tool/hammer/hammer.png",
+    "toolID": "Hammer_of_Stone"
   },
-  "Tool_Pickel_of_Wood": {
+  "Tool_Hammer_of_Wood": {
     "blockID": "MAX",
     "itemGenre": "Tool",
-    "modelPath": "assets/application/Minecraft/Item/tool/pickel/pickel.obj",
+    "modelPath": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
     "objectID": "MAX",
-    "texturePath": "assets/application/Minecraft/Item/tool/pickel/pickel.png",
-    "toolID": "Pickel_of_Wood"
+    "texturePath": "assets/application/Minecraft/Item/tool/hammer/hammer.png",
+    "toolID": "Hammer_of_Wood"
   },
   "Tool_Sword_of_Diamond": {
     "blockID": "MAX",

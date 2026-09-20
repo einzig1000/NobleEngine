@@ -1,4 +1,4 @@
-#include "FixFPS/FixFPS.h"
+#include "FixFPS.h"
 #include <thread>
 
 FixFPS::FixFPS()

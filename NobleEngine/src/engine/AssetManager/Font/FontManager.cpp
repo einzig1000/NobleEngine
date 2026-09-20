@@ -48,33 +48,6 @@ namespace
 FontManager::FontManager(DirectXManager* dxManager, ModelManager* modelManager)
     : dxManager_(dxManager)
 {
-    //auto* device = dxManager_->GetDevice();
-    //auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-
- //   DirectX::TexMetadata meta{};
- //   meta.width = kAtlasSize;
- //   meta.height = kAtlasSize;
- //   meta.depth = 1;
- //   meta.arraySize = 1;
- //   meta.mipLevels = 1;
- //   meta.format = DXGI_FORMAT_R8_UNORM;
- //   meta.dimension = DirectX::TEX_DIMENSION_TEXTURE2D;
-
- //   atlasResource_ = Dx12ResourceFactory::CreateTextureResource(device, meta);
-
- //   auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
- //   auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
-	//Dx12ResourceTransition::Transition(cmdList, atlasResource_.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_GENERIC_READ);
-
-    //std::vector<uint8_t> clearPixels(static_cast<size_t>(kAtlasSize) * kAtlasSize, 0);
-    //UpdateAtlasRegion(0, 0, kAtlasSize, kAtlasSize, clearPixels.data());
-
-
-
- //   Log("フォントアトラス作成開始");
- //   atlasSrvIndex_ = srvManager->CreateSRVforTexture(atlasResource_.Get(), meta).index;
-	//Log("成功 ID:%d", atlasSrvIndex_);
-
 	planeModelID_ = modelManager->GetModelLoader()->LoadModel("assets/engine/model/plane/plane.obj");
 }
 
@@ -298,9 +271,9 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
         if (render.frameCount < elapsedTime)
         {
             render.render->instanceNum_ = static_cast<uint32_t>(instances.size());
-            render.render->SetSBufferData(0, ShaderType::VertexShader, sbManager->GetSRV(bufferID));
-            render.render->SetCBufferData(0, ShaderType::VertexShader, &vsConstants);
-            render.render->SetCBufferData(0, ShaderType::PixelShader, &psConstants);
+            render.render->SetTRegisterData(0, ShaderType::VertexShader, sbManager->GetSRV(bufferID));
+            render.render->SetBRegisterData(0, ShaderType::VertexShader, &vsConstants);
+            render.render->SetBRegisterData(0, ShaderType::PixelShader, &psConstants);
             render.render->Draw(renderTextureID);
             render.frameCount = elapsedTime;
 
@@ -317,9 +290,9 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
     fontRenders_.back().render->SetupFromShaders();
 
     fontRenders_.back().render->instanceNum_ = static_cast<uint32_t>(instances.size());
-    fontRenders_.back().render->SetSBufferData(0, ShaderType::VertexShader, sbManager->GetSRV(bufferID));
-    fontRenders_.back().render->SetCBufferData(0, ShaderType::VertexShader, &vsConstants);
-    fontRenders_.back().render->SetCBufferData(0, ShaderType::PixelShader, &psConstants);
+    fontRenders_.back().render->SetTRegisterData(0, ShaderType::VertexShader, sbManager->GetSRV(bufferID));
+    fontRenders_.back().render->SetBRegisterData(0, ShaderType::VertexShader, &vsConstants);
+    fontRenders_.back().render->SetBRegisterData(0, ShaderType::PixelShader, &psConstants);
     fontRenders_.back().render->Draw(renderTextureID);
     fontRenders_.back().frameCount = elapsedTime;
 }

@@ -110,14 +110,14 @@ void Engine::BeginFrame()
 	// imguiを更新
 	imguiManager_->BeginFrame();
 
+	// DirectXを更新
+	dxManager_->BeginFrame();
+
 	// GPU計算システム初期化
 	computeSystem_->Reset();
 
 	// 描画システム初期化
 	drawSystem_->Reset();
-
-	// DirectXを更新
-	dxManager_->BeginFrame();
 
 	// 入出力系を更新
 	ioManager_->Update();

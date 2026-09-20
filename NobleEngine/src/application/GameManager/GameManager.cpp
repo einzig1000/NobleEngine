@@ -3,13 +3,14 @@
 #include <Utilities/Logger/Logger.h>
 #include <GameManager/Phase/TitlePhase/TitlePhase.h>
 #include <GameManager/Phase/GameScenePhase/GameScenePhase.h>
+#include <GameManager/Phase/TestPhase/TestPhase.h>
 #include <Utilities/Json/JsonManager.h>
 
 
 GameManager::GameManager() 
 {
-	//currentPhase_ = CreatePhase(PHASE::Phase_GameScene);
-	currentPhase_ = CreatePhase(PHASE::Phase_Title);
+	currentPhase_ = CreatePhase(Phase::Phase_GameScene);
+	//currentPhase_ = CreatePhase(Phase::Phase_Test);
 	currentPhase_->SetContext(&phaseContext_);
 	currentPhase_->Initialize();
 
@@ -23,10 +24,10 @@ GameManager::~GameManager()
 
 void GameManager::Update()
 {
-	if (currentPhase_->GetNextPhase() != PHASE::Phase_None)
+	if (currentPhase_->GetNextPhase() != Phase::Phase_None)
 	{
 		currentPhase_ = CreatePhase(currentPhase_->GetNextPhase());
-		currentPhase_->SetContext(&phaseContext_);
+		currentPhase_->SetContext(&phaseContext_); 
 		currentPhase_->Initialize();
 	}
 	currentPhase_->Update();
@@ -50,14 +51,17 @@ void GameManager::DrawImGui()
 }
 
 
-std::unique_ptr<IPhase> GameManager::CreatePhase(PHASE phase)
+std::unique_ptr<IPhase> GameManager::CreatePhase(Phase phase)
 {
 	switch (phase)
 	{
-	case PHASE::Phase_Title:
+	case Phase::Phase_Title:
 		return std::make_unique<TitlePhase>();
-	case PHASE::Phase_GameScene:
+	case Phase::Phase_GameScene:
 		return std::make_unique<GameScenePhase>();
+	case Phase::Phase_Test:
+		return std::make_unique<TestPhase>();
+
 	default:
 		Log("Error : 該当するフェーズクラスが存在しません");
 		assert(false);

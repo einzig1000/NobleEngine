@@ -66,6 +66,7 @@ private:
 	// 全チャンク共有の面ページプール
 	FaceDataPagePool* pagePool_ = nullptr;
 
+	Matrix4x4 viewProjectionMatrix_;
 
 	// チャンク情報
 	Vector3int chunkIndex_;

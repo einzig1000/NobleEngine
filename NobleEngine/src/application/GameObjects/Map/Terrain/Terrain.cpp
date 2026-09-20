@@ -58,7 +58,10 @@ void Terrain::Update(int32_t cameraID, Vector3 centerPos)
 
 				Vector3int chunkPos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
 				Chunk* chunk = GetChunk(chunkPos);
-				if (chunk) { chunk->Update(cameraID); }
+				if (chunk) 
+				{
+					chunk->Update(cameraID); 
+				}
 				else EnsureChunkScheduled(chunkPos);
 			}
 		}

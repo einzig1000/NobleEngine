@@ -18,8 +18,9 @@ public:
     /// </summary>
     /// <param name="audioId">オーディオID(LoadAudioで取得)</param>
     /// <param name="loop">ループ再生するか否か</param>
+	/// <param name="volume">音量(0.0f～1.0f)</param>
     /// <returns>再生インスタンスID、失敗時は-1</returns>
-    int32_t PlayAudio(const int32_t& audioId, bool loop);
+    int32_t PlayAudio(const int32_t& audioId, bool loop, float volume = 1.0f);
 
     /// <summary>
     /// 再生停止

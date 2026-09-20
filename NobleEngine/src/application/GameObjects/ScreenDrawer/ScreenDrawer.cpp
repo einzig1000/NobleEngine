@@ -87,11 +87,16 @@ void ScreenDrawer::Update(int32_t cameraID)
 {
 	if (eventBus_)
 	{
-		const std::vector<Event>& events = eventBus_->GetEvents(EventType::PlayerDamaged);
-		if (!events.empty())
+		const std::vector<Event>& hpChangedEvents = eventBus_->GetEvents(EventType::PlayerHPChanged);
+		if (!hpChangedEvents.empty())
 		{
-			TakeDamage();
-			eventBus_->Clear(EventType::PlayerDamaged);
+			for (const Event& event : hpChangedEvents)
+			{
+				if (event.value[0] < 0)
+				{
+					TakeDamage();
+				}
+			}
 		}
 	}
 
@@ -100,73 +105,73 @@ void ScreenDrawer::Update(int32_t cameraID)
 	// 背景書き込み
 	// 書き込み先：rt_PostEffect_[0]
 	// 参照元：rt_3D_, rt_3D_depth_, rt_Background_
-	draw_Background_->SetCBufferData(0, ShaderType::PixelShader, &rt_Background_);
+	draw_Background_->SetBRegisterData(0, ShaderType::PixelShader, &rt_Background_);
 	draw_Background_->Draw(rt_PostEffect_[0], { rt_3D_, rt_3D_depth_, rt_Background_ });
 
 	// 3D描画
 	// 書き込み先：rt_PostEffect_[0]
 	// 参照元：rt_3D_, rt_3D_depth_, rt_Background_
-	draw_3D_->SetCBufferData(0, ShaderType::PixelShader, &rt_3D_);
+	draw_3D_->SetBRegisterData(0, ShaderType::PixelShader, &rt_3D_);
 	draw_3D_->Draw(rt_PostEffect_[0], { rt_3D_, rt_3D_depth_, rt_Background_ });
 
 	// アウトライン描画
 	// 書き込み先：rt_PostEffect_[0]
 	// 参照元：rt_3D_、rt_3D_depth_
-	draw_3D_DepthBasedOutline_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[0]);
-	draw_3D_DepthBasedOutline_->SetCBufferData(1, ShaderType::PixelShader, &rt_3D_depth_);
+	draw_3D_DepthBasedOutline_->SetBRegisterData(0, ShaderType::PixelShader, &rt_PostEffect_[0]);
+	draw_3D_DepthBasedOutline_->SetBRegisterData(1, ShaderType::PixelShader, &rt_3D_depth_);
 	Matrix4x4 projectionInverse = Game::Camera::Getter::GetProjectionMatrix(cameraID).Inverse();
-	draw_3D_DepthBasedOutline_->SetCBufferData(2, ShaderType::PixelShader, &projectionInverse);
+	draw_3D_DepthBasedOutline_->SetBRegisterData(2, ShaderType::PixelShader, &projectionInverse);
 	draw_3D_DepthBasedOutline_->Draw(rt_PostEffect_[1], { rt_PostEffect_[0], rt_3D_depth_ });
 
 	// フォグ描画
 	// 参照元：rt_PostEffect_[1], rt_3D_depth_
 	// 書き込み先：rt_PostEffect_[2]
-	draw_3D_DistanceFog_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[1]);
-	draw_3D_DistanceFog_->SetCBufferData(1, ShaderType::PixelShader, &rt_3D_depth_);
-	draw_3D_DistanceFog_->SetCBufferData(2, ShaderType::PixelShader, &projectionInverse);
-	draw_3D_DistanceFog_->SetCBufferData(3, ShaderType::PixelShader, &fogParams_);
+	draw_3D_DistanceFog_->SetBRegisterData(0, ShaderType::PixelShader, &rt_PostEffect_[1]);
+	draw_3D_DistanceFog_->SetBRegisterData(1, ShaderType::PixelShader, &rt_3D_depth_);
+	draw_3D_DistanceFog_->SetBRegisterData(2, ShaderType::PixelShader, &projectionInverse);
+	draw_3D_DistanceFog_->SetBRegisterData(3, ShaderType::PixelShader, &fogParams_);
 	draw_3D_DistanceFog_->Draw(rt_PostEffect_[2], { rt_PostEffect_[1], rt_3D_depth_ });
 
 	// vignette描画
 	// 書き込み先：rt_PostEffect_[1]
 	// 参照元：rt_PostEffect_[0]
-	draw_3D_Vignette_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[2]);
-	draw_3D_Vignette_->SetCBufferData(1, ShaderType::PixelShader, &vignette_Brightness);
+	draw_3D_Vignette_->SetBRegisterData(0, ShaderType::PixelShader, &rt_PostEffect_[2]);
+	draw_3D_Vignette_->SetBRegisterData(1, ShaderType::PixelShader, &vignette_Brightness);
 	draw_3D_Vignette_->Draw(rt_PostEffect_[3], { rt_PostEffect_[2] });
 
 	// ガウシアンフィルタ描画
 	// 書き込み先：rt_PostEffect_[2]
 	// 参照元：rt_PostEffect_[1]
-	draw_3D_GaussianFilter_[0]->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[3]);
-	draw_3D_GaussianFilter_[0]->SetCBufferData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
-	draw_3D_GaussianFilter_[0]->SetCBufferData(2, ShaderType::PixelShader, &texelSize);
+	draw_3D_GaussianFilter_[0]->SetBRegisterData(0, ShaderType::PixelShader, &rt_PostEffect_[3]);
+	draw_3D_GaussianFilter_[0]->SetBRegisterData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
+	draw_3D_GaussianFilter_[0]->SetBRegisterData(2, ShaderType::PixelShader, &texelSize);
 	draw_3D_GaussianFilter_[0]->Draw(rt_PostEffect_[4], { rt_PostEffect_[3] });
 
 	// ガウシアンフィルタ描画
 	// 書き込み先：rt_PostEffect_[3]
 	// 参照元：rt_PostEffect_[2]
-	draw_3D_GaussianFilter_[1]->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[4]);
-	draw_3D_GaussianFilter_[1]->SetCBufferData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
-	draw_3D_GaussianFilter_[1]->SetCBufferData(2, ShaderType::PixelShader, &texelSize);
+	draw_3D_GaussianFilter_[1]->SetBRegisterData(0, ShaderType::PixelShader, &rt_PostEffect_[4]);
+	draw_3D_GaussianFilter_[1]->SetBRegisterData(1, ShaderType::PixelShader, &gaussianFilter_Radius_);
+	draw_3D_GaussianFilter_[1]->SetBRegisterData(2, ShaderType::PixelShader, &texelSize);
 	draw_3D_GaussianFilter_[1]->Draw(rt_PostEffect_[5], { rt_PostEffect_[4] });
 
 	// グレースケール描画
 	// 書き込み先：rt_PostEffect_[4]
 	// 参照元：rt_PostEffect_[3]
-	draw_3D_GrayScale_->SetCBufferData(0, ShaderType::PixelShader, &rt_PostEffect_[5]);
-	draw_3D_GrayScale_->SetCBufferData(1, ShaderType::PixelShader, &grayScale_Scale);
+	draw_3D_GrayScale_->SetBRegisterData(0, ShaderType::PixelShader, &rt_PostEffect_[5]);
+	draw_3D_GrayScale_->SetBRegisterData(1, ShaderType::PixelShader, &grayScale_Scale);
 	draw_3D_GrayScale_->Draw(rt_main_, { rt_UI_, rt_PostEffect_[5] });
 
 	// UI描画
 	// 書き込み先：rt_main_
 	// 参照元：rt_Background_, rt_UI_, rt_PostEffect_[4]
-	draw_UI_->SetCBufferData(0, ShaderType::PixelShader, &rt_UI_);
+	draw_UI_->SetBRegisterData(0, ShaderType::PixelShader, &rt_UI_);
 	draw_UI_->Draw(rt_main_, { rt_UI_, rt_PostEffect_[5] });
 
 	// メイン描画
 	// 書き込み先：エンジンのデフォルトレンダーターゲット
 	// 参照元：rt_main_
-	draw_main_->SetCBufferData(0, ShaderType::PixelShader, &rt_main_);
+	draw_main_->SetBRegisterData(0, ShaderType::PixelShader, &rt_main_);
 	draw_main_->Draw(-1, { rt_main_ });
 }
 

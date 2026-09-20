@@ -60,10 +60,10 @@ void ModelPreview::Update()
 	Matrix4x4 world = Matrix4x4::MakeAffineMatrix(objectTransform_.scale, objectTransform_.rotate, objectTransform_.translate);
 	Matrix4x4 wpv = world * viewProjection;
 	modelRenderObject_->psoConfig_.depthStencilID = isEditingCollider_ ? DepthStencilID::TestOnly : DepthStencilID::Default;
-	modelRenderObject_->SetCBufferData(0, ShaderType::PixelShader, &color);
-	modelRenderObject_->SetCBufferData(1, ShaderType::PixelShader, &textureID);
-	modelRenderObject_->SetCBufferData(0, ShaderType::VertexShader, &wpv);
-	modelRenderObject_->SetCBufferData(1, ShaderType::VertexShader, &world);
+	modelRenderObject_->SetBRegisterData(0, ShaderType::PixelShader, &color);
+	modelRenderObject_->SetBRegisterData(1, ShaderType::PixelShader, &textureID);
+	modelRenderObject_->SetBRegisterData(0, ShaderType::VertexShader, &wpv);
+	modelRenderObject_->SetBRegisterData(1, ShaderType::VertexShader, &world);
 
 
 	if (isEditingCollider_)
@@ -91,10 +91,10 @@ void ModelPreview::Update()
 			Matrix4x4 colliderWvp = colliderWorld * viewProjection;
 
 			Vector4 colliderColor = (i == selectedColliderIndex_) ? Vector4(1.0f, 0.0f, 0.0f, 1.0f) : Vector4(0.2f, 1.0f, 0.4f, 1.0f);
-			colliderRender_[i]->SetCBufferData(0, ShaderType::PixelShader, &colliderColor);
-			colliderRender_[i]->SetCBufferData(1, ShaderType::PixelShader, &colliderTextureID_);
-			colliderRender_[i]->SetCBufferData(0, ShaderType::VertexShader, &colliderWvp);
-			colliderRender_[i]->SetCBufferData(1, ShaderType::VertexShader, &colliderWorld);
+			colliderRender_[i]->SetBRegisterData(0, ShaderType::PixelShader, &colliderColor);
+			colliderRender_[i]->SetBRegisterData(1, ShaderType::PixelShader, &colliderTextureID_);
+			colliderRender_[i]->SetBRegisterData(0, ShaderType::VertexShader, &colliderWvp);
+			colliderRender_[i]->SetBRegisterData(1, ShaderType::VertexShader, &colliderWorld);
 		}
 	}
 }
@@ -174,6 +174,15 @@ void ModelPreview::DrawImGui()
 		ImVec2 imagePos = ImGui::GetCursorScreenPos();
 		ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), imTextureSize);
 		ImGui::SameLine();
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(int32_t));
+				textureID = *reinterpret_cast<const int32_t*>(payload->Data);
+			}
+			ImGui::EndDragDropTarget();
+		}
 
 		// ギズモ操作
 		Matrix4x4 viewMatrix = cameraManager_->GetCamera(cameraID_)->GetViewMatrix();
@@ -321,15 +330,6 @@ void ModelPreview::DrawImGui()
 			ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
 			ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
 			ImGui::EndDragDropSource();
-		}
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
-			{
-				IM_ASSERT(payload->DataSize == sizeof(int32_t));
-				textureID = *reinterpret_cast<const int32_t*>(payload->Data);
-			}
-			ImGui::EndDragDropTarget();
 		}
 
 		ImGui::End();

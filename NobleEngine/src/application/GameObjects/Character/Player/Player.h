@@ -45,9 +45,15 @@ public:
 	const Vector3& GetPosition() const { return translate_.value; }
 
 private:
+	Matrix4x4 wvpMatrix_;
+
+	int32_t t_player_ = -1;
+
 	// 速度
 	float normalSpeed_ = 0.30f;
 	float dashSpeed_ = 0.50f;
+
+
 
 	// 視点カメラID
 	int32_t c_viewCameraID_ = -1;

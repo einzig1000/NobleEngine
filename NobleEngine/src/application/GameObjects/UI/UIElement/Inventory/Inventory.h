@@ -11,6 +11,9 @@ public:
 	void Update(int32_t cameraID) override;
 	void Draw(int32_t rt_ID) override;
 
+private:
+	Matrix4x4 worldMatrix_;
+	Matrix4x4 wvpMatrix_;
 
 };
 

@@ -1,11 +1,11 @@
 #include "IPhase.h"
 
-void IPhase::ChangePhase(PHASE phase)
+void IPhase::ChangePhase(Phase phase)
 {
 	nextPhase_ = phase;
 }
 
-PHASE IPhase::GetNextPhase()
+Phase IPhase::GetNextPhase()
 {
 	return nextPhase_;
 }

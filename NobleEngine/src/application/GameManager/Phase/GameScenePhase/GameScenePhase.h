@@ -23,11 +23,10 @@ public:
 	void Update() override;
 	void Draw() override;
 	void DrawImGui() override;
-	void ChangePhase(PHASE phase) override { nextPhase_ = phase; }
+	void ChangePhase(Phase phase) override { nextPhase_ = phase; }
 
 private:
 	// カメラID
-	int32_t c_debug_ = -1;
 	int32_t c_player_ = -1;
 
 	// イベントバス
