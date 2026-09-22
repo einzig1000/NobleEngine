@@ -256,6 +256,9 @@ namespace Game
 		}
 	};
 
+	/// <summary>
+	/// デバッグ描画
+	/// </summary>
 	namespace DebugDraw
 	{
 		/// <summary>
@@ -356,11 +359,11 @@ namespace Game
 			bool IsJustReleased(int32_t i);
 
 			/// <summary>
-			/// マウスボタンの入力取得(押されてからの経過フレーム数)
+			/// マウスボタンの入力取得(押されてからの経過秒数)
 			/// </summary>
 			/// <param name="i">0 = 左クリック  1 = 右クリック  2 = ミドルボタン</param>
-			/// <returns>押されてからの経過フレーム数</returns>
-			uint32_t HoldFrames(int32_t i);
+			/// <returns>押されてからの経過秒数</returns>
+			float HoldSeconds(int32_t i);
 
 			// カーソルの表示・非表示切り替え
 			void ToggleMouseCursorVisible();
@@ -390,17 +393,16 @@ namespace Game
 			bool IsJustReleased(BYTE key);
 
 			/// <summary>
-			/// キーボードの入力取得(押されてからの経過フレーム数)
+			/// キーボードの入力取得(押されてからの経過秒数)
 			/// </summary>
-			uint32_t HoldFrames(BYTE key);
+			float HoldSeconds(BYTE key);
 
-			/// <summary>
 			/// キーの単押し・長押し判定
 			/// </summary>
-			/// <param name="n">nフレーム以上で長押しと判定</param>
+			/// <param name="thresholdSeconds">n秒以上で長押しと判定</param>
 			/// <param name="key">キー</param>
 			/// <returns>0: なし  1:単押し  2:長押し</returns>
-			int32_t TestTapLong(int32_t n, BYTE key);
+			int32_t TestTapLong(float thresholdSeconds, BYTE key);
 		};
 
 		namespace Pad
@@ -431,7 +433,7 @@ namespace Game
 			/// </summary>
 			/// <param name="padIndex"> パッド番号(0～3) </param>
 			/// <param name="button"> ボタン番号(PAD_A～) </param>
-			uint32_t HoldFrames(int32_t padIndex, BYTE button);
+			float HoldSeconds(int32_t padIndex, BYTE button);
 
 			/// <summary>
 			/// 左スティックの入力取得
@@ -476,6 +478,9 @@ namespace Game
 		};
 	};
 
+	/// <summary>
+	/// カメラの作成・更新
+	/// </summary>
 	namespace Camera
 	{
 		namespace Getter
@@ -603,6 +608,9 @@ namespace Game
 		bool InCamera(const AABB& aabb, int32_t cameraID);
 	};
 
+	/// <summary>
+	/// イージング、乱数、座標変換、角度変換などの数学関数
+	/// </summary>
 	namespace Math
 	{
 		namespace Ease
@@ -692,21 +700,33 @@ namespace Game
 		Vector3 YawPitchFromDirection(const Vector3& dir);
 	};
 
-
+	/// <summary>
+	/// 経過時間・FPSの取得、タイムスケール変更
+	/// </summary>
 	namespace Time
 	{
+		/// <returns>FPS取得</returns>
+		float GetFPS();
+
+		/// <summary>
+		/// 時間の進むスピードを変更する
+		/// </summary>
+		/// <param name="timeScale">タイムスケール(1.0fが通常速度)</param>
 		void SetTimeScale(float timeScale);
 
 		/// <returns>スケールタイム適用済デルタタイム</returns>
 		float GetScaledDeltaTimeMs();
 
-		/// <returns>起動からの経過時間取得</returns>
-		uint32_t GetElapsedTime();
+		/// <returns>起動からの経過フレーム数取得</returns>
+		uint32_t GetElapsedFrameTime();
 
-		/// <returns>フレームレート取得</returns>
-		float GetFrameRate();
+		/// <returns>起動からの経過秒数取得</returns>
+		float GetElapsedSecTime();
 	};
 
+	/// <summary>
+	/// ウィンドウの幅・高さ取得、フルスクリーン切り替え
+	/// </summary>
 	namespace Window
 	{
 		/// <summary>
@@ -725,6 +745,9 @@ namespace Game
 		void ToggleFullscreen();
 	}
 
+	/// <summary>
+	/// シェーダーにバインドするリソースの作成・更新
+	/// </summary>
 	namespace Resource
 	{
 		/// <summary>
@@ -771,6 +794,7 @@ namespace Game
 		//{
 		//	Engine::Instance().GetStructuredBufferManager()->UpdateData(resourceID, data.data(), sizeof(T), data.size());
 		//}
+
 		/// <summary>
 		/// 連続コンテナ全体を送る。vector / 生配列 / std::array / span すべて受け付ける
 		/// </summary>
@@ -815,4 +839,50 @@ namespace Game
 	}
 
 	void quit();
+};
+
+
+class CounterSec
+{
+private:
+	float target_ = -1.0f;
+	float startSec_ = 0.0f;
+
+public:
+
+	void Initialize(float target)
+	{
+		target_ = target;
+		startSec_ = Game::Time::GetElapsedSecTime();
+	}
+
+	// 0.0f ～
+	float GetProgress() const
+	{
+		if (target_ <= 0.0f) return 0.0f;
+		float progressSec_ = Game::Time::GetElapsedSecTime() - startSec_;
+		return progressSec_ / target_;
+	}
+};
+
+class CounterF
+{
+private:
+	int32_t target_ = -1;
+	int32_t startFrame_ = 0;
+
+public:
+
+	void Initialize(int32_t target)
+	{
+		target_ = target;
+		startFrame_ = Game::Time::GetElapsedFrameTime();
+	}
+
+	float GetProgress() const
+	{
+		if (target_ <= 0) return 0;
+		int32_t progressFrame_ = Game::Time::GetElapsedFrameTime() - startFrame_;
+		return static_cast<float>(progressFrame_) / static_cast<float>(target_);
+	}
 };

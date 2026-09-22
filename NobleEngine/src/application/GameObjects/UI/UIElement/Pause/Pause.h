@@ -12,10 +12,8 @@ public:
 	void Update(int32_t cameraID) override;
 	void Draw(int32_t rt_ID) override;
 
-	bool ConsumeSaveRequested();
-
 private:
-	bool saveRequested_ = false;
+	Matrix4x4 orthographic_;
 
 	Vector2 buttonSize_;
 };

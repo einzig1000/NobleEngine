@@ -24,19 +24,17 @@ void Inventory::Initialize()
 
 void Inventory::Update(int32_t cameraID)
 {
-	Matrix4x4 orthographic = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
-	for (const auto& sprite : sprites_)
-	{
-		worldMatrix_ = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
-		wvpMatrix_ = worldMatrix_ * orthographic;
-	}
+	orthographic_ = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
 }
 
 void Inventory::Draw(int32_t rt_ID)
 {
 	for (const auto& sprite : sprites_)
 	{
+		Matrix4x4 worldMatrix_ = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
+		Matrix4x4 wvpMatrix_ = worldMatrix_ * orthographic_;
 		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
 		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvpMatrix_);
 		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix_);
 		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);

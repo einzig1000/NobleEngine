@@ -158,6 +158,7 @@ int32_t AudioLoader::LoadAudio(const std::string & filePath)
     // 読み込み完了後にメモリを安定化してから pAudioData を設定
     data->audioData.shrink_to_fit();
     data->audioBytes = totalAudioDataSize;
+    data->filePath = filePath;
 
     // マップに格納
     int32_t id = bank_->AllocateAudioID();

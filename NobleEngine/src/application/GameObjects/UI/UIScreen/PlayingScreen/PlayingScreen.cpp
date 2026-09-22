@@ -1,5 +1,6 @@
 #include "PlayingScreen.h"
 #include <GameObjects/UI/UIElement/Hotbar/Hotbar.h>
+#include <System/EventBus/EventBus.h>
 
 PlayingScreen::PlayingScreen()
 {
@@ -19,6 +20,11 @@ void PlayingScreen::Initialize()
 		element->Initialize();
 		element->SetNextUIMode(&nextUIMode_);
 	}
+
+	Event event;
+	event.type = EventType::AbleMoveAllCharacters;
+	event.value.push_back(true);
+	eventBus_->Notify(event);
 
 	// カーソル操作有効化
 	Game::IO::Mouse::ShowCursor(false);

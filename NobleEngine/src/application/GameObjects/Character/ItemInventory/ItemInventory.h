@@ -33,8 +33,8 @@ public:
 
 
     // 所持アイテムに追加
-    void AddItem(ItemID id);
-	// hpっとバーの選択中スロットを変更
+    void AddItem(ItemID id, uint32_t count);
+    // hpっとバーの選択中スロットを変更
     void SetHotbarSelectedIndex(int32_t index);
     // スロットごとアイテム入れ替え
     void SwapSlot(int32_t a, int32_t b);

@@ -1,4 +1,5 @@
 #include "Pause.h"
+#include <System/EventBus/EventBus.h>
 
 Pause::Pause()
 {
@@ -36,28 +37,19 @@ void Pause::Initialize()
 
 void Pause::Update(int32_t cameraID)
 {
-	Matrix4x4 orthographic = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
-	for (const auto& sprite : sprites_)
-	{
-		Matrix4x4 world = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
-		Matrix4x4 wvp = world * orthographic;
-		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
-		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
-		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
-		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
-		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
-	}
+	orthographic_ = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
 
 	Vector2 mousePos = Game::IO::Mouse::Get2DPosition();
 
 	//if (sprites_[1]->isCollisionMouseRay)
 	//{
 	//	sprites_[1]->color = 0xFFFFFFFF;
-	//	if (Game::IO::Mouse::IsJustPressed(0))
-	//	{
-	//		saveRequested_ = true;	
-	//	}
+	//if (Game::IO::Mouse::IsJustPressed(0))
+	//{
+	//	Event event;
+	//	event.type = EventType::SaveGameRequested;
+	//	eventBus_->Notify(event);
+	//}
 	//}
 	//else
 	//{
@@ -69,13 +61,14 @@ void Pause::Draw(int32_t rt_ID)
 {
 	for (const auto& sprite : sprites_)
 	{
+		Matrix4x4 world = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
+		Matrix4x4 wvp = world * orthographic_;
+		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
+		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
+		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
+		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
 		sprite.render->Draw(rt_ID);
 	}
-}
-
-bool Pause::ConsumeSaveRequested()
-{
-	if (!saveRequested_) return false;
-	saveRequested_ = false;
-	return true;
 }

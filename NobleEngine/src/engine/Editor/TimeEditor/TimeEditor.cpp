@@ -17,7 +17,7 @@ void TimeEditor::DrawImGui()
     ImGui::Text("Unclamped FPS  : %5.1f  (%4.1f ms)", timeManager_->GetFixFPS()->GetUnclampedFPS(), timeManager_->GetFixFPS()->GetUnclampedDeltaTimeMs());
     ImGui::Text("CPU FPS        : %5.1f  (%4.1f ms)", frameProfiler_->GetCpuFPS(), frameProfiler_->GetCpuDeltaTimeMs());
     ImGui::Text("GPU FPS        : %5.1f  (%4.1f ms)", frameProfiler_->GetGpuFPS(), frameProfiler_->GetGpuDeltaTimeMs());
-    ImGui::Text("Frame Count    : %d", timeManager_->GetFixFPS()->GetFrameCount());
+    ImGui::Text("Frame Count    : %d", timeManager_->GetFixFPS()->GetElapsedFrameTime());
 	static int32_t targetFPSCap = 60;
     if (ImGui::DragInt("Target fpsCap", &targetFPSCap, 1.0f, 1, 60))
     {

@@ -26,8 +26,8 @@ private:
 	int32_t t_haveItem_ = -1;
 	float animationTime_ = 0.0f;
 
-	const ItemInfo* itemInfo_;
-	const ModelData* modelData_;
+	const ItemInfo* itemInfo_ = nullptr;
+	const ModelData* modelData_ = nullptr;
 
 	// アニメーションID
 	int32_t a_haveItem_ = -1;

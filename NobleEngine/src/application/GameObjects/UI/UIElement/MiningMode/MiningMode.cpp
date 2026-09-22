@@ -1,5 +1,5 @@
 #include "MiningMode.h"
-#include <GameObjects/EventBus/EventBus.h>
+#include <System/EventBus/EventBus.h>
 
 MiningMode::MiningMode()
 {
@@ -36,9 +36,12 @@ void MiningMode::Initialize()
 
 void MiningMode::Update(int32_t cameraID)
 {
+	orthographic_ = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
+
+
 	float rotateZ = 0.0f;
-	uint32_t time = Game::Time::GetElapsedTime();
-	rotateZ = std::sinf(static_cast<float>(time) / 10.0f) * 0.2f;
+	float elapsedTime = Game::Time::GetElapsedSecTime();
+	rotateZ = std::sinf(elapsedTime) * 0.2f;
 
 	Vector2 mousePos = Game::IO::Mouse::Get2DPosition();
 	bool leftKey = mousePos.x < static_cast<float>(Game::Window::GetWidth()) / 2.0f;
@@ -71,25 +74,20 @@ void MiningMode::Update(int32_t cameraID)
 
 		*nextUIMode_ = UIMode::Playing;
 	}
-
-	Matrix4x4 orthographic = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
-	for (const auto& sprite : sprites_)
-	{
-		Matrix4x4 world = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
-		Matrix4x4 wvp = world * orthographic;
-		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
-		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
-		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
-		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
-		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
-	}
 }
 
 void MiningMode::Draw(int32_t rt_ID)
 {
 	for (const auto& sprite : sprites_)
 	{
+		Matrix4x4 worldMatrix_ = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
+		Matrix4x4 wvpMatrix_ = worldMatrix_ * orthographic_;
+		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvpMatrix_);
+		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix_);
+		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
+		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
 		sprite.render->Draw(rt_ID);
 	}
 

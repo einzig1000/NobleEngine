@@ -30,20 +30,23 @@ public:
 	bool IsHeld(int32_t i);			// 今押しているか
 	bool IsJustPressed(int32_t i);	// 押した瞬間（今フレームで押された）
 	bool IsJustReleased(int32_t i);	// 離した瞬間（今フレームで離れた）
-	uint32_t HoldFrames(int32_t i);	// 押されてからの経過フレーム数
+	float HoldSeconds(int32_t i);	// 押されてからの経過秒数
 
 	void ToggleMouseCursorVisible();
 	void ShowCursor(bool visible);
-
 private:
 	void UpdateButtonState();	// マウスボタン状態更新
 	void UpdateSensitivity();	// マウス感度の適用
+
+	void UpdateCursorLock();				// 表示要求+フォーカス状態からロック要否を毎フレーム再評価
+	void ApplyCursorLock(bool locked);		// ロック要否を実際にOSへ反映(true=非表示+クリップ／false=表示+クリップ解除)
 
 	void Compute2DPosition();	// マウス2Dポジション計算
 	Ray ComputeRay(Matrix4x4& viewProjection);	// マウスレイ計算
 
 	// カーソル表示フラグ
 	bool isVisible_;
+	bool isCursorLocked_;	// 直近に適用した状態(true=非表示+クリップ中)
 
 	// マウスボタン状態
 	mouseButtonState leftButton_;

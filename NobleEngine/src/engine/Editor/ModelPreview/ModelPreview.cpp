@@ -7,8 +7,9 @@
 #include <ImGuiManager/ImGuiManager.h>
 #include <AssetManager/Model/ModelBank/ModelBank.h>
 #include <AssetManager/Model/ModelHelper/ModelHelper.h>
-#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <numbers>
+#include <Utilities/FileDialog/FileDialog.h>
+#include <Window/WindowManager.h>
 #include <filesystem>
 
 ModelPreview::ModelPreview(DirectXManager* dxManager, CameraManager* cameraManager, ModelBank* bank)
@@ -53,17 +54,13 @@ void ModelPreview::Update()
 
 	// カメラ更新
 	cameraManager_->GetCamera(cameraID_)->Update();
-	const Matrix4x4& viewProjection = cameraManager_->GetCamera(cameraID_)->GetViewProjectionMatrix();
+	Matrix4x4 viewProjection = cameraManager_->GetCamera(cameraID_)->GetViewProjectionMatrix();
 
 	// モデル描画
-	Vector4 color = isEditingCollider_ ? Vector4(1.0f, 1.0f, 1.0f, 0.5f) : Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	Matrix4x4 world = Matrix4x4::MakeAffineMatrix(objectTransform_.scale, objectTransform_.rotate, objectTransform_.translate);
-	Matrix4x4 wpv = world * viewProjection;
+	color_ = isEditingCollider_ ? Vector4(1.0f, 1.0f, 1.0f, 0.5f) : Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	world_ = Matrix4x4::MakeAffineMatrix(objectTransform_.scale, objectTransform_.rotate, objectTransform_.translate);
+	wpv_ = world_ * viewProjection;
 	modelRenderObject_->psoConfig_.depthStencilID = isEditingCollider_ ? DepthStencilID::TestOnly : DepthStencilID::Default;
-	modelRenderObject_->SetBRegisterData(0, ShaderType::PixelShader, &color);
-	modelRenderObject_->SetBRegisterData(1, ShaderType::PixelShader, &textureID);
-	modelRenderObject_->SetBRegisterData(0, ShaderType::VertexShader, &wpv);
-	modelRenderObject_->SetBRegisterData(1, ShaderType::VertexShader, &world);
 
 
 	if (isEditingCollider_)
@@ -87,28 +84,31 @@ void ModelPreview::Update()
 			}
 
 			Matrix4x4 colliderLocal = Matrix4x4::MakeAffineMatrix(halfExtent, Vector3(0.0f, 0.0f, 0.0f), center);
-			Matrix4x4 colliderWorld = colliderLocal * world;
-			Matrix4x4 colliderWvp = colliderWorld * viewProjection;
-
-			Vector4 colliderColor = (i == selectedColliderIndex_) ? Vector4(1.0f, 0.0f, 0.0f, 1.0f) : Vector4(0.2f, 1.0f, 0.4f, 1.0f);
-			colliderRender_[i]->SetBRegisterData(0, ShaderType::PixelShader, &colliderColor);
-			colliderRender_[i]->SetBRegisterData(1, ShaderType::PixelShader, &colliderTextureID_);
-			colliderRender_[i]->SetBRegisterData(0, ShaderType::VertexShader, &colliderWvp);
-			colliderRender_[i]->SetBRegisterData(1, ShaderType::VertexShader, &colliderWorld);
+			colliderWorld_[i] = colliderLocal * world_;
+			colliderWpv_[i] = colliderWorld_[i] * viewProjection;
+			colliderColor_[i] = (i == selectedColliderIndex_) ? Vector4(1.0f, 0.0f, 0.0f, 1.0f) : Vector4(0.2f, 1.0f, 0.4f, 1.0f);
 		}
 	}
 }
 
 void ModelPreview::Draw()
 {
+	modelRenderObject_->SetBRegisterData(0, ShaderType::PixelShader, &color_);
+	modelRenderObject_->SetBRegisterData(1, ShaderType::PixelShader, &textureID);
+	modelRenderObject_->SetBRegisterData(0, ShaderType::VertexShader, &wpv_);
+	modelRenderObject_->SetBRegisterData(1, ShaderType::VertexShader, &world_);
 	modelRenderObject_->Draw(renderTarget_);
 
 	if (isEditingCollider_)
 	{
 		// コライダー描画
-		for (const auto& collider : colliderRender_)
+		for (size_t i = 0; i < colliderRender_.size(); ++i)
 		{
-			collider->Draw(renderTarget_);
+			colliderRender_[i]->SetBRegisterData(0, ShaderType::PixelShader, &colliderColor_[i]);
+			colliderRender_[i]->SetBRegisterData(1, ShaderType::PixelShader, &colliderTextureID_);
+			colliderRender_[i]->SetBRegisterData(0, ShaderType::VertexShader, &colliderWpv_[i]);
+			colliderRender_[i]->SetBRegisterData(1, ShaderType::VertexShader, &colliderWorld_[i]);
+			colliderRender_[i]->Draw(renderTarget_);
 		}
 	}
 }
@@ -118,6 +118,21 @@ void ModelPreview::DrawImGui()
 	// モデルリスト表示
 	ImGui::Begin("Model Editor");
 
+	if (ImGui::Button("Open Model"))
+	{
+		std::string path = FileDialog::OpenFile(
+			Engine::Instance().GetWindowManager()->GetHwnd(),
+			L"Open Model",
+			{ { L"Model Files", L"*.obj;*.gltf;*.fbx" }, { L"All Files", L"*.*" } }
+		);
+
+		if (!path.empty())
+		{
+			int32_t newID = Engine::Instance().GetAssetManager()->GetModelManager()->GetModelLoader()->LoadModel(path);
+			SelectModel(newID);
+		}
+	}
+
 	if (ImGui::BeginListBox("##model list"))
 	{
 		for (int32_t i = 0; i < (int32_t)bank_->GetModelList().size(); ++i)
@@ -126,11 +141,7 @@ void ModelPreview::DrawImGui()
 			ImGui::BeginGroup();
 			if (ImGui::Selectable(bank_->GetModelList()[i]->filePath.c_str(), false, 0))
 			{
-				modelRenderObject_->modelID_ = i;
-				modelData_ = bank_->GetModelData(i);
-				selectedColliderIndex_ = -1;
-				colliderShape_ = modelData_->colliderShape;
-				requestRebuildColliderRenderObjects_ = true;
+				SelectModel(i);
 			}
 			ImGui::EndGroup();
 			ImGui::PopID();
@@ -138,6 +149,8 @@ void ModelPreview::DrawImGui()
 		ImGui::EndListBox();
 	}
 	ImGui::SameLine();
+
+
 
 	// ミニプレビュー表示
 	if (modelRenderObject_->modelID_ != -1 && ImGui::ImageButton("##ss", ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), ImVec2(128, 128)))
@@ -163,7 +176,6 @@ void ModelPreview::DrawImGui()
 
 	ImGui::End();
 
-
 	// フルスクリーン表示
 	if (fullscreen_)
 	{
@@ -173,7 +185,7 @@ void ModelPreview::DrawImGui()
 		ImVec2 imTextureSize = ImVec2{ 448.0f, 448.0f };
 		ImVec2 imagePos = ImGui::GetCursorScreenPos();
 		ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), imTextureSize);
-		ImGui::SameLine();
+		// DAD処理
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
@@ -183,6 +195,13 @@ void ModelPreview::DrawImGui()
 			}
 			ImGui::EndDragDropTarget();
 		}
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
+			ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
+			ImGui::EndDragDropSource();
+		}
+		ImGui::SameLine();
 
 		// ギズモ操作
 		Matrix4x4 viewMatrix = cameraManager_->GetCamera(cameraID_)->GetViewMatrix();
@@ -310,6 +329,8 @@ void ModelPreview::DrawImGui()
 				ImGui::DragFloat("Radius", &sphere.radius, 0.01f, 0.01f, 100.0f);
 			}
 
+			ImGui::SetCursorPosX(imTextureSize.x + 15.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
 			if (ImGui::Button("Save"))
 			{
 				auto path = std::filesystem::path(modelData_->filePath);
@@ -324,25 +345,34 @@ void ModelPreview::DrawImGui()
 			}
 		}
 
-		// DAD処理
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-		{
-			ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
-			ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
-			ImGui::EndDragDropSource();
-		}
 
 		ImGui::End();
 	}
+}
+
+void ModelPreview::SelectModel(int32_t modelID)
+{
+	modelRenderObject_->modelID_ = modelID;
+	modelData_ = bank_->GetModelData(modelID);
+	selectedColliderIndex_ = -1;
+	colliderShape_ = modelData_->colliderShape;
+	requestRebuildColliderRenderObjects_ = true;
 }
 
 void ModelPreview::RebuildColliderRenderObjects()
 {
 	const size_t aabbCount = colliderShape_.aabbs.size();
 	const size_t sphereCount = colliderShape_.spheres.size();
+	const size_t totalCount = aabbCount + sphereCount;
 
 	colliderRender_.clear();
-	colliderRender_.resize(aabbCount + sphereCount);
+	colliderRender_.resize(totalCount);
+	colliderWpv_.clear();
+	colliderWpv_.resize(totalCount);
+	colliderWorld_.clear();
+	colliderWorld_.resize(totalCount);
+	colliderColor_.clear();
+	colliderColor_.resize(totalCount);
 
 	for (size_t i = 0; i < colliderRender_.size(); ++i)
 	{

@@ -1,7 +1,6 @@
 #include "InventoryScreen.h"
 #include <GameObjects/UI/UIElement/Inventory/Inventory.h>
-#include <GameObjects/UI/UIElement/Hotbar/Hotbar.h>
-#include <GameObjects/Character/Player/Player.h>
+#include <System/EventBus/EventBus.h>
 
 InventoryScreen::InventoryScreen()
 {
@@ -22,6 +21,11 @@ void InventoryScreen::Initialize()
 		element->SetNextUIMode(&nextUIMode_);
 	}
 
+	Event event;
+	event.type = EventType::AbleMoveAllCharacters;
+	event.value.push_back(false);
+	eventBus_->Notify(event);
+
 	// カーソル操作有効化
 	Game::IO::Mouse::ShowCursor(true);
 }
@@ -37,9 +41,6 @@ void InventoryScreen::Update(int32_t cameraID)
 		Game::IO::Key::IsJustPressed('E'))
 	{
 		nextUIMode_ = UIMode::Playing;
-
-		// カーソル操作無効化
-		Game::IO::Mouse::ShowCursor(false);
 	}
 }
 

@@ -35,6 +35,7 @@ Hotbar::Hotbar()
 		icon.transforms.translate = GetSlotPosition(i);
 
 		icons_.emplace_back(std::move(icon));
+		icons_[i].transforms.translate = GetSlotPosition(i);
 	}
 }
 
@@ -46,55 +47,32 @@ void Hotbar::Initialize()
 
 void Hotbar::Update(int32_t cameraID)
 {
-	Matrix4x4 orthographic = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
-	for (const auto& sprite : sprites_)
-	{
-		Matrix4x4 world = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
-		Matrix4x4 wvp = world * orthographic;
-		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
-		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
-		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
-		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
-		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
-	}
+	orthographic_ = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
 
 	if (!inventory_) return;
+
+	// ホットバーのアイコン更新
 	for (int32_t i = 0; i < ItemInventory::kHotbarSlotCount; ++i)
 	{
-		auto& icon = icons_[i];
 		const InventorySlot& slot = inventory_->GetSlot(i);
-
 		// 空スロット
 		if (slot.itemID == ItemID::MAX)
 		{
-			icon.textureID = -1;
+			icons_[i].textureID = -1;
 			continue;
 		}
 
+		// アイテム情報取得
 		const ItemInfo* info = App::Data::Item::Get(slot.itemID);
-		//if (!info || info->iconID < 0)
+		// 情報なし or テクスチャIDなし
 		if (!info || info->textureID < 0)
 		{
-			icon.textureID = -1;
+			icons_[i].textureID = -1;
 			continue;
-
-			//std::string tag = std::string("itemIcon_") + std::string(magic_enum::enum_name(slot.itemID));
-			//info->iconID = Game::Asset::RenderTexture::CreateRenderTexture(32, 32, tag);
 		}
 
-		//icon.textureID = info->iconID;
-		icon.textureID = info->textureID;
-		icon.transforms.translate = GetSlotPosition(i);
-
-		Matrix4x4 world = Matrix4x4::MakeAffineMatrix(icon.transforms.scale, icon.transforms.rotate, icon.transforms.translate);
-		Matrix4x4 wvp = world * orthographic;
-		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
-		icon.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
-		icon.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
-		icon.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
-		icon.render->SetBRegisterData(1, ShaderType::PixelShader, &icon.textureID);
+		// アイコン更新
+		icons_[i].textureID = info->textureID;
 	}
 }
 
@@ -102,6 +80,15 @@ void Hotbar::Draw(int32_t rt_ID)
 {
 	for (const auto& sprite : sprites_)
 	{
+		Matrix4x4 world = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
+		Matrix4x4 wvp = world * orthographic_;
+		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
+		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
+		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
+		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
+
 		sprite.render->Draw(rt_ID);
 	}
 
@@ -109,23 +96,30 @@ void Hotbar::Draw(int32_t rt_ID)
 	for (int32_t i = 0; i < ItemInventory::kHotbarSlotCount; ++i)
 	{
 		if (icons_[i].textureID < 0) continue;
+
+		Matrix4x4 world = Matrix4x4::MakeAffineMatrix(icons_[i].transforms.scale, icons_[i].transforms.rotate, icons_[i].transforms.translate);
+		Matrix4x4 wvp = world * orthographic_;
+		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		icons_[i].render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
+		icons_[i].render->SetBRegisterData(1, ShaderType::VertexShader, &world);
+		icons_[i].render->SetBRegisterData(0, ShaderType::PixelShader, &color);
+		icons_[i].render->SetBRegisterData(1, ShaderType::PixelShader, &icons_[i].textureID);
 		icons_[i].render->Draw(rt_ID);
+
 
 		// 個数
 		const InventorySlot& slot = inventory_->GetSlot(i);
 		if (slot.count > 1)
 		{
-			const Vector3& p = icons_[i].transforms.translate;
-			Game::Asset::Font::DrawString(rt_ID, std::to_string(slot.count), 32, Vector2{ p.x + 6.0f, p.y + 6.0f }, Vector4{ 1.0f,0.3f,0.3f,1.0f });
+			const Vector3& iconPos = icons_[i].transforms.translate;
+			Game::Asset::Font::DrawString(rt_ID, std::to_string(slot.count), 32, Vector2{ iconPos.x + 6.0f, iconPos.y + 6.0f }, Vector4{ 1.0f,0.3f,0.3f,1.0f });
 		}
 	}
 }
 
 Vector3 Hotbar::GetSlotPosition(int32_t index) const
 {
-	// sprites_[0].transforms.scale
-	// sprites_[0].transforms.translate
-
 	// ホットバーの左上の座標
 	Vector3 hotbarTopLeft = sprites_[0].transforms.translate - Vector3(sprites_[0].transforms.scale.x, sprites_[0].transforms.scale.y, 0.0f);
 	// ホットバーの1スロットの幅

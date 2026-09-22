@@ -23,7 +23,9 @@ public:
 	/// <returns> 最大FPS</returns>
 	int32_t GetFPSCap() const { return fpsCap_; }
 	/// <returns>起動後経過時間</returns>
-	uint32_t GetFrameCount() const { return frameCount_; }
+	uint32_t GetElapsedFrameTime() const { return elapsedFrameTime_; }
+	/// <returns>起動後経過時間</returns>
+	float GetElapsedSecTime() const { return elapsedSecTime_; }
 
 private:
 	std::chrono::steady_clock::time_point previousTime_;
@@ -37,5 +39,7 @@ private:
 	float unclampedFPS_ = 0.0f;
 	float unclampedDeltaMs_ = 0.0f;
 	// 起動後経過時間
-	uint32_t frameCount_ = 0;
+	uint32_t elapsedFrameTime_ = 0;
+	float elapsedSecTime_ = 0.0f;
+	static constexpr float kMaxDeltaMs = 100.0f;
 };

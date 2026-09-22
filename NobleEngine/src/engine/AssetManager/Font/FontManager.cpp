@@ -264,7 +264,7 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
     struct { int32_t atlasTextureIndex; float pad0[3]; } psConstants{};
     psConstants.atlasTextureIndex = atlasSrvIndex_;
 
-	uint32_t elapsedTime = Engine::Instance().GetTimeManager()->GetFixFPS()->GetFrameCount();
+	uint32_t elapsedTime = Engine::Instance().GetTimeManager()->GetFixFPS()->GetElapsedFrameTime();
 
     for (auto& render : fontRenders_)
     {

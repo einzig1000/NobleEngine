@@ -34,5 +34,7 @@ private:
 
 	std::unique_ptr<Player> player_;
 	std::vector<std::unique_ptr<ICharacter>> enemies_;
+
+	bool ableMoveAll_ = true;
 };
 

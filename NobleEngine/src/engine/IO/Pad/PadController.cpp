@@ -1,6 +1,8 @@
 #include "PadController.h"
 #include <algorithm>
 #include <cstring>
+#include <Engine.h>
+#include <TimeManager/TimeManager.h>
 
 PadController::PadController()
 {
@@ -28,8 +30,8 @@ PadController::PadController()
             {
                 padStates[i][b].curr = false;
                 padStates[i][b].prev = false;
-                padStates[i][b].holdFrames = 0;
-                padStates[i][b].lastHoldOnRelease = 0;
+                padStates[i][b].holdSeconds = 0.0f;
+                padStates[i][b].lastHoldOnRelease = 0.0f;
             }
         }
     }
@@ -41,6 +43,8 @@ PadController::~PadController()
 
 void PadController::Update()
 {
+    const float deltaSeconds = Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs() * 0.001f;
+
     for (DWORD i = 0; i < 4; ++i)
     {
         preState[i] = state[i];
@@ -54,15 +58,15 @@ void PadController::Update()
 
                 if (padStates[i][button].curr)
                 {
-                    ++padStates[i][button].holdFrames;
+                    padStates[i][button].holdSeconds += deltaSeconds;
                 }
                 else
                 {
                     if (padStates[i][button].prev)
                     {
-                        padStates[i][button].lastHoldOnRelease = padStates[i][button].holdFrames;
+                        padStates[i][button].lastHoldOnRelease = padStates[i][button].holdSeconds;
                     }
-                    padStates[i][button].holdFrames = 0;
+                    padStates[i][button].holdSeconds = 0.0f;
                 }
             }
 
@@ -105,15 +109,14 @@ void PadController::Update()
                 PadButtonState& ps = padStates[i][button];
                 ps.prev = ps.curr;
                 ps.curr = false;
-                if (ps.prev) ps.lastHoldOnRelease = ps.holdFrames;
-                ps.holdFrames = 0;
+                if (ps.prev) ps.lastHoldOnRelease = ps.holdSeconds;
+                ps.holdSeconds = 0.0f;
             }
             leftTrigger[i] = rightTrigger[i] = 0;
             leftStickX[i] = leftStickY[i] = 0;
             rightStickX[i] = rightStickY[i] = 0;
             leftStickDir[i] = { 0.0f, 0.0f };
             rightStickDir[i] = { 0.0f, 0.0f };
-
         }
     }
 }
@@ -139,11 +142,11 @@ bool PadController::IsJustReleased(int32_t padIndex, BYTE button) const
     return (padStates[stateIndex][btn].prev && !padStates[stateIndex][btn].curr);
 }
 
-uint32_t PadController::HoldFrames(int32_t padIndex, BYTE button) const
+float PadController::HoldSeconds(int32_t padIndex, BYTE button) const
 {
     int32_t stateIndex = std::clamp(padIndex, 0, 3);
     int32_t btn = std::clamp(int32_t(button), 0, PAD_BUTTON_MAX - 1);
-    return padStates[stateIndex][btn].holdFrames;
+    return padStates[stateIndex][btn].holdSeconds;
 }
 
 Vector2 PadController::GetLeftStick(int32_t padIndex) const

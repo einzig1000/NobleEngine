@@ -15,6 +15,7 @@ class CameraManager;
 class AssetManager;
 class ModelPreview;
 class TexturePreview;
+class AudioPreview;
 
 class TimeManager;
 class TimeEditor;
@@ -38,10 +39,10 @@ public:
 	void DrawImGui();
 
 private:
-	std::unique_ptr<RenderTexturePreview> renderTexturePreview_;
-	
 	std::unique_ptr<ModelPreview> modelEditor_;
 	std::unique_ptr<TexturePreview> textureEditor_;
+	std::unique_ptr<AudioPreview> audioPreview_;
+	std::unique_ptr<RenderTexturePreview> renderTexturePreview_;
 
 	std::unique_ptr<TimeEditor> timeEditor_;
 };

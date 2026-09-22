@@ -237,9 +237,9 @@ namespace Game
 			{
 				return Engine::Instance().GetIOManager()->GetMouseController()->IsJustReleased(i);
 			}
-			uint32_t HoldFrames(int32_t i)
+			float HoldSeconds(int32_t i)
 			{
-				return Engine::Instance().GetIOManager()->GetMouseController()->HoldFrames(i);
+				return Engine::Instance().GetIOManager()->GetMouseController()->HoldSeconds(i);
 			}
 			int32_t GetWheel()
 			{
@@ -274,13 +274,13 @@ namespace Game
 			{
 				return Engine::Instance().GetIOManager()->GetKeyboardController()->IsJustReleased(key);
 			}
-			uint32_t HoldFrames(BYTE key)
+			float HoldSeconds(BYTE key)
 			{
-				return Engine::Instance().GetIOManager()->GetKeyboardController()->HoldFrames(key);
+				return Engine::Instance().GetIOManager()->GetKeyboardController()->HoldSeconds(key);
 			}
-			int32_t TestTapLong(int32_t n, BYTE key)
+			int32_t TestTapLong(float thresholdSeconds, BYTE key)
 			{
-				return Engine::Instance().GetIOManager()->GetKeyboardController()->TestTapLong(n, key);
+				return Engine::Instance().GetIOManager()->GetKeyboardController()->TestTapLong(thresholdSeconds, key);
 			}
 		}
 
@@ -298,9 +298,9 @@ namespace Game
 			{
 				return Engine::Instance().GetIOManager()->GetPadController()->IsJustReleased(padIndex, button);
 			}
-			uint32_t HoldFrames(int32_t padIndex, BYTE button)
+			float HoldSeconds(int32_t padIndex, BYTE button)
 			{
-				return Engine::Instance().GetIOManager()->GetPadController()->HoldFrames(padIndex, button);
+				return Engine::Instance().GetIOManager()->GetPadController()->HoldSeconds(padIndex, button);
 			}
 			Vector2 GetLeftStick(int32_t padIndex)
 			{
@@ -534,13 +534,13 @@ namespace Game
 			Vector3 normDir = dir.Normalized();
 			float pitch = std::asinf(-normDir.y); // -sin(pitch) = y 成分
 			float yaw = std::atan2f(normDir.x, normDir.z); // sin(yaw) = x 成分, cos(yaw) = z 成分
-			return Vector3(pitch, yaw, 0.0f); // roll はここでは未使用
+			return Vector3(pitch, yaw, 0.0f); // rollは0
 		}
 	}
 
 	namespace Time
 	{
-		float GetFrameRate()
+		float GetFPS()
 		{
 			return Engine::Instance().GetTimeManager()->GetFixFPS()->GetClampedFPS();
 		}
@@ -555,9 +555,14 @@ namespace Game
 			return Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs();
 		}
 
-		uint32_t GetElapsedTime()
+		uint32_t GetElapsedFrameTime()
 		{
-			return Engine::Instance().GetTimeManager()->GetFixFPS()->GetFrameCount();
+			return Engine::Instance().GetTimeManager()->GetFixFPS()->GetElapsedFrameTime();
+		}
+
+		float GetElapsedSecTime()
+		{
+			return Engine::Instance().GetTimeManager()->GetFixFPS()->GetElapsedSecTime();
 		}
 	}
 

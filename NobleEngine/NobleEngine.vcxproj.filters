@@ -399,7 +399,7 @@
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Terrain.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\EventBus\EventBus.cpp">
+    <ClCompile Include="src\application\System\EventBus\EventBus.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.cpp">
@@ -418,6 +418,12 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\Test\TestParticle\Particle.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Utilities\FileDialog\FileDialog.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Editor\AudioPreview\AudioPreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1268,7 +1274,7 @@
     <ClInclude Include="src\application\GameObjects\Map\Terrain\Terrain.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\EventBus\EventBus.h">
+    <ClInclude Include="src\application\System\EventBus\EventBus.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.h">
@@ -1287,6 +1293,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\Test\TestParticle\Particle.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Utilities\FileDialog\FileDialog.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Editor\AudioPreview\AudioPreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 #include "CraftScreen.h"
 #include <GameObjects/UI/UIElement/Craft/Craft.h>
-#include <GameObjects/Character/Player/Player.h>
+#include <System/EventBus/EventBus.h>
 
 CraftScreen::CraftScreen()
 {
@@ -20,6 +20,11 @@ void CraftScreen::Initialize()
 		element->SetNextUIMode(&nextUIMode_);
 	}
 
+	Event event;
+	event.type = EventType::AbleMoveAllCharacters;
+	event.value.push_back(false);
+	eventBus_->Notify(event);
+
 	// カーソル操作有効化
 	Game::IO::Mouse::ShowCursor(true);
 }
@@ -35,9 +40,6 @@ void CraftScreen::Update(int32_t cameraID)
 		Game::IO::Key::IsJustPressed('E'))
 	{
 		nextUIMode_ = UIMode::Playing;
-
-		// カーソル操作無効化
-		Game::IO::Mouse::ShowCursor(false);
 	}
 }
 

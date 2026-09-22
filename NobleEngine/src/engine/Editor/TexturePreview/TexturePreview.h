@@ -20,6 +20,9 @@ private:
 
 	int32_t textureID_ = -1;
 	bool fullscreen_ = false;
-	Vector2int windowSize_ = Vector2int( 512, 512 );
+	Vector2int windowSize_ = Vector2int(512, 512);
+
+	// 選択中テクスチャの表示サイズを再計算する
+	void UpdateWindowSizeFromTexture();
 };
 

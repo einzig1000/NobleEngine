@@ -11,11 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\Editor\AudioPreview\AudioPreview.cpp" />
+    <ClCompile Include="src\engine\Utilities\FileDialog\FileDialog.cpp" />
     <ClCompile Include="src\application\Test\TestParticle\Particle.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp" />
     <ClCompile Include="src\application\System\ResourceLoader\Data\Item\Saver\ItemDataSaver.cpp" />
     <ClCompile Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.cpp" />
-    <ClCompile Include="src\application\GameObjects\EventBus\EventBus.cpp" />
+    <ClCompile Include="src\application\System\EventBus\EventBus.cpp" />
     <ClCompile Include="src\engine\AssetManager\Font\FontManager.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\CharacterManager.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Terrain\FaceDataPagePool\FaceDataPagePool.cpp" />
@@ -148,11 +150,13 @@
     <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\Editor\AudioPreview\AudioPreview.h" />
+    <ClInclude Include="src\engine\Utilities\FileDialog\FileDialog.h" />
     <ClInclude Include="src\application\Test\TestParticle\Particle.h" />
     <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h" />
     <ClInclude Include="src\application\System\ResourceLoader\Data\Item\Saver\ItemDataSaver.h" />
     <ClInclude Include="src\engine\AssetManager\Model\ModelHelper\ModelHelper.h" />
-    <ClInclude Include="src\application\GameObjects\EventBus\EventBus.h" />
+    <ClInclude Include="src\application\System\EventBus\EventBus.h" />
     <ClInclude Include="externals\stb\stb_truetype.h" />
     <ClInclude Include="src\engine\AssetManager\Font\FontManager.h" />
     <ClInclude Include="src\application\GameObjects\Character\CharacterManager.h" />

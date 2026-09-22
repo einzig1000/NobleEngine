@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <limits>
-#include <GameObjects/EventBus/EventBus.h>
+#include <System/EventBus/EventBus.h>
 
 namespace
 {

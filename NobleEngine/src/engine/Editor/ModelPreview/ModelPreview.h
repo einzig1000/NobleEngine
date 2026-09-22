@@ -32,14 +32,28 @@ private:
 	int32_t cameraID_ = -1;
 	int32_t renderTarget_ = -1;
 
+	// モデル描画用オブジェクト
 	std::unique_ptr<RenderObject> modelRenderObject_;
 	const ModelData* modelData_ = nullptr;
+	Matrix4x4 wpv_;
+	Matrix4x4 world_;
+	Vector4 color_;
 	int32_t textureID = -1;
 	EulerTransforms objectTransform_;
 
+	// コライダー描画オブジェクト
+	std::vector<std::unique_ptr<RenderObject>> colliderRender_;
+	std::vector<Matrix4x4> colliderWpv_;
+	std::vector<Matrix4x4> colliderWorld_;
+	std::vector<Vector4> colliderColor_;
+	ColliderShape colliderShape_;
+
 	bool fullscreen_ = false;
 
+	// コライダー編集モードのUI描画
 	void RebuildColliderRenderObjects();
+	// モデルを選択状態にし、関連データを更新する(リスト選択・ファイルダイアログ選択の共通処理)
+	void SelectModel(int32_t modelID);
 	// コライダーの描画オブジェクト再構築(描画モデルが変更されたタイミング)
 	bool requestRebuildColliderRenderObjects_ = false;
 	// コライダー編集モードか
@@ -51,9 +65,5 @@ private:
 	int32_t colliderSphereModelID_ = -1;
 	// コライダーの描画用テクスチャID
 	int32_t colliderTextureID_ = -1;
-	// 描画オブジェクト
-	std::vector<std::unique_ptr<RenderObject>> colliderRender_;
-	ColliderShape colliderShape_;
-
 };
 

@@ -19,28 +19,30 @@ ItemID ItemInventory::GetCurrentSelectedItemID() const
 }
 
 // アイテム獲得（インベントリに追加）
-void ItemInventory::AddItem(ItemID id)
+void ItemInventory::AddItem(ItemID id, uint32_t count)
 {
     // 既存スタックに追加
-    for (int32_t index = 0; index < kSlotCount; ++index)
+    for (int32_t index = 0; index < kSlotCount && count > 0; ++index)
     {
         auto& slot = inventory_[index];
         if (slot.itemID == id && slot.count < kMaxStackCount)
         {
-            slot.count++;
-            return;
+            uint32_t add = std::min(count, kMaxStackCount - slot.count);
+            slot.count += add;
+            count -= add;
         }
     }
-    
+
     // 空スロットに追加
-    for (int32_t index = 0; index < kSlotCount; ++index)
+    for (int32_t index = 0; index < kSlotCount && count > 0; ++index)
     {
         auto& slot = inventory_[index];
         if (slot.itemID == ItemID::MAX || slot.count == 0)
         {
+            uint32_t add = std::min(count, kMaxStackCount);
             slot.itemID = id;
-            slot.count = 1;
-            return;
+            slot.count = add;
+            count -= add;
         }
     }
 }

@@ -1,4 +1,5 @@
 #include "CharacterManager.h"
+#include <System/EventBus/EventBus.h>
 
 CharacterManager::CharacterManager(MapManager* mapManager)
 	: mapManager_(mapManager)
@@ -25,12 +26,24 @@ void CharacterManager::SetViewCamera(int32_t cameraID)
 
 void CharacterManager::Update(int32_t cameraID)
 {
-	player_->Update(cameraID);
-
-
-	for (auto& enemy : enemies_)
+	if (eventBus_)
 	{
-		enemy->Update(cameraID);
+		// 操作モード変更イベント
+		const std::vector<Event>& controlModeEvents = eventBus_->GetEvents(EventType::AbleMoveAllCharacters);
+		if (!controlModeEvents.empty())
+		{
+			// 1Fに一回しか変更フラグはされない
+			ableMoveAll_ = controlModeEvents[0].value[0];
+		}
+	}
+
+	if (ableMoveAll_)
+	{
+		player_->Update(cameraID);
+		for (auto& enemy : enemies_)
+		{
+			enemy->Update(cameraID);
+		}
 	}
 }
 

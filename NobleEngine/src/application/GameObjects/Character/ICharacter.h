@@ -80,7 +80,7 @@ public:
 	// インベントリの読み取り専用参照
 	virtual const ItemInventory* GetInventory() const { return &inventory_; }
 	// アイテム獲得
-	virtual void AddItem(ItemID id) { inventory_.AddItem(id); }
+	virtual void AddItem(ItemID id, uint32_t count) { inventory_.AddItem(id, count); }
 	// 手に持っているアイテムを取得
 	virtual const ItemID GetHaveItem() const { return inventory_.GetCurrentSelectedItemID(); }
 
@@ -97,8 +97,8 @@ protected:
 
 	Matrix4x4 worldMatrix_;		// 自身のワールド行列
 
-	float jumpPower_ = 0.1f;	// ジャンプ力
-	float speed_ = 0.10f;		// 移動速度
+	float jumpPower_ = 6.0f;	// ジャンプ力
+	float speed_ = 6.0f;		// 移動速度
 	int32_t HP_ = 20;			// 体力
 	int32_t maxHP_ = 20;		// 最大体力
 	int32_t defense_ = 0;		// 防御力

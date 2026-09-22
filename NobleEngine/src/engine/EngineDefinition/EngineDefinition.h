@@ -884,6 +884,8 @@ struct AnimationNodeHierarchy
 struct AnimationData
 {
     float duration = 0.0f;  // アニメーション全体の長さ(秒)
+    std::string filePath;
+    std::string animationName;
     std::unordered_map<std::string, NodeAnimation> nodeAnimations;
     std::unordered_map<std::string, AnimationNodeHierarchy> hierarchy;
 };
@@ -1047,22 +1049,10 @@ struct TextureData
 
 #pragma region オーディオデータ構造体
 
-// オーディオデータとソースボイスを保持する構造体
-//struct AudioData
-//{
-//	// データ本体
-//    std::vector<BYTE> audioData;
-//    UINT32 audioBytes = 0;
-//
-//    WAVEFORMATEX* pWfx = nullptr;
-//    UINT32 wfxSize = 0;
-//
-//    IXAudio2SourceVoice* pSourceVoice = nullptr;
-//    XAUDIO2_BUFFER xAudioBuffer = {};
-//};
-
 struct AudioData
 {
+    std::string filePath;
+
     // データ本体
     std::vector<BYTE> audioData;
     UINT32 audioBytes = 0;
@@ -1081,24 +1071,24 @@ struct KeyState
 {
     bool curr = false;           // 今フレームの押下状態
     bool prev = false;           // 前フレームの押下状態
-    uint32_t holdFrames = 0;     // 長押しフレーム数
-    uint32_t lastHoldOnRelease = 0; // 直近のリリース時に押されていたフレーム数
+    float holdSeconds = 0.0f;       // 長押し経過秒数
+    float lastHoldOnRelease = 0.0f; // 直近のリリース時に押されていた秒数
 };
 
 struct PadButtonState
 {
     bool curr = false;           // 今フレームの押下状態
     bool prev = false;           // 前フレームの押下状態
-    uint32_t holdFrames = 0;     // 長押しフレーム数
-	uint32_t lastHoldOnRelease = 0; // 直近のリリース時に押されていたフレーム数
+    float holdSeconds = 0.0f;       // 長押し経過秒数
+    float lastHoldOnRelease = 0.0f; // 直近のリリース時に押されていた秒数
 };
 
 struct mouseButtonState
 {
     bool curr = false;           // 今フレームの押下状態
     bool prev = false;           // 前フレームの押下状態
-    uint32_t holdFrames = 0;     // 長押しフレーム数
-    uint32_t lastHoldOnRelease = 0; // 直近のリリース時に押されていたフレーム数
+    float holdSeconds = 0.0f;       // 長押し経過秒数
+    float lastHoldOnRelease = 0.0f; // 直近のリリース時に押されていた秒数
 };
 
 #pragma endregion

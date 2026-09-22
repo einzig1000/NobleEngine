@@ -1,19 +1,23 @@
 #include "MouseController.h"
 #include <Utilities/functions.h>
 #include <Window/WindowManager.h>
-#include <Camera/CameraManager.h>
-#include <Camera/Camera.h>
 #include <ImGuiManager/ImGuiManager.h>
+#include <Engine.h>
+#include <TimeManager/TimeManager.h>
 
 MouseController::MouseController(HWND hwnd)
 {
     hwnd_ = hwnd;
     wheelDelta_ = 0;
     isVisible_ = true;
+    isCursorLocked_ = false;
 }
 
 void MouseController::Update()
 {
+    // 表示要求とフォーカス状態からカーソルの状態を毎フレーム是正
+    UpdateCursorLock();
+
     // マウスポジション取得
     Compute2DPosition();
 
@@ -58,7 +62,6 @@ bool MouseController::IsHeld(int32_t i)
         return false;
     }
 }
-
 // 押した瞬間（今フレームで押された） i: 0=左ボタン、1=右ボタン、2=中ボタン
 bool MouseController::IsJustPressed(int32_t i)
 {
@@ -74,7 +77,6 @@ bool MouseController::IsJustPressed(int32_t i)
         return false;
     }
 }
-
 // 離した瞬間（今フレームで離れた） i: 0=左ボタン、1=右ボタン、2=中ボタン
 bool MouseController::IsJustReleased(int32_t i)
 {
@@ -90,20 +92,19 @@ bool MouseController::IsJustReleased(int32_t i)
         return false;
     }
 }
-
-// 押されてからの経過フレーム数 i: 0=左ボタン、1=右ボタン、2=中ボタン
-uint32_t MouseController::HoldFrames(int32_t i)
+// 押されてからの経過秒数 i: 0=左ボタン、1=右ボタン、2=中ボタン
+float MouseController::HoldSeconds(int32_t i)
 {
     switch (i)
     {
     case 0:
-        return leftButton_.holdFrames;
+        return leftButton_.holdSeconds;
     case 1:
-        return rightButton_.holdFrames;
+        return rightButton_.holdSeconds;
     case 2:
-        return middleButton_.holdFrames;
+        return middleButton_.holdSeconds;
     default:
-        return 0;
+        return 0.0f;
     }
 }
 
@@ -125,50 +126,64 @@ void MouseController::ToggleMouseCursorVisible()
 // マウスカーソルの表示・非表示設定
 void MouseController::ShowCursor(bool visible)
 {
-	isVisible_ = visible;
-    if (visible)
-    {
-        // カウンタが負になるまで表示側へ（1024敗）
-        while (::ShowCursor(TRUE) < 0) {}
-    }
-    else
+    isVisible_ = visible;
+
+    UpdateCursorLock();
+}
+
+
+// 表示要求とフォーカス状態から、カーソルを「非表示+クリップ」にすべきか判定して反映する
+void MouseController::UpdateCursorLock()
+{
+    const bool isAppFocused = (::GetForegroundWindow() == hwnd_);
+
+    // 非表示要求 かつ フォーカスあり の時だけ、非表示+クリップにする
+    const bool shouldLock = (!isVisible_ && isAppFocused);
+
+    if (shouldLock == isCursorLocked_) return;
+
+    ApplyCursorLock(shouldLock);
+    isCursorLocked_ = shouldLock;
+}
+
+// locked == true : 非表示にしてウィンドウ内へクリップする
+// locked == false: 表示状態にしてクリップを解除する
+void MouseController::ApplyCursorLock(bool locked)
+{
+    if (locked)
     {
         // カウンタが負になるまで非表示側へ
         while (::ShowCursor(FALSE) >= 0) {}
+
+        RECT rc{};
+        ::GetClientRect(hwnd_, &rc);
+
+        POINT tl{ rc.left,  rc.top };
+        POINT br{ rc.right, rc.bottom };
+        ::ClientToScreen(hwnd_, &tl);
+        ::ClientToScreen(hwnd_, &br);
+
+        RECT screenRc{ tl.x, tl.y, br.x, br.y };
+        ::ClipCursor(&screenRc);
+    }
+    else
+    {
+        // カウンタが負にならないよう表示側へ
+        while (::ShowCursor(TRUE) < 0) {}
+
+        // クリップ解除
+        ::ClipCursor(nullptr);
     }
 }
 
 // マウスポジション取得
 void MouseController::Compute2DPosition()
 {
-    // ゲームウィンドウが非アクティブならロックしない
-    const bool isAppFocused = (::GetForegroundWindow() == hwnd_);
-
-	// 非表示 && ウィンドウアクティブ時は画面中央にロック
-    if (!isVisible_ && isAppFocused)
-    {
-        RECT rc{};
-        ::GetClientRect(hwnd_, &rc);
-
-        POINT center{};
-        center.x = (rc.left + rc.right) / 2;
-        center.y = (rc.top + rc.bottom) / 2;
-
-        // クライアント座標 -> スクリーン座標へ変換してから SetCursorPos
-        ::ClientToScreen(hwnd_, &center);
-        ::SetCursorPos(center.x, center.y);
-
-        // position_ はクライアント座標で保持している前提なので、ここはクライアント中心値にする
-        position_ = Vector2{ float((rc.left + rc.right) / 2), float((rc.top + rc.bottom) / 2) };
-
-        return;
-	}
-
-    // hwnd: ゲームウィンドウのハンドル（WindowManagerなどから取得）
+	// ディスプレイ左上基準のマウスポジションを取得
     POINT mousePosScreen;
-    ::GetCursorPos(&mousePosScreen); // 画面座標で取得
+    ::GetCursorPos(&mousePosScreen);
 
-    // クライアント座標（ウィンドウ左上基準）に変換
+    // ウィンドウ左上基準に変換
     ::ScreenToClient(hwnd_, &mousePosScreen);
 
     // mousePosScreen.x, mousePosScreen.y がウィンドウ内のマウス座標
@@ -215,12 +230,14 @@ void MouseController::UpdateButtonState()
     rightButton_.curr = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
     middleButton_.curr = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
 
-    if (leftButton_.curr)leftButton_.holdFrames++;
-    else leftButton_.holdFrames = 0;
-    if (rightButton_.curr) rightButton_.holdFrames++;
-    else rightButton_.holdFrames = 0;
-    if (middleButton_.curr) middleButton_.holdFrames++;
-    else middleButton_.holdFrames = 0;
+    const float deltaSeconds = Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs() * 0.001f;
+
+    if (leftButton_.curr) leftButton_.holdSeconds += deltaSeconds;
+    else leftButton_.holdSeconds = 0.0f;
+    if (rightButton_.curr) rightButton_.holdSeconds += deltaSeconds;
+    else rightButton_.holdSeconds = 0.0f;
+    if (middleButton_.curr) middleButton_.holdSeconds += deltaSeconds;
+    else middleButton_.holdSeconds = 0.0f;
 }
 
 // マウス感度の適用

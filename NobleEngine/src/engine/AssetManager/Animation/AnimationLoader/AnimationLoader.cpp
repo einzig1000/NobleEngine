@@ -70,6 +70,9 @@ void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 
 	animationData->duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);
 
+	animationData->filePath = filePath;
+	animationData->animationName = animationName;
+
 	for (uint32_t channelIndex = 0; channelIndex < animationAssimp->mNumChannels; ++channelIndex)
 	{
 		aiNodeAnim* nodeAnimationAssimp = animationAssimp->mChannels[channelIndex];

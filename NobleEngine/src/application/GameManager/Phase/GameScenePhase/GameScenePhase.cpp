@@ -1,5 +1,5 @@
 #include "GameScenePhase.h"
-#include <GameObjects/EventBus/EventBus.h>
+#include <System/EventBus/EventBus.h>
 #include <GameObjects/Map/MapManager.h>
 #include <GameObjects/Character/CharacterManager.h>
 #include <GameObjects/UI/UIManager.h>

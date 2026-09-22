@@ -1,4 +1,6 @@
 #include "KeyboardController.h"
+#include <Engine.h>
+#include <TimeManager/TimeManager.h>
 
 KeyboardController::KeyboardController(HWND hwnd)
     : hwnd_(hwnd)
@@ -12,6 +14,7 @@ KeyboardController::KeyboardController(HWND hwnd)
 void KeyboardController::Update()
 {
     const bool hasFocus = (GetForegroundWindow() == hwnd_);
+    const float deltaSeconds = Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs() * 0.001f;
 
     for (int32_t k = 0; k < 256; ++k)
     {
@@ -23,17 +26,19 @@ void KeyboardController::Update()
 
         if (ks.curr)
         {
-            // 押されている → 連続フレーム数を増やす
-            if (ks.prev)
-            {
-                // 前フレームも押されていた
-                ++ks.holdFrames;
-            }
-            else
-            {
-                // 押し始め（edge）
-                ks.holdFrames = 1;
-            }
+            ks.holdSeconds += deltaSeconds;
+
+            //// 押されている → 連続フレーム数を増やす
+            //if (ks.prev)
+            //{
+            //    // 前フレームも押されていた
+            //    ++ks.holdFrames;
+            //}
+            //else
+            //{
+            //    // 押し始め（edge）
+            //    ks.holdFrames = 1;
+            //}
         }
         else
         {
@@ -41,9 +46,9 @@ void KeyboardController::Update()
             if (ks.prev && !ks.curr)
             {
                 // 保存して holdFrames をリセット
-                ks.lastHoldOnRelease = ks.holdFrames;
+                ks.lastHoldOnRelease = ks.holdSeconds;
             }
-            ks.holdFrames = 0;
+            ks.holdSeconds = 0.0f;
         }
     }
 }
@@ -63,27 +68,27 @@ bool KeyboardController::IsJustReleased(BYTE key) const
     return (keys_[key].prev && !keys_[key].curr);
 }
 
-uint32_t KeyboardController::HoldFrames(BYTE key) const
+float KeyboardController::HoldSeconds(BYTE key) const
 {
-    return keys_[key].holdFrames;
+    return keys_[key].holdSeconds;
 }
 
 // 0: なし  1:単押し  2:長押し(n = 長押し判定)
-uint32_t KeyboardController::TestTapLong(uint32_t n, BYTE key) const
+uint32_t KeyboardController::TestTapLong(float thresholdSeconds, BYTE key) const
 {
     const KeyState& ks = keys_[key];
 
     // 離された瞬間フレーム
     if (ks.prev && !ks.curr)
     {
-        if (ks.lastHoldOnRelease < n) return 1;     // Tap
+        if (ks.lastHoldOnRelease < thresholdSeconds) return 1;     // Tap
         else return 2;                              // Long
     }
 
 	// 押してる最中
     if (ks.curr)
     {
-        if (ks.holdFrames >= n) return 2;           // 押してからnフレーム以上経過 -> Long確定
+        if (ks.holdSeconds >= thresholdSeconds)     // 押してからn秒以上経過 -> Long確定
         return 0;                                   // 継続中だがまだ n 未満 -> 未確定
     }
 

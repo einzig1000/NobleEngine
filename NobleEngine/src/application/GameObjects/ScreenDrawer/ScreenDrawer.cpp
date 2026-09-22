@@ -1,5 +1,5 @@
 #include "ScreenDrawer.h"
-#include <GameObjects/EventBus/EventBus.h>
+#include <System/EventBus/EventBus.h>
 
 ScreenDrawer::ScreenDrawer()
 {

@@ -55,11 +55,7 @@ void TitlePhase::Initialize()
 
 
 	Game::IO::Mouse::ShowCursor(true);
-	Game::Camera::Setter::CenterTarget(Vector3{ 0.0f, 18.0f, 30.0f }, 0.0f, EaseType::LINEAR, c_title_);
-	Game::Camera::Setter::ThetaTarget(1.37f, 0.0f, EaseType::LINEAR, c_title_);
-	Game::Camera::Setter::PhiTarget(0.7f, 0.0f, EaseType::LINEAR, c_title_);
-	Game::Camera::Setter::DistanceTarget(25.0f, 0.0f, EaseType::LINEAR, c_title_);
-	cameraController_->Update(c_title_);
+	MoveCamera(Stage::Title, 0);
 
 	LoadButtonData();
 
@@ -92,7 +88,7 @@ void TitlePhase::Update()
 
 		worldMatrix = Matrix4x4::MakeAffineMatrix(buttons_[i].transforms.scale, buttons_[i].transforms.rotate, buttons_[i].transforms.translate);
 
-#endif // 
+#endif
 
 		
 		if (IsCollision(mouseRay, *buttonColliderModel_, worldMatrix) || i == 0)
@@ -102,9 +98,11 @@ void TitlePhase::Update()
 			{
 				buttons_[i].onClick();
 			}
+
 			Vector3 scale = buttons_[i].transforms.scale;
-			uint32_t elapsedTime = Game::Time::GetElapsedTime();
-			scale *= 1.1f + std::sin(static_cast<float>(elapsedTime) * 0.1f) * 0.1f;
+			float elapsedTime = Game::Time::GetElapsedSecTime();
+			scale *= 1.0f + std::sin(elapsedTime * 3.0f) * 0.15f;
+
 			worldMatrix = Matrix4x4::MakeAffineMatrix(scale, buttons_[i].transforms.rotate, buttons_[i].transforms.translate);
 		}
 
@@ -327,7 +325,7 @@ void TitlePhase::MoveCamera(Stage stage, float duration)
 	case Stage::None:
 		break;
 	case Stage::Title:
-		Game::Camera::Setter::CenterTarget(Vector3{ 0.0f, 18.0f, 30.0f }, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::CenterTarget(Vector3{ 0.5f, 18.0f, 30.0f }, duration, EaseType::LINEAR, c_title_);
 		//Game::Camera::Setter::Rotate(Vector3{ 0.7f, 1.37f, 0.0f }, duration, EaseType::LINEAR, c_title_);
 		Game::Camera::Setter::ThetaTarget(1.37f, duration, EaseType::LINEAR, c_title_);
 		Game::Camera::Setter::PhiTarget(0.7f, duration, EaseType::LINEAR, c_title_);

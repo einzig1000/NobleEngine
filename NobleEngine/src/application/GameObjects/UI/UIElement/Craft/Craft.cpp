@@ -23,24 +23,24 @@ void Craft::Initialize()
 
 void Craft::Update(int32_t cameraID)
 {
-	Matrix4x4 orthographic = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
-	for (const auto& sprite : sprites_)
-	{
-		Matrix4x4 world = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
-		Matrix4x4 wvp = world * orthographic;
-		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
-		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
-		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
-		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
-		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
-	}
+	orthographic_ = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
 }
 
 void Craft::Draw(int32_t rt_ID)
 {
 	for (const auto& sprite : sprites_)
 	{
-		sprite.render->Draw(rt_ID);
+		for (const auto& sprite : sprites_)
+		{
+			Matrix4x4 worldMatrix_ = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
+			Matrix4x4 wvpMatrix_ = worldMatrix_ * orthographic_;
+			Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+			sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvpMatrix_);
+			sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix_);
+			sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
+			sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
+			sprite.render->Draw(rt_ID);
+		}
 	}
 }

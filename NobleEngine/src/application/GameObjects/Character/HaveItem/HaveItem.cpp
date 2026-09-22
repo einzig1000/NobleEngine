@@ -171,14 +171,38 @@ void HaveItem::SetItem(ItemID itemID)
 
 void HaveItem::Update(int32_t cameraID)
 {
-	if (!Game::IO::Mouse::IsHeld(0) && !Game::IO::Key::IsHeld(VK_LSHIFT))
-	{
-		animationTime_ = 0.0f;
-	}
-
+	//if (Game::IO::Mouse::IsHeld(0))
+	//{
+	//	if (itemInfo_)
+	//	{
+	//		animationTime_ += Game::Time::GetScaledDeltaTimeMs() * 0.001f;
+	//		Matrix4x4 itemAnimWorld = Game::Asset::Animation::SampleNodeHierarchy(a_haveItem_, "Untitled", animationTime_);
+	//
+	//		Vector3 cameraDir = Game::Camera::Getter::GetCameraDirection(cameraID);
+	//		pivotTransform_.rotate = Game::Math::YawPitchFromDirection(cameraDir);
+	//		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(pivotTransform_.scale, pivotTransform_.rotate, pivotTransform_.translate);
+	//		worldMatrix_ = itemAnimWorld * pivotWorld * parentWorldMatrix_;
+	//		wvpMatrix_ = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	//
+	//		worldCollider_.spheres = CreateSphere(modelData_->colliderShape.spheres, worldMatrix_);
+	//		worldCollider_.aabbs = CreateAABB(modelData_->colliderShape.aabbs, worldMatrix_);
+	//	}
+	//}
+	//else
+	//{
+	//	animationTime_ = 0.0f;
+	//}
 	if (itemInfo_)
 	{
-		animationTime_ += Game::Time::GetScaledDeltaTimeMs() * 0.001f;
+		if (Game::IO::Mouse::IsHeld(0))
+		{
+			animationTime_ += Game::Time::GetScaledDeltaTimeMs() * 0.001f;
+		}
+		else
+		{
+			animationTime_ = 0.0f;
+		}
+
 		Matrix4x4 itemAnimWorld = Game::Asset::Animation::SampleNodeHierarchy(a_haveItem_, "Untitled", animationTime_);
 
 		Vector3 cameraDir = Game::Camera::Getter::GetCameraDirection(cameraID);
@@ -203,9 +227,5 @@ void HaveItem::Draw(int32_t renderTextureID)
 		render_->SetBRegisterData(1, ShaderType::PixelShader, &t_haveItem_);
 		render_->Draw(renderTextureID);
 	}
-
-	ImGui::Begin("HaveItem");
-	ImGui::DragFloat3("PivotTranslate", &pivotTransform_.rotate.x, 0.01f);
-	ImGui::End();
 }
 

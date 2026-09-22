@@ -1,6 +1,6 @@
 #include "PauseScreen.h"
 #include <GameObjects/UI/UIElement/Pause/Pause.h>
-#include <GameObjects/Map/MapManager.h>
+#include <System/EventBus/EventBus.h>
 
 PauseScreen::PauseScreen()
 {
@@ -20,6 +20,11 @@ void PauseScreen::Initialize()
 		element->SetNextUIMode(&nextUIMode_);
 	}
 
+	Event event;
+	event.type = EventType::AbleMoveAllCharacters;
+	event.value.push_back(false);
+	eventBus_->Notify(event);
+
 	// カーソル操作有効化
 	Game::IO::Mouse::ShowCursor(true);
 }
@@ -30,16 +35,6 @@ void PauseScreen::Update(int32_t cameraID)
 	{
 		element->Update(cameraID);
 	}
-
-	//// Pause要素の「セーブ要求」を処理
-	//if (auto* pause = dynamic_cast<Pause*>(uiElements_[0].get()))
-	//{
-	//	if (pause->ConsumeSaveRequested())
-	//	{
-	//		mapManager_->SaveMap();
-	//		Game::quit();
-	//	}
-	//}
 
 	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
 	{

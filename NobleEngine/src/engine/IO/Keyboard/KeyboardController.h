@@ -21,12 +21,11 @@ public:
 	bool IsJustPressed(BYTE key) const;
 	// 離した瞬間（今フレームで離れた）
 	bool IsJustReleased(BYTE key) const;
+	// 押されてからの経過秒数
+	float HoldSeconds(BYTE key) const;
 
-	// 押されてからの経過フレーム数
-	uint32_t HoldFrames(BYTE key) const;
-
-	// 0: なし  1:単押し  2:長押し(n = 長押し判定)
-	uint32_t TestTapLong(uint32_t n, BYTE key) const;
+	// 0: なし  1:単押し  2:長押し(thresholdSeconds = 長押し判定の閾値秒数)
+	uint32_t TestTapLong(float thresholdSeconds, BYTE key) const;
 
 private:
 

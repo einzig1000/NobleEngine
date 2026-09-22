@@ -25,5 +25,5 @@ namespace Constexprs
 	static constexpr float kBlockIndexEpsilon = 0.0001f;
 
 	// 重力
-	static constexpr float GRAVITY = -0.005f;
+	static constexpr float GRAVITY = -18.0f;
 }

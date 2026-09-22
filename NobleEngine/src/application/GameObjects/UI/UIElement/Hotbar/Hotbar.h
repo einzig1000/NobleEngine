@@ -15,5 +15,8 @@ public:
 	std::vector<ElementData> icons_;
 
 	int32_t selectedIndex_ = 0;
+
+private:
+	Matrix4x4 orthographic_;
 };
 

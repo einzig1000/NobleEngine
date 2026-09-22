@@ -1,6 +1,6 @@
 #pragma once
 #include <Windows.h>
-#include "definition/definition.h"
+#include <EngineDefinition/EngineDefinition.h>
 #include <Xinput.h>
 #pragma comment(lib, "xinput.lib") // XInputライブラリをリンク
 
@@ -18,8 +18,7 @@ public:
 	bool IsHeld(int32_t padIndex, BYTE button) const;
 	bool IsJustPressed(int32_t padIndex, BYTE button) const;
 	bool IsJustReleased(int32_t padIndex, BYTE button) const;
-
-    uint32_t HoldFrames(int32_t padIndex, BYTE button) const;	// 押されてからの経過フレーム数
+    float HoldSeconds(int32_t padIndex, BYTE button) const;	// 押されてからの経過秒数
 	Vector2 GetLeftStick(int32_t padIndex) const;	    // 左スティックの値取得 (-1.0f ～ 1.0f)
 	Vector2 GetRightStick(int32_t padIndex) const;	// 右スティックの値取得 (-1.0f ～ 1.0f)
 

@@ -1,7 +1,7 @@
 #include "Player.h"
 #include <GameObjects/Character/SwingMining/SwingMining.h>
 #include <GameObjects/Character/RangeMining/RangeMining.h>
-#include <GameObjects/EventBus/EventBus.h>
+#include <System/EventBus/EventBus.h>
 #include <numbers>
 #include <algorithm>
 
@@ -29,7 +29,8 @@ void Player::Initialize()
 	translate_.velocity = Vector3{ 0.0f, -0.0f, 0.0f };
 	translate_.acceleration = Vector3{ 0.0f, Constexprs::GRAVITY, 0.0f };
 
-	scale_.value = Vector3{ 1.0f, 1.0f, 1.0f };
+	scale_.value = Vector3{ 0.6f, 0.6f, 0.6f };
+	//scale_.value = Vector3{ 0.1f, 0.1f, 0.1f };
 	scale_.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 	scale_.acceleration = Vector3{ 0.0f, 0.0f, 0.0f };
 
@@ -39,7 +40,7 @@ void Player::Initialize()
 
 	RegisterToMap();
 
-	AddItem(ItemID::Tool_Hammer_of_Iron);
+	AddItem(ItemID::Tool_Hammer_of_Iron, 1);
 }
 
 //void Player::Update(int32_t 俯瞰カメラID, int32_t 自身の視点カメラID)
@@ -109,10 +110,7 @@ void Player::CheckExternalEvents()
 				ItemID itemID = static_cast<ItemID>(event.value[0]);
 				int32_t amount = event.value[1];
 
-				for (int32_t i = 0; i < amount; ++i)
-				{
-					AddItem(itemID);
-				}
+				AddItem(itemID, amount);
 			}
 		}
 
@@ -223,8 +221,8 @@ void Player::UpdateInputWASD(int32_t cameraID)
 			dashBufferTimer_ = 0;
 		}
 	}
-	// 10フレーム以内の単タップを検知したら
-	else if (Game::IO::Key::TestTapLong('W', 10))
+	// 10/60秒以内の単タップを検知したら
+	else if (Game::IO::Key::TestTapLong(5.0f / 60.0f, 'W'))
 	{
 		// ダッシュ開始可能タイマーをセット
 		dashBufferTimer_ = 30;
@@ -290,10 +288,8 @@ void Player::UpdateInputMouseCursor(int32_t cameraID)
 	if (viewTheta_ > std::numbers::pi_v<float>) viewTheta_ -= std::numbers::pi_v<float> * 2.0f;
 	if (viewTheta_ < -std::numbers::pi_v<float>) viewTheta_ += std::numbers::pi_v<float> * 2.0f;
 
-	//Game::Camera::Setter::SetRotate(Vector3(viewPhi_, viewTheta_, 0.0f), 0.0f, EaseType::LINEAR, cameraID);
 	Game::Camera::Setter::ThetaTarget(viewTheta_, 0.0f, EaseType::LINEAR, cameraID);
 	Game::Camera::Setter::PhiTarget(viewPhi_, 0.0f, EaseType::LINEAR, cameraID);
-
 }
 void Player::UpdateInputLeftClick()
 {
@@ -304,5 +300,3 @@ void Player::UpdateInputRightClick()
 {
 	if (!Game::IO::Mouse::IsJustPressed(1)) return;
 }
-
-//C:\Users\K024G\AppData\Local\Temp\DevHub.DMP

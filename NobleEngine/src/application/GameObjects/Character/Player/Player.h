@@ -50,8 +50,8 @@ private:
 	int32_t t_player_ = -1;
 
 	// 速度
-	float normalSpeed_ = 0.30f;
-	float dashSpeed_ = 0.50f;
+	float normalSpeed_ = 5.0f;
+	float dashSpeed_ = 7.0f;
 
 
 

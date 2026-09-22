@@ -9,5 +9,8 @@ public:
 	void Initialize() override;
 	void Update(int32_t cameraID) override;
 	void Draw(int32_t rt_ID) override;
-};
 
+private:
+	Matrix4x4 orthographic_;
+
+};
