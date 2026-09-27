@@ -71,7 +71,7 @@ public:
 
 	virtual void ComputeViewRay(int32_t cameraID);
 
-	// 視線上にあるブロックを取得。target_/SetTargetBlockはGetFirstHitByRayが未実装のため常にNoneになる点に注意
+	// 視線上にあるブロックを取得。target_/SetTargetBlockはGetFirstHitByRayが未実装のため常にNoneになる
 	virtual std::optional<lookAtBlock> GetLookedAtBlock() const;
 	// 指定ブロックのワールドAABBを取得
 	virtual AABB GetBlockWorldAABB(const Vector3int& chunkIndex, const Vector3int& localIndex) const;
@@ -83,9 +83,16 @@ public:
 	virtual void AddItem(ItemID id, uint32_t count) { inventory_.AddItem(id, count); }
 	// 手に持っているアイテムを取得
 	virtual const ItemID GetHaveItem() const { return inventory_.GetCurrentSelectedItemID(); }
+	// 手に持っているアイテムのアニメーションを再生
+	virtual void PlayItemMotion(ItemMotion motion);
+	virtual ItemMotion GetCurrentItemMotion() const;
+	virtual bool IsItemMotionFinished() const;
 
 	// 手に持っているアイテムのコライダーを取得
 	virtual const ColliderShape& GetHaveItemWorldCollider() const { return haveItem_.GetWorldCollider(); }
+
+
+
 
 
 protected:

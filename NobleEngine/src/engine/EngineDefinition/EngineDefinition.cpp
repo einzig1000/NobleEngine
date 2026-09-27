@@ -627,9 +627,9 @@ Quaternion Quaternion::Slerp(const Quaternion& a, const Quaternion& b, float t)
 Vector3 AABB::center()const
 {
     return Vector3{
-        (min.x + max.x) / 2.0f,
-        (min.y + max.y) / 2.0f,
-        (min.z + max.z) / 2.0f,
+        (min.x + max.x) * 0.5f,
+        (min.y + max.y) * 0.5f,
+        (min.z + max.z) * 0.5f,
     };
 }
 

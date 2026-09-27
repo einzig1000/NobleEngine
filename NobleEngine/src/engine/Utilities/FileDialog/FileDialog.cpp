@@ -91,13 +91,21 @@ std::string FileDialog::OpenFile(HWND owner, const std::wstring& title, const st
 		return result;
 	}
 
-	// エンジンはassetsフォルダがある実行ディレクトリからの相対パスでアセットを管理しているため、
-	// 選んだファイルも他のモデル/テクスチャと同じ形式に揃える
+	//// エンジンはassetsフォルダがある実行ディレクトリからの相対パスでアセットを管理しているため、
+	//// 選んだファイルも他のモデル/テクスチャと同じ形式に揃える
+	//std::error_code ec;
+	//std::filesystem::path relativePath = std::filesystem::relative(result, std::filesystem::current_path(), ec);
+	//if (!ec && !relativePath.empty())
+	//{
+	//	result = relativePath.generic_string(); // 区切り文字を'/'に統一
+	//}
+
 	std::error_code ec;
-	std::filesystem::path relativePath = std::filesystem::relative(result, std::filesystem::current_path(), ec);
+	// UTF-8のstd::stringをそのままpathに渡すとACP(Shift-JIS)として解釈されるので、wstringで渡す
+	std::filesystem::path relativePath = std::filesystem::relative(std::filesystem::path(StringConverter::Convert(result)), std::filesystem::current_path(), ec);
 	if (!ec && !relativePath.empty())
 	{
-		result = relativePath.generic_string(); // 区切り文字を'/'に統一
+		result = StringConverter::Convert(relativePath.generic_wstring()); // 区切り文字を'/'に統一
 	}
 
 	return result;

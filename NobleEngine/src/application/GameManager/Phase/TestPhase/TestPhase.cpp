@@ -178,7 +178,7 @@ TestPhase::TestPhase()
 	t_monsterBall_ = Game::Asset::Texture::Load("assets/engine/texture/monsterBall.png");
 	t_uvChecker_ = Game::Asset::Texture::Load("assets/engine/texture/uvChecker.png");
 	// アニメーション
-	a_sneakWalk_ = Game::Asset::Animation::Load("assets/engine/model/human/sneakWalk.gltf", "sneakWalk");
+	a_sneakWalk_ = Game::Asset::Animation::Load("assets/engine/model/human/sneakWalk.gltf", "Armature|mixamo.com|Layer0");
 	// サウンド
 	s_aura_ = Game::Asset::Audio::Load("assets/application/audio/SE/よく聞くやつ/歓声と拍手.mp3");
 }

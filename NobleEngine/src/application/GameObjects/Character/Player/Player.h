@@ -2,11 +2,13 @@
 #include <memory>
 #include <Game.h>
 #include <GameObjects/Character/ICharacter.h>
+#include <GameObjects/Character/MiningPointGauge/MiningPointGauge.h>
 
 class Itemslot;
 class UIManager;
 class SwingMining;
 class RangeMining;
+
 
 class Player : public ICharacter
 {
@@ -44,23 +46,27 @@ public:
 
 	const Vector3& GetPosition() const { return translate_.value; }
 
+	const MiningPointGauge* GetMiningPointGauge() const { return &miningPointGauge_; }
+
 private:
 	Matrix4x4 wvpMatrix_;
 
+	// プレイヤーのテクスチャID
 	int32_t t_player_ = -1;
-
-	// 速度
-	float normalSpeed_ = 5.0f;
-	float dashSpeed_ = 7.0f;
-
-
 
 	// 視点カメラID
 	int32_t c_viewCameraID_ = -1;
 
-	// ダッシュ関連
+	// 速度関連
 	int32_t dashBufferTimer_ = 0;
 	bool dash_ = false;
+	float normalSpeed_ = 5.0f;
+	float dashSpeed_ = 7.0f;
+
+
+	// 採掘ptの管理
+	MiningPointGauge miningPointGauge_;
+
 
 	// hp
 	float previousHP_ = 0.0f;

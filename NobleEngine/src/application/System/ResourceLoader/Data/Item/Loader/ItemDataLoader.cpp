@@ -52,7 +52,6 @@ void ItemDataLoader::Load(ToolID id)
 	ToolInfo info;
 	info.ID = id;
 
-	JsonManager::Load(path, "/" + idStr + "/durability", info.durability);
 	JsonManager::Load(path, "/" + idStr + "/attackPower", info.attackPower);
 	JsonManager::Load(path, "/" + idStr + "/miningSpeed", info.miningSpeed);
 
@@ -101,6 +100,7 @@ void ItemDataLoader::Load(ItemID id)
 	JsonManager::Load(path, "/" + idStr + "/blockID", blockIDStr);
 	JsonManager::Load(path, "/" + idStr + "/toolID", toolIDStr);
 	JsonManager::Load(path, "/" + idStr + "/objectID", objectIDStr);
+	JsonManager::Load(path, "/" + idStr + "/maxStackCount", info.maxStackCount);
 	JsonManager::Load(path, "/" + idStr + "/modelPath", modelPath);
 	info.modelID = Game::Asset::Model::Load(modelPath);
 	JsonManager::Load(path, "/" + idStr + "/texturePath", texturePath);

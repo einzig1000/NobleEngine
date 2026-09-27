@@ -1,4 +1,3 @@
-
 #include "AudioPlayer.h"
 #include <Utilities/Logger/Logger.h>
 #include <AssetManager/Audio/AudioBank/AudioBank.h>
@@ -25,7 +24,6 @@ AudioPlayer::AudioPlayer(AudioBank* bank)
     }
 
     // Media Foundationの初期化
-    // Media Foundation APIを使用する前にMFStartupを呼び出す必要があります
     hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
     if (FAILED(hr))
     {

@@ -5,6 +5,7 @@
 #include <GameObjects/UI/UIManager.h>
 #include <GameObjects/Camera/CameraController.h>
 #include <GameObjects/ScreenDrawer/ScreenDrawer.h>
+#include <GameObjects/Effect/EffectManager.h>
 
 GameScenePhase::GameScenePhase()
 {
@@ -14,26 +15,26 @@ GameScenePhase::GameScenePhase()
 	// カメラコントローラー生成
 	cameraController_ = std::make_unique<CameraController>();
 	cameraController_->SetEventBus(eventBus_.get());
+	c_player_ = cameraController_->AddCamera("PlayerCamera");
 	// スクリーンドロワー生成
 	screenDrawer_ = std::make_unique<ScreenDrawer>();
 	screenDrawer_->SetEventBus(eventBus_.get());
-
+	screenDrawer_->SetFogParams(FogParams{ Vector3{ 0.5f, 0.5f, 0.5 }, 0.06f, 20.0f, 50.0f });
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
 	map_->SetEventBus(eventBus_.get());
 	// キャラクターマネージャー生成
 	charctorManager_ = std::make_unique<CharacterManager>(map_.get());
 	charctorManager_->SetEventBus(eventBus_.get());
+	charctorManager_->SetViewCamera(c_player_);
 	// UIマネージャー生成
 	uiManager_ = std::make_unique<UIManager>();
+	uiManager_->ChangeScreen(UIMode::Playing);
 	uiManager_->SetEventBus(eventBus_.get());
 	uiManager_->SetInventory(charctorManager_->GetPlayer()->GetInventory());
-
-
-
-	c_player_ = cameraController_->AddCamera("PlayerCamera");
-
-	charctorManager_->SetViewCamera(c_player_);
+	// エフェクトマネージャー生成
+	effectManager_ = std::make_unique<EffectManager>();
+	effectManager_->SetEventBus(eventBus_.get());
 }
 
 GameScenePhase::~GameScenePhase() {}
@@ -64,6 +65,9 @@ void GameScenePhase::Update()
 	// UI更新
 	uiManager_->Update(targetCameraID);
 
+	// エフェクト更新
+	effectManager_->Update(targetCameraID);
+
 	// ポストエフェクト更新
 	screenDrawer_->Update(targetCameraID);
 
@@ -82,6 +86,9 @@ void GameScenePhase::Draw()
 	charctorManager_->Draw(rt_3D);
 	// マップ描画
 	map_->Draw(rt_Background, rt_3D);
+	// エフェクト描画
+	effectManager_->Draw(rt_3D);
+
 	// UI描画
 	uiManager_->Draw(rt_UI);
 

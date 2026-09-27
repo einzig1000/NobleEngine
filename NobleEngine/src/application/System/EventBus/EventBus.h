@@ -1,6 +1,8 @@
 #pragma once
 #include <array>
 #include <vector>
+#include <any>
+#include <cstdint>
 
 enum class EventType
 {
@@ -16,6 +18,15 @@ enum class EventType
 	SaveGameRequested,
 	// 全モブの移動可能フラグ
 	AbleMoveAllCharacters,
+	// ブロックが壊された
+	BlockDestroyed,
+	// 採掘オーブが届いた
+	MiningOrbAbsorbed,
+
+
+
+	// GoTargetCurvingを出してほしい
+	ParticleRequest_GoTargetCurving,
 
 	MAX
 };
@@ -24,6 +35,7 @@ struct Event
 {
 	EventType type = EventType::MAX;
 	std::vector<int32_t> value;
+	std::any data;
 };
 
 class EventBus

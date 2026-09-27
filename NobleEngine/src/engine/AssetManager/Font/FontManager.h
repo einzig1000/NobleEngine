@@ -51,7 +51,8 @@ struct GlyphInstance
 struct FontRender
 {
     std::unique_ptr<RenderObject> render;
-	uint32_t frameCount = std::numeric_limits<uint32_t>::max();
+    int32_t bufferID = -1;
+    uint32_t frameCount = std::numeric_limits<uint32_t>::max();
 };
 
 class FontManager

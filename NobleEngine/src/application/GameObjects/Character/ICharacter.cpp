@@ -27,6 +27,20 @@ AABB ICharacter::GetBlockWorldAABB(const Vector3int& chunkIndex, const Vector3in
 	return mapManager_->GetTerrain()->GetAABB(chunkIndex, localIndex);
 }
 
+void ICharacter::PlayItemMotion(ItemMotion motion)
+{
+}
+
+ItemMotion ICharacter::GetCurrentItemMotion() const
+{
+	return ItemMotion();
+}
+
+bool ICharacter::IsItemMotionFinished() const
+{
+	return false;
+}
+
 void ICharacter::UpdateHaveItem(int32_t cameraID)
 {
 	haveItem_.SetParentWorldMatrix(worldMatrix_);

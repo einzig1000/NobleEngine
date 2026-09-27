@@ -10,6 +10,7 @@ class UIManager;
 class EnemyManager;
 class ScreenDrawer;
 class CharacterManager;
+class EffectManager;
 class EventBus;
 
 class GameScenePhase :
@@ -26,19 +27,19 @@ public:
 	void ChangePhase(Phase phase) override { nextPhase_ = phase; }
 
 private:
-	// カメラID
-	int32_t c_player_ = -1;
 
 	// イベントバス
 	std::unique_ptr<EventBus> eventBus_;
 
-
 	// カメラ
 	std::unique_ptr<CameraController> cameraController_;
+	int32_t c_player_ = -1;
 
 	// 描画マネージャ
 	std::unique_ptr<ScreenDrawer> screenDrawer_;
 
+	// エフェクトマネージャ
+	std::unique_ptr<EffectManager> effectManager_;
 
 	// キャラクターマネージャー
 	std::unique_ptr<CharacterManager> charctorManager_;

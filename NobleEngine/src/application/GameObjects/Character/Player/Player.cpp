@@ -1,7 +1,11 @@
 #include "Player.h"
 #include <GameObjects/Character/SwingMining/SwingMining.h>
 #include <GameObjects/Character/RangeMining/RangeMining.h>
+#include <GameObjects/Map/Terrain/Terrain.h>
+#include <GameObjects/Effect/Particle/GoTargetCurving/GoTargetCurving.h>
+#include <App.h>
 #include <System/EventBus/EventBus.h>
+
 #include <numbers>
 #include <algorithm>
 
@@ -48,9 +52,6 @@ void Player::Initialize()
 // 自身の視点カメラID は ViewRayの計算とかに必要
 void Player::Update(int32_t cameraID)
 {
-	// 外部イベント確認
-	CheckExternalEvents();
-
 	previousHP_ = static_cast<float>(HP_);
 
 	// 入力に対する処理
@@ -85,7 +86,6 @@ void Player::Update(int32_t cameraID)
 
 
 	wvpMatrix_ = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-	int32_t texID = Game::Asset::Texture::Load("assets/engine/texture/white1x1.png");
 }
 
 
@@ -93,6 +93,53 @@ void Player::CheckExternalEvents()
 {
 	if (eventBus_)
 	{
+		// ブロック破壊イベント(採掘ptをためて、たまった分だけオーブを出す)
+		Vector3 orbStart;
+		for (const Event& event : eventBus_->GetEvents(EventType::BlockDestroyed))
+		{
+			// 壊れたブロックの情報を取得
+			const auto* destroyedData = std::any_cast<Terrain::BlockDestroyedData>(&event.data);
+			if (!destroyedData) continue;
+
+			// 壊れたブロックの情報を取得
+			const BlockInfo* info = App::Data::Item::Get(destroyedData->id);
+			if (!info) continue;
+
+			// 採掘ptをためる
+			const float miningPoint = miningPointGauge_.AddPending(info->miningPoint);
+
+			// オーブを出す
+			if (miningPoint > 0.0f)
+			{
+				GoTargetCurving::Params request;
+				request.start = destroyedData->position;
+				request.target = &translate_.value;
+				request.targetOffset = Vector3{ 0.0f, -0.2f, 0.0f };
+				request.height = 1.0f;
+				request.speed = 8.0f;
+				request.color = { 0.6f, 1.0f, 0.3f, 1.0f };
+				request.scale = miningPoint * 0.001f;
+				Event arriveEvent;
+				arriveEvent.type = EventType::MiningOrbAbsorbed;
+				arriveEvent.data = miningPoint;
+				request.arriveEventData = arriveEvent;
+
+				Event event;
+				event.type = EventType::ParticleRequest_GoTargetCurving;
+				event.data = request;
+				eventBus_->Notify(event);
+			}
+		}
+
+		// 採掘オーブが届いた
+		for (const Event& event : eventBus_->GetEvents(EventType::MiningOrbAbsorbed))
+		{
+			if (const auto* amount = std::any_cast<float>(&event.data))
+			{
+				miningPointGauge_.AddPoint(*amount);
+			}
+		}
+
 		// 採掘モード切り替えイベント
 		const std::vector<Event>& miningModeEvents = eventBus_->GetEvents(EventType::MiningModeChanged);
 		if (!miningModeEvents.empty())
@@ -143,6 +190,8 @@ void Player::Draw(int32_t renderTextureID)
 
 void Player::DrawImGui()
 {
+	miningPointGauge_.DrawImGui();
+
 	ImGui::Begin("Player Info");
 	ImGui::DragFloat3("Position", &translate_.value.x, 1.0f);
 	ImGui::DragFloat3("Scale", &scale_.value.x, 0.1f);

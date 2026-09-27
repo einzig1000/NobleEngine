@@ -43,15 +43,18 @@ void TexturePreview::DrawImGui()
 
 	if (ImGui::BeginListBox("##texture list"))
 	{
+		int32_t id = 0;
 		for (auto& texture : textureList)
 		{
 			ImGui::BeginGroup();
+			ImGui::PushID(id++);
 			const std::string& filePath = texture.second->filePath;
-			if (ImGui::Selectable(filePath.c_str(), textureID_ == texture.first))
+			if (ImGui::SelectableWithCopy(filePath, textureID_ == texture.first))
 			{
 				textureID_ = texture.first;
 				UpdateWindowSizeFromTexture();
 			}
+			ImGui::PopID();
 			ImGui::EndGroup();
 		}
 		ImGui::EndListBox();

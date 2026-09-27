@@ -23,7 +23,10 @@ int32_t AnimationLoader::LoadAnimation(const std::string & filePath, const std::
 	std::unique_ptr<AnimationData> animationData = std::make_unique<AnimationData>();
 
 	// アニメーションファイル読み込み
-	LoadAnimationFile(filePath, animationName, animationData.get());
+	if (!LoadAnimationFile(filePath, animationName, animationData.get()))
+	{
+		return -1;
+	}
 
 	// アニメーションデータをバンクに追加
 	animationID = bank_->AddAnimationData(filePath + ":" + animationName, std::move(animationData));
@@ -33,7 +36,7 @@ int32_t AnimationLoader::LoadAnimation(const std::string & filePath, const std::
 	return animationID;
 }
 
-void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::string& animationName, AnimationData* animationData)
+bool AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::string& animationName, AnimationData* animationData)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(),
@@ -44,24 +47,37 @@ void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 	);
 	if (!scene)
 	{
+		Log("アニメーションファイルを開けませんでした:%s / %s", filePath.c_str(), animationName.c_str());
 		Log("%s", importer.GetErrorString());
 		assert(false);
+		return false;
 	}
-	assert(scene->HasAnimations());
 
-	aiAnimation* animationAssimp = scene->mAnimations[0];
-	if (animationAssimp->mName.C_Str() != "")	//名前がなかった場合先頭を利用する
+	if (!scene->HasAnimations())
 	{
-		for (uint32_t animationIndex = 1; animationIndex < scene->mNumAnimations; ++animationIndex)
-		{
-			aiAnimation* current = scene->mAnimations[animationIndex];
+		Log("アニメーションが含まれていません:%s / %s", filePath.c_str(), animationName.c_str());
+		assert(false);
+		return false;
+	}
 
-			if (animationName == current->mName.C_Str())
-			{
-				animationAssimp = current;
-				break;
-			}
+	// アニメーション名から該当するアニメーションを探す
+	aiAnimation* animationAssimp = nullptr;
+	for (uint32_t animationIndex = 0; animationIndex < scene->mNumAnimations; ++animationIndex)
+	{
+		aiAnimation* current = scene->mAnimations[animationIndex];
+
+		if (animationName == current->mName.C_Str())
+		{
+			animationAssimp = current;
+			break;
 		}
+	}
+
+	if (!animationAssimp)
+	{
+		Log("指定したアニメーションが見つかりません:%s / %s", filePath.c_str(), animationName.c_str());
+		assert(false);
+		return false;
 	}
 
 	assert(animationAssimp);
@@ -103,6 +119,8 @@ void AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 			nodeAnimation.scale.keyFrames.push_back(keyframe);
 		}
 	}
+
+	return true;
 }
 
 void AnimationLoader::ReadHierarchy(const aiNode* node, const std::string& parentName, bool hasParent, AnimationData* animationData)

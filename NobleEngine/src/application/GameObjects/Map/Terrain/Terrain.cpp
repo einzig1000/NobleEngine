@@ -225,11 +225,7 @@ void Terrain::LoadMap(const std::string& mapName)
 			chunk->SetNeighborChunk(static_cast<DirectionXYZ>(dir), nullptr);
 		}
 	}
-	// chunks 全解放&clear
-	for (auto& pair : chunks)
-	{
-		pair.second.reset();
-	}
+	// chunks 全clear
 	chunks.clear();
 	// chunkScheduled_/chunkCreated_ を clear
 	chunkScheduled_.clear();
@@ -466,6 +462,7 @@ bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIn
 	const AABB placeAabb = GetAABB(chunkPos, localIndex);
 	if (IsOverlappingAnyCharacter(placeAabb)) return false;
 
+	// イベント通知
 	if (eventBus_ && *targetBlockID != BlockID::Air)
 	{
 		ItemID itemID = BlockIDtoItemID(*targetBlockID);
@@ -476,6 +473,15 @@ bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIn
 		event.value[1] = 1;
 
 		eventBus_->Notify(event);
+
+		// 壊されたとき(Airに置き換えたとき)だけ通知する
+		if (id == BlockID::Air)
+		{
+			Event destroyedEvent;
+			destroyedEvent.type = EventType::BlockDestroyed;
+			destroyedEvent.data = BlockDestroyedData{ *targetBlockID, placeAabb.center() };
+			eventBus_->Notify(destroyedEvent);
+		}
 	}
 
 	// ブロック設置

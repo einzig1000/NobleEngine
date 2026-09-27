@@ -21,14 +21,16 @@ public:
 	void Draw();
 	void DrawImGui();
 
+	void SetFogParams(const FogParams& params) { fogParams_ = params; }
+
 	int32_t Get3DRenderTexture() const { return rt_3D_; }
 	int32_t GetUIRenderTexture() const { return rt_UI_; }
 	int32_t GetBackgroundRenderTexture() const { return rt_Background_; }
 
 	void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; }
 
-	void TakeDamage();
 
+	void TakeDamage();
 private:
 	EventBus* eventBus_ = nullptr;
 

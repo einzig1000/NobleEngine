@@ -14,6 +14,14 @@ class EventBus;
 class Terrain
 {
 public:
+	// BlockDestroyedイベントで送るデータ
+	struct BlockDestroyedData
+	{
+		BlockID id = BlockID::Air;	// 壊れたブロック
+		Vector3 position;			// ブロック座標
+	};
+
+
 	Terrain();
 	~Terrain();
 

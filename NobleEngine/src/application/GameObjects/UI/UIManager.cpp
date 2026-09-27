@@ -4,6 +4,7 @@
 #include "UIScreen/CraftScreen/CraftScreen.h"
 #include "UIScreen/PauseScreen/PauseScreen.h"
 #include "UIScreen/MiningModeScreen/MiningModeScreen.h"
+#include "UIScreen/EmptyScreen/EmptyScreen.h"
 
 #include "UIElement/Craft/Craft.h"
 #include "UIElement/Hotbar/Hotbar.h"
@@ -27,6 +28,7 @@ UIManager::UIManager()
 	screens_[static_cast<size_t>(UIMode::Crafting)] = std::make_unique<CraftScreen>();
 	screens_[static_cast<size_t>(UIMode::Pause)] = std::make_unique<PauseScreen>();
 	screens_[static_cast<size_t>(UIMode::MiningMode)] = std::make_unique<MiningModeScreen>();
+	screens_[static_cast<size_t>(UIMode::EmptyScreen)] = std::make_unique<EmptyScreen>();
 
 	for (size_t i = 0; i < screens_.size(); ++i)
 	{
@@ -68,7 +70,6 @@ UIManager::~UIManager(){}
 
 void UIManager::Initialize()
 {
-	ChangeScreen(UIMode::Playing);
 }
 
 void UIManager::Update(int32_t cameraID)

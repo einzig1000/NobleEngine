@@ -12,6 +12,8 @@
 #include <Window/WindowManager.h>
 #include <filesystem>
 
+
+
 ModelPreview::ModelPreview(DirectXManager* dxManager, CameraManager* cameraManager, ModelBank* bank)
 	: dxManager_(dxManager), cameraManager_(cameraManager), bank_(bank)
 {
@@ -133,23 +135,26 @@ void ModelPreview::DrawImGui()
 		}
 	}
 
+				const ImGuiStyle& style = ImGui::GetStyle();
+				const float copyButtonWidth = ImGui::CalcTextSize("Copy").x + style.FramePadding.x * 2.0f;
+				const float selectableWidth = std::max(ImGui::GetContentRegionAvail().x - copyButtonWidth - style.ItemSpacing.x, 1.0f);
 	if (ImGui::BeginListBox("##model list"))
 	{
 		for (int32_t i = 0; i < (int32_t)bank_->GetModelList().size(); ++i)
 		{
 			ImGui::PushID(i);
 			ImGui::BeginGroup();
-			if (ImGui::Selectable(bank_->GetModelList()[i]->filePath.c_str(), false, 0))
+			if (ImGui::SelectableWithCopy(bank_->GetModelList()[i]->filePath, modelRenderObject_->modelID_ == i))
 			{
 				SelectModel(i);
 			}
+
 			ImGui::EndGroup();
 			ImGui::PopID();
 		}
 		ImGui::EndListBox();
 	}
 	ImGui::SameLine();
-
 
 
 	// ミニプレビュー表示

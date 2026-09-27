@@ -49,32 +49,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         return 0;
     }
 
-    // ウィンドウがフォーカス
-    case WM_ACTIVATE:
-    {
-        // アクティブ化
-        if (wparam != WA_INACTIVE)
-        {
-            // アクティブフラグを立てる
-            auto* wm = reinterpret_cast<WindowManager*>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
-            if (wm)
-            {
-                wm->isActive_ = true;
-            }
-        }
-        // 非アクティブ化
-        else
-        {
-            // アクティブフラグを下ろす
-            auto* wm = reinterpret_cast<WindowManager*>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
-            if (wm)
-            {
-                wm->isActive_ = false;
-            }
-        }
-		return 0;
-	}
-
     // ウィンドウが破壊された時
     case WM_DESTROY:
         PostQuitMessage(0);

@@ -917,28 +917,11 @@ struct Skeleton
 	std::vector<Joint> joints;
 };
 
-#pragma endregion
-
-#pragma region モデルデータ構造体
-
-struct VertexInfluence
-{
-	std::array<float, 4> weights;
-	std::array<int32_t, 4> jointIndices;
-};
 
 struct WellForGPU
 {
 	Matrix4x4 skeletonSpaceMatrix;
 	Matrix4x4 skeletonSpaceInverseTransposeMatrix;
-};
-
-// モデルが所有。ロード後は不変。全インスタンスで共有するのでコピーしない
-struct SkinBindData
-{
-    std::vector<Matrix4x4> inverseBindPoseMatrices;          // ジョイントのバインドポーズ逆行列
-    Microsoft::WRL::ComPtr<ID3D12Resource> influenceBuffer;  // DEFAULTヒープ(Step 5)
-    uint32_t influenceHeapSlot = UINT32_MAX;                 // StructuredBufferとしてのSRVインデックス
 };
 
 // インスタンスが所有。アニメーションの再生状態そのもの
@@ -952,19 +935,24 @@ struct SkinInstance
     float boundDuration = 0.0f;
 };
 
-// 材質データ(今はテクスチャパスしかいれてない.質感とか追加するようになったら使うのかも)
-struct MaterialData
+#pragma endregion
+
+#pragma region モデルデータ構造体
+
+struct VertexInfluence
 {
-    std::string textureFilePath;
+	std::array<float, 4> weights;
+	std::array<int32_t, 4> jointIndices;
 };
 
-// 頂点データ
-struct VertexData
+// モデルが所有。ロード後は不変。全インスタンスで共有するのでコピーしない
+struct SkinBindData
 {
-    Vector4 position;
-    Vector2 texcoord;
-    Vector3 normal;
+    std::vector<Matrix4x4> inverseBindPoseMatrices;          // ジョイントのバインドポーズ逆行列
+    Microsoft::WRL::ComPtr<ID3D12Resource> influenceBuffer;  // DEFAULTヒープ(Step 5)
+    uint32_t influenceHeapSlot = UINT32_MAX;                 // StructuredBufferとしてのSRVインデックス
 };
+
 
 struct VertexWeightData
 {
@@ -980,12 +968,28 @@ struct JointWeightData
 
 
 
+
+// 材質データ(今はテクスチャパスしかいれてない.質感とか追加するようになったら使うのかも)
+struct MaterialData
+{
+    std::string textureFilePath;
+};
+
+// メッシュレットデータ
 struct ResMeshlet
 {
     uint32_t vertexOffset = 0;		// 頂点番号オフセット
     uint32_t primitiveOffset = 0;	// プリミティブ番号オフセット
     uint32_t vertexCount = 0;		// 頂点数
     uint32_t primitiveCount = 0;	// プリミティブ数
+};
+
+// 頂点データ
+struct VertexData
+{
+    Vector4 position;
+    Vector2 texcoord;
+    Vector3 normal;
 };
 
 // モデルデータ
@@ -1014,11 +1018,9 @@ struct ModelData
     uint32_t primitiveIndexHeapSlot = UINT32_MAX;
 
 	MaterialData material;              // 材質データ
-	Node rootNode;                      // ノード
 	Skeleton skeleton;                  // スケルトン
-	uint32_t materialID = 0;            // マテリアルID
     SkinBindData skinBindData;          // スキンバインドデータ
-	std::map<std::string, JointWeightData> skinClusterData; // ジョイントのウェイトデータ
+	uint32_t materialID = 0;            // マテリアルID
 
     // ファイルパス
 	std::string filePath;

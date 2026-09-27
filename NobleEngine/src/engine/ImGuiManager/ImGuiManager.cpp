@@ -16,6 +16,10 @@ ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManag
 	// imguiのスタイルを設定
 	ImGui::StyleColorsDark();
 
+	// フォント指定
+	io.Fonts->AddFontFromFileTTF("assets/engine/fonts/Noto_Serif_JP/static/NotoSerifJP-Medium.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
+
+
 	// imguiのWin32初期化
 	ImGui_ImplWin32_Init(windowManager_->GetHwnd());
 

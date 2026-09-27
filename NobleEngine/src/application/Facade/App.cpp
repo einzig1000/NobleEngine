@@ -20,6 +20,10 @@ namespace App
 			{
 				Application::Instance().GetDataManager()->GetItemDataManager()->GetLoader()->Load(id);
 			}
+			void Load(BlockID id)
+			{
+				Application::Instance().GetDataManager()->GetItemDataManager()->GetLoader()->Load(id);
+			}
 			void Load(ObjectID id)
 			{
 				Application::Instance().GetDataManager()->GetItemDataManager()->GetLoader()->Load(id);

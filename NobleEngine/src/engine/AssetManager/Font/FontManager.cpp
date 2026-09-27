@@ -253,8 +253,6 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
     if (instances.empty()) return;
 
     auto* sbManager = Engine::Instance().GetStructuredBufferManager();
-    int32_t bufferID = sbManager->CreateDynamic();
-    sbManager->UpdateData(bufferID, instances.data(), sizeof(GlyphInstance), instances.size());
 
     const RenderTarget* target = dxManager_->GetRenderTextureManager()->Get(renderTextureID);
 
@@ -264,37 +262,42 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
     struct { int32_t atlasTextureIndex; float pad0[3]; } psConstants{};
     psConstants.atlasTextureIndex = atlasSrvIndex_;
 
-	uint32_t elapsedTime = Engine::Instance().GetTimeManager()->GetFixFPS()->GetElapsedFrameTime();
+    uint32_t elapsedTime = Engine::Instance().GetTimeManager()->GetFixFPS()->GetElapsedFrameTime();
 
+    // このフレームでまだ使っていないFontRenderを探す
+    FontRender* fontRender = nullptr;
     for (auto& render : fontRenders_)
     {
         if (render.frameCount < elapsedTime)
         {
-            render.render->instanceNum_ = static_cast<uint32_t>(instances.size());
-            render.render->SetTRegisterData(0, ShaderType::VertexShader, sbManager->GetSRV(bufferID));
-            render.render->SetBRegisterData(0, ShaderType::VertexShader, &vsConstants);
-            render.render->SetBRegisterData(0, ShaderType::PixelShader, &psConstants);
-            render.render->Draw(renderTextureID);
-            render.frameCount = elapsedTime;
-
-            return;
+            fontRender = &render;
+            break;
         }
     }
 
-	fontRenders_.emplace_back();
-    fontRenders_.back().render = std::make_unique<RenderObject>();
-    fontRenders_.back().render->psoConfig_.vs = "assets/shaders/Text/Text.VS.hlsl";
-    fontRenders_.back().render->psoConfig_.ps = "assets/shaders/Text/Text.PS.hlsl";
-    fontRenders_.back().render->psoConfig_.rasterizerID = RasterizerID::Solid_BackCull;
-	fontRenders_.back().render->modelID_ = planeModelID_;
-    fontRenders_.back().render->SetupFromShaders();
+    // 足りなければ追加。バッファ(とSRV)はここで1回だけ作る
+    if (!fontRender)
+    {
+        fontRenders_.emplace_back();
+        fontRender = &fontRenders_.back();
+        fontRender->render = std::make_unique<RenderObject>();
+        fontRender->render->psoConfig_.vs = "assets/shaders/Text/Text.VS.hlsl";
+        fontRender->render->psoConfig_.ps = "assets/shaders/Text/Text.PS.hlsl";
+        fontRender->render->psoConfig_.rasterizerID = RasterizerID::Solid_BackCull;
+        fontRender->render->modelID_ = planeModelID_;
+        fontRender->render->SetupFromShaders();
+        fontRender->bufferID = sbManager->CreateDynamic();
+    }
 
-    fontRenders_.back().render->instanceNum_ = static_cast<uint32_t>(instances.size());
-    fontRenders_.back().render->SetTRegisterData(0, ShaderType::VertexShader, sbManager->GetSRV(bufferID));
-    fontRenders_.back().render->SetBRegisterData(0, ShaderType::VertexShader, &vsConstants);
-    fontRenders_.back().render->SetBRegisterData(0, ShaderType::PixelShader, &psConstants);
-    fontRenders_.back().render->Draw(renderTextureID);
-    fontRenders_.back().frameCount = elapsedTime;
+    // 既存バッファの中身を書き換えるだけ(SRVスロットは使い回される)
+    sbManager->UpdateData(fontRender->bufferID, instances.data(), sizeof(GlyphInstance), instances.size());
+
+    fontRender->render->instanceNum_ = static_cast<uint32_t>(instances.size());
+    fontRender->render->SetTRegisterData(0, ShaderType::VertexShader, sbManager->GetSRV(fontRender->bufferID));
+    fontRender->render->SetBRegisterData(0, ShaderType::VertexShader, &vsConstants);
+    fontRender->render->SetBRegisterData(0, ShaderType::PixelShader, &psConstants);
+    fontRender->render->Draw(renderTextureID);
+    fontRender->frameCount = elapsedTime;
 }
 
 Vector2 FontManager::MeasureJustTextureSize(const std::string& text, int32_t charSize, const Vector2& startPos, float extraSpacing)

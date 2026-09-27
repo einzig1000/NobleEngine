@@ -27,11 +27,11 @@ private:
 	MaterialData LoadMaterialTemplateFile(const std::string& filePath);
 
 	// モデルファイル読み込み
-	void LoadModelFile(const std::string& filePath, ModelData* modelData);
+	bool LoadModelFile(const std::string& filePath, ModelData* modelData);
 	Node ReadNode(const aiNode* node);
 
 	// SkinBindDataを作成する
-	SkinBindData CreateSkinBindData(const ModelData* modelData);
+	SkinBindData CreateSkinBindData(const ModelData* modelData, const std::map<std::string, JointWeightData>& skinClusterData);
 
 	// NodeからSkeletonを作成
 	Skeleton CreateSkeleton(const Node& node);

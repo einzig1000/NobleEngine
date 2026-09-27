@@ -363,40 +363,40 @@
     "blockID": "MAX",
     "itemGenre": "Tool",
     "modelPath": "assets/application/Minecraft/Item/tool/sword/sword.obj",
-    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png",
     "objectID": "MAX",
+    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png",
     "toolID": "Sword_of_Wood"
   },
   "ダイヤモンド": {
     "blockID": "MAX",
-    "objectID": "MAX",
-    "toolID": "MAX",
     "itemGenre": "MAX",
     "modelPath": "assets/application/Minecraft/Item/tool/sword/sword.obj",
-    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png"
+    "objectID": "MAX",
+    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "MAX"
   },
   "ビーコン": {
     "blockID": "MAX",
-    "objectID": "MAX",
-    "toolID": "MAX",
     "itemGenre": "MAX",
     "modelPath": "assets/application/Minecraft/Item/tool/sword/sword.obj",
-    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png"
+    "objectID": "MAX",
+    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "MAX"
   },
   "金インゴット": {
     "blockID": "MAX",
-    "objectID": "MAX",
-    "toolID": "MAX",
     "itemGenre": "MAX",
     "modelPath": "assets/application/Minecraft/Item/tool/sword/sword.obj",
-    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png"
+    "objectID": "MAX",
+    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "MAX"
   },
   "鉄インゴット": {
     "blockID": "MAX",
-    "objectID": "MAX",
-    "toolID": "MAX",
     "itemGenre": "MAX",
     "modelPath": "assets/application/Minecraft/Item/tool/sword/sword.obj",
-    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png"
+    "objectID": "MAX",
+    "texturePath": "assets/application/Minecraft/Item/tool/sword/sword.png",
+    "toolID": "MAX"
   }
 }

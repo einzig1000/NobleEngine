@@ -8,6 +8,7 @@ enum class UIMode
 	Crafting,	// クラフト画面
 	Pause,		// ポーズ画面
 	MiningMode,	// 採掘モード選択画面
+	EmptyScreen,	// なにもない画面
 
 	MAX
 };

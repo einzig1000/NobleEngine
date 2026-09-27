@@ -171,6 +171,14 @@ enum class MiningPattern
 	MAX,
 };
 
+enum class ItemMotion
+{
+	Idle,
+	Swing,
+	MAX
+};
+
+
 // BlockID → ItemID 変換
 ItemID BlockIDtoItemID(BlockID id);
 // ToolID → ItemID 変換
@@ -189,6 +197,8 @@ struct BlockInfo
 	BlockID ID = BlockID::Air;
 	// 色
 	uint32_t color = 0xFFFFFFFF;
+	// 採掘ポイント
+	float miningPoint = 1.0f;
 	// 耐久値
 	float durability = 1.0f;
 	// 透過ブロックかどうか
@@ -199,8 +209,6 @@ struct ToolInfo
 {
 	// ツールID
 	ToolID ID = ToolID::MAX;
-	// 耐久値
-	float durability = 1.0f;
 	// 攻撃力
 	float attackPower = 1.0f;
 	// 採掘速度
@@ -228,10 +236,19 @@ struct ItemInfo
 	// オブジェクトとして扱う時のデータ
 	ObjectID objectID = ObjectID::MAX;
 
+	int32_t maxStackCount = 1;
+
 	// テクスチャ
 	int32_t textureID = -1;
 	// モデル
 	int32_t modelID = -1;
+	// モーション
+	std::array<int32_t, static_cast<size_t>(ItemMotion::MAX)> motionIDs = []
+		{
+			std::array<int32_t, static_cast<size_t>(ItemMotion::MAX)> ids;
+			ids.fill(-1);
+			return ids;
+		}();
 
 	// アイコン
 	int32_t iconID = -1;

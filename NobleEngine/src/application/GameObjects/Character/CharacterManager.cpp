@@ -26,6 +26,7 @@ void CharacterManager::SetViewCamera(int32_t cameraID)
 
 void CharacterManager::Update(int32_t cameraID)
 {
+	// イベント確認
 	if (eventBus_)
 	{
 		// 操作モード変更イベント
@@ -36,7 +37,10 @@ void CharacterManager::Update(int32_t cameraID)
 			ableMoveAll_ = controlModeEvents[0].value[0];
 		}
 	}
+	player_->CheckExternalEvents();
 
+
+	// キャラ更新
 	if (ableMoveAll_)
 	{
 		player_->Update(cameraID);

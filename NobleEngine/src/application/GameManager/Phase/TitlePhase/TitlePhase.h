@@ -5,6 +5,7 @@ class MapManager;
 class SkyBox;
 class CameraController;
 class ScreenDrawer;
+class UIManager;
 
 enum class Stage
 {
@@ -83,12 +84,16 @@ private:
 	// カメラ
 	std::unique_ptr<CameraController> cameraController_;
 	int32_t c_title_ = -1;
+
 	// 描画マネージャ
 	std::unique_ptr<ScreenDrawer> screenDrawer_;
 
 	// マップ
 	std::unique_ptr<MapManager> map_;
-	std::unique_ptr<SkyBox> skyBox_;
+
+	// UIマネージャー
+	std::unique_ptr<UIManager> uiManager_;
+
 
 	std::vector<ButtonInfo> buttons_;
 	std::string buttonJsonPath_ = "assets/application/json/TitleButtons.json";

@@ -32,37 +32,37 @@ int32_t AudioLoader::LoadAudio(const std::string & filePath)
 
     // ソースリーダー(オーディオデータを読み取るためのインターフェース)の作成
     hr = MFCreateSourceReaderFromURL(wFilePath.c_str(), nullptr, &pSourceReader);
-    if (FAILED(hr)) { Log("ソースリーダーの作成に失敗: %s", HrToString(hr)); assert(0); return UINT32_MAX; }
+    if (FAILED(hr)) { Log("オーディオファイルを開けませんでした: %s", filePath); assert(0); return -1; }
 
     // メディアファイルには 複数のストリーム（音声・動画・字幕など） が含まれていることがあるため音声を取得するよと設定しているらしい
     hr = pSourceReader->SetStreamSelection((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, TRUE);
-    if (FAILED(hr)) { Log("取得ストリームの設定に失敗: %s", HrToString(hr)); assert(0); return UINT32_MAX; }
+    if (FAILED(hr)) { Log("取得ストリームの設定に失敗: %s", HrToString(hr)); assert(0); return -1; }
 
     // Media Foundation に対して、オーディオストリームをPCM形式にデコードするように要求
     Microsoft::WRL::ComPtr<IMFMediaType> pOutputMediaType;
     hr = MFCreateMediaType(&pOutputMediaType);
-    if (FAILED(hr)) { Log("PCM出力MFMediaTypeの作成に失敗: %s", HrToString(hr)); assert(0); return UINT32_MAX; }
+    if (FAILED(hr)) { Log("PCM出力MFMediaTypeの作成に失敗: %s", HrToString(hr)); assert(0); return -1; }
 
 
     hr = pOutputMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
-    if (FAILED(hr)) { Log("PCM出力の主要タイプ設定に失敗: %s", HrToString(hr)); assert(0); return UINT32_MAX; }
+    if (FAILED(hr)) { Log("PCM出力の主要タイプ設定に失敗: %s", HrToString(hr)); assert(0); return -1; }
 
     hr = pOutputMediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
-    if (FAILED(hr)) { Log("PCM出力のサブタイプ設定に失敗: %s", HrToString(hr)); assert(0); return UINT32_MAX; }
+    if (FAILED(hr)) { Log("PCM出力のサブタイプ設定に失敗: %s", HrToString(hr)); assert(0); return -1; }
 
     // 音声データがどんな形式(MP3,WAV,AACとか)で保存されているかを調べる
     hr = pSourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, pOutputMediaType.Get());
-    if (FAILED(hr)) { Log("出力タイプをPCMに設定できませんでした: %s", HrToString(hr)); assert(0); return UINT32_MAX; }
+    if (FAILED(hr)) { Log("出力タイプをPCMに設定できませんでした: %s", HrToString(hr)); assert(0); return -1; }
 
     // Media FoundationがPCMフォーマットに変えたはずなので確認
     Microsoft::WRL::ComPtr<IMFMediaType> pActualMediaType;
     hr = pSourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, &pActualMediaType);
-    if (FAILED(hr)) { Log("実際のメディアタイプ取得に失敗: %s", HrToString(hr)); assert(0); return UINT32_MAX; }
+    if (FAILED(hr)) { Log("実際のメディアタイプ取得に失敗: %s", HrToString(hr)); assert(0); return -1; }
 
     UINT32 formatSize = 0;
     WAVEFORMATEX* wfx = nullptr;
     hr = MFCreateWaveFormatExFromMFMediaType(pActualMediaType.Get(), &wfx, &formatSize, 0);
-    if (FAILED(hr)) { Log("実際のメディアタイプのWAVEFORMATEX変換に失敗: %s", HrToString(hr)); assert(0); return UINT32_MAX; }
+    if (FAILED(hr)) { Log("実際のメディアタイプのWAVEFORMATEX変換に失敗: %s", HrToString(hr)); assert(0); return -1; }
     data->pWfx = wfx;
     data->wfxSize = formatSize;
 
@@ -152,7 +152,7 @@ int32_t AudioLoader::LoadAudio(const std::string & filePath)
     {
         Log("LoadAudioの失敗 HRESULT: 0x%X", hr);
         if (data->pWfx) { CoTaskMemFree(data->pWfx); data->pWfx = nullptr; data->wfxSize = 0; }
-        return UINT32_MAX;
+        return -1;
     }
 
     // 読み込み完了後にメモリを安定化してから pAudioData を設定

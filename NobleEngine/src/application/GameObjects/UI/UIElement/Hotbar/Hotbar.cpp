@@ -113,7 +113,7 @@ void Hotbar::Draw(int32_t rt_ID)
 		if (slot.count > 1)
 		{
 			const Vector3& iconPos = icons_[i].transforms.translate;
-			Game::Asset::Font::DrawString(rt_ID, std::to_string(slot.count), 32, Vector2{ iconPos.x + 6.0f, iconPos.y + 6.0f }, Vector4{ 1.0f,0.3f,0.3f,1.0f });
+			Game::Asset::Font::DrawString(rt_ID, std::to_string(slot.count), 46, Vector2{ iconPos.x + 6.0f, iconPos.y + 6.0f }, Vector4{ 0.0f,0.0f,0.0f,1.0f });
 		}
 	}
 }

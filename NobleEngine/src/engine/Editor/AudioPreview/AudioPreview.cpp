@@ -39,7 +39,7 @@ void AudioPreview::DrawImGui()
 		for (int32_t i = 0; i < (int32_t)audioList.size(); ++i)
 		{
 			ImGui::PushID(i);
-			if (ImGui::Selectable(audioList[i]->filePath.c_str(), selectedAudioID_ == i))
+			if (ImGui::SelectableWithCopy(audioList[i]->filePath, selectedAudioID_ == i))
 			{
 				ChangeSelectedAudio(i);
 			}

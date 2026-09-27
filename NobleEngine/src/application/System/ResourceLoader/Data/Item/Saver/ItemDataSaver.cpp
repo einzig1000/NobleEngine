@@ -33,7 +33,6 @@ void ItemDataSaver::Save(ToolID id, const ToolInfo& info)
 	const std::string path = "assets/application/json/ToolConfig.json";
 	const std::string idStr = std::string(magic_enum::enum_name(id));
 
-	JsonManager::AddParam(path, "/" + idStr + "/durability", info.durability);
 	JsonManager::AddParam(path, "/" + idStr + "/attackPower", info.attackPower);
 	JsonManager::AddParam(path, "/" + idStr + "/miningSpeed", info.miningSpeed);
 
@@ -55,6 +54,7 @@ void ItemDataSaver::Save(ItemID id, const ItemInfo& info)
 	JsonManager::AddParam(path, "/" + idStr + "/objectID", magic_enum::enum_name(info.objectID).data());
 	JsonManager::AddParam(path, "/" + idStr + "/modelPath", modelPath);
 	JsonManager::AddParam(path, "/" + idStr + "/texturePath", texturePath);
+	JsonManager::AddParam(path, "/" + idStr + "/maxStackCount", info.maxStackCount);
 
 	JsonManager::Save(path);
 }

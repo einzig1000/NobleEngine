@@ -21,10 +21,13 @@ void InventoryScreen::Initialize()
 		element->SetNextUIMode(&nextUIMode_);
 	}
 
-	Event event;
-	event.type = EventType::AbleMoveAllCharacters;
-	event.value.push_back(false);
-	eventBus_->Notify(event);
+	if (eventBus_)
+	{
+		Event event;
+		event.type = EventType::AbleMoveAllCharacters;
+		event.value.push_back(false);
+		eventBus_->Notify(event);
+	}
 
 	// カーソル操作有効化
 	Game::IO::Mouse::ShowCursor(true);

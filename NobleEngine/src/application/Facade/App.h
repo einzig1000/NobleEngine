@@ -11,10 +11,12 @@ namespace App
 			// 一括読み込み
 			void Load();
 
-			// ToolIDを指定して個別読み込み
-			void Load(ToolID id);
 			// ItemIDを指定して個別読み込み
 			void Load(ItemID id);
+			// BlockIDを指定して個別読み込み
+			void Load(BlockID id);
+			// ToolIDを指定して個別読み込み
+			void Load(ToolID id);
 			// ObjectIDを指定して個別読み込み
 			void Load(ObjectID id);
 

@@ -5,6 +5,7 @@
 #include <GameObjects/ScreenDrawer/ScreenDrawer.h>
 #include <Utilities/Json/JsonManager.h>
 #include <Utilities/functions.h>
+#include <GameObjects/UI/UIManager.h>
 #include <externals/MagicEnum/magic_enum.hpp>
 
 namespace
@@ -26,10 +27,12 @@ TitlePhase::TitlePhase()
 	cameraController_ = std::make_unique<CameraController>();
 	// スクリーンドロワー生成
 	screenDrawer_ = std::make_unique<ScreenDrawer>();
+	screenDrawer_->SetFogParams(FogParams{ Vector3{ 0.5f, 0.5f, 0.5 }, 0.05f, 20.0f, 50.0f });
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
-	// スカイボックス生成
-	skyBox_ = std::make_unique<SkyBox>();
+	// UIマネージャー生成
+	uiManager_ = std::make_unique<UIManager>();
+	uiManager_->ChangeScreen(UIMode::EmptyScreen);
 
 	// カメラ作成
 	c_title_ = cameraController_->AddCamera("TitlePhaseCamera");
@@ -66,9 +69,13 @@ void TitlePhase::Initialize()
 
 void TitlePhase::Update()
 {
+	// マップ更新
 	map_->Update(c_title_, Vector3{ 0.0f, 25.0f, 3.0f });
-	skyBox_->Update(c_title_);
+	// UI更新
+	uiManager_->Update(c_title_);
+	// ポストエフェクト更新
 	screenDrawer_->Update(c_title_);
+	// カメラ更新
 	cameraController_->Update(c_title_);
 
 	if (Game::IO::Key::IsJustPressed(VK_SPACE))
@@ -122,73 +129,12 @@ void TitlePhase::Draw()
 	int32_t rt_UI = screenDrawer_->GetUIRenderTexture();
 	int32_t rt_Background = screenDrawer_->GetBackgroundRenderTexture();
 
+	// マップ描画
 	map_->Draw(rt_Background, rt_3D);
+	// UI描画
+	uiManager_->Draw(rt_UI);
 
 	screenDrawer_->Draw();
-
-	//switch (currentState)
-	//{
-	//case TitlePhaseState::None:
-	//{
-	//	break;
-	//}
-	//case TitlePhaseState::Title:
-	//{
-	//	titleLogo->Draw();
-	//	titleLogo->DrawImGui();
-	//	startButton->Draw();
-	//	startButton->DrawImGui();
-	//	for (auto& strPart : startStr)
-	//	{
-	//		strPart->Draw();
-	//	}
-	//	break;
-	//}
-	//case TitlePhaseState::WorldSelect:
-	//{
-	//	CreateNewWorldButton->Draw();
-	//	for (auto& strPart : CreateNewWorldStr)
-	//	{
-	//		strPart->Draw();
-	//	}
-	//
-	//	// ワールド選択ボタン群
-	//	for (size_t worldIndex = 0; worldIndex < EnterWorldButtons.size(); worldIndex++)
-	//	{
-	//		EnterWorldButtons[worldIndex]->Draw();
-	//		for (auto& strPart : EnterWorldStrs[worldIndex])
-	//		{
-	//			strPart->Draw();
-	//		}
-	//	}
-	//
-	//	break;
-	//}
-	//case TitlePhaseState::CreateNewWorld:
-	//{
-	//	NewWorldNameInputBox->Draw();
-	//	nameInputBox->Draw();
-	//	seedInputBox->Draw();
-	//	tentenLine->Draw();
-	//	CreateWorldDecideButton->Draw();
-	//
-	//	CreateWorldDecideButton->DrawImGui();
-	//
-	//	for (int32_t i = 0; i < 8; i++)
-	//	{
-	//		seedInputStr[i]->Draw();
-	//	}
-	//
-	//	for (int32_t i = 0; i < 16; i++)
-	//	{
-	//		nameInputStr[i]->Draw();
-	//	}
-	//
-	//	break;
-	//}
-	//default:
-	//	break;
-	//}
 
 	for (auto& button : buttons_)
 	{
@@ -200,6 +146,8 @@ void TitlePhase::Draw()
 void TitlePhase::DrawImGui()
 {
 	map_->GetTerrain()->DrawImGui();
+
+	screenDrawer_->DrawImGui();
 
 	ImGui::Begin("Button");
 	for (auto& button : buttons_)

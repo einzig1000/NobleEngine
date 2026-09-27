@@ -12,7 +12,7 @@ Application& Application::Instance()
 void Application::Initialize()
 {
 	// Font読み込み
-	Game::Asset::Font::Load("Assets/engine/fonts/DotGothic16/DotGothic16-Regular.ttf");
+	Game::Asset::Font::Load("Assets/application/fonts/DotGothic16/DotGothic16-Regular.ttf");
 	
 	dataManager_ = std::make_unique<DataManager>();
 	editor_ = std::make_unique<Editor>(dataManager_.get());

@@ -29,8 +29,8 @@ public:
     static uint32_t winWidth_;
     static uint32_t winHeight_;
 
-	// アクティブフラグ(ウィンドウが最小化されている時とかはfalse)
-	bool isActive_ = true;
+    // 前面にあって、かつ最小化されていない
+    bool IsActive() const { return ::GetForegroundWindow() == hwnd_ && !::IsIconic(hwnd_); }
 
 private:
     HWND hwnd_;

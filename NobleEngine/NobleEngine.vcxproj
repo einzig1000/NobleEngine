@@ -11,6 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\AssetManager\Font\FontBank\FontBank.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\MiningPointGauge\MiningPointGauge.cpp" />
+    <ClCompile Include="src\application\GameObjects\Effect\Trail\ITrail.cpp" />
+    <ClCompile Include="src\application\GameObjects\Effect\Particle\GoTargetCurving\GoTargetCurving.cpp" />
+    <ClCompile Include="src\application\GameObjects\Effect\Particle\IParticle.cpp" />
+    <ClCompile Include="src\application\GameObjects\Effect\Particle\ParticleManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\Effect\EffectManager.cpp" />
     <ClCompile Include="src\engine\Editor\AudioPreview\AudioPreview.cpp" />
     <ClCompile Include="src\engine\Utilities\FileDialog\FileDialog.cpp" />
     <ClCompile Include="src\application\Test\TestParticle\Particle.cpp" />
@@ -148,9 +155,19 @@
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Terrain.cpp" />
     <ClCompile Include="src\engine\TimeManager\TimeManager.cpp" />
     <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp" />
+    <ClCompile Include="src\application\GameObjects\Effect\Trail\TrailManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\EmptyScreen\EmptyScreen.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\AssetManager\Font\FontBank\FontBank.h" />
+    <ClInclude Include="src\application\GameObjects\Character\MiningPointGauge\MiningPointGauge.h" />
+    <ClInclude Include="src\application\GameObjects\Effect\Trail\ITrail.h" />
+    <ClInclude Include="src\application\GameObjects\Effect\Particle\GoTargetCurving\GoTargetCurving.h" />
+    <ClInclude Include="src\application\GameObjects\Effect\Particle\IParticle.h" />
+    <ClInclude Include="src\application\GameObjects\Effect\Particle\ParticleManager.h" />
+    <ClInclude Include="src\application\GameObjects\Effect\EffectManager.h" />
     <ClInclude Include="src\engine\Editor\AudioPreview\AudioPreview.h" />
+    <ClInclude Include="src\engine\ImGuiManager\ImGuiExtensions.h" />
     <ClInclude Include="src\engine\Utilities\FileDialog\FileDialog.h" />
     <ClInclude Include="src\application\Test\TestParticle\Particle.h" />
     <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h" />
@@ -441,6 +458,8 @@
     <ClInclude Include="src\application\GameObjects\Map\Terrain\Terrain.h" />
     <ClInclude Include="src\engine\TimeManager\TimeManager.h" />
     <ClInclude Include="src\engine\TimeManager\TimeScaler\TimeScaler.h" />
+    <ClInclude Include="src\application\GameObjects\Effect\Trail\TrailManager.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\EmptyScreen\EmptyScreen.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Block\versionInfo.md">

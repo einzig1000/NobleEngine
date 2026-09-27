@@ -101,6 +101,7 @@ void ScreenDrawer::Update(int32_t cameraID)
 	}
 
 	DamageEffectUpdate();
+	Matrix4x4 projectionInverse = Game::Camera::Getter::GetProjectionMatrix(cameraID).Inverse();
 
 	// 背景書き込み
 	// 書き込み先：rt_PostEffect_[0]
@@ -119,7 +120,6 @@ void ScreenDrawer::Update(int32_t cameraID)
 	// 参照元：rt_3D_、rt_3D_depth_
 	draw_3D_DepthBasedOutline_->SetBRegisterData(0, ShaderType::PixelShader, &rt_PostEffect_[0]);
 	draw_3D_DepthBasedOutline_->SetBRegisterData(1, ShaderType::PixelShader, &rt_3D_depth_);
-	Matrix4x4 projectionInverse = Game::Camera::Getter::GetProjectionMatrix(cameraID).Inverse();
 	draw_3D_DepthBasedOutline_->SetBRegisterData(2, ShaderType::PixelShader, &projectionInverse);
 	draw_3D_DepthBasedOutline_->Draw(rt_PostEffect_[1], { rt_PostEffect_[0], rt_3D_depth_ });
 
