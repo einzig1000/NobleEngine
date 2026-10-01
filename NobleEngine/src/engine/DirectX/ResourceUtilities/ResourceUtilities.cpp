@@ -136,6 +136,40 @@ namespace Dx12ResourceFactory
         return resource;
     }
 
+    Microsoft::WRL::ComPtr<ID3D12Resource> CreateUploadResource(
+        ID3D12Resource* buffer,
+        const void* data,
+        size_t sizeInBytes,
+        ID3D12Device2* device,
+        ID3D12GraphicsCommandList6* commandList)
+    {
+        assert(buffer != nullptr && data != nullptr);
+        assert(sizeInBytes == buffer->GetDesc().Width);
+
+        D3D12_SUBRESOURCE_DATA subresourceData{};
+        subresourceData.pData = data;
+        subresourceData.RowPitch = static_cast<LONG_PTR>(sizeInBytes);
+        subresourceData.SlicePitch = subresourceData.RowPitch;
+        // 中間リソース(Uploadヒープ)に必要なサイズを取得
+        uint64_t intermediateSize = GetRequiredIntermediateSize(buffer, 0, 1);
+        // 中間リソースを作成
+        Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =
+            Dx12ResourceFactory::CreateBufferResource(device, intermediateSize);
+        // コマンドリストにコピー処理を記録
+        UpdateSubresources(commandList, buffer, intermediateResource.Get(), 0, 0, 1, &subresourceData);
+        // ResourceStateをCOPY_DESTからGENERIC_READに変更
+        D3D12_RESOURCE_BARRIER barrier{};
+        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barrier.Transition.pResource = buffer;
+        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+        commandList->ResourceBarrier(1, &barrier);
+
+        return intermediateResource;
+    }
+
     Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device2* device, const DirectX::TexMetadata& metadata)
     {
         // リソース記述子を作成

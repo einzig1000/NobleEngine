@@ -1,4 +1,6 @@
 #include "UIManager.h"
+#include "ItemIcon/ItemIconManager.h"
+
 #include "UIScreen/PlayingScreen/PlayingScreen.h"
 #include "UIScreen/InventoryScreen/InventoryScreen.h"
 #include "UIScreen/CraftScreen/CraftScreen.h"
@@ -11,16 +13,23 @@
 #include "UIElement/Inventory/Inventory.h"
 #include "UIElement/Pause/Pause.h"
 #include "UIElement/MiningMode/MiningMode.h"
+#include "UIElement/MiningPointGauge/MiningPointGaugeUI.h"
 
 
 UIManager::UIManager()
 {
+	iconManager_ = std::make_unique<ItemIconManager>();
+
+
 	elements_.resize(static_cast<size_t>(UIElementType::MAX));
 	elements_[static_cast<size_t>(UIElementType::Inventory)] = std::make_unique<Inventory>();
 	elements_[static_cast<size_t>(UIElementType::Craft)] = std::make_unique<Craft>();
 	elements_[static_cast<size_t>(UIElementType::Pause)] = std::make_unique<Pause>();
 	elements_[static_cast<size_t>(UIElementType::Hotbar)] = std::make_unique<Hotbar>();
 	elements_[static_cast<size_t>(UIElementType::MiningMode)] = std::make_unique<MiningMode>();
+	elements_[static_cast<size_t>(UIElementType::MiningPointGauge)] = std::make_unique<MiningPointGaugeUI>();
+
+
 
 	screens_.resize(static_cast<size_t>(UIMode::MAX));
 	screens_[static_cast<size_t>(UIMode::Playing)] = std::make_unique<PlayingScreen>();
@@ -37,6 +46,11 @@ UIManager::UIManager()
 		{
 			screens_[i]->AddElement(elements_[static_cast<size_t>(elementType)].get());
 		}
+	}
+
+	for (const auto& element : elements_)
+	{
+		element->SetIconManager(iconManager_.get());
 	}
 }
 
@@ -58,12 +72,14 @@ void UIManager::SetEventBus(EventBus* eventBus)
 
 void UIManager::SetInventory(const ItemInventory* inventory)
 {
-	inventory_ = inventory;
+	elements_[static_cast<size_t>(UIElementType::Hotbar)]->SetInventory(inventory);
+	elements_[static_cast<size_t>(UIElementType::Inventory)]->SetInventory(inventory);
+}
 
-	for (auto& element : elements_)
-	{
-		element->SetInventory(inventory_);
-	}
+void UIManager::SetMiningGauge(const MiningPointGauge* miningGauge)
+{
+	elements_[static_cast<size_t>(UIElementType::MiningPointGauge)]->SetMiningGauge(miningGauge);
+	elements_[static_cast<size_t>(UIElementType::Inventory)]->SetMiningGauge(miningGauge);
 }
 
 UIManager::~UIManager(){}
@@ -90,6 +106,8 @@ void UIManager::Update(int32_t cameraID)
 
 void UIManager::Draw(int32_t renderTargetID)
 {
+	iconManager_->Draw();
+
 	if (currentScreen_)
 	{
 		currentScreen_->Draw(renderTargetID);
@@ -97,7 +115,12 @@ void UIManager::Draw(int32_t renderTargetID)
 }
 
 void UIManager::DrawImGui()
-{}
+{
+	if (currentScreen_)
+	{
+		currentScreen_->DrawImGui();
+	}
+}
 
 void UIManager::ChangeScreen(UIMode mode)
 {

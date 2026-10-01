@@ -13,12 +13,6 @@ void EmptyScreen::Initialize()
 {
 	nextUIMode_ = UIMode::MAX;
 
-	for (const auto& element : uiElements_)
-	{
-		element->Initialize();
-		element->SetNextUIMode(&nextUIMode_);
-	}
-
 	if (eventBus_)
 	{
 		Event event;
@@ -33,16 +27,13 @@ void EmptyScreen::Initialize()
 
 void EmptyScreen::Update(int32_t cameraID)
 {
-	for (const auto& element : uiElements_)
-	{
-		element->Update(cameraID);
-	}
 }
 
 void EmptyScreen::Draw(int32_t renderTargetID)
 {
-	for (const auto& element : uiElements_)
-	{
-		element->Draw(renderTargetID);
-	}
+}
+
+void EmptyScreen::DrawImGui()
+{
+
 }

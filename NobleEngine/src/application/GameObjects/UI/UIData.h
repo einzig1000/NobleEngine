@@ -20,6 +20,7 @@ enum class UIElementType
 	Craft,
 	Pause,
 	MiningMode,
+	MiningPointGauge,
 
 	MAX
 };

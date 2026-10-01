@@ -24,6 +24,11 @@ enum class EventType
 	MiningOrbAbsorbed,
 
 
+	// ツールのグレードアップを頼まれた
+	ToolUpgradeRequested_SpeedUp,
+	ToolUpgradeRequested_ScaleUp,
+	ToolUpgradeRequested_PowerUp,
+
 
 	// GoTargetCurvingを出してほしい
 	ParticleRequest_GoTargetCurving,

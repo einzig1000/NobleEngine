@@ -1,6 +1,6 @@
 #include "Hotbar.h"
 #include <GameObjects/Character/ItemInventory/ItemInventory.h>
-#include <externals/MagicEnum/magic_enum.hpp>
+#include <GameObjects/UI/ItemIcon/ItemIconManager.h>
 #include <App.h>
 
 Hotbar::Hotbar()
@@ -12,9 +12,9 @@ Hotbar::Hotbar()
 	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
-	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/Inventory/Hotbar.png");
+	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/Hotbar/Hotbar.png");
 	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
-	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / 2.0f, 1.0f);
+	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) * 0.5f, float(textureData->metadata.height) * 0.5f, 1.0f);
 	sprites_[0].transforms.translate = Vector3(640.0f, 670.0f, 1.0f);
 
 	// icons_ : スロットアイコン
@@ -54,7 +54,7 @@ void Hotbar::Update(int32_t cameraID)
 	// ホットバーのアイコン更新
 	for (int32_t i = 0; i < ItemInventory::kHotbarSlotCount; ++i)
 	{
-		const InventorySlot& slot = inventory_->GetSlot(i);
+		const InventorySlot& slot = inventory_->GetInventorySlot(i);
 		// 空スロット
 		if (slot.itemID == ItemID::MAX)
 		{
@@ -72,7 +72,7 @@ void Hotbar::Update(int32_t cameraID)
 		}
 
 		// アイコン更新
-		icons_[i].textureID = info->textureID;
+		icons_[i].textureID = iconManager_ ? iconManager_->GetIcon(slot.itemID) : -1;
 	}
 }
 
@@ -93,6 +93,8 @@ void Hotbar::Draw(int32_t rt_ID)
 	}
 
 	if (!inventory_) return;
+
+	// アイコン
 	for (int32_t i = 0; i < ItemInventory::kHotbarSlotCount; ++i)
 	{
 		if (icons_[i].textureID < 0) continue;
@@ -105,11 +107,15 @@ void Hotbar::Draw(int32_t rt_ID)
 		icons_[i].render->SetBRegisterData(1, ShaderType::VertexShader, &world);
 		icons_[i].render->SetBRegisterData(0, ShaderType::PixelShader, &color);
 		icons_[i].render->SetBRegisterData(1, ShaderType::PixelShader, &icons_[i].textureID);
-		icons_[i].render->Draw(rt_ID);
+		icons_[i].render->Draw(rt_ID, { icons_[i].textureID });
+	}
 
+	// 個数
+	for (int32_t i = 0; i < ItemInventory::kHotbarSlotCount; ++i)
+	{
+		if (icons_[i].textureID < 0) continue;
 
-		// 個数
-		const InventorySlot& slot = inventory_->GetSlot(i);
+		const InventorySlot& slot = inventory_->GetInventorySlot(i);
 		if (slot.count > 1)
 		{
 			const Vector3& iconPos = icons_[i].transforms.translate;
@@ -117,6 +123,9 @@ void Hotbar::Draw(int32_t rt_ID)
 		}
 	}
 }
+
+void Hotbar::DrawImGui()
+{}
 
 Vector3 Hotbar::GetSlotPosition(int32_t index) const
 {

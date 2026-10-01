@@ -14,26 +14,58 @@ public:
 	void Update();
 	void EndFrame();
 
-	void SetSensitivity(float sensitivity) { mouseSensitivity_ = sensitivity; }	// マウス感度設定
+	// マウス感度設定
+	void SetSensitivity(float sensitivity) { mouseSensitivity_ = sensitivity; }
 
-	// 相対移動の蓄積
+	// 相対移動距離の蓄積
 	void OnRawMouseDelta(int32_t dx, int32_t dy);	
 	// ホイール回転量の蓄積
 	void OnMouseWheelDelta(int32_t delta) { wheelDelta_ += delta; }
 
-	int32_t GetWheelDelta() const { return wheelDelta_; }		// マウスホイール回転量取得
-	Vector2 Get2DPositionDelta() const { return rawDelta_; }	// 前フレームとのマウス相対移動を取得
-	Vector2 Get2DPosition() const { return position_; }			// マウス2D座標取得
-	Vector3 GetWorldPosition(Matrix4x4& viewProjection);				// マウス3D座標取得
-	Ray GetRay(Matrix4x4& viewProjection);							// マウスレイ取得
 
 	bool IsHeld(int32_t i);			// 今押しているか
 	bool IsJustPressed(int32_t i);	// 押した瞬間（今フレームで押された）
 	bool IsJustReleased(int32_t i);	// 離した瞬間（今フレームで離れた）
 	float HoldSeconds(int32_t i);	// 押されてからの経過秒数
 
+	// マウスカーソルの表示・非表示切り替え
 	void ToggleMouseCursorVisible();
+	// マウスカーソルの表示・非表示設定
 	void ShowCursor(bool visible);
+
+
+	/// <summary>
+	/// マウスホイール回転量を取得する
+	/// </summary>
+	/// <returns>マウスホイール回転量</returns>
+	int32_t GetWheelDelta() const { return wheelDelta_; }		
+
+	/// <summary>
+	/// 前フレームとのマウス相対移動量を取得
+	/// </summary>
+	/// <returns>前フレームとのマウス相対移動量</returns>
+	Vector2 Get2DPositionDelta() const { return rawDelta_; }
+
+	/// <summary>
+	/// マウスの2D座標を取得する
+	/// </summary>
+	/// <returns>マウスの2D座標</returns>
+	Vector2 Get2DPosition() const { return position_; }
+
+	/// <summary>
+	/// マウスのワールド座標を取得する
+	/// </summary>
+	/// <param name="viewProjection">カメラのビュー射影行列</param>
+	/// <returns>マウスのワールド座標</returns>
+	Vector3 Get3DPosition(Matrix4x4& viewProjection);
+
+	/// <summary>
+	/// マウスレイを取得する
+	/// </summary>
+	/// <param name="viewProjection">カメラのビュー射影行列</param>
+	/// <returns>マウスレイ</returns>
+	Ray GetRay(Matrix4x4& viewProjection);
+
 private:
 	void UpdateButtonState();	// マウスボタン状態更新
 	void UpdateSensitivity();	// マウス感度の適用
@@ -61,7 +93,4 @@ private:
 	Vector2 position_;			// マウス2D座標
 
 	HWND hwnd_;					// ウィンドウハンドル
-
-	// マウスレイ計算に必要なViewProjectionMatrix取得用
-	CameraManager* cameraManager_;
 };

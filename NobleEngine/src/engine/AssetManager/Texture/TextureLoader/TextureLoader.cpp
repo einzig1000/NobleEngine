@@ -3,7 +3,7 @@
 #include <externals/DirectXTex/DirectXTex.h>
 #include <Utilities/Logger/Logger.h>
 #include <AssetManager/Texture/TextureBank/TextureBank.h>
-#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
+#include <RootBinding/RootBindingManager.h>
 #include <DirectX/DirectXManager.h>
 #include <filesystem>
 

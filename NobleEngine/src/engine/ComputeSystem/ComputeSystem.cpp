@@ -1,24 +1,16 @@
 #include "ComputeSystem.h"
 #include <DirectX/DirectXManager.h>
-#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
+#include <RootBinding/RootBindingManager.h>
 
-ComputeSystem::ComputeSystem(DirectXManager* dxManager, StructuredBufferManager* structuredBufferManager)
-	: dxManager_(dxManager), structuredBufferManager_(structuredBufferManager)
-{
-	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
-	{
-		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
-	}
-}
+ComputeSystem::ComputeSystem(DirectXManager* dxManager, RootBindingManager* rootBindingManager)
+	: dxManager_(dxManager), rootBindingManager_(rootBindingManager) {}
 
 ComputeSystem::~ComputeSystem()
 {}
 
 void ComputeSystem::Reset()
 {
-	// CBアロケータをリセット
 	backBufferIndex_ = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	cbAllocators_[backBufferIndex_].Reset();
 
 	computeObjects_.clear();
 }
@@ -28,17 +20,18 @@ void ComputeSystem::AddComputeObject(const ComputeObject* computeObject)
 	computeObjects_.push_back(computeObject);
 }
 
-void ComputeSystem::DispatchComputeObjects()
+void ComputeSystem::Execute()
 {
 	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
 	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+	auto* sBufferManager = rootBindingManager_->GetStructuredBufferManager();
 
 	// 1) Dispatch前：これから書き込むすべての出力バッファをUAV状態へ遷移
 	for (const auto& computeObject : computeObjects_)
 	{
 		for (const auto& handle : computeObject->GetOutputHandles())
 		{
-			structuredBufferManager_->TransitionToUAV(handle, cmdList);
+			sBufferManager->TransitionToUAV(handle, cmdList);
 		}
 	}
 
@@ -53,17 +46,11 @@ void ComputeSystem::DispatchComputeObjects()
 	{
 		for (const auto& handle : computeObject->GetOutputHandles())
 		{
-			structuredBufferManager_->TransitionToSRV(handle, cmdList);
+			sBufferManager->TransitionToSRV(handle, cmdList);
 		}
 	}
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS ComputeSystem::GetCurrentFrameCbGpuAddress(size_t sizeBytes, const void* data)
-{
-	const auto alloc = cbAllocators_[backBufferIndex_].Allocate(sizeBytes);
-	std::memcpy(alloc.cpu, data, static_cast<size_t>(sizeBytes));
-	return alloc.gpu;
-}
 
 void ComputeSystem::DispatchComputeObject(const ComputeObject* computeObject)
 {

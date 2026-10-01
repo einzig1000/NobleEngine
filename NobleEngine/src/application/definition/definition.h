@@ -209,8 +209,8 @@ struct ToolInfo
 {
 	// ツールID
 	ToolID ID = ToolID::MAX;
-	// 攻撃力
-	float attackPower = 1.0f;
+	// 採掘力
+	float miningPower = 1.0f;
 	// 採掘速度
 	float miningSpeed = 1.0f;
 };
@@ -252,6 +252,9 @@ struct ItemInfo
 
 	// アイコン
 	int32_t iconID = -1;
+
+	// アイコンを写すカメラ
+	Coordinate_spherical iconCamera{ 0.0f, 0.785f, 0.524f };
 };
 
 

@@ -2,6 +2,7 @@
 #include <GameObjects/Character/Player/Player.h>
 #include <algorithm>
 #include <optional>
+#include <App.h>
 
 RangeMining::RangeMining(Player* owner)
 	: owner_(owner)
@@ -36,7 +37,12 @@ void RangeMining::Update()
 		std::max(startAABB.max.y, endAABB.max.y),
 		std::max(startAABB.max.z, endAABB.max.z));
 
-	owner_->DestroyBlockInAABB(AABB(min, max));
+	ItemID itemID = owner_->GetHaveItem();
+	const ItemInfo* itemInfo = App::Data::Item::Get(itemID);
+	if (!itemInfo) return;
+	const ToolInfo* toolInfo = App::Data::Item::Get(itemInfo->toolID);
+	if (!toolInfo) return;
+	owner_->DestroyBlockInAABB(AABB(min, max),toolInfo->miningPower + 100.0f);
 
 	state_ = State::WaitingForStart;
 }

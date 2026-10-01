@@ -52,7 +52,7 @@ void ItemDataLoader::Load(ToolID id)
 	ToolInfo info;
 	info.ID = id;
 
-	JsonManager::Load(path, "/" + idStr + "/attackPower", info.attackPower);
+	JsonManager::Load(path, "/" + idStr + "/miningPower", info.miningPower);
 	JsonManager::Load(path, "/" + idStr + "/miningSpeed", info.miningSpeed);
 
 	bank_->SetToolInfo(id, info);
@@ -68,6 +68,7 @@ void ItemDataLoader::Load(BlockID id)
 
 	JsonManager::Load(path, "/" + idStr + "/color", info.color);
 	JsonManager::Load(path, "/" + idStr + "/durability", info.durability);
+	JsonManager::Load(path, "/" + idStr + "/miningPoint", info.miningPoint);
 	JsonManager::Load(path, "/" + idStr + "/isTransparent", info.isTransparent);
 
 	bank_->SetBlockInfo(id, info);
@@ -105,9 +106,9 @@ void ItemDataLoader::Load(ItemID id)
 	info.modelID = Game::Asset::Model::Load(modelPath);
 	JsonManager::Load(path, "/" + idStr + "/texturePath", texturePath);
 	info.textureID = Game::Asset::Texture::Load(texturePath);
-
-	//std::string tag = std::string("itemIcon_") + idStr;
-	//info.iconID = Game::Asset::RenderTexture::CreateRenderTexture(32, 32, tag);
+	JsonManager::Load(path, "/" + idStr + "/iconCamera/theta", info.iconCamera.theta);
+	JsonManager::Load(path, "/" + idStr + "/iconCamera/phi", info.iconCamera.phi);
+	JsonManager::Load(path, "/" + idStr + "/iconCamera/radius", info.iconCamera.radius);
 
 	auto genreEnum = magic_enum::enum_cast<ItemGenre>(itemGenreStr);
 	if (!genreEnum.has_value())

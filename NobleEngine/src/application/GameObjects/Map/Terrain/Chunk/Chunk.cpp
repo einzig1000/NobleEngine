@@ -512,7 +512,6 @@ void Chunk::Update(int32_t cameraID)
 	}
 	}
 
-	//if (pendingActiveSlot_ != -1)
 	if (pendingActiveSlot_ >= 0)
 	{
 		Game::Resource::UpdateData(myPagesResourceID_[pendingActiveSlot_],myPages_[pendingActiveSlot_]);
@@ -533,10 +532,13 @@ void Chunk::Update(int32_t cameraID)
 }
 
 
+
 void Chunk::DispatchCountPhase()
 {
 	// blockIds_を更新
 	Game::Resource::UpdateData(blockIDsResourceID_, blockIds_);
+	// このベイクで使うblockIdsのSRVを記録
+	bakeBlockIdsSrv_ = Game::Resource::GetSRV(blockIDsResourceID_);
 
 	// Bakeは常に「今表示していない裏側」のスロットに対して行う
 	const int32_t unActiveSlot = 1 - activeSlot_;
@@ -547,7 +549,7 @@ void Chunk::DispatchCountPhase()
 	// このチャンクの総面数を計算
 	Vector2uint csHeapSlotTable = Vector2uint(
 		App::Data::Item::GetBlockInfoTableHeapSlot(),
-		Game::Resource::GetSRV(blockIDsResourceID_));
+		bakeBlockIdsSrv_);
 	Vector3int toCSChunkInfo = Vector3int(Constexprs::kChunkBlockCountX, Constexprs::kChunkBlockCountY, Constexprs::kChunkBlockCountZ);
 	countCompute_->SetBRegisterData(0, &csHeapSlotTable);
 	countCompute_->SetBRegisterData(1, &toCSChunkInfo);
@@ -603,13 +605,11 @@ void Chunk::FinishBakeWithPageAssignment(uint32_t totalFaces)
 
 	// ページ番号一覧を更新
 	Game::Resource::UpdateData(myPagesResourceID_[unActiveSlot], myPages_[unActiveSlot]);
-	// blockIds_も更新
-	Game::Resource::UpdateData(blockIDsResourceID_, blockIds_);
 
 	// 取得したページに面を書きこむ
 	Vector4uint writeHeapSlotTable = Vector4uint(
 		App::Data::Item::GetBlockInfoTableHeapSlot(),
-		Game::Resource::GetSRV(blockIDsResourceID_),
+		bakeBlockIdsSrv_,
 		Game::Resource::GetSRV(groupOffsetResourceID_[unActiveSlot]),
 		Game::Resource::GetSRV(myPagesResourceID_[unActiveSlot]));
 	Vector4uint writeChunkInfo = Vector4uint(
@@ -627,6 +627,8 @@ void Chunk::FinishBakeWithPageAssignment(uint32_t totalFaces)
 	pendingActiveSlot_ = unActiveSlot;
 	pendingSlotUpdateCount_ = Constexprs::kFrameCount;
 }
+
+
 
 
 

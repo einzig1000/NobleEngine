@@ -6,7 +6,7 @@
 
 class WindowManager;
 class DirectXManager;
-class StructuredBufferManager;
+class RootBindingManager;
 class DrawSystem;
 class ComputeSystem;
 class IOManager;
@@ -45,8 +45,9 @@ public:
 	IOManager* GetIOManager() { return ioManager_.get(); }
 	AssetManager* GetAssetManager() { return assetManager_.get(); }
 	CameraManager* GetCameraManager() { return cameraManager_.get(); }
-	StructuredBufferManager* GetStructuredBufferManager() { return structuredBufferManager_.get(); }
+	RootBindingManager* GetRootBindingManager() { return rootBindingManager_.get(); }
 	TimeManager* GetTimeManager() { return timeManager_.get(); }
+	ImGuiManager* GetImGuiManager() { return imguiManager_.get(); }
 
 private:
 	Engine() = default;
@@ -56,8 +57,8 @@ private:
 	std::unique_ptr<WindowManager> windowManager_;
 	// DirectX関連
 	std::unique_ptr<DirectXManager> dxManager_;
-	// 
-	std::unique_ptr<StructuredBufferManager> structuredBufferManager_;
+	// RootBinding関連
+	std::unique_ptr<RootBindingManager> rootBindingManager_;
 	// 描画関連
 	std::unique_ptr<DrawSystem> drawSystem_;
 	// GPU計算関連

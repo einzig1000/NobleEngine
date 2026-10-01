@@ -10,5 +10,6 @@ public:
 	void Initialize() override;
 	void Update(int32_t cameraID) override;
 	void Draw(int32_t renderTargetID) override;
+	void DrawImGui() override;
 };
 

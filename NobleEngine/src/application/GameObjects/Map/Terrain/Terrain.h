@@ -49,14 +49,14 @@ public:
 	void SetSeed(uint32_t seed);
 
 	// 指定範囲内のブロックを一括で置き換える
-	void ReplaceBlockInAABB(const AABB& aabb, BlockID id);
-	void ReplaceBlockInOBB(const OBB& obb, BlockID id);
-	void ReplaceBlockInSphere(const Sphere& sphere, BlockID id);
+	void ReplaceBlockInAABB(const AABB& aabb, BlockID id, float power);
+	void ReplaceBlockInOBB(const OBB& obb, BlockID id, float power);
+	void ReplaceBlockInSphere(const Sphere& sphere, BlockID id, float power);
 
 	// 指定位置のブロックを置き換える 
-	bool ReplaceBlock(const lookAtBlock& lab, BlockID id);
-	bool ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id);
-	bool ReplaceBlock(const Vector3& position, BlockID id);
+	bool ReplaceBlock(const lookAtBlock& lab, BlockID id, float power);
+	bool ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id, float power);
+	bool ReplaceBlock(const Vector3& position, BlockID id, float power);
 
 	// 指定座標ブロックのワールドAABB/ワールドSphereを取得
 	AABB GetAABB(const Vector3int& chunkPos, const Vector3int& index) const;
@@ -117,8 +117,6 @@ private:
 	std::unordered_map<Vector3int, std::unique_ptr<Chunk>, Vector3intHash> chunks;
 	// スケジュール中チャンク集合
 	std::unordered_set<Vector3int, Vector3intHash> chunkScheduled_;
-	// 既に作成されたチャンク集合
-	std::unordered_set<Vector3int, Vector3intHash> chunkCreated_;
 
 	// 露出面プール
 	std::unique_ptr<FaceDataPagePool> facePagePool_;
@@ -139,8 +137,8 @@ private:
 	Vector3int updateRadius_;   // 更新半径（チャンク単位）
 	NoiseParameter noiseParam_;
 
-	// カメラ座標
-	Vector3int cameraChunkPos_;
+	// マップ中心座標
+	Vector3int centerChunkPos_;
 };
 
 

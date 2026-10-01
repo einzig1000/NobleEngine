@@ -3,7 +3,7 @@
 #include <DirectX/DirectXManager.h>
 #include <DrawSystem/DrawSystem.h>
 #include <ComputeSystem/ComputeSystem.h>
-#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
+#include <RootBinding/RootBindingManager.h>
 #include <IO/IOManager.h>
 #include <Camera/CameraManager.h>
 #include <imGuiManager/ImGuiManager.h>
@@ -63,13 +63,13 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 	// DirectXを更新
 	dxManager_->BeginFrame();
 
-	structuredBufferManager_ = std::make_unique<StructuredBufferManager>(dxManager_.get());
+	rootBindingManager_ = std::make_unique<RootBindingManager>(dxManager_.get());
 	imguiManager_ = std::make_unique<ImGuiManager>(dxManager_.get(), windowManager_.get());
 	assetManager_ = std::make_unique<AssetManager>(dxManager_.get());
 	cameraManager_ = std::make_unique<CameraManager>();
 	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd());
-	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), assetManager_.get());
-	computeSystem_ = std::make_unique<ComputeSystem>(dxManager_.get(), structuredBufferManager_.get());
+	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), assetManager_.get(), rootBindingManager_.get());
+	computeSystem_ = std::make_unique<ComputeSystem>(dxManager_.get(), rootBindingManager_.get());
 	timeManager_ = std::make_unique<TimeManager>();
 
 	windowManager_->AttachMouseController(ioManager_->GetMouseController());
@@ -113,6 +113,9 @@ void Engine::BeginFrame()
 	// DirectXを更新
 	dxManager_->BeginFrame();
 
+	// RootBindingデータを初期化・解放
+	rootBindingManager_->Reset();
+
 	// GPU計算システム初期化
 	computeSystem_->Reset();
 
@@ -136,7 +139,6 @@ void Engine::EndFrame()
 	// 入力終了処理
 	ioManager_->EndFrame();
 
-	// デバッグモードの時のみ呼び出す
 //#ifdef _DEBUG
 	engineEditor_->Draw();
 	engineEditor_->DrawImGui();
@@ -146,11 +148,10 @@ void Engine::EndFrame()
 	cameraManager_->DrawImGui();
 
 	// gpu計算処理
-	computeSystem_->DispatchComputeObjects();
+	computeSystem_->Execute();
 
 	// ReadBack処理
-	structuredBufferManager_->FlushPendingReadbackRequests();
-
+	rootBindingManager_->GetStructuredBufferManager()->FlushPendingReadbackRequests();
 
 	// 描画処理
 	drawSystem_->Execute();
@@ -196,8 +197,8 @@ void Engine::Finalize()
 	assetManager_.reset();
 	// ImGui
 	imguiManager_.reset();
-	// 
-	structuredBufferManager_.reset();
+	// RootBinding関連
+	rootBindingManager_.reset();
 	// DirectX関連
 	dxManager_.reset();
 	// ウィンドウ関連

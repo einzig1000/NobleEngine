@@ -99,3 +99,6 @@ void MiningMode::Draw(int32_t rt_ID)
 	ImGui::DragFloat3("Scale2", &sprites_[1].transforms.scale.x);
 	ImGui::End();
 }
+
+void MiningMode::DrawImGui()
+{}

@@ -1,6 +1,6 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
-#include <DrawSystem/RenderData/RenderObject.h>
+#include <DrawSystem/RenderObject/RenderObject.h>
 #include <memory>
 
 class ModelBank;

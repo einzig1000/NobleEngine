@@ -1,10 +1,11 @@
 #include "PlayingScreen.h"
-#include <GameObjects/UI/UIElement/Hotbar/Hotbar.h>
+#include <GameObjects/UI/UIElement/IUIElement.h>
 #include <System/EventBus/EventBus.h>
 
 PlayingScreen::PlayingScreen()
 {
 	elementTypes_.push_back(UIElementType::Hotbar);
+	elementTypes_.push_back(UIElementType::MiningPointGauge);
 }
 
 PlayingScreen::~PlayingScreen()
@@ -60,5 +61,13 @@ void PlayingScreen::Draw(int32_t renderTargetID)
 	for (const auto& element : uiElements_)
 	{
 		element->Draw(renderTargetID);
+	}
+}
+
+void PlayingScreen::DrawImGui()
+{
+	for (const auto& element : uiElements_)
+	{
+		element->DrawImGui();
 	}
 }

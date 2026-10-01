@@ -55,3 +55,11 @@ void CraftScreen::Draw(int32_t renderTargetID)
 
 	//player_->DrawInventory();	// Inventoryアイコン描画
 }
+
+void CraftScreen::DrawImGui()
+{
+	for (const auto& element : uiElements_)
+	{
+		element->DrawImGui();
+	}
+}

@@ -30,6 +30,14 @@ SRV_UAVManager::~SRV_UAVManager()
   
 uint32_t SRV_UAVManager::Allocate()
 {
+    // 空きスロットがあれば再利用
+    if (!freeIndices_.empty())
+    {
+        uint32_t index = freeIndices_.back();
+        freeIndices_.pop_back();
+        return index;
+    }
+
     if (nextBufferIndex_ >= capacity_)
     {
         Log("SRVスロットが足りません。容量を増やしてください。");
@@ -37,6 +45,17 @@ uint32_t SRV_UAVManager::Allocate()
         return UINT32_MAX;
     }
     return nextBufferIndex_++;
+}
+
+void SRV_UAVManager::Free(uint32_t index)
+{
+    if (index == UINT32_MAX) { return; }
+    assert(index < nextBufferIndex_);
+#ifdef _DEBUG
+    // 二重解放チェック
+    assert(std::find(freeIndices_.begin(), freeIndices_.end(), index) == freeIndices_.end());
+#endif
+    freeIndices_.push_back(index);
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE SRV_UAVManager::GetCPUHandleAt(uint32_t i) const

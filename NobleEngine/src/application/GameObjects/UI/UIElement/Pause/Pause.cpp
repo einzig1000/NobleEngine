@@ -72,3 +72,6 @@ void Pause::Draw(int32_t rt_ID)
 		sprite.render->Draw(rt_ID);
 	}
 }
+
+void Pause::DrawImGui()
+{}

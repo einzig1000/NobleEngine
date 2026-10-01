@@ -11,6 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.cpp" />
+    <ClCompile Include="src\engine\RootBinding\RootBindingManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\ItemIcon\ItemIconManager.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningPointGauge\MiningPointGaugeUI.cpp" />
     <ClCompile Include="src\engine\AssetManager\Font\FontBank\FontBank.cpp" />
     <ClCompile Include="src\application\GameObjects\Character\MiningPointGauge\MiningPointGauge.cpp" />
     <ClCompile Include="src\application\GameObjects\Effect\Trail\ITrail.cpp" />
@@ -114,7 +119,7 @@
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\SRV_UAVManager.cpp" />
     <ClCompile Include="src\engine\DirectX\DeviceManager\DeviceManager.cpp" />
     <ClCompile Include="src\engine\DirectX\DirectXManager.cpp" />
-    <ClCompile Include="src\engine\RootBinding\FrameCbAllocator\FrameCbAllocator.cpp" />
+    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp" />
     <ClCompile Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.cpp" />
@@ -122,7 +127,7 @@
     <ClCompile Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.cpp" />
     <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp" />
     <ClCompile Include="src\engine\DrawSystem\DrawSystem.cpp" />
-    <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp" />
+    <ClCompile Include="src\engine\DrawSystem\RenderObject\RenderObject.cpp" />
     <ClCompile Include="src\engine\Engine.cpp" />
     <ClCompile Include="src\engine\Facade\Game.cpp" />
     <ClCompile Include="src\engine\TimeManager\FixFPS\FixFPS.cpp" />
@@ -151,7 +156,7 @@
     <ClCompile Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.cpp" />
     <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp" />
-    <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp" />
+    <ClCompile Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Terrain.cpp" />
     <ClCompile Include="src\engine\TimeManager\TimeManager.cpp" />
     <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp" />
@@ -159,6 +164,11 @@
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\EmptyScreen\EmptyScreen.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.h" />
+    <ClInclude Include="src\engine\RootBinding\RootBindingManager.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.h" />
+    <ClInclude Include="src\application\GameObjects\UI\ItemIcon\ItemIconManager.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningPointGauge\MiningPointGaugeUI.h" />
     <ClInclude Include="src\engine\AssetManager\Font\FontBank\FontBank.h" />
     <ClInclude Include="src\application\GameObjects\Character\MiningPointGauge\MiningPointGauge.h" />
     <ClInclude Include="src\application\GameObjects\Effect\Trail\ITrail.h" />
@@ -415,7 +425,7 @@
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\SRV_UAVManager.h" />
     <ClInclude Include="src\engine\DirectX\DeviceManager\DeviceManager.h" />
     <ClInclude Include="src\engine\DirectX\DirectXManager.h" />
-    <ClInclude Include="src\engine\RootBinding\FrameCbAllocator\FrameCbAllocator.h" />
+    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\RenderPipelineTypes.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h" />
@@ -425,7 +435,7 @@
     <ClInclude Include="src\engine\DirectX\RenderTarget\SwapChainManager\SwapChainManager.h" />
     <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h" />
     <ClInclude Include="src\engine\DrawSystem\DrawSystem.h" />
-    <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h" />
+    <ClInclude Include="src\engine\DrawSystem\RenderObject\RenderObject.h" />
     <ClInclude Include="src\engine\Engine.h" />
     <ClInclude Include="src\engine\Facade\Game.h" />
     <ClInclude Include="src\engine\TimeManager\FixFPS\FixFPS.h" />
@@ -454,7 +464,7 @@
     <ClInclude Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.h" />
     <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h" />
     <ClInclude Include="src\engine\Editor\TimeEditor\TimeEditor.h" />
-    <ClInclude Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.h" />
+    <ClInclude Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.h" />
     <ClInclude Include="src\application\GameObjects\Map\Terrain\Terrain.h" />
     <ClInclude Include="src\engine\TimeManager\TimeManager.h" />
     <ClInclude Include="src\engine\TimeManager\TimeScaler\TimeScaler.h" />

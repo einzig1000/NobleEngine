@@ -11,7 +11,6 @@
 #include <TimeManager/TimeManager.h>
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
-#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
 #include <Utilities/Converter/ColorConverter/ColorConverter.h>
 #include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
 #include <Utilities/Converter/AngleConverter/AngleConverter.h>
@@ -58,7 +57,7 @@ namespace Game
 				SkinInstance inst;
 				inst.skeleton = modelData->skeleton;
 				inst.palette.resize(modelData->skeleton.joints.size());
-				inst.paletteHandle = Engine::Instance().GetStructuredBufferManager()->CreateDynamic();
+				inst.paletteHandle = Game::Resource::CreateDynamic();
 				return inst;
 			}
 
@@ -218,7 +217,7 @@ namespace Game
 			}
 			Vector3 Get3DPosition(Matrix4x4& viewProjection)
 			{
-				return Engine::Instance().GetIOManager()->GetMouseController()->GetWorldPosition(viewProjection);
+				return Engine::Instance().GetIOManager()->GetMouseController()->Get3DPosition(viewProjection);
 			}
 			Ray GetRay(Matrix4x4& viewProjection)
 			{
@@ -595,41 +594,54 @@ namespace Game
 	{
 		int32_t CreateDynamic()
 		{
-			return Engine::Instance().GetStructuredBufferManager()->CreateDynamic();
+			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->CreateDynamic();
 		}
 		int32_t CreateCompute(size_t elementSize, size_t elementCount)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->CreateCompute(elementSize, elementCount);
+			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->CreateCompute(elementSize, elementCount);
 		}
 
 		void ZeroFillCompute(int32_t resourceID, size_t bytes)
 		{
-			Engine::Instance().GetStructuredBufferManager()->ZeroFillCompute(resourceID, bytes);
+			Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->ZeroFillCompute(resourceID, bytes);
+		}
+
+		void Destroy(int32_t resourceID)
+		{
+			Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->Destroy(resourceID);
 		}
 
 		uint32_t GetSRV(int32_t resourceID)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->GetSRV(resourceID);
+			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->GetSRV(resourceID);
 		}
 
 		uint32_t GetUAV(int32_t resourceID)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->GetUAV(resourceID);
+			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->GetUAV(resourceID);
 		}
 
 		int32_t RequestReadback(int32_t resourceID, size_t bytes)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->RequestReadback(resourceID, bytes);
+			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->RequestReadback(resourceID, bytes);
 		}
 
 		bool TryGetReadbackResult(int32_t token, void* outData, size_t bytes)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->TryGetReadbackResult(token, outData, bytes);
+			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->TryGetReadbackResult(token, outData, bytes);
 		}
 	}
 
-	void Game::quit()
+	namespace System
 	{
-		Engine::Instance().Quit();
+		void quit()
+		{
+			Engine::Instance().Quit();
+		}
+
+		void ToggleDrawImGui()
+		{
+			Engine::Instance().GetImGuiManager()->ToggleDraw();
+		}
 	}
 }

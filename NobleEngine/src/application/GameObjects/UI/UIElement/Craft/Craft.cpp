@@ -44,3 +44,6 @@ void Craft::Draw(int32_t rt_ID)
 		}
 	}
 }
+
+void Craft::DrawImGui()
+{}

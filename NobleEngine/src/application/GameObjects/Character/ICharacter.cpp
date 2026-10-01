@@ -63,29 +63,6 @@ void ICharacter::Jump()
 	isGrounded_ = false;
 }
 
-//void ICharacter::ApplyMove()
-//{
-//	AABB aabb = aabb_;									// ワールド座標系でのプレイヤーのあたり判定を計算
-//	aabb.max = translate_.value + aabb.max;
-//	Vector3 aabbMin = aabb.min;
-//	aabbMin.y += Constexprs::kBlockSize * 0.5f;			// 足元の判定を少し上げる
-//	aabb.min = translate_.value + aabbMin;
-//	float dt = Game::Time::GetScaledDeltaTimeMs();
-//	translate_.velocity += translate_.acceleration;		// 加速度を速度に反映
-//	Vector3 movement = translate_.velocity;				// 移動量を計算
-//	mapManager_->GetTerrain()->SweepAABB(aabb, movement);// mapManager_に希望移動量を申請し修正してもらう
-//	if (movement.y == 0.0f)isGrounded_ = true;			// 移動後の接地判定
-//	else isGrounded_ = false;
-//	translate_.value += movement;			// 移動
-//	if (isGrounded_ && translate_.velocity.y < -0.2f)
-//	{
-//		TakeDamage(1);
-//	}
-//
-//	translate_.velocity = movement;						// 修正された移動量を速度に反映
-//	worldMatrix_ = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
-//}
-//
 
 void ICharacter::ApplyMove()
 {
@@ -152,17 +129,17 @@ void ICharacter::SetBlock(BlockID id)
 	//// アイテムを1つ消費
 	//haveItem_->RemoveCurrentSelectedItem(1);
 }
-void ICharacter::DestroyBlockInAABB(const AABB& aabb)
+void ICharacter::DestroyBlockInAABB(const AABB& aabb, float power)
 {
-	mapManager_->GetTerrain()->ReplaceBlockInAABB(aabb, BlockID::Air);
+	mapManager_->GetTerrain()->ReplaceBlockInAABB(aabb, BlockID::Air, power);
 }
-void ICharacter::DestroyBlockInOBB(const OBB& obb)
+void ICharacter::DestroyBlockInOBB(const OBB& obb, float power)
 {
-	mapManager_->GetTerrain()->ReplaceBlockInOBB(obb, BlockID::Air);
+	mapManager_->GetTerrain()->ReplaceBlockInOBB(obb, BlockID::Air, power);
 }
-void ICharacter::DestroyBlockInSphere(const Sphere& sphere)
+void ICharacter::DestroyBlockInSphere(const Sphere& sphere, float power)
 {
-	mapManager_->GetTerrain()->ReplaceBlockInSphere(sphere, BlockID::Air);
+	mapManager_->GetTerrain()->ReplaceBlockInSphere(sphere, BlockID::Air, power);
 }
 
 void ICharacter::RegisterToMap()

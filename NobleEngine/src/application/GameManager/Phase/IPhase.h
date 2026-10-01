@@ -1,9 +1,5 @@
 #pragma once
 #include <Game.h>
-#include <definition/definition.h>
-#include <definition/constexprs.h>
-#include <DrawSystem/RenderData/RenderObject.h>
-#include <ImGuiManager/ImGuiManager.h>
 #include <memory>
 
 // フェーズ間

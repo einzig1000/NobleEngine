@@ -2,11 +2,12 @@
 #include <EngineDefinition/EngineConstexprs.h>
 #include <EngineDefinition/EngineDefinition.h>
 #include <Utilities/Easing/Easing.h>
-#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
+#include <RootBinding/RootBindingManager.h>
 #include <ImGuiManager/ImGuiManager.h>
 #include <Engine.h>
-#include <DrawSystem/RenderData/RenderObject.h>
+#include <DrawSystem/RenderObject/RenderObject.h>
 #include <ComputeSystem/ComputeObject/ComputeObject.h>
+#include <iterator>
 
 /// <summary>
 /// ファサードクラス
@@ -751,15 +752,15 @@ namespace Game
 	namespace Resource
 	{
 		/// <summary>
-		/// 静的リソースの作成(モデルやテクスチャ等)
+		/// 静的リソースの作成(モデルやテクスチャ等)。生配列/std::vector/std::array/std::span すべて受け付ける器の広い関数
 		/// </summary>
-		/// <typeparam name="T">データ型</typeparam>
 		/// <param name="data">データ</param>
 		/// <returns>リソースID</returns>
-		template<typename T>
-		int32_t CreateStatic(const std::vector<T>& data)
+		template<GpuUploadRange Range>
+		int32_t CreateStatic(const Range& data)
 		{
-			return Engine::Instance().GetStructuredBufferManager()->CreateStatic(data);
+			using T = std::ranges::range_value_t<Range>;
+			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->CreateStatic(std::ranges::data(data), sizeof(T), std::ranges::size(data));
 		}
 
 		/// <summary>
@@ -784,26 +785,22 @@ namespace Game
 		/// <param name="bytes">初期化するバイト数</param>
 		void ZeroFillCompute(int32_t resourceID, size_t bytes);
 
-		///// <summary>
-		///// 動的リソースの更新
-		///// </summary>
-		///// <param name="resourceID">リソースID</param>
-		///// <param name="data">更新するデータ</param>
-		//template<typename T>
-		//void UpdateData(int32_t resourceID, const std::vector<T>& data)
-		//{
-		//	Engine::Instance().GetStructuredBufferManager()->UpdateData(resourceID, data.data(), sizeof(T), data.size());
-		//}
+		/// <summary>
+		/// リソースの破棄
+		/// </summary>
+		/// <param name="resourceID">リソースID</param>
+		void Destroy(int32_t resourceID);
 
 		/// <summary>
-		/// 連続コンテナ全体を送る。vector / 生配列 / std::array / span すべて受け付ける
+		/// 連続コンテナ全体を送る。生配列/std::vector/std::array/std::span すべて受け付ける器の広い関数
 		/// </summary>
-		template<typename Range>
-			requires requires(const Range& r) { std::data(r); std::size(r); }
+		/// <param name="resourceID">リソースID</param>
+		/// <param name="data">データ</param>
+		template<GpuUploadRange Range>
 		void UpdateData(int32_t resourceID, const Range& data)
 		{
-			using T = std::remove_cvref_t<decltype(*std::data(data))>;
-			Engine::Instance().GetStructuredBufferManager()->UpdateData(resourceID, std::data(data), sizeof(T), std::size(data));
+			using T = std::ranges::range_value_t<Range>;
+			Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->UpdateData(resourceID, std::ranges::data(data), sizeof(T), std::ranges::size(data));
 		}
 
 		/// <summary>
@@ -838,7 +835,18 @@ namespace Game
 		bool TryGetReadbackResult(int32_t token, void* outData, size_t bytes);
 	}
 
-	void quit();
+	namespace System
+	{
+		/// <summary>
+		/// ゲーム終了
+		/// </summary>
+		void quit();
+
+		/// <summary>
+		/// ImGuiの描画切り替え
+		/// </summary>
+		void ToggleDrawImGui();
+	}
 };
 
 

@@ -1,5 +1,4 @@
 #pragma once
-#include <DrawSystem/RenderData/RenderObject.h>
 #include <definition/definition.h>
 #include <memory>
 #include <Game.h>

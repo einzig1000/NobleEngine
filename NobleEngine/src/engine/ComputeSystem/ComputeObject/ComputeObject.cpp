@@ -5,7 +5,7 @@
 #include <Utilities/Converter/StringConverter/StringConverter.h>
 #include <Utilities/Logger/Logger.h>
 #include <ComputeSystem/ComputeSystem.h>
-#include <cstring>
+#include <RootBinding/RootBindingManager.h>
 #include <cstdint>
 
 void ComputeObject::SetupFromShaders()
@@ -60,7 +60,7 @@ void ComputeObject::SetBRegisterData(const uint32_t key, const void* data, uint3
 	if (it == rootParamHashToIndexMap_.end()) return;
 	auto& param = rootParams_.at(it->second);
 
-	param.gpuAddress = Engine::Instance().GetComputeSystem()->GetCurrentFrameCbGpuAddress(param.sizeBytes, data);
+	param.gpuAddress = Engine::Instance().GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(param.sizeBytes, data);
 	return;
 }
 

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <limits>
 #include <System/EventBus/EventBus.h>
+#include <App.h>
 
 namespace
 {
@@ -19,9 +20,9 @@ namespace
 
 Terrain::Terrain()
 {
-	drawRadius_.x = 3;
-	drawRadius_.y = 1;
-	drawRadius_.z = 3;
+	drawRadius_.x = 6;
+	drawRadius_.y = 2;
+	drawRadius_.z = 6;
 	updateRadius_.x = drawRadius_.x;
 	updateRadius_.y = 1;
 	updateRadius_.z = drawRadius_.z;
@@ -39,10 +40,10 @@ void Terrain::Initialize()
 
 void Terrain::Update(int32_t cameraID, Vector3 centerPos)
 {
-	cameraChunkPos_ = ChunkIndexByPosition(centerPos);
+	centerChunkPos_ = ChunkIndexByPosition(centerPos);
 
 	// 1Fに1つのチャンクを作成する
-	ProcessChunkGeneration(cameraChunkPos_);
+	ProcessChunkGeneration(centerChunkPos_);
 
 	// プレイヤー周囲更新
 	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
@@ -51,24 +52,18 @@ void Terrain::Update(int32_t cameraID, Vector3 centerPos)
 		{
 			for (int32_t dz = -drawRadius_.z; dz <= drawRadius_.z; ++dz)
 			{
-				if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+				if (centerChunkPos_.y + dy < 0 || centerChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
 				{
 					continue;
 				}
 
-				Vector3int chunkPos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
+				Vector3int chunkPos(centerChunkPos_.x + dx, centerChunkPos_.y + dy, centerChunkPos_.z + dz);
 				Chunk* chunk = GetChunk(chunkPos);
-				if (chunk) 
-				{
-					chunk->Update(cameraID); 
-				}
+				if (chunk) chunk->Update(cameraID);
 				else EnsureChunkScheduled(chunkPos);
 			}
 		}
 	}
-
-	//Chunk* chunk = GetChunk(cameraChunkPos_);
-	//if (chunk) { chunk->Update(cameraID); }
 }
 
 void Terrain::Draw(int32_t renderTargetID)
@@ -82,22 +77,17 @@ void Terrain::Draw(int32_t renderTargetID)
 		{
 			for (int32_t dz = -drawRadius_.z; dz <= drawRadius_.z; ++dz)
 			{
-				if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+				if (centerChunkPos_.y + dy < 0 || centerChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
 				{
 					continue;
 				}
 
-				Vector3int chunkPos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
+				Vector3int chunkPos(centerChunkPos_.x + dx, centerChunkPos_.y + dy, centerChunkPos_.z + dz);
 				Chunk* chunk = GetChunk(chunkPos);
 				if (chunk) { chunk->Draw(renderTargetID); drawCount_++; }
 			}
 		}
 	}
-
-
-	//Chunk* chunk = GetChunk(cameraChunkPos_);
-	//if (chunk) { chunk->Draw(renderTargetID); drawCount_++; }
-	//else EnsureChunkScheduled(cameraChunkPos_);
 }
 
 void Terrain::DrawImGui()
@@ -116,7 +106,7 @@ void Terrain::DrawImGui()
 			{
 				for (int32_t dz = -10; dz <= 10; ++dz)
 				{
-					if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+					if (centerChunkPos_.y + dy < 0 || centerChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
 					{
 						continue;
 					}
@@ -133,7 +123,7 @@ void Terrain::DrawImGui()
 
 void Terrain::GenerateChunks(Vector3 pos)
 {
-	cameraChunkPos_ = ChunkIndexByPosition(pos);
+	centerChunkPos_ = ChunkIndexByPosition(pos);
 
 	// プレイヤー周囲更新
 	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
@@ -142,17 +132,17 @@ void Terrain::GenerateChunks(Vector3 pos)
 		{
 			for (int32_t dz = -drawRadius_.z; dz <= drawRadius_.z; ++dz)
 			{
-				if (cameraChunkPos_.y + dy < 0 || cameraChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+				if (centerChunkPos_.y + dy < 0 || centerChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
 				{
 					continue;
 				}
 
-				Vector3int chunkPos(cameraChunkPos_.x + dx, cameraChunkPos_.y + dy, cameraChunkPos_.z + dz);
+				Vector3int chunkPos(centerChunkPos_.x + dx, centerChunkPos_.y + dy, centerChunkPos_.z + dz);
 				Chunk* chunk = GetChunk(chunkPos);
 				if (!chunk)
 				{
 					EnsureChunkScheduled(chunkPos);
-					ProcessChunkGeneration(cameraChunkPos_);
+					ProcessChunkGeneration(centerChunkPos_);
 				}
 			}
 		}
@@ -216,29 +206,15 @@ void Terrain::CreateNewMap(const std::string& mapName, uint32_t seed)
 }
 void Terrain::LoadMap(const std::string& mapName)
 {
-	// 相互参照を切る
-	for (auto& [pos, chunk] : chunks)
-	{
-		if (!chunk) continue;
-		for (int32_t dir = 0; dir < 4; ++dir)
-		{
-			chunk->SetNeighborChunk(static_cast<DirectionXYZ>(dir), nullptr);
-		}
-	}
 	// chunks 全clear
 	chunks.clear();
-	// chunkScheduled_/chunkCreated_ を clear
+	// chunkScheduled_ を clear
 	chunkScheduled_.clear();
-	chunkCreated_.clear();
 
 	// マップネーム保存
 	currentMapName_ = mapName;
 	// mapNameからファイルパスを取得
 	currentMapFilePath_ = mapNameToFilePath_[currentMapName_];
-
-	// JSONから読み込み
-	//JsonManager json;
-	//json.LoadFromJson(*this, currentMapFilePath_);
 }
 void Terrain::SaveMap()
 {
@@ -258,12 +234,12 @@ Chunk* Terrain::GetChunk(const Vector3int& chunkPos) const
 }
 void Terrain::EnsureChunkScheduled(const Vector3int& chunkPos)
 {
-	// チャンクが既に作成されているならreturn
-	if (chunkCreated_.find(chunkPos) != chunkCreated_.end()) return;
 	// 既にスケジュール済みならreturn
 	if (chunkScheduled_.find(chunkPos) != chunkScheduled_.end()) return;
+	// チャンクが既に作成されているならreturn
+	if (GetChunk(chunkPos) != nullptr) return;
 
-	// スケジュール済み集合にも登録
+	// スケジュール済み集合に登録
 	chunkScheduled_.insert(chunkPos);
 }
 void Terrain::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
@@ -284,15 +260,6 @@ void Terrain::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 			}
 		}
 		chunkScheduled_.erase(pos);
-
-
-		// 一応存在確認
-		if (GetChunk(pos) != nullptr)
-		{
-			// 生成済み集合に登録
-			chunkCreated_.insert(pos);
-			return;
-		}
 
 		// 新規生成
 		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(noiseParam_, pos, facePagePool_.get());
@@ -344,14 +311,11 @@ void Terrain::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 
 		// チャンク登録
 		chunks[pos] = std::move(chunk);
-
-		// 生成済み集合に登録
-		chunkCreated_.insert(pos);
 	}
 }
 
 // 指定範囲のブロックを一括で置き換える
-void Terrain::ReplaceBlockInAABB(const AABB& aabb, BlockID id)
+void Terrain::ReplaceBlockInAABB(const AABB& aabb, BlockID id, float power)
 {
 	int32_t countX = std::max(1, static_cast<int32_t>((aabb.max.x - aabb.min.x) / Constexprs::kBlockSize));
 	int32_t countY = std::max(1, static_cast<int32_t>((aabb.max.y - aabb.min.y) / Constexprs::kBlockSize));
@@ -371,13 +335,12 @@ void Terrain::ReplaceBlockInAABB(const AABB& aabb, BlockID id)
 				Vector3int chunkIndex = ChunkIndexByPosition(checkPos);
 				Vector3int localIndex = BlockIndexByPosition(checkPos);
 
-				// 
-				ReplaceBlock(chunkIndex, localIndex, id);
+				ReplaceBlock(chunkIndex, localIndex, id, power);
 			}
 		}
 	}
 }
-void Terrain::ReplaceBlockInOBB(const OBB& obb, BlockID id)
+void Terrain::ReplaceBlockInOBB(const OBB& obb, BlockID id, float power)
 {
 	const float halfSizeArr[3] = { obb.halfSize.x, obb.halfSize.y, obb.halfSize.z };
 
@@ -410,13 +373,13 @@ void Terrain::ReplaceBlockInOBB(const OBB& obb, BlockID id)
 
 				if (IsCollision(obb, blockAABB))
 				{
-					ReplaceBlock(chunkIndex, localIndex, id);
+					ReplaceBlock(chunkIndex, localIndex, id, power);
 				}
 			}
 		}
 	}
 }
-void Terrain::ReplaceBlockInSphere(const Sphere& sphere, BlockID id)
+void Terrain::ReplaceBlockInSphere(const Sphere& sphere, BlockID id, float power)
 {
 	const Vector3 extent(sphere.radius, sphere.radius, sphere.radius);
 	const AABB broadAABB(sphere.center - extent, sphere.center + extent);
@@ -440,7 +403,7 @@ void Terrain::ReplaceBlockInSphere(const Sphere& sphere, BlockID id)
 
 				if (IsCollision(sphere, blockSphere))
 				{
-					ReplaceBlock(chunkIndex, localIndex, id);
+					ReplaceBlock(chunkIndex, localIndex, id, power);
 				}
 			}
 		}
@@ -448,15 +411,25 @@ void Terrain::ReplaceBlockInSphere(const Sphere& sphere, BlockID id)
 }
 
 // 指定位置のブロックを置き換える
-bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id)
+bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id, float power)
 {
 	// 設置するチャンクを取得
 	Chunk* chunk = GetChunk(chunkPos);
 	if (!chunk) return false;
 
-	// 設置するブロック単位の空間を取得
+	// 設置場所のブロックを取得
 	BlockID* targetBlockID = chunk->GetBlockID(localIndex);
 	if (!targetBlockID) return false;
+
+	// 既に同じブロックなら何もしない
+	if (*targetBlockID == id) return false;
+
+	// ブロックの情報を取得
+	const BlockInfo* targetBlockInfo = App::Data::Item::Get(*targetBlockID);
+	if (!targetBlockInfo) return false;
+
+	// パワー不足なら何もしない
+	if (power < targetBlockInfo->durability) return false;
 
 	// キャラクターと重なってたら設置できない
 	const AABB placeAabb = GetAABB(chunkPos, localIndex);
@@ -489,7 +462,7 @@ bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIn
 
 	return true;
 }
-bool Terrain::ReplaceBlock(const lookAtBlock& lab, BlockID id)
+bool Terrain::ReplaceBlock(const lookAtBlock& lab, BlockID id, float power)
 {
 	// 向きが不明ならreturn
 	if (lab.face == AABBFace::NONE) return false;
@@ -556,11 +529,11 @@ bool Terrain::ReplaceBlock(const lookAtBlock& lab, BlockID id)
 		localIndex.z -= Constexprs::kChunkBlockCountZ;
 	}
 
-	return ReplaceBlock(chunkPos, localIndex, id);
+	return ReplaceBlock(chunkPos, localIndex, id, power);
 }
-bool Terrain::ReplaceBlock(const Vector3& position, BlockID id)
+bool Terrain::ReplaceBlock(const Vector3& position, BlockID id, float power)
 {
-	return ReplaceBlock(ChunkIndexByPosition(position), BlockIndexByPosition(position), id);
+	return ReplaceBlock(ChunkIndexByPosition(position), BlockIndexByPosition(position), id, power);
 }
 
 // 指定座標ブロックのワールドAABB/ワールドSphereを取得

@@ -2,7 +2,6 @@
 #include <optional>
 #include <Game.h>
 #include <definition/definition.h>
-#include <DrawSystem/RenderData/RenderObject.h>
 #include <GameObjects/Character/ItemInventory/ItemInventory.h>
 #include <GameObjects/Character/HaveItem/HaveItem.h>
 
@@ -60,9 +59,9 @@ public:
 	// ブロック設置
 	virtual void SetBlock(BlockID id);
 	// ブロック範囲破壊
-	virtual void DestroyBlockInAABB(const AABB& aabb);
-	virtual void DestroyBlockInOBB(const OBB& obb);
-	virtual void DestroyBlockInSphere(const Sphere& sphere);
+	virtual void DestroyBlockInAABB(const AABB& aabb, float power);
+	virtual void DestroyBlockInOBB(const OBB& obb, float power);
+	virtual void DestroyBlockInSphere(const Sphere& sphere, float power);
 	// マップに自身を登録
 	virtual void RegisterToMap();
 
@@ -81,18 +80,22 @@ public:
 	virtual const ItemInventory* GetInventory() const { return &inventory_; }
 	// アイテム獲得
 	virtual void AddItem(ItemID id, uint32_t count) { inventory_.AddItem(id, count); }
+	// 指定スロットの中身を置き換える(ツールのグレードアップで使う)
+	virtual void ReplaceItem(int32_t index, ItemID id, uint32_t count) { inventory_.ReplaceItem(index, id, count); }
 	// 手に持っているアイテムを取得
 	virtual const ItemID GetHaveItem() const { return inventory_.GetCurrentSelectedItemID(); }
+	// 手に持っているアイテムの採掘力を取得
+	virtual float GetHaveItemMiningPower() const { return inventory_.GetCurrentSelectedItemMiningPower(); }
 	// 手に持っているアイテムのアニメーションを再生
 	virtual void PlayItemMotion(ItemMotion motion);
 	virtual ItemMotion GetCurrentItemMotion() const;
 	virtual bool IsItemMotionFinished() const;
+	// 手に持っているアイテムのスケールを拡大
+	virtual void ScaleUpItem() { haveItem_.ScaleUp(); }
+	virtual void SpeedUpItem() { haveItem_.SpeedUp(); }
 
 	// 手に持っているアイテムのコライダーを取得
 	virtual const ColliderShape& GetHaveItemWorldCollider() const { return haveItem_.GetWorldCollider(); }
-
-
-
 
 
 protected:

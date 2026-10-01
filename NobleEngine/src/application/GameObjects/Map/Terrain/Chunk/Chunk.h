@@ -92,6 +92,8 @@ private:
 	BakeState bakeState_ = BakeState::Idle;
 	// 進行中の読み戻しトークン
 	int32_t pendingReadbackToken_ = -1;
+	// Count.CSに読ませたblockIdsのSRV。Write.CSにも同じものを読ませる
+	uint32_t bakeBlockIdsSrv_ = UINT32_MAX;
 
 	// 描画に使っているスロット番号(0 or 1)。Bakeは常にもう片方のスロットに対して行う
 	int32_t activeSlot_ = 0;

@@ -9,21 +9,6 @@
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include <DirectX/DirectXManager.h>
 
-enum class BufferKind
-{
-	Static,
-	Dynamic,
-	ComputeOutput
-};
-
-struct PendingReadback
-{
-	int32_t sourceResourceID = -1;
-	size_t bytes = 0;
-	Microsoft::WRL::ComPtr<ID3D12Resource> readbackResource;
-	UINT64 targetFenceValue = 0;
-	bool copyRecorded = false;
-};
 
 class StructuredBufferManager
 {
@@ -33,34 +18,11 @@ public:
 	/// <summary>
 	/// 静的リソースの作成(モデルやテクスチャ等)
 	/// </summary>
-	/// <typeparam name="T">データ型</typeparam>
-	/// <param name="data">データ</param>
+	/// <param name="data">データの先頭</param>
+	/// <param name="elementSize">要素のサイズ</param>
+	/// <param name="elementCount">要素の数</param>
 	/// <returns>リソースID</returns>
-	template <typename T>
-	int32_t CreateStatic(const std::vector<T>& data)
-	{
-		// このフレームで使うコマンドリストを取得
-		const auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-		auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
-
-		StaticEntry entry{};
-		const size_t bytes = data.size() * sizeof(T);
-
-		// デフォルトヒープ(GPUからの高速アクセス)に作る
-		entry.buffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bytes);
-
-		// デフォルトヒープに送るためにこのフレームでだけ使ういたいアップロードヒープを作る
-		auto intermediate = Dx12ResourceFactory::CreateUploadResource(entry.buffer.Get(), data, dxManager_->GetDevice(), cmdList);
-		pendingIntermediates_.push_back(intermediate);
-
-		// SRVを作る
-		entry.srv = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
-			entry.buffer.Get(), static_cast<UINT>(data.size()), static_cast<UINT>(sizeof(T)));
-
-		staticBuffers_[nextResourceID_] = std::move(entry);
-		kindMap_[nextResourceID_] = BufferKind::Static;
-		return nextResourceID_++;
-	}
+	int32_t CreateStatic(const void* data, size_t elementSize, size_t elementCount);
 
 	/// <summary>
 	/// 動的リソースの作成(毎フレーム変わるパーティクル配列等)
@@ -144,10 +106,21 @@ public:
 
 	void TransitionToUAV(int32_t resourceID, ID3D12GraphicsCommandList6* cmdList);
 	void TransitionToSRV(int32_t resourceID, ID3D12GraphicsCommandList6* cmdList);
+	
+	/// <summary>
+	/// 解放待ちリソースのうちGPUが使い終わったものを実際に解放する(毎フレーム1回)
+	/// </summary>
+	void ProcessPendingReleases();
 
 private:
 	DirectXManager* dxManager_ = nullptr;
 
+	enum class BufferType
+	{
+		Static,
+		Dynamic,
+		ComputeOutput
+	};
 	struct StaticEntry
 	{
 		Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
@@ -166,16 +139,32 @@ private:
 		SRV_UAVManager::Allocation srv;
 		D3D12_RESOURCE_STATES currentState = D3D12_RESOURCE_STATE_COMMON;
 	};
+	// GPUが使い終わるのを待っている解放予定のリソース
+	struct PendingRelease
+	{
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> resources;
+		std::vector<uint32_t> descriptorIndices;
+		UINT64 fenceValue = 0;
+	};
+	// Readback要求の情報
+	struct PendingReadback
+	{
+		int32_t sourceResourceID = -1;
+		size_t bytes = 0;
+		Microsoft::WRL::ComPtr<ID3D12Resource> readbackResource;
+		UINT64 targetFenceValue = 0;
+		bool copyRecorded = false;
+	};
 
-	// いずれフリーインデックス配列を使うようにする
 	std::unordered_map<int32_t, StaticEntry> staticBuffers_{};
 	std::unordered_map<int32_t, DynamicEntry> dynamicBuffers_{};
 	std::unordered_map<int32_t, ComputeOutEntry> computeOutBuffers_{};
 	int32_t nextResourceID_ = 0;
-	std::unordered_map<int32_t, BufferKind> kindMap_{};
-
+	std::unordered_map<int32_t, BufferType> bufferTypeMap_{};
 	int32_t nextReadbackToken_ = 0;
 	std::unordered_map<int32_t, PendingReadback> pendingReadbacks_{};
+	std::vector<PendingRelease> pendingReleases_{};
+
 
 	// TextureLoaderにもmodelLoaderにもある中間リソース　いつか統合。毎フレーム解放
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> pendingIntermediates_{};

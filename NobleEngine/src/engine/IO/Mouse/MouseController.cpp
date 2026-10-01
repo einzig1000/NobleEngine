@@ -37,7 +37,7 @@ void MouseController::EndFrame()
     rawDelta_ = Vector2{ 0,0 }; 
 }
 
-Vector3 MouseController::GetWorldPosition(Matrix4x4& viewProjection)
+Vector3 MouseController::Get3DPosition(Matrix4x4& viewProjection)
 {
 	return GetRay(viewProjection).origin;
 }
@@ -163,7 +163,8 @@ void MouseController::ApplyCursorLock(bool locked)
         ::ClientToScreen(hwnd_, &tl);
         ::ClientToScreen(hwnd_, &br);
 
-        RECT screenRc{ tl.x, tl.y, br.x, br.y };
+		const LONG buffer = 10; // クリップ範囲の余白
+        RECT screenRc{ tl.x + buffer, tl.y + buffer, br.x - buffer, br.y - buffer };
         ::ClipCursor(&screenRc);
     }
     else

@@ -5,6 +5,7 @@
 InventoryScreen::InventoryScreen()
 {
 	elementTypes_.push_back(UIElementType::Hotbar);
+	elementTypes_.push_back(UIElementType::MiningPointGauge);
 	elementTypes_.push_back(UIElementType::Inventory);
 }
 
@@ -52,5 +53,13 @@ void InventoryScreen::Draw(int32_t renderTargetID)
 	for (const auto& element : uiElements_)
 	{
 		element->Draw(renderTargetID);
+	}
+}
+
+void InventoryScreen::DrawImGui()
+{
+	for (const auto& element : uiElements_)
+	{
+		element->DrawImGui();
 	}
 }

@@ -36,6 +36,8 @@ ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManag
 
 
 #ifdef _RELEASE
+	isDraw_ = false;
+
 	io.IniFilename = nullptr;
 
 	ImGui::LoadIniSettingsFromDisk("imgui.ini");
@@ -66,15 +68,11 @@ void ImGuiManager::Draw()
 {
 	if (!isDraw_) return;
 
-//#ifdef _DEBUG
-
 	ImDrawData* draw_data = ImGui::GetDrawData();
 	if (draw_data != nullptr && draw_data->CmdListsCount > 0)
 	{
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxManager_->GetCommandContextManager()->GetCommandList(dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()));
 	}
-
-//#endif
 }
 
 void ImGuiManager::Finalize()

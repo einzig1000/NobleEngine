@@ -1,62 +1,68 @@
 {
   "Air": {
-    "color": 1,
-    "durability": -1.0,
-    "isTransparent": true
+    "color": 4294967295,
+    "durability": 1.0,
+    "isTransparent": false,
+    "miningPoint": 0.0
   },
   "Bedrock": {
     "color": 269488383,
-    "durability": -1.0,
-    "isTransparent": false
+    "durability": 99999999.9,
+    "isTransparent": false,
+    "miningPoint": 9999.0
   },
   "Diamond": {
     "color": 299875327,
     "durability": 30.0,
-    "isTransparent": false
+    "isTransparent": false,
+    "miningPoint": 9999.0
   },
   "Dirt": {
     "color": 2740588799,
-    "durability": 8.0,
-    "isTransparent": false
+    "durability": 1.0,
+    "isTransparent": false,
+    "miningPoint": 1.0
   },
   "Glass": {
     "color": 316717874,
     "durability": 5.0,
-    "isTransparent": true
+    "isTransparent": true,
+    "miningPoint": 0.0
   },
   "Gold": {
     "color": 3353285119,
     "durability": 20.0,
-    "isTransparent": false
+    "isTransparent": false,
+    "miningPoint": 9999.0
   },
   "Grass": {
     "color": 649268991,
     "durability": 1.0,
-    "isTransparent": false
+    "isTransparent": false,
+    "miningPoint": 1.0
   },
   "Iron": {
     "color": 2644352511,
     "durability": 20.0,
-    "isTransparent": false
+    "isTransparent": false,
+    "miningPoint": 999.0
   },
   "Leaf": {
     "color": 699334911,
     "durability": 8.0,
-    "isTransparent": false
+    "isTransparent": false,
+    "miningPoint": 0.0
   },
   "Stone": {
     "color": 2475922431,
-    "durability": 1.0,
-    "isTransparent": false
+    "durability": 2.0,
+    "isTransparent": false,
+    "miningPoint": 1.2
   },
   "Wood": {
     "color": 2135359743,
     "durability": 8.0,
-    "isTransparent": false
-  },
-  "wood": {
-    "color": 2336560127,
-    "durability": 40.0,
-    "isTransparent": false
+    "isTransparent": false,
+    "miningPoint": 1.0
   }
 }

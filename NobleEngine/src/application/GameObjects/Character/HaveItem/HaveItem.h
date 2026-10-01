@@ -17,6 +17,12 @@ public:
 
 	const ColliderShape& GetWorldCollider() const { return worldCollider_; }
 
+
+
+
+	void SpeedUp() { animationSpeed_ *= 1.3f; }
+	void ScaleUp() { pivotTransform_.scale.x += 0.3f; pivotTransform_.scale.y += 0.3f; pivotTransform_.scale.z += 0.3f; };
+
 private:
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> render_;
@@ -25,6 +31,7 @@ private:
 	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	int32_t t_haveItem_ = -1;
 	float animationTime_ = 0.0f;
+	float animationSpeed_ = 1.0f;
 
 	const ItemInfo* itemInfo_ = nullptr;
 	const ModelData* modelData_ = nullptr;

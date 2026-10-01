@@ -36,7 +36,7 @@
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeapManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\FrameCbAllocator\FrameCbAllocator.cpp">
+    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp">
@@ -66,7 +66,7 @@
     <ClCompile Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\DrawSystem\RenderData\RenderObject.cpp">
+    <ClCompile Include="src\engine\DrawSystem\RenderObject\RenderObject.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DrawSystem\DrawSystem.cpp">
@@ -291,7 +291,7 @@
     <ClCompile Include="src\engine\ComputeSystem\ComputeSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.cpp">
+    <ClCompile Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Character\ICharacter.cpp">
@@ -453,6 +453,21 @@
     <ClCompile Include="src\engine\AssetManager\Font\FontBank\FontBank.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningPointGauge\MiningPointGaugeUI.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\ItemIcon\ItemIconManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\RootBinding\RootBindingManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Camera\Camera.h">
@@ -476,7 +491,7 @@
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeapManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\FrameCbAllocator\FrameCbAllocator.h">
+    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h">
@@ -509,7 +524,7 @@
     <ClInclude Include="src\engine\DirectX\SynchronizationManager\SynchronizationManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\DrawSystem\RenderData\RenderObject.h">
+    <ClInclude Include="src\engine\DrawSystem\RenderObject\RenderObject.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DrawSystem\DrawSystem.h">
@@ -1187,7 +1202,7 @@
     <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\StructuredBufferManager\StructuredBufferManager.h">
+    <ClInclude Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Character\ICharacter.h">
@@ -1356,6 +1371,21 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\AssetManager\Font\FontBank\FontBank.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningPointGauge\MiningPointGaugeUI.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\ItemIcon\ItemIconManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\RootBinding\RootBindingManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

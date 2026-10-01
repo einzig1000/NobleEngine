@@ -5,6 +5,7 @@
 #include <Utilities/Converter/StringConverter/StringConverter.h>
 #include <Utilities/Logger/Logger.h>
 #include <DrawSystem/DrawSystem.h>
+#include <RootBinding/RootBindingManager.h>
 #include <cstring>
 #include <cstdint>
 
@@ -86,7 +87,7 @@ void RenderObject::SetBRegisterData(const uint32_t key, ShaderType shaderType, c
 	if (it == rootParamHashToIndexMap_.end()) return;
 	auto& param = rootParams_.at(it->second);
 
-	param.gpuAddress = Engine::Instance().GetDrawSystem()->GetCurrentFrameCbGpuAddress(param.sizeBytes, data);
+	param.gpuAddress = Engine::Instance().GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(param.sizeBytes, data);
 	return;
 }
 

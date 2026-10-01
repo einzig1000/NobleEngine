@@ -114,11 +114,11 @@ void Player::CheckExternalEvents()
 				GoTargetCurving::Params request;
 				request.start = destroyedData->position;
 				request.target = &translate_.value;
-				request.targetOffset = Vector3{ 0.0f, -0.2f, 0.0f };
+				request.targetOffset = Vector3{ 0.0f, -0.6f, 0.0f };
 				request.height = 1.0f;
 				request.speed = 8.0f;
 				request.color = { 0.6f, 1.0f, 0.3f, 1.0f };
-				request.scale = miningPoint * 0.001f;
+				request.scale = miningPoint * 0.0001f;
 				Event arriveEvent;
 				arriveEvent.type = EventType::MiningOrbAbsorbed;
 				arriveEvent.data = miningPoint;
@@ -129,6 +129,35 @@ void Player::CheckExternalEvents()
 				event.data = request;
 				eventBus_->Notify(event);
 			}
+		}
+
+
+		// ツールのグレードアップ依頼
+		for (const Event& event : eventBus_->GetEvents(EventType::ToolUpgradeRequested_SpeedUp))
+		{
+			const auto* request = std::any_cast<ToolUpgradeRequest>(&event.data);
+			if (!request) continue;
+			if (request->slotIndex < 0 || request->slotIndex >= ItemInventory::kSlotCount) continue;
+			// 届くまでにスロットの中身が変わっていたら何もしない
+			if (GetInventory()->GetInventorySlot(request->slotIndex).itemID != request->sourceID) continue;
+			// レベルが足りなければ何もしない
+			if (!miningPointGauge_.UseLevel(request->levelCost)) continue;
+			// 元の道具を消して同じスロットにグレードアップ先を入れる
+			ReplaceItem(request->slotIndex, request->resultID, 1);
+			SpeedUpItem();
+		}
+		for (const Event& event : eventBus_->GetEvents(EventType::ToolUpgradeRequested_ScaleUp))
+		{
+			const auto* request = std::any_cast<ToolUpgradeRequest>(&event.data);
+			if (!request) continue;
+			if (request->slotIndex < 0 || request->slotIndex >= ItemInventory::kSlotCount) continue;
+			// 届くまでにスロットの中身が変わっていたら何もしない
+			if (GetInventory()->GetInventorySlot(request->slotIndex).itemID != request->sourceID) continue;
+			// レベルが足りなければ何もしない
+			if (!miningPointGauge_.UseLevel(request->levelCost)) continue;
+			// 元の道具を消して同じスロットにグレードアップ先を入れる
+			ReplaceItem(request->slotIndex, request->resultID, 1);
+			ScaleUpItem();
 		}
 
 		// 採掘オーブが届いた

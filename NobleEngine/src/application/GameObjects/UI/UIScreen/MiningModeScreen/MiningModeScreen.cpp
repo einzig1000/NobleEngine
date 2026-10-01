@@ -53,3 +53,6 @@ void MiningModeScreen::Draw(int32_t renderTargetID)
 		element->Draw(renderTargetID);
 	}
 }
+
+void MiningModeScreen::DrawImGui()
+{}

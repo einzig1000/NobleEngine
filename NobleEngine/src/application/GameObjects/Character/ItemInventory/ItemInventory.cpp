@@ -18,6 +18,11 @@ ItemID ItemInventory::GetCurrentSelectedItemID() const
 	return inventory_[static_cast<size_t>(hotbarSelectedIndex_)].itemID;
 }
 
+float ItemInventory::GetCurrentSelectedItemMiningPower() const
+{
+    return 0.0f;
+}
+
 // アイテム獲得（インベントリに追加）
 void ItemInventory::AddItem(ItemID id, uint32_t count)
 {
@@ -55,3 +60,9 @@ void ItemInventory::SetHotbarSelectedIndex(int32_t index)
 
 void ItemInventory::SwapSlot(int32_t a, int32_t b)
 {}
+
+void ItemInventory::ReplaceItem(int32_t index, ItemID id, uint32_t count)
+{
+    if (index < 0 || index >= kSlotCount) return;
+    inventory_[static_cast<size_t>(index)] = InventorySlot{ id, count };
+}

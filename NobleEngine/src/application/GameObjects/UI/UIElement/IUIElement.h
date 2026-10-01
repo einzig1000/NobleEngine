@@ -4,6 +4,8 @@
 
 class EventBus;
 class ItemInventory;
+class MiningPointGauge;
+class ItemIconManager;
 
 struct ElementData
 {
@@ -27,15 +29,21 @@ public:
 	// UI要素の描画
 	virtual void Draw(int32_t rt_ID) = 0;
 
+	virtual void DrawImGui() = 0;
+
 	virtual void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; }
 	virtual void SetInventory(const ItemInventory* inventory) { inventory_ = inventory; }
+	virtual void SetMiningGauge(const MiningPointGauge* miningGauge) { miningGauge_ = miningGauge; }
+	virtual void SetIconManager(ItemIconManager* iconManager) { iconManager_ = iconManager; }
 	virtual void SetNextUIMode(UIMode* nextUIMode) { nextUIMode_ = nextUIMode; }
 
 protected:
 	EventBus* eventBus_ = nullptr;
 	UIMode* nextUIMode_ = nullptr;
+
+	const MiningPointGauge* miningGauge_ = nullptr;
 	const ItemInventory* inventory_ = nullptr;
+	ItemIconManager* iconManager_ = nullptr;
 
 	std::vector<ElementData> sprites_;
 };
-

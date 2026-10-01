@@ -1,5 +1,6 @@
 #include "ItemEditor.h"
 #include <System/ResourceLoader/Data/DataManager.h>
+#include <GameObjects/UI/ItemIcon/ItemIconManager.h>
 #include <Utilities/Json/JsonManager.h>
 #include <App.h>
 
@@ -16,6 +17,9 @@ ItemEditor::ItemEditor(DataManager* dataManager)
 
 	renderObject_->modelID_ = Game::Asset::Model::Load("assets/engine/model/cube/cube.obj");
 	textureID_ = Game::Asset::Texture::Load("assets/engine/texture/uvChecker.png");
+
+	iconPreviewTextureID_ = Game::Asset::RenderTexture::CreateRenderTexture(256, 256, "ItemIconPreview");
+	iconRenderObject_ = ItemIconManager::CreateRenderObject();
 }
 
 ItemEditor::~ItemEditor()
@@ -41,10 +45,19 @@ void ItemEditor::Draw()
 		renderObject_->SetBRegisterData(1, ShaderType::VertexShader, &world);
 		renderObject_->Draw(renderTextureID_);
 	}
+
+	// アイコンのプレビュー
+	if (iconItemID_ != ItemID::MAX)
+	{
+		ItemIconManager::DrawItem(*iconRenderObject_, iconItemInfo_, iconPreviewTextureID_);
+		iconPreviewDrawn_ = true;
+	}
 }
 
 void ItemEditor::DrawImGui()
 {
+	DrawIconImGui();
+
 	ImGui::Begin("Item Editor");
 
 	// enum配列
@@ -149,7 +162,7 @@ void ItemEditor::DrawImGui()
 			std::string textureName = textureData ? textureData->filePath : "None";
 			ImGui::Text("TexturePath: %s", textureName.c_str());
 
-			ImGui::DragFloat("toolInfo.attackPower", &toolInfo.attackPower, 0.1f);
+			ImGui::DragFloat("toolInfo.miningPower", &toolInfo.miningPower, 0.1f);
 			ImGui::DragFloat("toolInfo.miningSpeed", &toolInfo.miningSpeed, 0.1f);
 
 			// 読み込み
@@ -186,6 +199,7 @@ void ItemEditor::DrawImGui()
 			}
 
 			ImGui::ColorEdit4("Color", &color_.x);
+			ImGui::DragFloat("blockInfo.miningPoint", &blockInfo.miningPoint, 0.1f);
 			ImGui::DragFloat("blockInfo.durability", &blockInfo.durability, 0.1f);
 
 			// 読み込み
@@ -265,7 +279,9 @@ void ItemEditor::DrawImGui()
 
 			if (info && ImGui::TreeNode(itemIDNames[i].data()))
 			{
+				// tempInfoは毎フレーム作り直されるので、選んだフレームのうちに保存する
 				ItemInfo tempInfo = *info;
+				bool changed = false;
 
 				if (ImGui::BeginCombo("BlockID", magic_enum::enum_name(tempInfo.blockID).data()))
 				{
@@ -277,6 +293,7 @@ void ItemEditor::DrawImGui()
 						if (ImGui::Selectable(blockIDNames[i].data(), selected))
 						{
 							tempInfo.blockID = value;
+							changed = true;
 						}
 						if (selected) ImGui::SetItemDefaultFocus();
 					}
@@ -292,6 +309,7 @@ void ItemEditor::DrawImGui()
 						if (ImGui::Selectable(toolIDNames[i].data(), selected))
 						{
 							tempInfo.toolID = value;
+							changed = true;
 						}
 						if (selected) ImGui::SetItemDefaultFocus();
 					}
@@ -306,13 +324,15 @@ void ItemEditor::DrawImGui()
 						if (ImGui::Selectable(objectIDNames[i].data(), selected))
 						{
 							tempInfo.objectID = value;
+							changed = true;
 						}
 						if (selected) ImGui::SetItemDefaultFocus();
 					}
 					ImGui::EndCombo();
 				}
 
-				if (ImGui::Button("Save"))
+				// Saveでバンクも書き換わるので、次のフレームのGetから新しい値が出る
+				if (changed)
 				{
 					App::Data::Item::Save(itemID, tempInfo);
 				}
@@ -324,7 +344,6 @@ void ItemEditor::DrawImGui()
 
 		ImGui::TreePop();
 	}
-
 
 	// フルスクリーン表示
 	if (fullscreen_)
@@ -349,6 +368,66 @@ void ItemEditor::DrawImGui()
 		}
 
 		ImGui::End();
+	}
+
+	ImGui::End();
+}
+
+void ItemEditor::DrawIconImGui()
+{
+	ImGui::Begin("Item Icon");
+
+	// 調整するアイテムを選ぶ
+	auto itemIDValues = magic_enum::enum_values<ItemID>();
+	auto itemIDNames = magic_enum::enum_names<ItemID>();
+	const char* currentName = (iconItemID_ == ItemID::MAX) ? "None" : magic_enum::enum_name(iconItemID_).data();
+	if (ImGui::BeginCombo("ItemID", currentName))
+	{
+		for (std::size_t i = 0; i < itemIDValues.size(); i++)
+		{
+			ItemID value = itemIDValues[i];
+			if (value == ItemID::MAX) continue;
+			const ItemInfo* info = App::Data::Item::Get(value);
+			if (!info) continue;
+
+			bool selected = (iconItemID_ == value);
+			if (ImGui::Selectable(itemIDNames[i].data(), selected))
+			{
+				iconItemID_ = value;
+				iconItemInfo_ = *info;
+			}
+			if (selected) ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+
+	if (iconItemID_ != ItemID::MAX)
+	{
+		// プレビュー(ゲーム内のアイコンと同じ写り方)
+		if (iconPreviewDrawn_)
+		{
+			ImGui::Image(ImTextureID(Game::Asset::RenderTexture::GetRenderTextureGPUPtr(iconPreviewTextureID_)), ImVec2(256, 256));
+		}
+
+		// カメラ。表示は度、中身はラジアン
+		ImGui::SliderAngle("Theta", &iconItemInfo_.iconCamera.theta, -180.0f, 180.0f);
+		ImGui::SliderAngle("Phi", &iconItemInfo_.iconCamera.phi, -89.0f, 89.0f);
+		ImGui::DragFloat("Distance", &iconItemInfo_.iconCamera.radius, 0.01f, 0.0f, 100.0f);
+
+		// 保存するとゲーム内のアイコンも描き直される
+		if (ImGui::Button("Save"))
+		{
+			App::Data::Item::Save(iconItemID_, iconItemInfo_);
+		}
+		ImGui::SameLine();
+		// 保存してある値に戻す
+		if (ImGui::Button("Reset"))
+		{
+			if (const ItemInfo* info = App::Data::Item::Get(iconItemID_))
+			{
+				iconItemInfo_ = *info;
+			}
+		}
 	}
 
 	ImGui::End();

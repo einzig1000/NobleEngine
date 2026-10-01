@@ -1,20 +1,16 @@
 #include "DrawSystem.h"
 #include <AssetManager/AssetManager.h>
 #include <ImGuiManager/ImGuiManager.h>
+#include <RootBinding/RootBindingManager.h>
 #include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
 #include <Utilities/Logger/Logger.h>
 #include <Engine.h>
 #include <queue>
 
-DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager)
-	:dxManager_(dxManager), assetManager_(assetManager)
+DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager, RootBindingManager* rootBindingManager)
+	:dxManager_(dxManager), assetManager_(assetManager), rootBindingManager_(rootBindingManager)
 {
-	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
-	{
-		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
-	}
-
 	rt_nobleScreenID_ = dxManager_->GetRenderTextureManager()->CreateRenderTarget(
 		Engine::Instance().GetWindowManager()->winWidth_,
 		Engine::Instance().GetWindowManager()->winHeight_,
@@ -34,8 +30,6 @@ DrawSystem::~DrawSystem()
 void DrawSystem::Reset()
 {
 	backBufferIndex_ = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	// CBアロケータをリセット
-	cbAllocators_[backBufferIndex_].Reset();
 
 	drawNodes_.clear();
 }
@@ -193,13 +187,6 @@ void DrawSystem::Execute()
 		}
 		dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), true);
 	}
-}
-
-D3D12_GPU_VIRTUAL_ADDRESS DrawSystem::GetCurrentFrameCbGpuAddress(size_t sizeBytes, const void* data)
-{
-	const auto alloc = cbAllocators_[backBufferIndex_].Allocate(sizeBytes);
-	std::memcpy(alloc.cpu, data, static_cast<size_t>(sizeBytes));
-	return alloc.gpu;
 }
 
 void DrawSystem::ScreenDraw()

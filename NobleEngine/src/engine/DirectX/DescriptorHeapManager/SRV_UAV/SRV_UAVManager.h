@@ -39,6 +39,8 @@ public:
 
     // 空いてるスロットインデックスを取得しnextIndex_をインクリメント
     uint32_t Allocate();
+    // スロットを空きに戻す。
+    void Free(uint32_t index);
 
     // Allocate()で取得したスロットインデックスのCPU/GPUハンドルを取得
     D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandleAt(uint32_t index) const;
@@ -63,6 +65,9 @@ private:
 
     // SRV用のディスクリプタヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap_;
+
+    // 解放済みで再利用できるスロット
+    std::vector<uint32_t> freeIndices_;
 
     // ディスクリプタサイズ
     uint32_t descriptorSize_;

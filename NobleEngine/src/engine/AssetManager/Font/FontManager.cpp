@@ -3,8 +3,8 @@
 #include <TimeManager/TimeManager.h>
 #include <DirectX/DirectXManager.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
-#include <DrawSystem/RenderData/RenderObject.h>
-#include <RootBinding/StructuredBufferManager/StructuredBufferManager.h>
+#include <DrawSystem/RenderObject/RenderObject.h>
+#include <RootBinding/RootBindingManager.h>
 #include <AssetManager/AssetManager.h>
 #include <Utilities/Logger/Logger.h>
 #include <fstream>
@@ -252,7 +252,7 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
     }
     if (instances.empty()) return;
 
-    auto* sbManager = Engine::Instance().GetStructuredBufferManager();
+    auto* sbManager = Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager();
 
     const RenderTarget* target = dxManager_->GetRenderTextureManager()->Get(renderTextureID);
 
@@ -284,6 +284,7 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
         fontRender->render->psoConfig_.vs = "assets/shaders/Text/Text.VS.hlsl";
         fontRender->render->psoConfig_.ps = "assets/shaders/Text/Text.PS.hlsl";
         fontRender->render->psoConfig_.rasterizerID = RasterizerID::Solid_BackCull;
+        fontRender->render->psoConfig_.depthStencilID = DepthStencilID::Disable;
         fontRender->render->modelID_ = planeModelID_;
         fontRender->render->SetupFromShaders();
         fontRender->bufferID = sbManager->CreateDynamic();

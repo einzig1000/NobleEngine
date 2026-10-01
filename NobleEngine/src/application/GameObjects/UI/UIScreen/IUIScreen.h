@@ -18,6 +18,9 @@ public:
 	// 画面の描画
 	virtual void Draw(int32_t renderTargetID) = 0;
 
+	virtual void DrawImGui() = 0;
+
+
 	virtual UIMode GetNextUIMode() const { return nextUIMode_; }
 
 	virtual void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; };

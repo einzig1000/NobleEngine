@@ -196,7 +196,7 @@ void HaveItem::Update(int32_t cameraID)
 	{
 		if (Game::IO::Mouse::IsHeld(0))
 		{
-			animationTime_ += Game::Time::GetScaledDeltaTimeMs() * 0.001f;
+			animationTime_ += Game::Time::GetScaledDeltaTimeMs() * 0.001f * animationSpeed_;
 		}
 		else
 		{

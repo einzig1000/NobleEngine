@@ -52,3 +52,11 @@ void PauseScreen::Draw(int32_t renderTargetID)
 		element->Draw(renderTargetID);
 	}
 }
+
+void PauseScreen::DrawImGui()
+{
+	for (const auto& element : uiElements_)
+	{
+		element->DrawImGui();
+	}
+}

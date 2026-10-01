@@ -184,8 +184,14 @@
     "toolID": "MAX"
   },
   "Block_Dirt": {
-    "blockID": "MAX",
+    "blockID": "Dirt",
+    "iconCamera": {
+      "phi": 0.5239999890327454,
+      "radius": 0.0,
+      "theta": 0.7850000262260437
+    },
     "itemGenre": "Block",
+    "maxStackCount": 1,
     "modelPath": "assets/engine/model/cube/cube.obj",
     "objectID": "MAX",
     "texturePath": "assets/engine/texture/uvChecker.png",
@@ -232,8 +238,14 @@
     "toolID": "MAX"
   },
   "Block_Stone": {
-    "blockID": "MAX",
+    "blockID": "Stone",
+    "iconCamera": {
+      "phi": 0.5239999890327454,
+      "radius": 0.0,
+      "theta": 0.7850000262260437
+    },
     "itemGenre": "Block",
+    "maxStackCount": 1,
     "modelPath": "assets/engine/model/cube/cube.obj",
     "objectID": "MAX",
     "texturePath": "assets/engine/texture/uvChecker.png",
@@ -305,7 +317,13 @@
   },
   "Tool_Hammer_of_Iron": {
     "blockID": "MAX",
+    "iconCamera": {
+      "phi": 0.471238911151886,
+      "radius": 6.7220001220703125,
+      "theta": 0.7850000262260437
+    },
     "itemGenre": "Tool",
+    "maxStackCount": 1,
     "modelPath": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
     "objectID": "MAX",
     "texturePath": "assets/application/Minecraft/Item/tool/hammer/hammer.png",

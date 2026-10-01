@@ -21,6 +21,7 @@ void ItemDataSaver::Save(BlockID id, const BlockInfo& info)
 
 	JsonManager::AddParam(path, "/" + idStr + "/color", info.color);
 	JsonManager::AddParam(path, "/" + idStr + "/durability", info.durability);
+	JsonManager::AddParam(path, "/" + idStr + "/miningPoint", info.miningPoint);
 	JsonManager::AddParam(path, "/" + idStr + "/isTransparent", info.isTransparent);
 
 	JsonManager::Save(path);
@@ -33,7 +34,7 @@ void ItemDataSaver::Save(ToolID id, const ToolInfo& info)
 	const std::string path = "assets/application/json/ToolConfig.json";
 	const std::string idStr = std::string(magic_enum::enum_name(id));
 
-	JsonManager::AddParam(path, "/" + idStr + "/attackPower", info.attackPower);
+	JsonManager::AddParam(path, "/" + idStr + "/miningPower", info.miningPower);
 	JsonManager::AddParam(path, "/" + idStr + "/miningSpeed", info.miningSpeed);
 
 	JsonManager::Save(path);
@@ -55,6 +56,9 @@ void ItemDataSaver::Save(ItemID id, const ItemInfo& info)
 	JsonManager::AddParam(path, "/" + idStr + "/modelPath", modelPath);
 	JsonManager::AddParam(path, "/" + idStr + "/texturePath", texturePath);
 	JsonManager::AddParam(path, "/" + idStr + "/maxStackCount", info.maxStackCount);
+	JsonManager::AddParam(path, "/" + idStr + "/iconCamera/theta", info.iconCamera.theta);
+	JsonManager::AddParam(path, "/" + idStr + "/iconCamera/phi", info.iconCamera.phi);
+	JsonManager::AddParam(path, "/" + idStr + "/iconCamera/radius", info.iconCamera.radius);
 
 	JsonManager::Save(path);
 }

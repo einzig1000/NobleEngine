@@ -32,6 +32,7 @@ GameScenePhase::GameScenePhase()
 	uiManager_->ChangeScreen(UIMode::Playing);
 	uiManager_->SetEventBus(eventBus_.get());
 	uiManager_->SetInventory(charctorManager_->GetPlayer()->GetInventory());
+	uiManager_->SetMiningGauge(charctorManager_->GetPlayer()->GetMiningPointGauge());
 	// エフェクトマネージャー生成
 	effectManager_ = std::make_unique<EffectManager>();
 	effectManager_->SetEventBus(eventBus_.get());
