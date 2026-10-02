@@ -59,6 +59,7 @@ void ItemDataSaver::Save(ItemID id, const ItemInfo& info)
 	JsonManager::AddParam(path, "/" + idStr + "/iconCamera/theta", info.iconCamera.theta);
 	JsonManager::AddParam(path, "/" + idStr + "/iconCamera/phi", info.iconCamera.phi);
 	JsonManager::AddParam(path, "/" + idStr + "/iconCamera/radius", info.iconCamera.radius);
+	JsonManager::AddParam(path, "/" + idStr + "/iconCamera/pos", info.cameraPos);
 
 	JsonManager::Save(path);
 }

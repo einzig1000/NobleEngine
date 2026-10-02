@@ -27,24 +27,16 @@ ItemIconManager::~ItemIconManager()
 int32_t ItemIconManager::GetIcon(ItemID id)
 {
 	if (id == ItemID::MAX) return -1;
-	const ItemInfo* info = App::Data::Item::Get(id);
-	if (!info) return -1;
 
 	Icon& icon = icons_[static_cast<size_t>(id)];
 
-	// 初めて頼まれたときにレンダーテクスチャを作る(背景は透明)
+	// 初めて頼まれたときにレンダーテクスチャを作る
 	if (icon.renderTextureID < 0)
 	{
 		const std::string label = "ItemIcon_" + std::to_string(static_cast<int32_t>(id));
 		icon.renderTextureID = Game::Asset::RenderTexture::CreateRenderTexture(kIconSize, kIconSize, label);
 		icon.render = CreateRenderObject();
-		icon.needsDraw = true;
-	}
-
-	// ItemEditorで保存してカメラが変わっていたら描き直す
-	if (icon.theta != info->iconCamera.theta || icon.phi != info->iconCamera.phi || icon.distance != info->iconCamera.radius)
-	{
-		icon.needsDraw = true;
+		needsDrawIcons_[id] = &icon;
 	}
 
 	return icon.renderTextureID;
@@ -52,22 +44,16 @@ int32_t ItemIconManager::GetIcon(ItemID id)
 
 void ItemIconManager::Draw()
 {
-	for (size_t i = 0; i < icons_.size(); ++i)
+	for (const auto& [itemID, icon] : needsDrawIcons_)
 	{
-		Icon& icon = icons_[i];
-		if (!icon.needsDraw) continue;
-
-		const ItemInfo* info = App::Data::Item::Get(static_cast<ItemID>(i));
+		if (!icon) continue;
+		const ItemInfo* info = App::Data::Item::Get(itemID);
 		if (!info) continue;
 
-		DrawItem(*icon.render, *info, icon.renderTextureID);
-
-		// 描いたときのカメラを覚えておく
-		icon.theta = info->iconCamera.theta;
-		icon.phi = info->iconCamera.phi;
-		icon.distance = info->iconCamera.radius;
-		icon.needsDraw = false;
+		DrawItem(*icon->render, *info, icon->renderTextureID);
 	}
+
+	needsDrawIcons_.clear();
 }
 
 std::unique_ptr<RenderObject> ItemIconManager::CreateRenderObject()
@@ -81,7 +67,7 @@ std::unique_ptr<RenderObject> ItemIconManager::CreateRenderObject()
 
 void ItemIconManager::DrawItem(RenderObject& render, const ItemInfo& info, int32_t renderTextureID)
 {
-	// モデル　設定されていなければCube
+	// モデル。設定されていなければCube
 	int32_t modelID = info.modelID;
 	if (modelID < 0)
 	{
@@ -117,34 +103,33 @@ void ItemIconManager::DrawItem(RenderObject& render, const ItemInfo& info, int32
 
 Matrix4x4 ItemIconManager::MakeViewProjection(const ItemInfo& info, const ModelData& model)
 {
-	// モデルの頂点から、中心と大きさ(全体を包む球の半径)を求める
-	Vector3 center = Vector3{ 0.0f, 0.0f, 0.0f };
-	float radius = 1.0f;
-	if (!model.vertices.empty())
-	{
-		Vector3 minPos = Vector3{ FLT_MAX, FLT_MAX, FLT_MAX };
-		Vector3 maxPos = Vector3{ -FLT_MAX, -FLT_MAX, -FLT_MAX };
-		for (const VertexData& vertex : model.vertices)
-		{
-			minPos.x = std::min(minPos.x, vertex.position.x);
-			minPos.y = std::min(minPos.y, vertex.position.y);
-			minPos.z = std::min(minPos.z, vertex.position.z);
-			maxPos.x = std::max(maxPos.x, vertex.position.x);
-			maxPos.y = std::max(maxPos.y, vertex.position.y);
-			maxPos.z = std::max(maxPos.z, vertex.position.z);
-		}
-		center = (minPos + maxPos) * 0.5f;
-		radius = std::max((maxPos - minPos).Length() * 0.5f, 0.001f);
-	}
+	Vector3 center = info.cameraPos;
 
 	// 距離が0以下なら、モデル全体がちょうど画面に収まる距離にする
 	float distance = info.iconCamera.radius;
 	if (distance <= 0.0f)
 	{
+		float radius = 1.0f;
+		if (!model.vertices.empty())
+		{
+			Vector3 minPos = Vector3{ FLT_MAX, FLT_MAX, FLT_MAX };
+			Vector3 maxPos = Vector3{ -FLT_MAX, -FLT_MAX, -FLT_MAX };
+			for (const VertexData& vertex : model.vertices)
+			{
+				minPos.x = std::min(minPos.x, vertex.position.x);
+				minPos.y = std::min(minPos.y, vertex.position.y);
+				minPos.z = std::min(minPos.z, vertex.position.z);
+				maxPos.x = std::max(maxPos.x, vertex.position.x);
+				maxPos.y = std::max(maxPos.y, vertex.position.y);
+				maxPos.z = std::max(maxPos.z, vertex.position.z);
+			}
+			center = (minPos + maxPos) * 0.5f;
+			radius = std::max((maxPos - minPos).Length() * 0.5f, 0.001f);
+		}
 		distance = radius / std::sin(kIconFovY * 0.5f);
 	}
 
-	// Cameraと同じ球座標(theta = 方位角、phi = 仰角)
+	// カメラを生成
 	const float phiLimit = std::numbers::pi_v<float> *0.5f - 0.001f;
 	const float phi = std::clamp(info.iconCamera.phi, -phiLimit, phiLimit);
 	const float cosPhi = std::cos(phi);

@@ -240,6 +240,8 @@ struct ItemInfo
 
 	// テクスチャ
 	int32_t textureID = -1;
+	// アイコン
+	int32_t iconID = -1;
 	// モデル
 	int32_t modelID = -1;
 	// モーション
@@ -250,11 +252,10 @@ struct ItemInfo
 			return ids;
 		}();
 
-	// アイコン
-	int32_t iconID = -1;
 
 	// アイコンを写すカメラ
 	Coordinate_spherical iconCamera{ 0.0f, 0.785f, 0.524f };
+	Vector3 cameraPos{ 0.0f, 0.0f, 0.0f };
 };
 
 

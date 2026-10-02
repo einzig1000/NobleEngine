@@ -339,7 +339,18 @@
   },
   "Tool_Hammer_of_Wood": {
     "blockID": "MAX",
+    "iconCamera": {
+      "phi": 0.3240000307559967,
+      "pos": {
+        "x": -0.1821671724319458,
+        "y": 1.88400399684906,
+        "z": -0.3015558123588562
+      },
+      "radius": 5.914799690246582,
+      "theta": 1.0449998378753662
+    },
     "itemGenre": "Tool",
+    "maxStackCount": 1,
     "modelPath": "assets/application/Minecraft/Item/tool/hammer/hammer.gltf",
     "objectID": "MAX",
     "texturePath": "assets/application/Minecraft/Item/tool/hammer/hammer.png",

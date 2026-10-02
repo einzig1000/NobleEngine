@@ -109,6 +109,8 @@ void ItemDataLoader::Load(ItemID id)
 	JsonManager::Load(path, "/" + idStr + "/iconCamera/theta", info.iconCamera.theta);
 	JsonManager::Load(path, "/" + idStr + "/iconCamera/phi", info.iconCamera.phi);
 	JsonManager::Load(path, "/" + idStr + "/iconCamera/radius", info.iconCamera.radius);
+	JsonManager::Load(path, "/" + idStr + "/iconCamera/pos", info.cameraPos);
+
 
 	auto genreEnum = magic_enum::enum_cast<ItemGenre>(itemGenreStr);
 	if (!genreEnum.has_value())

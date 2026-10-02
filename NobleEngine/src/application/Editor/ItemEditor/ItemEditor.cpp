@@ -72,30 +72,8 @@ void ItemEditor::DrawImGui()
 	auto itemIDValues = magic_enum::enum_values<ItemID>();
 	auto itemIDNames = magic_enum::enum_names<ItemID>();
 
-	if (ImGui::TreeNodeEx("新規アイテムデータ作成", ImGuiTreeNodeFlags_DefaultOpen))
+	if (ImGui::TreeNodeEx("子データ作成", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		// ミニプレビュー画面 兼 フルスクボタン
-		if (ImGui::ImageButton("##ss", ImTextureID(Game::Asset::RenderTexture::GetRenderTextureGPUPtr(renderTextureID_)), ImVec2(128, 128)))
-		{
-			fullscreen_ = !fullscreen_;
-		}
-
-		// テクスチャ・モデルの選択
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
-			{
-				IM_ASSERT(payload->DataSize == sizeof(int32_t));
-				textureID_ = *reinterpret_cast<const int32_t*>(payload->Data);
-			}
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_MODEL_ID"))
-			{
-				IM_ASSERT(payload->DataSize == sizeof(int32_t));
-				renderObject_->modelID_ = *reinterpret_cast<const int32_t*>(payload->Data);
-			}
-			ImGui::EndDragDropTarget();
-		}
-
 		// アイテムジャンル
 		{
 			if (ImGui::BeginCombo("ItemGenre", magic_enum::enum_name(genre_).data()))
@@ -125,14 +103,6 @@ void ItemEditor::DrawImGui()
 		}
 		case ItemGenre::Armor:
 		{
-			const ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
-			std::string modelName = modelData ? modelData->filePath : "None";
-			ImGui::Text("ModelPath	: %s", modelName.c_str());
-
-			const TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
-			std::string textureName = textureData ? textureData->filePath : "None";
-			ImGui::Text("TexturePath: %s", textureName.c_str());
-
 			break;
 		}
 		case ItemGenre::Tool:
@@ -154,13 +124,6 @@ void ItemEditor::DrawImGui()
 				ImGui::EndCombo();
 			}
 
-			const ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
-			std::string modelName = modelData ? modelData->filePath : "None";
-			ImGui::Text("ModelPath	: %s", modelName.c_str());
-
-			const TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
-			std::string textureName = textureData ? textureData->filePath : "None";
-			ImGui::Text("TexturePath: %s", textureName.c_str());
 
 			ImGui::DragFloat("toolInfo.miningPower", &toolInfo.miningPower, 0.1f);
 			ImGui::DragFloat("toolInfo.miningSpeed", &toolInfo.miningSpeed, 0.1f);
@@ -240,14 +203,6 @@ void ItemEditor::DrawImGui()
 				ImGui::EndCombo();
 			}
 
-			const ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
-			std::string modelName = modelData ? modelData->filePath : "None";
-			ImGui::Text("ModelPath	: %s", modelName.c_str());
-
-			const TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
-			std::string textureName = textureData ? textureData->filePath : "None";
-			ImGui::Text("TexturePath: %s", textureName.c_str());
-
 			// 読み込み
 			if (ImGui::Button("Load"))
 			{
@@ -269,78 +224,135 @@ void ItemEditor::DrawImGui()
 		ImGui::TreePop();
 	}
 
-	if (ImGui::TreeNodeEx("ItemID -> BlockID / ToolID / ObjectIDの紐づけ", ImGuiTreeNodeFlags_DefaultOpen))
+	ImGui::Separator();
+
+	if (ImGui::TreeNodeEx("親データ作成", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::BeginChild("ItemListChild", ImVec2(250, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
-		for (int32_t i = 0; i < static_cast<int32_t>(ItemID::MAX); i++)
+		// ミニプレビュー画面 兼 フルスクボタン
+		if (ImGui::ImageButton("##ss", ImTextureID(Game::Asset::RenderTexture::GetRenderTextureGPUPtr(renderTextureID_)), ImVec2(128, 128)))
 		{
-			ItemID itemID = static_cast<ItemID>(i);
-			const ItemInfo* info = App::Data::Item::Get(itemID);
+			fullscreen_ = !fullscreen_;
+		}
 
-			if (info && ImGui::TreeNode(itemIDNames[i].data()))
+		// テクスチャ・モデルの選択
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
 			{
-				// tempInfoは毎フレーム作り直されるので、選んだフレームのうちに保存する
-				ItemInfo tempInfo = *info;
-				bool changed = false;
+				IM_ASSERT(payload->DataSize == sizeof(int32_t));
+				textureID_ = *reinterpret_cast<const int32_t*>(payload->Data);
+			}
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_MODEL_ID"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(int32_t));
+				renderObject_->modelID_ = *reinterpret_cast<const int32_t*>(payload->Data);
+			}
+			ImGui::EndDragDropTarget();
+		}
 
-				if (ImGui::BeginCombo("BlockID", magic_enum::enum_name(tempInfo.blockID).data()))
+		// アイテムIDを選ぶ
+		if (ImGui::BeginCombo("ItemList", magic_enum::enum_name(itemID_).data()))
+		{
+			for (std::size_t i = 0; i < itemIDValues.size(); i++)
+			{
+				ItemID value = itemIDValues[i];
+				bool selected = (itemID_ == value);
+
+				if (ImGui::Selectable(itemIDNames[i].data(), selected))
+				{
+					itemID_ = value;
+				}
+				if (selected) ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		// アイテム情報の編集
+		if (itemID_ != ItemID::MAX)
+		{
+			// モデルパス
+			const ModelData* modelData = Game::Asset::Model::GetData(renderObject_->modelID_);
+			std::string modelName = modelData ? modelData->filePath : "None";
+			ImGui::Text("ModelPath	: %s", modelName.c_str());
+			// テクスチャパス
+			const TextureData* textureData = Game::Asset::Texture::GetData(textureID_);
+			std::string textureName = textureData ? textureData->filePath : "None";
+			ImGui::Text("TexturePath: %s", textureName.c_str());
+
+			if (ImGui::BeginCombo("BlockID", magic_enum::enum_name(itemInfo.blockID).data()))
 				{
 					for (std::size_t i = 0; i < blockIDValues.size(); i++)
 					{
 						BlockID value = blockIDValues[i];
-						bool selected = (tempInfo.blockID == value);
+						bool selected = (itemInfo.blockID == value);
 
 						if (ImGui::Selectable(blockIDNames[i].data(), selected))
 						{
-							tempInfo.blockID = value;
-							changed = true;
+							itemInfo.blockID = value;
 						}
 						if (selected) ImGui::SetItemDefaultFocus();
 					}
 
 					ImGui::EndCombo();
 				}
-				if (ImGui::BeginCombo("ToolID", magic_enum::enum_name(tempInfo.toolID).data()))
+			if (ImGui::BeginCombo("ToolID", magic_enum::enum_name(itemInfo.toolID).data()))
 				{
 					for (std::size_t i = 0; i < toolIDValues.size(); i++)
 					{
 						ToolID value = toolIDValues[i];
-						bool selected = (tempInfo.toolID == value);
+						bool selected = (itemInfo.toolID == value);
 						if (ImGui::Selectable(toolIDNames[i].data(), selected))
 						{
-							tempInfo.toolID = value;
-							changed = true;
+							itemInfo.toolID = value;
 						}
 						if (selected) ImGui::SetItemDefaultFocus();
 					}
 					ImGui::EndCombo();
 				}
-				if (ImGui::BeginCombo("ObjectID", magic_enum::enum_name(tempInfo.objectID).data()))
+			if (ImGui::BeginCombo("ObjectID", magic_enum::enum_name(itemInfo.objectID).data()))
 				{
 					for (std::size_t i = 0; i < objectIDValues.size(); i++)
 					{
 						ObjectID value = objectIDValues[i];
-						bool selected = (tempInfo.objectID == value);
+						bool selected = (itemInfo.objectID == value);
 						if (ImGui::Selectable(objectIDNames[i].data(), selected))
 						{
-							tempInfo.objectID = value;
-							changed = true;
+							itemInfo.objectID = value;
 						}
 						if (selected) ImGui::SetItemDefaultFocus();
 					}
 					ImGui::EndCombo();
 				}
 
-				// Saveでバンクも書き換わるので、次のフレームのGetから新しい値が出る
-				if (changed)
-				{
-					App::Data::Item::Save(itemID, tempInfo);
-				}
+			ImGui::DragInt("MaxStackCount", &itemInfo.maxStackCount, 1.0f, 1, 99999);
 
-				ImGui::TreePop();
+			// 読み込み
+			if (ImGui::Button("Load"))
+			{
+				App::Data::Item::Load(itemID_);
+				itemInfo = *App::Data::Item::Get(itemID_);
+				Game::Camera::Setter::DistanceTarget(itemInfo.iconCamera.radius, 0.0f, EaseType::IN_BACK, cameraID_);
+				Game::Camera::Setter::ThetaTarget(itemInfo.iconCamera.theta, 0.0f, EaseType::IN_BACK, cameraID_);
+				Game::Camera::Setter::PhiTarget(itemInfo.iconCamera.phi, 0.0f, EaseType::IN_BACK, cameraID_);
+				Game::Camera::Setter::CenterTarget(itemInfo.cameraPos, 0.0f, EaseType::IN_BACK, cameraID_);
+				textureID_ = itemInfo.textureID;
+				renderObject_->modelID_ = itemInfo.modelID;
+			}
+			ImGui::SameLine();
+			// 保存
+			if (ImGui::Button("Save"))
+			{
+				itemInfo.textureID = textureID_;
+				itemInfo.modelID = renderObject_->modelID_;
+				itemInfo.iconCamera.radius = Game::Camera::Getter::GetDistance(cameraID_);
+				itemInfo.iconCamera.theta = Game::Camera::Getter::GetTheta(cameraID_);
+				itemInfo.iconCamera.phi = Game::Camera::Getter::GetPhi(cameraID_);
+				itemInfo.cameraPos = Game::Camera::Getter::GetCenter(cameraID_);
+
+				App::Data::Item::Save(itemID_, itemInfo);
 			}
 		}
-		ImGui::EndChild();
 
 		ImGui::TreePop();
 	}
@@ -375,60 +387,60 @@ void ItemEditor::DrawImGui()
 
 void ItemEditor::DrawIconImGui()
 {
-	ImGui::Begin("Item Icon");
+	//ImGui::Begin("Item Icon");
 
-	// 調整するアイテムを選ぶ
-	auto itemIDValues = magic_enum::enum_values<ItemID>();
-	auto itemIDNames = magic_enum::enum_names<ItemID>();
-	const char* currentName = (iconItemID_ == ItemID::MAX) ? "None" : magic_enum::enum_name(iconItemID_).data();
-	if (ImGui::BeginCombo("ItemID", currentName))
-	{
-		for (std::size_t i = 0; i < itemIDValues.size(); i++)
-		{
-			ItemID value = itemIDValues[i];
-			if (value == ItemID::MAX) continue;
-			const ItemInfo* info = App::Data::Item::Get(value);
-			if (!info) continue;
+	//// 調整するアイテムを選ぶ
+	//auto itemIDValues = magic_enum::enum_values<ItemID>();
+	//auto itemIDNames = magic_enum::enum_names<ItemID>();
+	//const char* currentName = (iconItemID_ == ItemID::MAX) ? "None" : magic_enum::enum_name(iconItemID_).data();
+	//if (ImGui::BeginCombo("ItemID", currentName))
+	//{
+	//	for (std::size_t i = 0; i < itemIDValues.size(); i++)
+	//	{
+	//		ItemID value = itemIDValues[i];
+	//		if (value == ItemID::MAX) continue;
+	//		const ItemInfo* info = App::Data::Item::Get(value);
+	//		if (!info) continue;
 
-			bool selected = (iconItemID_ == value);
-			if (ImGui::Selectable(itemIDNames[i].data(), selected))
-			{
-				iconItemID_ = value;
-				iconItemInfo_ = *info;
-			}
-			if (selected) ImGui::SetItemDefaultFocus();
-		}
-		ImGui::EndCombo();
-	}
+	//		bool selected = (iconItemID_ == value);
+	//		if (ImGui::Selectable(itemIDNames[i].data(), selected))
+	//		{
+	//			iconItemID_ = value;
+	//			iconItemInfo_ = *info;
+	//		}
+	//		if (selected) ImGui::SetItemDefaultFocus();
+	//	}
+	//	ImGui::EndCombo();
+	//}
 
-	if (iconItemID_ != ItemID::MAX)
-	{
-		// プレビュー(ゲーム内のアイコンと同じ写り方)
-		if (iconPreviewDrawn_)
-		{
-			ImGui::Image(ImTextureID(Game::Asset::RenderTexture::GetRenderTextureGPUPtr(iconPreviewTextureID_)), ImVec2(256, 256));
-		}
+	//if (iconItemID_ != ItemID::MAX)
+	//{
+	//	// プレビュー(ゲーム内のアイコンと同じ写り方)
+	//	if (iconPreviewDrawn_)
+	//	{
+	//		ImGui::Image(ImTextureID(Game::Asset::RenderTexture::GetRenderTextureGPUPtr(iconPreviewTextureID_)), ImVec2(256, 256));
+	//	}
 
-		// カメラ。表示は度、中身はラジアン
-		ImGui::SliderAngle("Theta", &iconItemInfo_.iconCamera.theta, -180.0f, 180.0f);
-		ImGui::SliderAngle("Phi", &iconItemInfo_.iconCamera.phi, -89.0f, 89.0f);
-		ImGui::DragFloat("Distance", &iconItemInfo_.iconCamera.radius, 0.01f, 0.0f, 100.0f);
+	//	// カメラ。表示は度、中身はラジアン
+	//	ImGui::SliderAngle("Theta", &iconItemInfo_.iconCamera.theta, -180.0f, 180.0f);
+	//	ImGui::SliderAngle("Phi", &iconItemInfo_.iconCamera.phi, -89.0f, 89.0f);
+	//	ImGui::DragFloat("Distance", &iconItemInfo_.iconCamera.radius, 0.01f, 0.0f, 100.0f);
 
-		// 保存するとゲーム内のアイコンも描き直される
-		if (ImGui::Button("Save"))
-		{
-			App::Data::Item::Save(iconItemID_, iconItemInfo_);
-		}
-		ImGui::SameLine();
-		// 保存してある値に戻す
-		if (ImGui::Button("Reset"))
-		{
-			if (const ItemInfo* info = App::Data::Item::Get(iconItemID_))
-			{
-				iconItemInfo_ = *info;
-			}
-		}
-	}
+	//	// 保存するとゲーム内のアイコンも描き直される
+	//	if (ImGui::Button("Save"))
+	//	{
+	//		App::Data::Item::Save(iconItemID_, iconItemInfo_);
+	//	}
+	//	ImGui::SameLine();
+	//	// 保存してある値に戻す
+	//	if (ImGui::Button("Reset"))
+	//	{
+	//		if (const ItemInfo* info = App::Data::Item::Get(iconItemID_))
+	//		{
+	//			iconItemInfo_ = *info;
+	//		}
+	//	}
+	//}
 
-	ImGui::End();
+	//ImGui::End();
 }

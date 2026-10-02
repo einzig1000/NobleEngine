@@ -44,7 +44,7 @@ void Player::Initialize()
 
 	RegisterToMap();
 
-	AddItem(ItemID::Tool_Hammer_of_Iron, 1);
+	AddItem(ItemID::Tool_Hammer_of_Wood, 1);
 }
 
 //void Player::Update(int32_t 俯瞰カメラID, int32_t 自身の視点カメラID)

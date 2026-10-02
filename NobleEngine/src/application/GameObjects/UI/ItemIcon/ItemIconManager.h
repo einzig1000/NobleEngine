@@ -6,7 +6,7 @@
 
 /// <summary>
 /// アイテムのアイコンを、モデルをレンダーテクスチャに描いて作る
-/// UIが初めてそのアイテムのアイコンを頼んだときに作り、ItemEditorでカメラが変わったら描き直す
+/// UIが初めてそのアイテムのアイコンを頼んだときに作る
 /// </summary>
 class ItemIconManager
 {
@@ -17,7 +17,7 @@ public:
 	ItemIconManager();
 	~ItemIconManager();
 
-	// アイコン(レンダーテクスチャのID)を取得。まだ無ければ作る(描くのは次のDraw)。作れなければ-1
+	// アイコンのrt_IDを取得。まだ無ければ作る
 	int32_t GetIcon(ItemID id);
 	// 描く必要のあるアイコンを描く。UIを描く前に毎フレーム呼ぶ
 	void Draw();
@@ -35,16 +35,11 @@ private:
 		int32_t renderTextureID = -1;
 		// 描くときに使う(同じフレームに複数描くことがあるので、アイコンごとに持つ)
 		std::unique_ptr<RenderObject> render;
-		// 描いたときのカメラ(ItemEditorで変わったら描き直す)
-		float theta = 0.0f;
-		float phi = 0.0f;
-		float distance = 0.0f;
-		// 次のDrawで描くか
-		bool needsDraw = false;
 	};
 
 	// モデルが画面に収まるようにカメラを置いて、ビュープロジェクション行列を作る
 	static Matrix4x4 MakeViewProjection(const ItemInfo& info, const ModelData& model);
 
 	std::array<Icon, static_cast<size_t>(ItemID::MAX)> icons_;
+	std::unordered_map<ItemID, Icon*> needsDrawIcons_; // 描く必要のあるアイコンのポインタ
 };

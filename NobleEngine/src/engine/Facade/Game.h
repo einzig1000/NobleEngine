@@ -494,6 +494,10 @@ namespace Game
 			Vector3 GetWorldPosition(int32_t cameraID);
 			/// <returns>カメラのCenterまでの距離</returns>
 			float GetDistance(int32_t cameraID);
+			/// <returns>カメラのPhi</returns>
+			float GetPhi(int32_t cameraID);
+			/// <returns>カメラのTheta</returns>
+			float GetTheta(int32_t cameraID);
 			/// <returns>カメラのビュープロジェクション行列</returns>
 			Matrix4x4 GetViewProjectionMatrix(int32_t cameraID);
 			/// <returns>カメラの正射影プロジェクション行列</returns>

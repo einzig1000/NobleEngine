@@ -52,6 +52,8 @@ public:
     Vector3 GetTranslate() const { return eye_; }
     Vector3 GetCameraDirection() const { return cameraDirection_; }
     float GetDistance() const { return sphericalEye_.radius; }
+	float GetPhi() const { return sphericalEye_.phi; }
+	float GetTheta() const { return sphericalEye_.theta; }
 
 private:
     Vector3 GetShakeOffset() const;

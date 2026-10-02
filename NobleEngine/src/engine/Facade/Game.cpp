@@ -365,6 +365,14 @@ namespace Game
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetDistance();
 			}
+			float GetPhi(int32_t cameraID)
+			{
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetPhi();
+			}
+			float GetTheta(int32_t cameraID)
+			{
+				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetTheta();
+			}
 			Matrix4x4 GetViewProjectionMatrix(int32_t cameraID)
 			{
 				return Engine::Instance().GetCameraManager()->GetCamera(cameraID)->GetViewProjectionMatrix();

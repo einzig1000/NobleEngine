@@ -36,6 +36,10 @@ private:
 	ObjectID objectID_ = ObjectID::MAX;
 	ObjectInfo objectInfo{};
 
+	ItemID itemID_ = ItemID::MAX;
+	ItemInfo itemInfo{};
+
+
 	bool fullscreen_ = false;
 
 	// アイコンのカメラ調整
