@@ -48,9 +48,6 @@ private:
 	// Inventory.png上の座標(px)を画面の座標に直す
 	Vector3 TextureToScreen(float x, float y) const;
 
-	// テクスチャの1pxが画面上で何pxになるか
-	float pixelScale_ = 1.0f;
-
 	// 4x9 のインベントリ用アイコン
 	std::vector<ElementData> inventoryIcons_;
 	// 4x2 のアクセサリ用アイコン

@@ -3,7 +3,9 @@
 
 MiningMode::MiningMode()
 {
-	// sprites_[0] : 
+	Vector2 windowSize = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
+
+	// sprites_[0] : 採掘モードアイコン１
 	sprites_.emplace_back(ElementData{});
 	sprites_[0].render = std::make_unique<RenderObject>();
 	sprites_[0].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
@@ -13,9 +15,9 @@ MiningMode::MiningMode()
 	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/MiningMode/mode1.png");
 	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
 	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / -2.0f, 1.0f);
-	sprites_[0].transforms.translate = Vector3(280.0f, 360.0f, 1.0f);
+	sprites_[0].transforms.translate = Vector3(windowSize.x * 0.3f, windowSize.y * 0.5f, 1.0f);
 
-	// sprites_[1] : 
+	// sprites_[1] : 採掘モードアイコン２
 	sprites_.emplace_back(ElementData{});
 	sprites_[1].render = std::make_unique<RenderObject>();
 	sprites_[1].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
@@ -25,7 +27,7 @@ MiningMode::MiningMode()
 	sprites_[1].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/MiningMode/mode2.png");
 	const TextureData* textureData2 = Game::Asset::Texture::GetData(sprites_[1].textureID);
 	sprites_[1].transforms.scale = Vector3(float(textureData2->metadata.width) / 2.0f, float(textureData2->metadata.height) / -2.0f, 1.0f);
-	sprites_[1].transforms.translate = Vector3(static_cast<float>(Game::Window::GetWidth()) - 280.0f, 360.0f, 1.0f);
+	sprites_[1].transforms.translate = Vector3(windowSize.x * 0.7f, windowSize.y * 0.5f, 1.0f);
 }
 
 MiningMode::~MiningMode()
@@ -61,7 +63,8 @@ void MiningMode::Update(int32_t cameraID)
 	{
 		Event event;
 		event.type = EventType::MiningModeChanged;
-		event.value.push_back(leftKey ? 0 : 1);
+		MiningPattern pattern = leftKey ? MiningPattern::Swing : MiningPattern::Range;
+		event.data = pattern;
 
 		if (leftKey)
 		{
@@ -90,15 +93,16 @@ void MiningMode::Draw(int32_t rt_ID)
 		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
 		sprite.render->Draw(rt_ID);
 	}
+}
 
+void MiningMode::DrawImGui()
+{
 	ImGui::Begin("MiningMode");
 	ImGui::DragFloat3("Position1", &sprites_[0].transforms.translate.x);
 	ImGui::DragFloat3("Scale1", &sprites_[0].transforms.scale.x);
 	ImGui::DragFloat3("rotate1", &sprites_[0].transforms.rotate.x);
 	ImGui::DragFloat3("Position2", &sprites_[1].transforms.translate.x);
 	ImGui::DragFloat3("Scale2", &sprites_[1].transforms.scale.x);
+	ImGui::DragFloat3("rotate2", &sprites_[1].transforms.rotate.x);
 	ImGui::End();
 }
-
-void MiningMode::DrawImGui()
-{}

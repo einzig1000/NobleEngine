@@ -17,7 +17,7 @@ void ICharacter::ComputeViewRay(int32_t cameraID)
 	viewRay_.diff = Game::Camera::Getter::GetCameraDirection(cameraID);
 }
 
-std::optional<lookAtBlock> ICharacter::GetLookedAtBlock() const
+std::optional<LookAtBlock> ICharacter::GetLookedAtBlock() const
 {
 	return mapManager_->GetTerrain()->GetBlockByCrossedRay(viewRay_, maxDistance);
 }
@@ -59,7 +59,7 @@ void ICharacter::Jump()
 	if (!isGrounded_) return;
 
 	translate_.velocity.y = jumpPower_;
-	translate_.acceleration.y = Constexprs::GRAVITY; // ジャンプ後は重力を戻す
+	translate_.acceleration.y = Constexprs::kGravity; // ジャンプ後は重力を戻す
 	isGrounded_ = false;
 }
 
@@ -93,8 +93,8 @@ void ICharacter::TakeDamage(int32_t damage)
 {
 	int32_t actualDamage = damage - defense_;
 	if (actualDamage < 1) actualDamage = 1;
-	HP_ -= actualDamage;
-	if (HP_ < 0) HP_ = 0;
+	hp_ -= actualDamage;
+	if (hp_ < 0) hp_ = 0;
 }
 
 void ICharacter::Move(const Vector3& direction, float speed)
@@ -110,7 +110,7 @@ void ICharacter::SetBlock(BlockID id)
 {
 	if (target_.type != RayHitResult::Type::Block) return;
 	//
-	//lookAtBlock lab = target_.blockHit;
+	//LookAtBlock lab = target_.blockHit;
 	//
 	//if (lab.block->blockInfo_.isExtraAction)
 	//{

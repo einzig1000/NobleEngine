@@ -24,7 +24,7 @@ void CraftScreen::Initialize()
 	{
 		Event event;
 		event.type = EventType::AbleMoveAllCharacters;
-		event.value.push_back(false);
+		event.data = false;
 		eventBus_->Notify(event);
 	}
 

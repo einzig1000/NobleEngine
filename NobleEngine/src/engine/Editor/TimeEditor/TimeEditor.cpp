@@ -5,7 +5,10 @@
 
 TimeEditor::TimeEditor(TimeManager* timeManager, FrameProfiler* frameProfiler)
 	: timeManager_(timeManager), frameProfiler_(frameProfiler)
-{}
+{
+	targetFPSCap = timeManager_->GetFixFPS()->GetFPSCap();
+	timeScale = timeManager_->GetTimeScaler()->GetTimeScale();
+}
 
 TimeEditor::~TimeEditor()
 {}
@@ -18,15 +21,13 @@ void TimeEditor::DrawImGui()
     ImGui::Text("CPU FPS        : %5.1f  (%4.1f ms)", frameProfiler_->GetCpuFPS(), frameProfiler_->GetCpuDeltaTimeMs());
     ImGui::Text("GPU FPS        : %5.1f  (%4.1f ms)", frameProfiler_->GetGpuFPS(), frameProfiler_->GetGpuDeltaTimeMs());
     ImGui::Text("Frame Count    : %d", timeManager_->GetFixFPS()->GetElapsedFrameTime());
-	static int32_t targetFPSCap = 60;
     if (ImGui::DragInt("Target fpsCap", &targetFPSCap, 1.0f, 1, 60))
     {
         timeManager_->GetFixFPS()->SetFPSCap(targetFPSCap);
     }
-	static float timeScale = 1.0f;
 	if (ImGui::DragFloat("Time Scale", &timeScale, 0.01f, 0.0f, 100.0f))
 	{
-		timeManager_->SetTimeScale(timeScale);
+		timeManager_->GetTimeScaler()->SetTimeScale(timeScale);
 	}
 
     ImGui::End();

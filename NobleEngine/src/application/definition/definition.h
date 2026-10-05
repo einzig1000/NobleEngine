@@ -184,12 +184,6 @@ ItemID BlockIDtoItemID(BlockID id);
 // ToolID → ItemID 変換
 ItemID ToolIDtoItemID(ToolID id);
 
-/////////////////////////////////////////////////
-/// BlockInfo・ItemInfoのリストをJsonで管理
-/// std::unordered_map<BlockID, BlockInfo> blockInfoList;
-/// std::unordered_map<ItemID, ItemInfo> itemInfoList;
-/////////////////////////////////////////////////
-
 // ブロックごとの情報
 struct BlockInfo
 {
@@ -259,7 +253,7 @@ struct ItemInfo
 };
 
 
-struct lookAtBlock
+struct LookAtBlock
 {
 	BlockID* blockID = nullptr;
 	Vector3int chunkIndex = { 0,0,0 };
@@ -282,7 +276,7 @@ struct RayHitResult
 	Type type = Type::None;
 
 	// type == Block のとき有効
-	lookAtBlock blockHit{};
+	LookAtBlock blockHit{};
 
 	// type == Character のとき有効
 	ICharacter* Character = nullptr;

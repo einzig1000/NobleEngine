@@ -12,7 +12,7 @@ void RangeMining::Update()
 {
 	if (!Game::IO::Mouse::IsJustPressed(0)) return;
 
-	std::optional<lookAtBlock> hit = owner_->GetLookedAtBlock();
+	std::optional<LookAtBlock> hit = owner_->GetLookedAtBlock();
 	if (!hit.has_value()) return;
 
 	if (state_ == State::WaitingForStart)

@@ -24,15 +24,15 @@ GameScenePhase::GameScenePhase()
 	map_ = std::make_unique<MapManager>();
 	map_->SetEventBus(eventBus_.get());
 	// キャラクターマネージャー生成
-	charctorManager_ = std::make_unique<CharacterManager>(map_.get());
-	charctorManager_->SetEventBus(eventBus_.get());
-	charctorManager_->SetViewCamera(c_player_);
+	charcterManager_ = std::make_unique<CharacterManager>(map_.get());
+	charcterManager_->SetEventBus(eventBus_.get());
+	charcterManager_->SetViewCamera(c_player_);
 	// UIマネージャー生成
 	uiManager_ = std::make_unique<UIManager>();
 	uiManager_->ChangeScreen(UIMode::Playing);
 	uiManager_->SetEventBus(eventBus_.get());
-	uiManager_->SetInventory(charctorManager_->GetPlayer()->GetInventory());
-	uiManager_->SetMiningGauge(charctorManager_->GetPlayer()->GetMiningPointGauge());
+	uiManager_->SetInventory(charcterManager_->GetPlayer()->GetInventory());
+	uiManager_->SetMiningGauge(charcterManager_->GetPlayer()->GetMiningPointGauge());
 	// エフェクトマネージャー生成
 	effectManager_ = std::make_unique<EffectManager>();
 	effectManager_->SetEventBus(eventBus_.get());
@@ -46,7 +46,7 @@ void GameScenePhase::Initialize()
 
 	map_->Initialize();
 	uiManager_->Initialize();
-	charctorManager_->Initialize();
+	charcterManager_->Initialize();
 
 	if (context_->isNewGame) map_->GetTerrain()->CreateNewMap(context_->mapName, context_->seed);
 	else map_->GetTerrain()->LoadMap(context_->mapName);
@@ -60,7 +60,7 @@ void GameScenePhase::Update()
 	Vector3 cameraPos = Game::Camera::Getter::GetCenter(targetCameraID);
 
 	// キャラクターマネージャー更新
-	charctorManager_->Update(targetCameraID);
+	charcterManager_->Update(targetCameraID);
 	// マップ更新
 	map_->Update(targetCameraID, cameraPos);
 	// UI更新
@@ -84,7 +84,7 @@ void GameScenePhase::Draw()
 	int32_t rt_Background = screenDrawer_->GetBackgroundRenderTexture();
 
 	// キャラクター描画
-	charctorManager_->Draw(rt_3D);
+	charcterManager_->Draw(rt_3D);
 	// マップ描画
 	map_->Draw(rt_Background, rt_3D);
 	// エフェクト描画
@@ -101,7 +101,7 @@ void GameScenePhase::DrawImGui()
 	// マップImGui描画
 	map_->DrawImGui();
 	// キャラクターImGui描画
-	charctorManager_->DrawImGui();
+	charcterManager_->DrawImGui();
 	// UIImGui描画
 	uiManager_->DrawImGui();
 

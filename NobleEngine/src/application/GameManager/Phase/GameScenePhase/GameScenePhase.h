@@ -42,7 +42,7 @@ private:
 	std::unique_ptr<EffectManager> effectManager_;
 
 	// キャラクターマネージャー
-	std::unique_ptr<CharacterManager> charctorManager_;
+	std::unique_ptr<CharacterManager> charcterManager_;
 
 	// マップ
 	std::unique_ptr<MapManager> map_;

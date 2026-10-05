@@ -26,7 +26,7 @@ void PlayingScreen::Initialize()
 	{
 		Event event;
 		event.type = EventType::AbleMoveAllCharacters;
-		event.value.push_back(true);
+		event.data = false;
 		eventBus_->Notify(event);
 	}
 

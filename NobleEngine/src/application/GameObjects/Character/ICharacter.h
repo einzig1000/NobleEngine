@@ -71,7 +71,7 @@ public:
 	virtual void ComputeViewRay(int32_t cameraID);
 
 	// 視線上にあるブロックを取得。target_/SetTargetBlockはGetFirstHitByRayが未実装のため常にNoneになる
-	virtual std::optional<lookAtBlock> GetLookedAtBlock() const;
+	virtual std::optional<LookAtBlock> GetLookedAtBlock() const;
 	// 指定ブロックのワールドAABBを取得
 	virtual AABB GetBlockWorldAABB(const Vector3int& chunkIndex, const Vector3int& localIndex) const;
 
@@ -109,7 +109,7 @@ protected:
 
 	float jumpPower_ = 6.0f;	// ジャンプ力
 	float speed_ = 6.0f;		// 移動速度
-	int32_t HP_ = 20;			// 体力
+	int32_t hp_ = 20;			// 体力
 	int32_t maxHP_ = 20;		// 最大体力
 	int32_t defense_ = 0;		// 防御力
 

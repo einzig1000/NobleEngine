@@ -1,4 +1,4 @@
-#include "ModelCreater.h"
+#include "ModelCreator.h"
 #include <Utilities/Logger/Logger.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include <DirectX/DirectXManager.h>
@@ -7,16 +7,16 @@
 #include <filesystem>
 #include <externals/meshoptimizer-1.1/meshoptimizer.h>
 
-ModelCreater::ModelCreater(DirectXManager* dxManager, ModelBank* bank)
+ModelCreator::ModelCreator(DirectXManager* dxManager, ModelBank* bank)
 	: dxManager_(dxManager), bank_(bank)
 {}
 
-ModelCreater::~ModelCreater()
+ModelCreator::~ModelCreator()
 {
 	intermediateUploadResources_.clear();
 }
 
-int32_t ModelCreater::CreateModel(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize)
+int32_t ModelCreator::CreateModel(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize)
 {
 	if (vertices.empty()) return -1;
 

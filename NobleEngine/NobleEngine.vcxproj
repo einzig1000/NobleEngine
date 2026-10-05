@@ -100,7 +100,7 @@
     <ClCompile Include="src\engine\AssetManager\Audio\AudioLoader\AudioLoader.cpp" />
     <ClCompile Include="src\engine\AssetManager\Audio\AudioBank\AudioBank.cpp" />
     <ClCompile Include="src\engine\AssetManager\Model\ModelBank\ModelBank.cpp" />
-    <ClCompile Include="src\engine\AssetManager\Model\ModelCreater\ModelCreater.cpp" />
+    <ClCompile Include="src\engine\AssetManager\Model\ModelCreator\ModelCreator.cpp" />
     <ClCompile Include="src\engine\AssetManager\Model\ModelLoader\ModelLoader.cpp" />
     <ClCompile Include="src\application\Test\TestLine\LineDrawer.cpp" />
     <ClCompile Include="src\engine\AssetManager\Animation\AnimationManager.cpp" />
@@ -162,8 +162,10 @@
     <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp" />
     <ClCompile Include="src\application\GameObjects\Effect\Trail\TrailManager.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\EmptyScreen\EmptyScreen.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainGenerator\TerrainGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\System\EventBus\EventPayloads.h" />
     <ClInclude Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.h" />
     <ClInclude Include="src\engine\RootBinding\RootBindingManager.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.h" />
@@ -406,7 +408,7 @@
     <ClInclude Include="src\engine\AssetManager\Audio\AudioLoader\AudioLoader.h" />
     <ClInclude Include="src\engine\AssetManager\Audio\AudioBank\AudioBank.h" />
     <ClInclude Include="src\engine\AssetManager\Model\ModelBank\ModelBank.h" />
-    <ClInclude Include="src\engine\AssetManager\Model\ModelCreater\ModelCreater.h" />
+    <ClInclude Include="src\engine\AssetManager\Model\ModelCreator\ModelCreator.h" />
     <ClInclude Include="src\engine\AssetManager\Model\ModelLoader\ModelLoader.h" />
     <ClInclude Include="src\application\Test\TestLine\LineDrawer.h" />
     <ClInclude Include="src\engine\EngineDefinition\EngineConstexprs.h" />
@@ -470,6 +472,7 @@
     <ClInclude Include="src\engine\TimeManager\TimeScaler\TimeScaler.h" />
     <ClInclude Include="src\application\GameObjects\Effect\Trail\TrailManager.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIScreen\EmptyScreen\EmptyScreen.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainGenerator\TerrainGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Block\versionInfo.md">

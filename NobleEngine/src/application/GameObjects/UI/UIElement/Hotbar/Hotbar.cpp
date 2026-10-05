@@ -5,6 +5,8 @@
 
 Hotbar::Hotbar()
 {
+	Vector2 windowSize = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
+	 
 	// sprites_[0] : ホットバー
 	sprites_.emplace_back(ElementData{});
 	sprites_[0].render = std::make_unique<RenderObject>();
@@ -15,7 +17,7 @@ Hotbar::Hotbar()
 	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/Hotbar/Hotbar.png");
 	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
 	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) * 0.5f, float(textureData->metadata.height) * 0.5f, 1.0f);
-	sprites_[0].transforms.translate = Vector3(640.0f, 670.0f, 1.0f);
+	sprites_[0].transforms.translate = Vector3(windowSize.x * 0.5f, windowSize.y * 0.93f, 1.0f);
 
 	// icons_ : スロットアイコン
 	const int32_t planeModelID = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");

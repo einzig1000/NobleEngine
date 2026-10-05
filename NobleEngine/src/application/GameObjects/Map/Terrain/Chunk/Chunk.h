@@ -74,7 +74,7 @@ private:
 	AABB chunkAABB_;
 	// ブロックデータ配列
 	BlockID blocks_[Constexprs::kChunkBlockCountX][Constexprs::kChunkBlockCountY][Constexprs::kChunkBlockCountZ];
-	uint32_t blockIds_[Constexprs::kMaxFacesPerChunkPlusHalo];
+	uint32_t blockIds_[Constexprs::kMaxBlocksPerChunkPlusHalo];
 
 	// ブロックID配列更新フラグ
 	bool blockIdsDirty_ = false;

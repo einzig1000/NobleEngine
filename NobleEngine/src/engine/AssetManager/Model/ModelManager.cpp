@@ -10,7 +10,7 @@ ModelManager::ModelManager(DirectXManager* dxManager)
 	// モデルローダー作成
 	loader_ = std::make_unique<ModelLoader>(dxManager, bank_.get());
 	// モデルクリエイター作成
-	creater_ = std::make_unique<ModelCreater>(dxManager, bank_.get());
+	creater_ = std::make_unique<ModelCreator>(dxManager, bank_.get());
 
 	Log("成功");
 }

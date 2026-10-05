@@ -7,10 +7,13 @@
 enum class EventType
 {
 	// プレイヤーHPが変動した
+	// data -> float(変動量)
 	PlayerHPChanged,
 	// プレイヤーがアイテムを取得した
+	// data -> ItemPickupData構造体
 	ItemPickup,
 	// 採掘モードが変更された
+	// data -> MiningPattern
 	MiningModeChanged,
 	// 採掘中
 	Mining,
@@ -25,9 +28,7 @@ enum class EventType
 
 
 	// ツールのグレードアップを頼まれた
-	ToolUpgradeRequested_SpeedUp,
-	ToolUpgradeRequested_ScaleUp,
-	ToolUpgradeRequested_PowerUp,
+	ToolUpgradeRequested,
 
 
 	// GoTargetCurvingを出してほしい
@@ -39,7 +40,6 @@ enum class EventType
 struct Event
 {
 	EventType type = EventType::MAX;
-	std::vector<int32_t> value;
 	std::any data;
 };
 

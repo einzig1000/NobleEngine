@@ -4,7 +4,6 @@
 #include <GameObjects/Character/ICharacter.h>
 #include <GameObjects/Character/MiningPointGauge/MiningPointGauge.h>
 
-class Itemslot;
 class UIManager;
 class SwingMining;
 class RangeMining;
@@ -58,7 +57,7 @@ private:
 	int32_t c_viewCameraID_ = -1;
 
 	// 速度関連
-	int32_t dashBufferTimer_ = 0;
+	CounterSec dashBufferTimer_;
 	bool dash_ = false;
 	float normalSpeed_ = 5.0f;
 	float dashSpeed_ = 7.0f;

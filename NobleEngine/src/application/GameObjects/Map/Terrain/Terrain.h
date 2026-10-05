@@ -54,7 +54,7 @@ public:
 	void ReplaceBlockInSphere(const Sphere& sphere, BlockID id, float power);
 
 	// 指定位置のブロックを置き換える 
-	bool ReplaceBlock(const lookAtBlock& lab, BlockID id, float power);
+	bool ReplaceBlock(const LookAtBlock& lab, BlockID id, float power);
 	bool ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id, float power);
 	bool ReplaceBlock(const Vector3& position, BlockID id, float power);
 
@@ -89,7 +89,7 @@ public:
 	bool IsOverlappingAnyCharacter(const AABB& aabb) const;
 
 	// レイとブロックの交差判定（衝突ブロックを返す）
-	std::optional<lookAtBlock> GetBlockByCrossedRay(const Ray& ray, const float maxDistance) const;
+	std::optional<LookAtBlock> GetBlockByCrossedRay(const Ray& ray, const float maxDistance) const;
 	// ブロック/キャラのうち最初に当たったものを返す
 	RayHitResult GetFirstHitByRay(const Ray& ray, float maxDistance, const ICharacter* ignore) const;
 	// レイとブロックの交差判定（衝突座標を返す）
@@ -122,7 +122,7 @@ private:
 	std::unique_ptr<FaceDataPagePool> facePagePool_;
 
 	// キャラクター管理
-	std::vector<ICharacter*> Characters_;
+	std::vector<ICharacter*> characters_;
 
 	// マップファイルパス
 	std::string currentMapFilePath_;

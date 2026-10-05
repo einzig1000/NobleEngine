@@ -33,8 +33,7 @@ void CharacterManager::Update(int32_t cameraID)
 		const std::vector<Event>& controlModeEvents = eventBus_->GetEvents(EventType::AbleMoveAllCharacters);
 		if (!controlModeEvents.empty())
 		{
-			// 1Fに一回しか変更フラグはされない
-			ableMoveAll_ = controlModeEvents[0].value[0];
+			ableMoveAll_ = std::any_cast<bool>(controlModeEvents[0].data);
 		}
 	}
 	player_->CheckExternalEvents();

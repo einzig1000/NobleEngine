@@ -16,14 +16,11 @@ namespace Constexprs
 	// １チャンクの最大面数
 	static constexpr uint32_t kMaxFacesPerChunk = (kGroupCount * kMaxFacesPerGroup) / 48;
 	// 1チャンク + 全方向１ブロック の最大ブロック数
-	static constexpr uint32_t kMaxFacesPerChunkPlusHalo = (kChunkBlockCountX + 2) * (kChunkBlockCountY + 2) * (kChunkBlockCountZ + 2);
+	static constexpr uint32_t kMaxBlocksPerChunkPlusHalo = (kChunkBlockCountX + 2) * (kChunkBlockCountY + 2) * (kChunkBlockCountZ + 2);
 
 
 	static constexpr float kBlockSize = 0.1f; // ブロックのサイズ
 
-	// ワールド座標→ブロック番号変換時、kBlockSizeがfloatで正確に表現できないことによる丸め誤差(番号がブロック境界のわずかに手前に落ちて1小さくなる)を防ぐための微小値
-	static constexpr float kBlockIndexEpsilon = 0.0001f;
-
 	// 重力
-	static constexpr float GRAVITY = -18.0f;
+	static constexpr float kGravity = -18.0f;
 }
