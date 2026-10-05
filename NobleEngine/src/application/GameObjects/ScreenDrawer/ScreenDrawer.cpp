@@ -92,7 +92,8 @@ void ScreenDrawer::Update(int32_t cameraID)
 		{
 			for (const Event& event : hpChangedEvents)
 			{
-				if (event.value[0] < 0)
+				float damage = std::any_cast<float>(event.data);
+				if (damage > 0)
 				{
 					TakeDamage();
 				}

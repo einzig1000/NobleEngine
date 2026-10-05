@@ -194,7 +194,7 @@ void Player::CheckExternalEvents()
 		{
 			for (const Event& event : hpChangedEvents)
 			{
-				hp_ += event.value[0];
+				hp_ += std::any_cast<float>(event.data);
 				if (hp_ < 0) hp_ = 0;
 				if (hp_ > maxHP_) hp_ = maxHP_;
 			}
