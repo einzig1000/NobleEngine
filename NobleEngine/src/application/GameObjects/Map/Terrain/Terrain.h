@@ -2,6 +2,7 @@
 #include <string>
 #include <Game.h>
 #include <unordered_set>
+#include <unordered_map>
 #include <memory>
 #include <Utilities/PerlinNoise.h>
 #include <definition/definition.h>

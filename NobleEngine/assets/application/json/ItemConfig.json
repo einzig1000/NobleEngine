@@ -299,6 +299,25 @@
     "texturePath": "assets/application/Minecraft/Item/tool/axe/axe.png",
     "toolID": "Axe_of_Wood"
   },
+  "Tool_Hammer": {
+    "blockID": "MAX",
+    "iconCamera": {
+      "phi": 0.40400007367134094,
+      "pos": {
+        "x": -0.43056491017341614,
+        "y": 1.6730666160583496,
+        "z": -0.6504145860671997
+      },
+      "radius": 6.833077907562256,
+      "theta": 1.1349996328353882
+    },
+    "itemGenre": "MAX",
+    "maxStackCount": 1,
+    "modelPath": "assets/application/Object/Item/tool/hammer/hammer.gltf",
+    "objectID": "MAX",
+    "texturePath": "assets/application/Object/Item/tool/hammer/hammer.png",
+    "toolID": "Hammer"
+  },
   "Tool_Hammer_of_Diamond": {
     "blockID": "MAX",
     "itemGenre": "Tool",

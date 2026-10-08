@@ -47,24 +47,7 @@ enum class ItemGenre
 // 全てのアイテムID
 enum class ItemID
 {
-	// ツール
-	Tool_Sword_of_Wood,
-	Tool_Sword_of_Stone,
-	Tool_Sword_of_Iron,
-	Tool_Sword_of_Gold,
-	Tool_Sword_of_Diamond,
-
-	Tool_Hammer_of_Wood,
-	Tool_Hammer_of_Stone,
-	Tool_Hammer_of_Iron,
-	Tool_Hammer_of_Gold,
-	Tool_Hammer_of_Diamond,
-
-	Tool_Axe_of_Wood,
-	Tool_Axe_of_Stone,
-	Tool_Axe_of_Iron,
-	Tool_Axe_of_Gold,
-	Tool_Axe_of_Diamond,
+	Tool_Hammer,
 
 	// 防具
 	Armor_Head_of_Wood,
@@ -136,21 +119,9 @@ enum class BlockID
 enum class ToolID
 {
 	// ツール
-	Sword_of_Wood,
-	Sword_of_Stone,
-	Sword_of_Iron,
-	Sword_of_Gold,
-	Sword_of_Diamond,
-	Hammer_of_Wood,
-	Hammer_of_Stone,
-	Hammer_of_Iron,
-	Hammer_of_Gold,
-	Hammer_of_Diamond,
-	Axe_of_Wood,
-	Axe_of_Stone,
-	Axe_of_Iron,
-	Axe_of_Gold,
-	Axe_of_Diamond,
+	Hammer,
+
+
 	MAX,
 };
 

@@ -35,6 +35,8 @@ namespace
         size_t h = 0;
         h = HashCombine(h, HashString(c.vs));
         h = HashCombine(h, HashString(c.ps));
+		h = HashCombine(h, HashString(c.ms));
+		h = HashCombine(h, HashString(c.as));
         h = HashCombine(h, static_cast<size_t>(c.blendID));
         h = HashCombine(h, static_cast<size_t>(c.depthStencilID));
         h = HashCombine(h, static_cast<size_t>(c.rasterizerID));
@@ -247,12 +249,10 @@ PipelineStateManager::PipelineStateManager(ID3D12Device2* device)
 
     Log("成功");
 }
-
 PipelineStateManager::~PipelineStateManager()
 {
     Log("デストラクタ実行成功 : PipelineStateManager");
 }
-
 void PipelineStateManager::InitializeDxc()
 {
     HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
@@ -333,27 +333,44 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::GetComputePipe
 	return pso;
 }
 
-Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::GetShaderBlob(const wchar_t* path, const wchar_t* target)
+PipelineStateManager::ShaderCacheEntry& PipelineStateManager::GetShaderEntry(const wchar_t* path, const wchar_t* target)
 {
     // キーを生成
     std::wstring key = std::wstring(path) + L"|" + target;
 
-	// キャッシュにあればそれを返す
+    // キャッシュにあればそれを返す
     auto it = shaderCache_.find(key);
     if (it != shaderCache_.end())
     {
         return it->second;
     }
 
-	// blob生成
-    auto blob = CompileShader(path, target);
-    assert(blob);
+    // blob生成
+    ShaderCacheEntry entry{};
+    entry.blob = CompileShader(path, target);
+    assert(entry.blob);
 
-	// キャッシュに保存してから返す
-    shaderCache_.emplace(std::move(key), blob);
-    return blob;
+    // キャッシュに保存してから返す
+    return shaderCache_.emplace(std::move(key), std::move(entry)).first->second;
 }
 
+Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::GetShaderBlob(const wchar_t* path, const wchar_t* target)
+{
+    return GetShaderEntry(path, target).blob;
+}
+
+const std::vector<RootParam>& PipelineStateManager::GetShaderRootParams(const wchar_t* path, const wchar_t* target, ShaderType shaderType)
+{
+    ShaderCacheEntry& entry = GetShaderEntry(path, target);
+
+    // 初回だけリフレクションする
+    if (!entry.rootParams)
+    {
+        entry.rootParams.emplace();
+        ShaderReflection::BuildRootParamsFromShader(dxcUtils.Get(), entry.blob.Get(), shaderType, *entry.rootParams);
+    }
+    return *entry.rootParams;
+}
 
 
 Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSignature(const std::vector<RootParam>& params)

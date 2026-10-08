@@ -89,12 +89,12 @@ void ICharacter::ApplyMove()
 	worldMatrix_ = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
 }
 
-void ICharacter::TakeDamage(int32_t damage)
+void ICharacter::TakeDamage(float damage)
 {
-	int32_t actualDamage = damage - defense_;
-	if (actualDamage < 1) actualDamage = 1;
+	float actualDamage = damage - defense_;
+	if (actualDamage < 1.0f) actualDamage = 1.0f;
 	hp_ -= actualDamage;
-	if (hp_ < 0) hp_ = 0;
+	if (hp_ < 0.0f) hp_ = 0.0f;
 }
 
 void ICharacter::Move(const Vector3& direction, float speed)

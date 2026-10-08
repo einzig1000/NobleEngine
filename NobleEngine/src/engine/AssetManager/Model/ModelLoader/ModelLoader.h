@@ -23,6 +23,8 @@ private:
 	DirectXManager* dxManager_;
 	ModelBank* bank_;
 
+	int32_t defaultModelID_ = -1;
+
 	// mtlファイル読み込み
 	MaterialData LoadMaterialTemplateFile(const std::string& filePath);
 

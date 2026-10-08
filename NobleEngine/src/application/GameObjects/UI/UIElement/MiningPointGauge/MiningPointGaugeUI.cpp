@@ -24,7 +24,7 @@ MiningPointGaugeUI::MiningPointGaugeUI()
 	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
-	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/MiningPointGauge/MiningPointGauge.png");
+	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/texture/UI/MiningPointGauge/MiningPointGauge.png");
 	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
 	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) * 0.5f, float(textureData->metadata.height) * 0.5f, 1.0f);
 	sprites_[0].transforms.translate = Vector3(windowSize.x * 0.5f, windowSize.y * 0.847f, 1.0f);

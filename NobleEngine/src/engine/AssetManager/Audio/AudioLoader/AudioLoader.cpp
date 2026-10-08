@@ -13,7 +13,9 @@
 
 AudioLoader::AudioLoader(AudioBank* bank)
 	: bank_(bank)
-{}
+{
+	defaultAudioID = LoadAudio("assets/engine/audio/SE/オーラ1.mp3");
+}
 
 AudioLoader::~AudioLoader() {}
 
@@ -21,48 +23,63 @@ int32_t AudioLoader::LoadAudio(const std::string & filePath)
 {
     Log("オーディオ読み込み開始 :%s", filePath.c_str());
 
-    HRESULT hr = S_OK;
     std::unique_ptr<AudioData> data = std::make_unique<AudioData>();
 
-    // ファイルパスをワイド文字列に変換
-    std::wstring wFilePath = StringConverter::Convert(filePath);
+	// オーディオデータの読み込み
+	if (!LoadAudioFile(filePath, data.get()))
+	{
+        Log("読み込み失敗しました。デフォルトオーディオが使用されます。");
+		return defaultAudioID;
+	}
 
+    // マップに格納
+    int32_t id = bank_->AllocateAudioID();
+    bank_->AddAudioData(filePath, id, std::move(data));
+    Log("成功 ID: %u", id);
+
+    return id;
+}
+
+bool AudioLoader::LoadAudioFile(const std::string& filePath, AudioData* data)
+{
     Microsoft::WRL::ComPtr<IMFSourceReader> pSourceReader;
 
+    HRESULT hr = S_OK;
 
     // ソースリーダー(オーディオデータを読み取るためのインターフェース)の作成
+    std::wstring wFilePath = StringConverter::Convert(filePath);
     hr = MFCreateSourceReaderFromURL(wFilePath.c_str(), nullptr, &pSourceReader);
-    if (FAILED(hr)) { Log("オーディオファイルを開けませんでした: %s", filePath); assert(0); return -1; }
+    if (FAILED(hr)) { Log("オーディオファイルを開けませんでした: %s", filePath); return false; }
 
     // メディアファイルには 複数のストリーム（音声・動画・字幕など） が含まれていることがあるため音声を取得するよと設定しているらしい
     hr = pSourceReader->SetStreamSelection((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, TRUE);
-    if (FAILED(hr)) { Log("取得ストリームの設定に失敗: %s", HrToString(hr)); assert(0); return -1; }
+    if (FAILED(hr)) { Log("取得ストリームの設定に失敗: %s", HrToString(hr)); return false; }
 
     // Media Foundation に対して、オーディオストリームをPCM形式にデコードするように要求
     Microsoft::WRL::ComPtr<IMFMediaType> pOutputMediaType;
     hr = MFCreateMediaType(&pOutputMediaType);
-    if (FAILED(hr)) { Log("PCM出力MFMediaTypeの作成に失敗: %s", HrToString(hr)); assert(0); return -1; }
+    if (FAILED(hr)) { Log("PCM出力MFMediaTypeの作成に失敗: %s", HrToString(hr)); return false; }
 
 
     hr = pOutputMediaType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
-    if (FAILED(hr)) { Log("PCM出力の主要タイプ設定に失敗: %s", HrToString(hr)); assert(0); return -1; }
+    if (FAILED(hr)) { Log("PCM出力の主要タイプ設定に失敗: %s", HrToString(hr)); return false; }
 
     hr = pOutputMediaType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
-    if (FAILED(hr)) { Log("PCM出力のサブタイプ設定に失敗: %s", HrToString(hr)); assert(0); return -1; }
+    if (FAILED(hr)) { Log("PCM出力のサブタイプ設定に失敗: %s", HrToString(hr)); return false; }
 
     // 音声データがどんな形式(MP3,WAV,AACとか)で保存されているかを調べる
     hr = pSourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, pOutputMediaType.Get());
-    if (FAILED(hr)) { Log("出力タイプをPCMに設定できませんでした: %s", HrToString(hr)); assert(0); return -1; }
+    if (FAILED(hr)) { Log("出力タイプをPCMに設定できませんでした: %s", HrToString(hr)); return false; }
 
     // Media FoundationがPCMフォーマットに変えたはずなので確認
     Microsoft::WRL::ComPtr<IMFMediaType> pActualMediaType;
     hr = pSourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, &pActualMediaType);
-    if (FAILED(hr)) { Log("実際のメディアタイプ取得に失敗: %s", HrToString(hr)); assert(0); return -1; }
+    if (FAILED(hr)) { Log("実際のメディアタイプ取得に失敗: %s", HrToString(hr)); return false; }
 
     UINT32 formatSize = 0;
     WAVEFORMATEX* wfx = nullptr;
     hr = MFCreateWaveFormatExFromMFMediaType(pActualMediaType.Get(), &wfx, &formatSize, 0);
-    if (FAILED(hr)) { Log("実際のメディアタイプのWAVEFORMATEX変換に失敗: %s", HrToString(hr)); assert(0); return -1; }
+    if (FAILED(hr)) { Log("実際のメディアタイプのWAVEFORMATEX変換に失敗: %s", HrToString(hr)); return false; }
     data->pWfx = wfx;
     data->wfxSize = formatSize;
 
@@ -110,7 +127,7 @@ int32_t AudioLoader::LoadAudio(const std::string & filePath)
         }
         if (streamFlags & MF_SOURCE_READERF_ENDOFSTREAM)
         {
-            //Log("End of stream reached.");
+            Log("End of stream reached.");
             break;
         }
         if (!pSample)
@@ -152,7 +169,7 @@ int32_t AudioLoader::LoadAudio(const std::string & filePath)
     {
         Log("LoadAudioの失敗 HRESULT: 0x%X", hr);
         if (data->pWfx) { CoTaskMemFree(data->pWfx); data->pWfx = nullptr; data->wfxSize = 0; }
-        return -1;
+        return false;
     }
 
     // 読み込み完了後にメモリを安定化してから pAudioData を設定
@@ -160,10 +177,5 @@ int32_t AudioLoader::LoadAudio(const std::string & filePath)
     data->audioBytes = totalAudioDataSize;
     data->filePath = filePath;
 
-    // マップに格納
-    int32_t id = bank_->AllocateAudioID();
-    bank_->AddAudioData(filePath, id, std::move(data));
-    Log("成功 ID: %u", id);
-
-    return id;
+    return true;
 }

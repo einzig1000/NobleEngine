@@ -15,10 +15,10 @@ void ComputeObject::SetupFromShaders()
 	outputHandles_.clear();
 
 	std::wstring csPath = StringConverter::Convert(psoConfig_.cs);
-	auto csBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(csPath.c_str(), L"cs_6_6");
+	const auto& csParams = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderRootParams(csPath.c_str(), L"cs_6_6", ShaderType::ComputeShader);
 
 	// CS の CBV / SRV を反映
-	ShaderReflection::BuildRootParamsFromShader(csBlob.Get(), ShaderType::ComputeShader, rootParams_);
+	rootParams_ = csParams;
 
 #ifdef _DEBUG
 

@@ -41,7 +41,7 @@ public:
 	virtual void SetID(int32_t id) { characterID_ = id; }
 	virtual int32_t GetID() const { return characterID_; }
 
-	virtual void TakeDamage(int32_t damage);
+	virtual void TakeDamage(float damage);
 
 	virtual void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; }
 
@@ -109,9 +109,9 @@ protected:
 
 	float jumpPower_ = 6.0f;	// ジャンプ力
 	float speed_ = 6.0f;		// 移動速度
-	int32_t hp_ = 20;			// 体力
-	int32_t maxHP_ = 20;		// 最大体力
-	int32_t defense_ = 0;		// 防御力
+	float hp_ = 20.0f;			// 体力
+	float maxHP_ = 20.0f;		// 最大体力
+	float defense_ = 0.0f;		// 防御力
 
 	VectorDynamics translate_;
 	VectorDynamics scale_;

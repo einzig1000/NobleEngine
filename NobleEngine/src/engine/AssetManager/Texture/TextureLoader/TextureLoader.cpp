@@ -9,7 +9,9 @@
 
 TextureLoader::TextureLoader(DirectXManager* dxManager, TextureBank* textureBank)
 	: dxManager_(dxManager), bank_(textureBank)
-{}
+{
+	defaultTextureID_ = LoadTexture("assets/engine/texture/uvChecker.png");
+}
 
 TextureLoader::~TextureLoader()
 {
@@ -23,13 +25,35 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
 	int32_t existingTextureID = bank_->IsTextureDataExist(filePath);
 	if (existingTextureID != -1) return existingTextureID;
 
-    Log("テクスチャ読み込み開始:%s", filePath.c_str());
+    Log("テクスチャ読み込み開始:\"%s\"", filePath.c_str());
 
-    HRESULT hr = S_OK;
     std::unique_ptr<TextureData> text = std::make_unique<TextureData>();
+	uint32_t srvAllocationIndex = 0;
+
+	// テクスチャデータ読み込み
+	if (!LoadTextureFile(filePath, text.get(), srvAllocationIndex))
+	{
+		Log("読み込み失敗しました。デフォルトテクスチャが使用されます。");
+		return defaultTextureID_;
+	}
+
+	// データ保存
+	bank_->AddTextureData(filePath, srvAllocationIndex, std::move(text));
+
+    Log("成功 ID:%d", srvAllocationIndex);
+
+    return srvAllocationIndex;
+}
+
+bool TextureLoader::LoadTextureFile(const std::string& filePath, TextureData* textureData, uint32_t& srvAllocationIndex)
+{
+    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+    auto* device = dxManager_->GetDevice();
+    auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
     // ファイルパスの保存
-	text->filePath = filePath;
+    textureData->filePath = filePath;
 
     // 識別子を判定
     std::filesystem::path path(filePath);
@@ -37,13 +61,10 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
     bool dds = (ext == ".dds");
 
-    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-    auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
-    auto* device = dxManager_->GetDevice();
-    auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
     // 画像データとメタデータの作成
     DirectX::ScratchImage image{};
+    HRESULT hr = S_OK;
     if (dds)
     {
         hr = DirectX::LoadFromDDSFile(path.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
@@ -54,9 +75,8 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
     }
     if (FAILED(hr))
     {
-        Log("ファイルが見つかりませんでした:%s", filePath.c_str());
-        assert(false);
-        return -1;
+        Log("ファイルが見つかりませんでした:\"%s\"", filePath.c_str());
+        return false;
     }
 
     // ミップマップの作成
@@ -70,38 +90,33 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
         hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImageLocal);
         if (FAILED(hr))
         {
-            Log("ミップマップの生成に失敗しました:%s HRESULT: 0x%X", filePath.c_str(), hr);
-            assert(false);
-            return -1;
+            Log("ミップマップの生成に失敗しました:\"%s\" HRESULT: 0x%X", filePath.c_str(), hr);
+            return false;
         }
     }
 
     // メタデータ・ミップマップを保存
-    text->metadata = mipImageLocal.GetMetadata();
-    text->mipImage = std::move(mipImageLocal);
+    textureData->metadata = mipImageLocal.GetMetadata();
+    textureData->mipImage = std::move(mipImageLocal);
 
     // テクスチャリソースとSRVの作成
-    text->textureResource = Dx12ResourceFactory::CreateTextureResource(device, text->metadata);
-    Microsoft::WRL::ComPtr<ID3D12Resource> tempIntermediateResource = UploadTextureData(text->textureResource.Get(), text->mipImage, device, cmdList);
+    textureData->textureResource = Dx12ResourceFactory::CreateTextureResource(device, textureData->metadata);
+    Microsoft::WRL::ComPtr<ID3D12Resource> tempIntermediateResource = UploadTextureData(textureData->textureResource.Get(), textureData->mipImage, device, cmdList);
     intermediateUploadResources_.push_back(tempIntermediateResource);
 
-	// SRVの作成
+    // SRVの作成
     SRV_UAVManager::Allocation srvAllocation{};
     if (dds)
     {
-        srvAllocation = srvManager->CreateSRVforDDS(text->textureResource.Get(), text->metadata);
+        srvAllocation = srvManager->CreateSRVforDDS(textureData->textureResource.Get(), textureData->metadata);
     }
     else
     {
-        srvAllocation = srvManager->CreateSRVforTexture(text->textureResource.Get(), text->metadata);
+        srvAllocation = srvManager->CreateSRVforTexture(textureData->textureResource.Get(), textureData->metadata);
     }
+	srvAllocationIndex = srvAllocation.index;
 
-	// データ保存
-	bank_->AddTextureData(filePath, srvAllocation.index, std::move(text));
-
-    Log("成功 ID:%d", srvAllocation.index);
-
-    return srvAllocation.index;
+	return true;
 }
 
 // 3,TextureResourceにデータを転送する

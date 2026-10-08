@@ -159,7 +159,7 @@ void HaveItem::SetItem(ItemID itemID)
 		render_->modelID_ = itemInfo_->modelID;
 		t_haveItem_ = itemInfo_->textureID;
 		modelData_ = Game::Asset::Model::GetData(itemInfo_->modelID);
-		a_haveItem_ = Game::Asset::Animation::Load("assets/application/Minecraft/Item/tool/hammer/hammer.gltf", "Animation");
+		a_haveItem_ = Game::Asset::Animation::Load("assets/application/Object/Item/tool/hammer/hammer.gltf", "Animation");
 	}
 	else
 	{

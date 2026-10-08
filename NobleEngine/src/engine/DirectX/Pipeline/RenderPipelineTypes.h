@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <d3d12.h>
 #include <string>
+#include <vector>
+#include <unordered_map>
 
 enum class ShaderType
 {
@@ -27,7 +29,6 @@ struct InputElement
 	UINT semanticIndex;
     D3D12_INPUT_ELEMENT_DESC desc;
 };
-
 
 
 struct RootParam

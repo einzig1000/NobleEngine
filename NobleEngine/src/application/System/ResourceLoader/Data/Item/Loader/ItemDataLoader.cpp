@@ -1,6 +1,7 @@
 #include "ItemDataLoader.h"
 #include <Utilities/Json/JsonManager.h>
 #include <System/ResourceLoader/Data/Item/Bank/ItemDataBank.h>
+#include <Utilities/Logger/Logger.h>
 #include <Game.h>
 
 ItemDataLoader::ItemDataLoader(ItemDataBank* bank)
@@ -29,17 +30,17 @@ void ItemDataLoader::Load()
 		Load(id);
 	}
 
-	// アイテム情報の読み込み
-	for (ItemID id : magic_enum::enum_values<ItemID>())
-	{
-		if (id == ItemID::MAX) continue;
-		Load(id);
-	}
-
 	// オブジェクト情報の読み込み
 	for (ObjectID id : magic_enum::enum_values<ObjectID>())
 	{
 		if (id == ObjectID::MAX) continue;
+		Load(id);
+	}
+
+	// アイテム情報の読み込み
+	for (ItemID id : magic_enum::enum_values<ItemID>())
+	{
+		if (id == ItemID::MAX) continue;
 		Load(id);
 	}
 }
@@ -113,38 +114,44 @@ void ItemDataLoader::Load(ItemID id)
 
 
 	auto genreEnum = magic_enum::enum_cast<ItemGenre>(itemGenreStr);
-	if (!genreEnum.has_value())
-	{
-		info.genre = ItemGenre::MAX;
-	}
-	else
+	if (genreEnum.has_value())
 	{
 		info.genre = genreEnum.value();
 	}
+	else
+	{
+		Log("アイテムID:%s のジャンルが不正です。デフォルト値を使用します。", idStr.c_str());
+	}
 
 	auto blockEnum = magic_enum::enum_cast<BlockID>(blockIDStr);
-	if (!blockEnum.has_value())
+	if (blockEnum.has_value())
 	{
-		__debugbreak();
-		return;
+		info.blockID = blockEnum.value();
 	}
-	info.blockID = blockEnum.value();
+	else
+	{
+		Log("アイテムID:%s のブロックIDが不正です。デフォルト値を使用します。", idStr.c_str());
+	}
 
 	auto toolEnum = magic_enum::enum_cast<ToolID>(toolIDStr);
-	if (!toolEnum.has_value())
+	if (toolEnum.has_value())
 	{
-		__debugbreak();
-		return;
+		info.toolID = toolEnum.value();
 	}
-	info.toolID = toolEnum.value();
+	else
+	{
+		Log("アイテムID:%s のツールIDが不正です。デフォルト値を使用します。", idStr.c_str());
+	}
 
 	auto objectEnum = magic_enum::enum_cast<ObjectID>(objectIDStr);
-	if (!objectEnum.has_value())
+	if (objectEnum.has_value())
 	{
-		__debugbreak();
-		return;
+		info.objectID = objectEnum.value();
 	}
-	info.objectID = objectEnum.value();
+	else
+	{
+		Log("アイテムID:%s のオブジェクトIDが不正です。デフォルト値を使用します。", idStr.c_str());
+	}
 
 	bank_->SetItemInfo(id, info);
 }

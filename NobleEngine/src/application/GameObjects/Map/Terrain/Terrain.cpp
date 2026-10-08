@@ -20,9 +20,18 @@ namespace
 
 Terrain::Terrain()
 {
-	drawRadius_.x = 6;
+	drawRadius_.x = 9;
 	drawRadius_.y = 2;
-	drawRadius_.z = 6;
+	drawRadius_.z = 9;
+
+#ifdef _DEBUG
+
+	drawRadius_.x = 2;
+	drawRadius_.y = 1;
+	drawRadius_.z = 2;
+
+#endif
+
 	updateRadius_.x = drawRadius_.x;
 	updateRadius_.y = 1;
 	updateRadius_.z = drawRadius_.z;
@@ -234,8 +243,6 @@ Chunk* Terrain::GetChunk(const Vector3int& chunkPos) const
 }
 void Terrain::EnsureChunkScheduled(const Vector3int& chunkPos)
 {
-	// 既にスケジュール済みならreturn
-	if (chunkScheduled_.find(chunkPos) != chunkScheduled_.end()) return;
 	// チャンクが既に作成されているならreturn
 	if (GetChunk(chunkPos) != nullptr) return;
 

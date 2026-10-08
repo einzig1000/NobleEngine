@@ -9,20 +9,27 @@ enum class EventType
 	// プレイヤーHPが変動した
 	// data -> float(変動量)
 	PlayerHPChanged,
+
 	// プレイヤーがアイテムを取得した
 	// data -> ItemPickupData構造体
 	ItemPickup,
+
 	// 採掘モードが変更された
 	// data -> MiningPattern
 	MiningModeChanged,
+
 	// 採掘中
-	Mining,
+	//Mining,
+
 	// ゲームのセーブが要求された
 	SaveGameRequested,
+
 	// 全モブの移動可能フラグ
 	AbleMoveAllCharacters,
+
 	// ブロックが壊された
 	BlockDestroyed,
+
 	// 採掘オーブが届いた
 	MiningOrbAbsorbed,
 

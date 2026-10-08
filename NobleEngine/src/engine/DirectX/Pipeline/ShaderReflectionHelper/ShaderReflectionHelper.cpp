@@ -4,8 +4,64 @@
 #include <cassert>
 #include <wrl/client.h>
 #include <d3d12shader.h>
-
+#include <algorithm>
+#include <cctype>
 #pragma comment(lib, "dxcompiler.lib")
+
+namespace
+{
+    /// <summary>
+	/// セマンティック名の標準化
+    /// </summary>
+    std::string NormalizeSemanticName(const std::string& name)
+    {
+		std::string nameUpper = name;
+
+        std::transform(nameUpper.begin(), nameUpper.end(), nameUpper.begin(),
+			[](unsigned char c) { return std::toupper(c); });
+
+        return nameUpper;
+    }
+
+
+    /// <summary>
+    /// DXGIフォーマットをコンポーネント情報から取得
+    /// </summary>
+    DXGI_FORMAT GetDXGIFormatFromComponentType(D3D_REGISTER_COMPONENT_TYPE componentType, uint32_t componentCount)
+    {
+        switch (componentType)
+        {
+        case D3D_REGISTER_COMPONENT_FLOAT32:
+            switch (componentCount)
+            {
+            case 1: return DXGI_FORMAT_R32_FLOAT;
+            case 2: return DXGI_FORMAT_R32G32_FLOAT;
+            case 3: return DXGI_FORMAT_R32G32B32_FLOAT;
+            case 4: return DXGI_FORMAT_R32G32B32A32_FLOAT;
+            }
+            break;
+        case D3D_REGISTER_COMPONENT_UINT32:
+            switch (componentCount)
+            {
+            case 1: return DXGI_FORMAT_R32_UINT;
+            case 2: return DXGI_FORMAT_R32G32_UINT;
+            case 3: return DXGI_FORMAT_R32G32B32_UINT;
+            case 4: return DXGI_FORMAT_R32G32B32A32_UINT;
+            }
+            break;
+        case D3D_REGISTER_COMPONENT_SINT32:
+            switch (componentCount)
+            {
+            case 1: return DXGI_FORMAT_R32_SINT;
+            case 2: return DXGI_FORMAT_R32G32_SINT;
+            case 3: return DXGI_FORMAT_R32G32B32_SINT;
+            case 4: return DXGI_FORMAT_R32G32B32A32_SINT;
+            }
+            break;
+        }
+        return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    }
+}
 
 namespace ShaderReflection
 {
@@ -76,66 +132,15 @@ namespace ShaderReflection
         return inputElements;
     }
 
-    DXGI_FORMAT GetDXGIFormatFromComponentType(D3D_REGISTER_COMPONENT_TYPE componentType, uint32_t componentCount)
+    void BuildRootParamsFromShader(IDxcUtils* dxcUtils, IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams)
     {
-        switch (componentType)
-        {
-        case D3D_REGISTER_COMPONENT_FLOAT32:
-            switch (componentCount)
-            {
-            case 1: return DXGI_FORMAT_R32_FLOAT;
-            case 2: return DXGI_FORMAT_R32G32_FLOAT;
-            case 3: return DXGI_FORMAT_R32G32B32_FLOAT;
-            case 4: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-            }
-            break;
-        case D3D_REGISTER_COMPONENT_UINT32:
-            switch (componentCount)
-            {
-            case 1: return DXGI_FORMAT_R32_UINT;
-            case 2: return DXGI_FORMAT_R32G32_UINT;
-            case 3: return DXGI_FORMAT_R32G32B32_UINT;
-            case 4: return DXGI_FORMAT_R32G32B32A32_UINT;
-            }
-            break;
-        case D3D_REGISTER_COMPONENT_SINT32:
-            switch (componentCount)
-            {
-            case 1: return DXGI_FORMAT_R32_SINT;
-            case 2: return DXGI_FORMAT_R32G32_SINT;
-            case 3: return DXGI_FORMAT_R32G32B32_SINT;
-            case 4: return DXGI_FORMAT_R32G32B32A32_SINT;
-            }
-            break;
-        }
-        return DXGI_FORMAT_R32G32B32A32_FLOAT;
-    }
-
-    std::string NormalizeSemanticName(const std::string& name)
-    {
-
-        return name;
-    }
-
-
-
-    void BuildRootParamsFromShader(IDxcBlob* shaderBlob, ShaderType shaderType, std::vector<RootParam>& outParams)
-    {
-        Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
-        HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
-        if (FAILED(hr))
-        {
-            Log("IDxcUtilsの生成に失敗しました");
-            return;
-        }
-
         DxcBuffer dxcBuffer{};
         dxcBuffer.Ptr = shaderBlob->GetBufferPointer();
         dxcBuffer.Size = shaderBlob->GetBufferSize();
         dxcBuffer.Encoding = DXC_CP_ACP;
 
         Microsoft::WRL::ComPtr<ID3D12ShaderReflection> reflection;
-        hr = dxcUtils->CreateReflection(&dxcBuffer, __uuidof(ID3D12ShaderReflection), (void**)&reflection);
+        HRESULT hr = dxcUtils->CreateReflection(&dxcBuffer, __uuidof(ID3D12ShaderReflection), (void**)&reflection);
         if (FAILED(hr))
         {
             Log("シェーダーリフレクションの取得失敗");
@@ -161,14 +166,14 @@ namespace ShaderReflection
                 p.paramType = ParamType::CBV;
                 p.shaderType = shaderType;
                 p.key = bind.BindPoint;
-				p.registerSpace = bind.Space;
+                p.registerSpace = bind.Space;
                 p.ComputeHash();
 
                 p.sizeBytes = cbDesc.Size;
 
-				outParams.push_back(p);
+                outParams.push_back(p);
             }
-			// SRV
+
             else if (bind.Type == D3D_SIT_STRUCTURED || bind.Type == D3D_SIT_BYTEADDRESS)
             {
                 RootParam p{};
@@ -176,11 +181,11 @@ namespace ShaderReflection
                 p.shaderType = shaderType;
                 p.key = bind.BindPoint;
                 p.registerSpace = bind.Space;
-				p.ComputeHash();
+                p.ComputeHash();
 
-				outParams.push_back(p);
+                outParams.push_back(p);
             }
-			// UAV
+            // UAV
             else if (bind.Type == D3D_SIT_UAV_RWSTRUCTURED || bind.Type == D3D_SIT_UAV_RWBYTEADDRESS)
             {
                 RootParam p{};

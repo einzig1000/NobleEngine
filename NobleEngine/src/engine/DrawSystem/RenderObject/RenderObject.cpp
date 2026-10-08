@@ -14,39 +14,41 @@ void RenderObject::SetupFromShaders()
 	rootParams_.clear();
 	rootParamHashToIndexMap_.clear();
 
+	auto* psoManager = Engine::Instance().GetDirectXManager()->GetPipelineStateManager();
+
 	if (psoConfig_.as != "unknown")
 	{
 		std::wstring asPath = StringConverter::Convert(psoConfig_.as);
-		auto asBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(asPath.c_str(), L"as_6_6");
+		const auto& asParams = psoManager->GetShaderRootParams(asPath.c_str(), L"as_6_6", ShaderType::AmplificationShader);
 
 		// ASのルートパラメータを取得
-		ShaderReflection::BuildRootParamsFromShader(asBlob.Get(), ShaderType::AmplificationShader, rootParams_);
+		rootParams_.insert(rootParams_.end(), asParams.begin(), asParams.end());
 	}
 	if (psoConfig_.vs != "unknown")
 	{
 		std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
-		auto vsBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(vsPath.c_str(), L"vs_6_6");
+		const auto& vsParams = psoManager->GetShaderRootParams(vsPath.c_str(), L"vs_6_6", ShaderType::VertexShader);
 
 		// VSのルートパラメータを取得
-		ShaderReflection::BuildRootParamsFromShader(vsBlob.Get(), ShaderType::VertexShader, rootParams_);
+		rootParams_.insert(rootParams_.end(), vsParams.begin(), vsParams.end());
 	}
 	else if (psoConfig_.ms != "unknown")
 	{
 		std::wstring msPath = StringConverter::Convert(psoConfig_.ms);
-		auto msBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(msPath.c_str(), L"ms_6_6");
+		const auto& msParams = psoManager->GetShaderRootParams(msPath.c_str(), L"ms_6_6", ShaderType::MeshShader);
 
 		// MSのルートパラメータを取得
-		ShaderReflection::BuildRootParamsFromShader(msBlob.Get(), ShaderType::MeshShader, rootParams_);
+		rootParams_.insert(rootParams_.end(), msParams.begin(), msParams.end());
 	}
 	{
 		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
-		auto psBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(psPath.c_str(), L"ps_6_6");
+		const auto& psParams = psoManager->GetShaderRootParams(psPath.c_str(), L"ps_6_6", ShaderType::PixelShader);
 
 		// PSのルートパラメータを取得
-		ShaderReflection::BuildRootParamsFromShader(psBlob.Get(), ShaderType::PixelShader, rootParams_);
+		rootParams_.insert(rootParams_.end(), psParams.begin(), psParams.end());
 	}
 
-	
+
 #ifdef _DEBUG
 
 	// デバッグビルドではハッシュの衝突がないか確認する

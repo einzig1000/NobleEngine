@@ -125,7 +125,7 @@ Inventory::Inventory()
 	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
-	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/Inventory/Inventory.png");
+	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/texture/UI/Inventory/Inventory.png");
 	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
 	Vector2 textureSize = Vector2(float(textureData->metadata.width), float(textureData->metadata.height));
 	sprites_[0].transforms.scale = Vector3(float(textureSize.x * 0.5f), float(textureSize.y * 0.5f), 1.0f);
@@ -400,6 +400,12 @@ void Inventory::HandleClick()
 				else if (i == 1) request.upgradeType = UpgradeType::ScaleUp;
 				else if (i == 2) request.upgradeType = UpgradeType::PowerUp;
 				request.levelCost = upgradeRows_[i].levelCost;
+
+				Event event;
+				event.type = EventType::ToolUpgradeRequested;
+				event.data = request;
+
+				eventBus_->Notify(event);
 			}
 			return;
 		}

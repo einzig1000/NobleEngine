@@ -37,7 +37,9 @@ namespace
 
 ModelLoader::ModelLoader(DirectXManager* dxManager, ModelBank* bank)
     : dxManager_(dxManager), bank_(bank)
-{}
+{
+    defaultModelID_ = LoadModel("assets/engine/model/cube/cube.obj");
+}
 
 ModelLoader::~ModelLoader()
 {
@@ -50,14 +52,15 @@ int32_t ModelLoader::LoadModel(const std::string & filePath)
 	int32_t modelID = bank_->IsModelDataExist(filePath);
 	if (modelID != -1) return modelID;
 
-    Log("モデル読み込み開始:%s", filePath.c_str());
+    Log("モデル読み込み開始:\"%s\"", filePath.c_str());
 
     std::unique_ptr<ModelData> obj = std::make_unique<ModelData>();
 
     // モデルデータ読みこみ
     if (!LoadModelFile(filePath, obj.get()))
     {
-        return -1;
+		Log("読み込み失敗しました。デフォルトモデルが使用されます。");
+        return defaultModelID_;
     }
 
 	// モデルバンクに登録
@@ -88,16 +91,14 @@ bool ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     );
     if (!scene)
     {
-        Log("モデルファイルを開けませんでした:%s", filePath.c_str());
-        Log("%s", importer.GetErrorString());
-        assert(false);
+        Log("ファイルが見つかりませんでした:\"%s\"", filePath.c_str());
+        //Log("%s", importer.GetErrorString());
 		return false;
     }
 
 	if (!scene->HasMeshes())
 	{
-		Log("モデルが含まれていません:%s", filePath.c_str());
-		assert(false);
+		Log("ファイルにモデルが含まれていません:\"%s\"", filePath.c_str());
         return false;
 	}
 
@@ -136,65 +137,65 @@ bool ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     }
 
 	// 頂点データ & インデックスデータの最適化
-    //{
-    //    std::vector<uint32_t> remap(modelData->vertices.size());
+    {
+        std::vector<uint32_t> remap(modelData->vertices.size());
 
-    //    size_t vertexCount = meshopt_generateVertexRemap(
-    //        remap.data(),
-    //        modelData->indices.data(),
-    //        modelData->indices.size(),
-    //        modelData->vertices.data(),
-    //        modelData->vertices.size(),
-    //        sizeof(VertexData));
+        size_t vertexCount = meshopt_generateVertexRemap(
+            remap.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            modelData->vertices.data(),
+            modelData->vertices.size(),
+            sizeof(VertexData));
 
-    //    std::vector<VertexData> vertices(vertexCount);
-    //    std::vector<uint32_t> indices(modelData->indices.size());
+        std::vector<VertexData> vertices(vertexCount);
+        std::vector<uint32_t> indices(modelData->indices.size());
 
-    //    // インデックスバッファをリマップ
-    //    meshopt_remapIndexBuffer(
-    //        indices.data(),
-    //        modelData->indices.data(),
-    //        modelData->indices.size(),
-    //        remap.data());
+        // インデックスバッファをリマップ
+        meshopt_remapIndexBuffer(
+            indices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            remap.data());
 
-    //    // 頂点データをリマップ
-    //    meshopt_remapVertexBuffer(
-    //        vertices.data(),
-    //        modelData->vertices.data(),
-    //        modelData->vertices.size(),
-    //        sizeof(VertexData),
-    //        remap.data());
+        // 頂点データをリマップ
+        meshopt_remapVertexBuffer(
+            vertices.data(),
+            modelData->vertices.data(),
+            modelData->vertices.size(),
+            sizeof(VertexData),
+            remap.data());
 
-    //    // 最適なサイズに圧縮
-    //    modelData->vertices.resize(vertices.size());
-    //    modelData->indices.resize(indices.size());
+        // 最適なサイズに圧縮
+        modelData->vertices.resize(vertices.size());
+        modelData->indices.resize(indices.size());
 
-    //    // 頂点キャッシュ最適化
-    //    meshopt_optimizeVertexCache(
-    //        modelData->indices.data(),
-    //        indices.data(),
-    //        indices.size(),
-    //        vertexCount);
+        // 頂点キャッシュ最適化
+        meshopt_optimizeVertexCache(
+            modelData->indices.data(),
+            indices.data(),
+            indices.size(),
+            vertexCount);
 
-    //    // オーバードロー最適化
-    //    meshopt_optimizeOverdraw(
-    //        modelData->indices.data(),
-    //        modelData->indices.data(),
-    //        modelData->indices.size(),
-    //        &vertices[0].position.x,
-    //        vertices.size(),
-    //        sizeof(VertexData),
-    //        1.05f);
+        // オーバードロー最適化
+        meshopt_optimizeOverdraw(
+            modelData->indices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            &vertices[0].position.x,
+            vertices.size(),
+            sizeof(VertexData),
+            1.05f);
 
-    //    // 頂点フェッチ最適化
-    //    meshopt_optimizeVertexFetch(
-    //        modelData->vertices.data(),
-    //        modelData->indices.data(),
-    //        modelData->indices.size(),
-    //        vertices.data(),
-    //        vertices.size(),
-    //        sizeof(VertexData));
-    //}
+        // 頂点フェッチ最適化
+        meshopt_optimizeVertexFetch(
+            modelData->vertices.data(),
+            modelData->indices.data(),
+            modelData->indices.size(),
+            vertices.data(),
+            vertices.size(),
+            sizeof(VertexData));
+    }
 
     // メッシュレットの生成
     {

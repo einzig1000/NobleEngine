@@ -9,8 +9,8 @@
 
 GameManager::GameManager() 
 {
-	currentPhase_ = CreatePhase(Phase::Phase_Title);
-	//currentPhase_ = CreatePhase(Phase::Phase_GameScene);
+	//currentPhase_ = CreatePhase(Phase::Phase_Title);
+	currentPhase_ = CreatePhase(Phase::Phase_GameScene);
 	currentPhase_->SetContext(&phaseContext_);
 	currentPhase_->Initialize();
 
@@ -34,7 +34,7 @@ void GameManager::Update()
 
 	if (Game::IO::Key::IsJustPressed(VK_F11))
 	{
-		Game::Asset::RenderTexture::SaveAllRenderTextureToFile("generated/screenshots");
+		Game::Asset::RenderTexture::SaveAllRenderTextureToFile("screenshots");
 	}
 
 	if (Game::IO::Key::IsJustPressed(VK_F3))

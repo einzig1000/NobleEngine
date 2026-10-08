@@ -13,7 +13,7 @@ Player::Player()
 {
 	// プレイヤーデータ初期化
 	t_player_ = Game::Asset::Texture::Load("assets/engine/texture/white1x1.png");
-	render_.modelID_ = Game::Asset::Model::Load("assets/application/Minecraft/player/player.obj");
+	render_.modelID_ = Game::Asset::Model::Load("assets/application/Object/player/player.obj");
 	const ModelData* modelData = Game::Asset::Model::GetData(render_.modelID_);
 	SetBoundingBox(modelData->colliderShape.aabbs[0]);
 	render_.psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
@@ -44,7 +44,7 @@ void Player::Initialize()
 
 	RegisterToMap();
 
-	AddItem(ItemID::Tool_Hammer_of_Wood, 1);
+	AddItem(ItemID::Tool_Hammer, 1);
 }
 
 //void Player::Update(int32_t 俯瞰カメラID, int32_t 自身の視点カメラID)
@@ -195,8 +195,7 @@ void Player::CheckExternalEvents()
 			for (const Event& event : hpChangedEvents)
 			{
 				hp_ += std::any_cast<float>(event.data);
-				if (hp_ < 0) hp_ = 0;
-				if (hp_ > maxHP_) hp_ = maxHP_;
+				hp_ = std::clamp(hp_, 0.0f, maxHP_);
 			}
 		}
 	}

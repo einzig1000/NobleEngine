@@ -7,25 +7,37 @@
 #include <unordered_map>
 #include <vector>
 #include <DirectX/Pipeline/RenderPipelineTypes.h>
+#include <optional>
 
-struct CD3DX12PipelineStateStream
-{
-    CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
-    CD3DX12_PIPELINE_STATE_STREAM_VS VS;                                   // VS用
-    CD3DX12_PIPELINE_STATE_STREAM_MS pMS;                                  // MS用
-	CD3DX12_PIPELINE_STATE_STREAM_AS pAS;                                  // AS用
-    CD3DX12_PIPELINE_STATE_STREAM_PS pPS;                                  // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;                // VS用
-    CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;// VS用
-    CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC pBlend;                       // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL pDepthStencil;             // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS pRTVFormats;       // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT pDSVFormat;         // 共通
-    CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER pRasterizer;                  // 共通
-};
 
 class PipelineStateManager
 {
+private:
+
+    struct CD3DX12PipelineStateStream
+    {
+        CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+        CD3DX12_PIPELINE_STATE_STREAM_VS VS;                                   // VS用
+        CD3DX12_PIPELINE_STATE_STREAM_MS pMS;                                  // MS用
+        CD3DX12_PIPELINE_STATE_STREAM_AS pAS;                                  // AS用
+        CD3DX12_PIPELINE_STATE_STREAM_PS pPS;                                  // 共通
+        CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;                // VS用
+        CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;// VS用
+        CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC pBlend;                       // 共通
+        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL pDepthStencil;             // 共通
+        CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS pRTVFormats;       // 共通
+        CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT pDSVFormat;         // 共通
+        CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER pRasterizer;                  // 共通
+    };
+
+    // シェーダー1つ分のキャッシュ
+    struct ShaderCacheEntry
+    {
+        Microsoft::WRL::ComPtr<IDxcBlob> blob;
+        // リフレクション結果。バインドが0個のシェーダーもあるので、空vectorと「未作成」をoptionalで区別する
+        std::optional<std::vector<RootParam>> rootParams;
+    };
+
 public:
     PipelineStateManager(ID3D12Device2* device);
     ~PipelineStateManager();
@@ -38,6 +50,8 @@ public:
     Microsoft::WRL::ComPtr<ID3D12PipelineState> GetComputePipelineState(const ComputePSOConfig& psoConfig, const std::vector<RootParam>& params);
 	// シェーダーBlobの取得
     Microsoft::WRL::ComPtr<IDxcBlob> GetShaderBlob(const wchar_t* path, const wchar_t* target);
+    // シェーダーのルートパラメータ取得
+    const std::vector<RootParam>& GetShaderRootParams(const wchar_t* path, const wchar_t* target, ShaderType shaderType);
 
 private:
 	// ルートシグネチャ生成
@@ -48,15 +62,18 @@ private:
     Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateComputePipelineState(const ComputePSOConfig& cfg, const std::vector<RootParam>& params);
 	// シェーダーコンパイル
     Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
+	// シェーダーの情報を取得
+    ShaderCacheEntry& GetShaderEntry(const wchar_t* path, const wchar_t* target);
 
     // シェーダーキャッシュ
-    std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<IDxcBlob>> shaderCache_;
+    std::unordered_map<std::wstring, ShaderCacheEntry> shaderCache_;
     // ルートシグネチャキャッシュ
     std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12RootSignature>> rootSignatureCache_;
     // GraphicsPSOキャッシュ
     std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12PipelineState>> graphicsPsoCache_;
     // ComputePSOキャッシュ
     std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12PipelineState>> computePsoCache_;
+
 
     // シェーダー系
     void InitializeDxc();
