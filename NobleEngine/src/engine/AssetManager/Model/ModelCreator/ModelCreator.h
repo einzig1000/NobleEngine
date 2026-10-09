@@ -4,11 +4,11 @@
 class ModelBank;
 class DirectXManager;
 
-class ModelCreater
+class ModelCreator
 {
 public:
-	ModelCreater(DirectXManager* dxManager, ModelBank* bank);
-	~ModelCreater();
+	ModelCreator(DirectXManager* dxManager, ModelBank* bank);
+	~ModelCreator();
 
 	/// <summary>
 	/// モデルを作成する

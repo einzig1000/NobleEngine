@@ -51,38 +51,42 @@ void ComputeSystem::Execute()
 	}
 }
 
-
 void ComputeSystem::DispatchComputeObject(const ComputeObject* computeObject)
 {
 	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex_);
 	auto* srvUavManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
+	const RootLayout* layout = computeObject->GetRootLayout();
+	assert(layout && "SetupFromShaders()が呼ばれていません");
+
 	// 1) RootSignatureセット
-	cmdList->SetComputeRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature(computeObject->GetRootParams()).Get());
+	cmdList->SetComputeRootSignature(layout->rootSignature);
 	// 2) PSOセット
-	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetComputePipelineState(computeObject->psoConfig_, computeObject->GetRootParams()).Get());
+	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetComputePipelineState(computeObject->psoConfig_, *layout));
 	// 3) CBV・SRVセット
-	const auto& rootParams = computeObject->GetRootParams();
-	for (size_t i = 0; i < rootParams.size(); ++i)
+	const auto& values = computeObject->GetRootValues();
+	for (size_t i = 0; i < layout->params.size(); ++i)
 	{
-		const auto& param = rootParams[i];
+		const auto& param = layout->params[i];
+		const auto& value = values[i];
 
 		if (param.paramType == ParamType::CBV)
 		{
-			assert(param.gpuAddress != 0);
-			cmdList->SetComputeRootConstantBufferView(static_cast<UINT>(i), param.gpuAddress);
+			assert(value.gpuAddress != 0);
+			cmdList->SetComputeRootConstantBufferView(static_cast<UINT>(i), value.gpuAddress);
 		}
 		else if (param.paramType == ParamType::SRV)
 		{
-			assert(param.allocIndex != UINT32_MAX);
-			cmdList->SetComputeRootDescriptorTable(static_cast<UINT>(i), srvUavManager->GetGPUHandleAt(param.allocIndex));
+			assert(value.allocIndex != UINT32_MAX);
+			cmdList->SetComputeRootDescriptorTable(static_cast<UINT>(i), srvUavManager->GetGPUHandleAt(value.allocIndex));
 		}
 		else if (param.paramType == ParamType::UAV)
 		{
-			assert(param.allocIndex != UINT32_MAX);
-			cmdList->SetComputeRootDescriptorTable(static_cast<UINT>(i), srvUavManager->GetGPUHandleAt(param.allocIndex));
+			assert(value.allocIndex != UINT32_MAX);
+			cmdList->SetComputeRootDescriptorTable(static_cast<UINT>(i), srvUavManager->GetGPUHandleAt(value.allocIndex));
 		}
 	}
 
 	cmdList->Dispatch(UINT(computeObject->size.x), UINT(computeObject->size.y), UINT(computeObject->size.z));
 }
+

@@ -17,7 +17,7 @@ void EmptyScreen::Initialize()
 	{
 		Event event;
 		event.type = EventType::AbleMoveAllCharacters;
-		event.value.push_back(true);
+		event.data = true;
 		eventBus_->Notify(event);
 	}
 

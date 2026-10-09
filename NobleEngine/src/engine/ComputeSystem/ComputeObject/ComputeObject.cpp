@@ -10,90 +10,47 @@
 
 void ComputeObject::SetupFromShaders()
 {
-	rootParams_.clear();
-	rootParamHashToIndexMap_.clear();
 	outputHandles_.clear();
 
-	std::wstring csPath = StringConverter::Convert(psoConfig_.cs);
-	auto csBlob = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetShaderBlob(csPath.c_str(), L"cs_6_6");
+	layout_ = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetComputeRootLayout(psoConfig_);
 
-	// CS の CBV / SRV を反映
-	ShaderReflection::BuildRootParamsFromShader(csBlob.Get(), ShaderType::ComputeShader, rootParams_);
-
-#ifdef _DEBUG
-
-	// デバッグビルドではハッシュの衝突がないか確認する
-	for (size_t i = 0; i < rootParams_.size(); ++i)
+	// 値はレイアウトと同じ並びで用意する
+	rootValues_.assign(layout_->params.size(), RootParamValue{});
+	for (size_t i = 0; i < layout_->params.size(); ++i)
 	{
-		const auto& param = rootParams_[i];
-		if (rootParamHashToIndexMap_.find(param.hash) != rootParamHashToIndexMap_.end())
+		// Bindless配列はヒープの先頭を指しておけばよいので、最初から0を入れておく
+		if (layout_->params[i].isUnbounded)
 		{
-			Log("RenderObject::SetupFromShaders() ルートパラメータのハッシュが衝突しました");
-			__debugbreak();
-		}
-		else
-		{
-			rootParamHashToIndexMap_[param.hash] = i;
+			rootValues_[i].allocIndex = 0;
 		}
 	}
-
-#else
-
-	for (size_t i = 0; i < rootParams_.size(); ++i)
-	{
-		rootParamHashToIndexMap_[rootParams_[i].hash] = i;
-	}
-
-#endif
 }
 
 void ComputeObject::SetBRegisterData(const uint32_t key, const void* data, uint32_t space)
 {
-	RootParam tempParam{};
-	tempParam.paramType = ParamType::CBV;
-	tempParam.shaderType = ShaderType::ComputeShader;
-	tempParam.key = key;
-	tempParam.registerSpace = space;
-	tempParam.ComputeHash();
+	if (!layout_) return;
+	const int32_t index = layout_->Find(ParamType::CBV, ShaderType::ComputeShader, key, space);
+	if (index < 0) return;
 
-	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
-	if (it == rootParamHashToIndexMap_.end()) return;
-	auto& param = rootParams_.at(it->second);
-
-	param.gpuAddress = Engine::Instance().GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(param.sizeBytes, data);
-	return;
+	rootValues_[index].gpuAddress = Engine::Instance().GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(layout_->params[index].sizeBytes, data);
 }
 
 void ComputeObject::SetTRegisterData(const uint32_t key, const uint32_t allocIndex, uint32_t space)
 {
-	RootParam tempParam{};
-	tempParam.paramType = ParamType::SRV;
-	tempParam.shaderType = ShaderType::ComputeShader;
-	tempParam.key = key;
-	tempParam.registerSpace = space;
-	tempParam.ComputeHash();
+	if (!layout_) return;
+	const int32_t index = layout_->Find(ParamType::SRV, ShaderType::ComputeShader, key, space);
+	if (index < 0) return;
 
-	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
-	if (it == rootParamHashToIndexMap_.end()) return;
-	auto& param = rootParams_.at(it->second);
-
-	param.allocIndex = allocIndex;
+	rootValues_[index].allocIndex = allocIndex;
 }
 
 void ComputeObject::SetURegisterData(const uint32_t key, const uint32_t allocIndex, uint32_t space)
 {
-	RootParam tempParam{};
-	tempParam.paramType = ParamType::UAV;
-	tempParam.shaderType = ShaderType::ComputeShader;
-	tempParam.key = key;
-	tempParam.registerSpace = space;
-	tempParam.ComputeHash();
+	if (!layout_) return;
+	const int32_t index = layout_->Find(ParamType::UAV, ShaderType::ComputeShader, key, space);
+	if (index < 0) return;
 
-	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
-	if (it == rootParamHashToIndexMap_.end()) return;
-	auto& param = rootParams_.at(it->second);
-
-	param.allocIndex = allocIndex;
+	rootValues_[index].allocIndex = allocIndex;
 }
 
 void ComputeObject::Dispatch()

@@ -12,7 +12,6 @@ public:
 	FixFPS* GetFixFPS() const { return fixFPS_.get(); }
 	TimeScaler* GetTimeScaler() const { return timeScaler_.get(); }
 	float GetScaledDeltaTimeMs() const { return scaledDeltaTimeMs_; }
-	void SetTimeScale(float scale) { timeScaler_->SetTimeScale(scale); }
 
 private:
 	std::unique_ptr<FixFPS> fixFPS_;

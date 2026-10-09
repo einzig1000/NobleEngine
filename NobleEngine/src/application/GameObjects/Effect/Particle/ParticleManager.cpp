@@ -19,7 +19,7 @@ void ParticleManager::Update(int32_t c_ID)
 		const std::vector<Event>& controlModeEvents = eventBus_->GetEvents(EventType::AbleMoveAllCharacters);
 		if (!controlModeEvents.empty())
 		{
-			ableMoveAll_ = controlModeEvents[0].value[0];
+			ableMoveAll_ = std::any_cast<bool>(controlModeEvents[0].data);
 		}
 
 		// GoTargetCurvingの発生依頼

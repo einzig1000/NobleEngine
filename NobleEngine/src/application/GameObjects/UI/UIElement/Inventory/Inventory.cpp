@@ -125,16 +125,15 @@ Inventory::Inventory()
 	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
 	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	sprites_[0].render->SetupFromShaders();
-	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/Minecraft/UI/Inventory/Inventory.png");
+	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/texture/UI/Inventory/Inventory.png");
 	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
-	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) * 0.5f, float(textureData->metadata.height) * 0.5f, 1.0f);
-	sprites_[0].transforms.translate = Vector3(640.0f, 360.0f, 1.0f);
+	Vector2 textureSize = Vector2(float(textureData->metadata.width), float(textureData->metadata.height));
+	sprites_[0].transforms.scale = Vector3(float(textureSize.x * 0.5f), float(textureSize.y * 0.5f), 1.0f);
+	Vector2 windowSize = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
+	sprites_[0].transforms.translate = Vector3(windowSize.x * 0.5f, windowSize.y * 0.5f, 1.0f);
 	sprites_[0].transforms.rotate = Vector3(0.0f, 0.0f, 0.0f);
 
-	// テクスチャの1pxが画面上で何pxになるか
-	pixelScale_ = sprites_[0].transforms.scale.x * 2.0f / float(textureData->metadata.width);
-
-	const float iconHalfSize = 32.0f * pixelScale_;
+	const float iconHalfSize = 32.0f;
 	const int32_t planeModelID = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 
 	// 4x9 のインベントリ用アイコン
@@ -231,15 +230,15 @@ void Inventory::Update(int32_t cameraID)
 		const float fillWidth = std::floor(kGaugeWidth * ratio / kArtPixel) * kArtPixel;
 
 		// 左端をゲージの内側の左端にそろえて右へ伸ばす
-		gaugeFill_.transforms.scale = Vector3(fillWidth * 0.5f * pixelScale_, kGaugeHeight * 0.5f * pixelScale_, 1.0f);
-		gaugeFill_.transforms.translate = inventoryTopLeft + Vector3((kGaugeLeft + fillWidth * 0.5f) * pixelScale_, (kGaugeTop + kGaugeHeight * 0.5f) * pixelScale_, 0.0f);
+		gaugeFill_.transforms.scale = Vector3(fillWidth * 0.5f, kGaugeHeight * 0.5f, 1.0f);
+		gaugeFill_.transforms.translate = inventoryTopLeft + Vector3((kGaugeLeft + fillWidth * 0.5f), (kGaugeTop + kGaugeHeight * 0.5f), 0.0f);
 
 		// レベルの文字(隙間の真ん中にそろえる)
 		levelText_ = std::to_string(miningGauge_->GetLevel());
-		levelCharSize_ = static_cast<int32_t>(kLevelCharSize * pixelScale_);
+		levelCharSize_ = static_cast<int32_t>(kLevelCharSize);
 		const Vector2 textSize = Game::Asset::Font::MeasureJustTextureSize(levelText_, levelCharSize_, Vector2{ 0.0f, 0.0f }, 0.0f);
-		const float centerX = inventoryTopLeft.x + kLevelCenterX * pixelScale_;
-		const float centerY = inventoryTopLeft.y + kLevelCenterY * pixelScale_;
+		const float centerX = inventoryTopLeft.x + kLevelCenterX;
+		const float centerY = inventoryTopLeft.y + kLevelCenterY;
 		levelTextPos_ = Vector2{ centerX - textSize.x * 0.5f, centerY - static_cast<float>(levelCharSize_) * kDigitCenterRatio };
 	}
 
@@ -314,7 +313,7 @@ void Inventory::Draw(int32_t rt_ID)
 		}
 
 		// レベル
-		DrawOutlinedString(rt_ID, levelText_, levelCharSize_, levelTextPos_, gaugeFillColor_, kLevelOutlineWidth * pixelScale_);
+		DrawOutlinedString(rt_ID, levelText_, levelCharSize_, levelTextPos_, gaugeFillColor_, kLevelOutlineWidth);
 	}
 
 	// 右上の枠(ツールのグレードアップ)
@@ -329,8 +328,8 @@ void Inventory::Draw(int32_t rt_ID)
 		}
 
 		// 個数
-		const int32_t charSize = static_cast<int32_t>(46.0f * pixelScale_);
-		const float textOffset = 6.0f * pixelScale_;
+		const int32_t charSize = static_cast<int32_t>(46.0f);
+		const float textOffset = 6.0f;
 		for (int32_t i = 0; i < ItemInventory::kSlotCount; ++i)
 		{
 			if (inventoryIcons_[i].textureID < 0) continue;
@@ -372,7 +371,7 @@ Vector3 Inventory::GetSlotPosition(int32_t index) const
 	// インベントリの左上の座標
 	Vector3 inventoryTopLeft = sprites_[0].transforms.translate - Vector3(sprites_[0].transforms.scale.x, sprites_[0].transforms.scale.y, 0.0f);
 	// テクスチャ上の座標を画面上の座標に変換
-	return inventoryTopLeft + Vector3(texX * pixelScale_, texY * pixelScale_, 0.0f);
+	return inventoryTopLeft + Vector3(texX, texY, 0.0f);
 }
 
 void Inventory::HandleClick()
@@ -397,22 +396,16 @@ void Inventory::HandleClick()
 				request.slotIndex = selectedSlot_;
 				request.sourceID = inventory_->GetInventorySlot(selectedSlot_).itemID;
 				request.resultID = upgradeRows_[i].resultID;
+				if (i == 0) request.upgradeType = UpgradeType::SpeedUp;
+				else if (i == 1) request.upgradeType = UpgradeType::ScaleUp;
+				else if (i == 2) request.upgradeType = UpgradeType::PowerUp;
 				request.levelCost = upgradeRows_[i].levelCost;
 
-				if (i == 0)
-				{
-					Event event;
-					event.type = EventType::ToolUpgradeRequested_SpeedUp;
-					event.data = request;
-					eventBus_->Notify(event);
-				}
-				else
-				{
-					Event event;
-					event.type = EventType::ToolUpgradeRequested_ScaleUp;
-					event.data = request;
-					eventBus_->Notify(event);
-				}
+				Event event;
+				event.type = EventType::ToolUpgradeRequested;
+				event.data = request;
+
+				eventBus_->Notify(event);
 			}
 			return;
 		}
@@ -447,14 +440,12 @@ void Inventory::UpdateUpgradeTable()
 	// 見本
 	upgradeIcons_[0].textureID = iconManager_ ? iconManager_->GetIcon(sourceInfo->id) : -1;
 
-	// 仮のグレードアップ先: 元の道具をそのまま3つ。消費レベルは7・8・12
-	// (グレードアップ先のデータができたら、ここをデータから読むように置き換える)
 	constexpr int32_t kTemporaryCosts[kMaxUpgradeCount] = { 7, 8, 12 };
 	upgradeRowCount_ = kMaxUpgradeCount;
 
 	const int32_t level = miningGauge_ ? miningGauge_->GetLevel() : 0;
-	arrowCharSize_ = static_cast<int32_t>(kUpgradeArrowCharSize * pixelScale_);
-	costCharSize_ = static_cast<int32_t>(kUpgradeCostCharSize * pixelScale_);
+	arrowCharSize_ = static_cast<int32_t>(kUpgradeArrowCharSize);
+	costCharSize_ = static_cast<int32_t>(kUpgradeCostCharSize);
 	const Vector2 arrowSize = Game::Asset::Font::MeasureJustTextureSize("→", arrowCharSize_, Vector2{ 0.0f, 0.0f }, 0.0f);
 
 	for (int32_t i = 0; i < upgradeRowCount_; ++i)
@@ -497,7 +488,7 @@ void Inventory::DrawUpgradeTable(int32_t rt_ID)
 		Game::Asset::Font::DrawString(rt_ID, "→", arrowCharSize_, row.arrowPos, kArrowColor);
 
 		const Vector4& costColor = row.canAfford ? gaugeFillColor_ : kCostShortColor;
-		DrawOutlinedString(rt_ID, row.costText, costCharSize_, row.costTextPos, costColor, kUpgradeCostOutlineWidth * pixelScale_);
+		DrawOutlinedString(rt_ID, row.costText, costCharSize_, row.costTextPos, costColor, kUpgradeCostOutlineWidth);
 	}
 }
 
@@ -505,5 +496,5 @@ Vector3 Inventory::TextureToScreen(float x, float y) const
 {
 	// インベントリの左上の座標
 	const Vector3 inventoryTopLeft = sprites_[0].transforms.translate - Vector3(sprites_[0].transforms.scale.x, sprites_[0].transforms.scale.y, 0.0f);
-	return inventoryTopLeft + Vector3(x * pixelScale_, y * pixelScale_, 0.0f);
+	return inventoryTopLeft + Vector3(x, y, 0.0f);
 }

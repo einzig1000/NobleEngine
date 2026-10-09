@@ -13,7 +13,7 @@ Player::Player()
 {
 	// プレイヤーデータ初期化
 	t_player_ = Game::Asset::Texture::Load("assets/engine/texture/white1x1.png");
-	render_.modelID_ = Game::Asset::Model::Load("assets/application/Minecraft/player/player.obj");
+	render_.modelID_ = Game::Asset::Model::Load("assets/application/Object/player/player.obj");
 	const ModelData* modelData = Game::Asset::Model::GetData(render_.modelID_);
 	SetBoundingBox(modelData->colliderShape.aabbs[0]);
 	render_.psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
@@ -31,7 +31,7 @@ void Player::Initialize()
 {
 	translate_.value = Vector3{ 0.0f, 60.0f, 0.0f };
 	translate_.velocity = Vector3{ 0.0f, -0.0f, 0.0f };
-	translate_.acceleration = Vector3{ 0.0f, Constexprs::GRAVITY, 0.0f };
+	translate_.acceleration = Vector3{ 0.0f, Constexprs::kGravity, 0.0f };
 
 	scale_.value = Vector3{ 0.6f, 0.6f, 0.6f };
 	//scale_.value = Vector3{ 0.1f, 0.1f, 0.1f };
@@ -44,7 +44,7 @@ void Player::Initialize()
 
 	RegisterToMap();
 
-	AddItem(ItemID::Tool_Hammer_of_Wood, 1);
+	AddItem(ItemID::Tool_Hammer, 1);
 }
 
 //void Player::Update(int32_t 俯瞰カメラID, int32_t 自身の視点カメラID)
@@ -52,7 +52,7 @@ void Player::Initialize()
 // 自身の視点カメラID は ViewRayの計算とかに必要
 void Player::Update(int32_t cameraID)
 {
-	previousHP_ = static_cast<float>(HP_);
+	previousHP_ = static_cast<float>(hp_);
 
 	// 入力に対する処理
 	UpdateInput(cameraID);
@@ -133,7 +133,7 @@ void Player::CheckExternalEvents()
 
 
 		// ツールのグレードアップ依頼
-		for (const Event& event : eventBus_->GetEvents(EventType::ToolUpgradeRequested_SpeedUp))
+		for (const Event& event : eventBus_->GetEvents(EventType::ToolUpgradeRequested))
 		{
 			const auto* request = std::any_cast<ToolUpgradeRequest>(&event.data);
 			if (!request) continue;
@@ -144,20 +144,18 @@ void Player::CheckExternalEvents()
 			if (!miningPointGauge_.UseLevel(request->levelCost)) continue;
 			// 元の道具を消して同じスロットにグレードアップ先を入れる
 			ReplaceItem(request->slotIndex, request->resultID, 1);
-			SpeedUpItem();
-		}
-		for (const Event& event : eventBus_->GetEvents(EventType::ToolUpgradeRequested_ScaleUp))
-		{
-			const auto* request = std::any_cast<ToolUpgradeRequest>(&event.data);
-			if (!request) continue;
-			if (request->slotIndex < 0 || request->slotIndex >= ItemInventory::kSlotCount) continue;
-			// 届くまでにスロットの中身が変わっていたら何もしない
-			if (GetInventory()->GetInventorySlot(request->slotIndex).itemID != request->sourceID) continue;
-			// レベルが足りなければ何もしない
-			if (!miningPointGauge_.UseLevel(request->levelCost)) continue;
-			// 元の道具を消して同じスロットにグレードアップ先を入れる
-			ReplaceItem(request->slotIndex, request->resultID, 1);
-			ScaleUpItem();
+			switch (request->upgradeType)
+			{
+			case UpgradeType::SpeedUp:
+				SpeedUpItem();
+				break;
+			case UpgradeType::ScaleUp:
+				ScaleUpItem();
+				break;
+			case UpgradeType::PowerUp:
+				//PowerUpItem();
+				break;
+			}
 		}
 
 		// 採掘オーブが届いた
@@ -174,7 +172,7 @@ void Player::CheckExternalEvents()
 		if (!miningModeEvents.empty())
 		{
 			// 1Fに一回しか変更フラグはされない
-			miningModeEvents[0].value[0] == 0 ? miningMode_ = MiningPattern::Swing : miningMode_ = MiningPattern::Range;
+			miningMode_ = std::any_cast<MiningPattern>(miningModeEvents[0].data);
 		}
 
 		// アイテム取得イベント
@@ -183,8 +181,8 @@ void Player::CheckExternalEvents()
 		{
 			for (const Event& event : itemPickupEvents)
 			{
-				ItemID itemID = static_cast<ItemID>(event.value[0]);
-				int32_t amount = event.value[1];
+				ItemID itemID = std::any_cast<ItemID>(event.data);
+				int32_t amount = 1;
 
 				AddItem(itemID, amount);
 			}
@@ -196,9 +194,8 @@ void Player::CheckExternalEvents()
 		{
 			for (const Event& event : hpChangedEvents)
 			{
-				HP_ += event.value[0];
-				if (HP_ < 0) HP_ = 0;
-				if (HP_ > maxHP_) HP_ = maxHP_;
+				hp_ += std::any_cast<float>(event.data);
+				hp_ = std::clamp(hp_, 0.0f, maxHP_);
 			}
 		}
 	}
@@ -287,23 +284,20 @@ void Player::UpdateInputWASD(int32_t cameraID)
 	}
 
 	// ダッシュ開始可能
-	if (dashBufferTimer_ > 0)
+	if (dashBufferTimer_.GetProgress() < 1.0f)
 	{
-		dashBufferTimer_--;
-
 		// ダッシュ開始
 		if (Game::IO::Key::IsJustPressed('W'))
 		{
 			dash_ = true;
 			speed_ = dashSpeed_;
-			dashBufferTimer_ = 0;
 		}
 	}
 	// 10/60秒以内の単タップを検知したら
 	else if (Game::IO::Key::TestTapLong(5.0f / 60.0f, 'W'))
 	{
 		// ダッシュ開始可能タイマーをセット
-		dashBufferTimer_ = 30;
+		dashBufferTimer_.Initialize(1.0f);
 	}
 
 	// 移動処理

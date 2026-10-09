@@ -9,6 +9,14 @@ struct InventorySlot
     uint32_t count = 0;
 };
 
+enum UpgradeType
+{
+	None,
+	SpeedUp,
+	ScaleUp,
+	PowerUp
+};
+
 // ツールのグレードアップ依頼
 struct ToolUpgradeRequest
 {
@@ -18,6 +26,8 @@ struct ToolUpgradeRequest
     ItemID sourceID = ItemID::MAX;
     // グレードアップ先
     ItemID resultID = ItemID::MAX;
+	// グレードアップの種類
+	UpgradeType upgradeType = UpgradeType::None;
     // 消費レベル
     int32_t levelCost = 0;
 };

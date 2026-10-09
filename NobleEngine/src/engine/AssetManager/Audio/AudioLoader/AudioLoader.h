@@ -36,6 +36,10 @@ public:
 private:
 	AudioBank* bank_;
 
+	int32_t defaultAudioID = -1;
+
+	bool LoadAudioFile(const std::string& filePath, AudioData* data);
+
     VoiceCallback voiceCallback;
 
     // VoiceCallbackからAudioManagerへのアクセスを許可

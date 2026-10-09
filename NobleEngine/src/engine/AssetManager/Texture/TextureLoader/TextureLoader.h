@@ -14,13 +14,18 @@ public:
 	// テクスチャ読み込み
 	int32_t LoadTexture(const std::string& filePath);
 
+
 private:
 	DirectXManager* dxManager_;
 	TextureBank* bank_;
 
+	int32_t defaultTextureID_ = -1;
+
 	// アップロード用一時リソースを保持するリスト
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> intermediateUploadResources_;
 
+    // テクスチャファイル読み込み
+    bool LoadTextureFile(const std::string& filePath, TextureData* textureData, uint32_t& srvAllocationIndex);
 
     // <summary>
     // テクスチャデータを GPU にアップロードする関数

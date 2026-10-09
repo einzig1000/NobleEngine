@@ -25,21 +25,7 @@ ItemID ToolIDtoItemID(ToolID id)
 {
 	switch (id)
 	{
-	case ToolID::Sword_of_Wood:	return ItemID::Tool_Sword_of_Wood; break;
-	case ToolID::Sword_of_Stone:	return ItemID::Tool_Sword_of_Stone; break;
-	case ToolID::Sword_of_Iron:	return ItemID::Tool_Sword_of_Iron; break;
-	case ToolID::Sword_of_Gold:	return ItemID::Tool_Sword_of_Gold; break;
-	case ToolID::Sword_of_Diamond:	return ItemID::Tool_Sword_of_Diamond; break;
-	case ToolID::Hammer_of_Wood:	return ItemID::Tool_Hammer_of_Wood; break;
-	case ToolID::Hammer_of_Stone:	return ItemID::Tool_Hammer_of_Stone; break;
-	case ToolID::Hammer_of_Iron:	return ItemID::Tool_Hammer_of_Iron; break;
-	case ToolID::Hammer_of_Gold:	return ItemID::Tool_Hammer_of_Gold; break;
-	case ToolID::Hammer_of_Diamond:	return ItemID::Tool_Hammer_of_Diamond; break;
-	case ToolID::Axe_of_Wood:	return ItemID::Tool_Axe_of_Wood; break;
-	case ToolID::Axe_of_Stone:	return ItemID::Tool_Axe_of_Stone; break;
-	case ToolID::Axe_of_Iron:	return ItemID::Tool_Axe_of_Iron; break;
-	case ToolID::Axe_of_Gold:	return ItemID::Tool_Axe_of_Gold; break;
-	case ToolID::Axe_of_Diamond:	return ItemID::Tool_Axe_of_Diamond; break;
+	case ToolID::Hammer:	return ItemID::Tool_Hammer; break;
 	}
 
 	return ItemID::MAX;

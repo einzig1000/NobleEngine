@@ -29,7 +29,7 @@ void TexturePreview::DrawImGui()
 		std::string path = FileDialog::OpenFile(
 			Engine::Instance().GetWindowManager()->GetHwnd(),
 			L"Open Texture",
-			{ { L"Image Files", L"*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;*.dds" }, { L"All Files", L"*.*" } }
+			{ { L"Image Files", L"*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff;" }, { L"All Files", L"*.*" } }
 		);
 
 		if (!path.empty())

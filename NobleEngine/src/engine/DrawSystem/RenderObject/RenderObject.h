@@ -24,7 +24,8 @@ public:
 	void SetBRegisterData(const uint32_t key, ShaderType shaderType, const void* data, uint32_t space = 0);
 	void SetTRegisterData(const uint32_t key, ShaderType shaderType, const uint32_t allocIndex, uint32_t space = 0);
 
-	const std::vector<RootParam>& GetRootParams() const { return rootParams_; }
+	const RootLayout* GetRootLayout() const { return layout_; }
+	const std::vector<RootParamValue>& GetRootValues() const { return rootValues_; }
 
 public:
 	// PSO設定
@@ -37,9 +38,8 @@ public:
 	std::string name_ = "RenderObject";
 
 private:
-	// RootParameterにいれるものリスト。CBVもSRVもここで管理する
-	std::vector<RootParam> rootParams_{};
-
-	// ハッシュをキーにして紐づける
-	std::unordered_map<uint32_t, size_t> rootParamHashToIndexMap_{};
+	// ルートパラメータの形
+	const RootLayout* layout_ = nullptr;
+	// ルートパラメータの値(layout_->params と同じ並び)
+	std::vector<RootParamValue> rootValues_{};
 };

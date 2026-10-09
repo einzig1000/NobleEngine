@@ -121,25 +121,29 @@ void DrawSystem::DrawObject(const RenderObject* renderObject)
 	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex_);
 	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
+	const RootLayout* layout = renderObject->GetRootLayout();
+	assert(layout && "SetupFromShaders()が呼ばれていません");
+
 	// 1) RootSignatureセット
-	cmdList->SetGraphicsRootSignature(dxManager_->GetPipelineStateManager()->GetRootSignature(renderObject->GetRootParams()).Get());
+	cmdList->SetGraphicsRootSignature(layout->rootSignature);
 	// 2) PSOセット
-	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetGraphicsPipelineState(renderObject->psoConfig_, renderObject->GetRootParams()).Get());
+	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetGraphicsPipelineState(renderObject->psoConfig_, *layout));
 	// 3) CBV・SRVセット
-	const auto& rootParams = renderObject->GetRootParams();
-	for (size_t i = 0; i < rootParams.size(); ++i)
+	const auto& values = renderObject->GetRootValues();
+	for (size_t i = 0; i < layout->params.size(); ++i)
 	{
-		const auto& param = rootParams[i];
+		const auto& param = layout->params[i];
+		const auto& value = values[i];
 
 		if (param.paramType == ParamType::CBV)
 		{
-			assert(param.gpuAddress != 0);
-			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), param.gpuAddress);
+			assert(value.gpuAddress != 0);
+			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), value.gpuAddress);
 		}
 		else if (param.paramType == ParamType::SRV)
 		{
-			assert(param.allocIndex != UINT32_MAX);
-			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(param.allocIndex));
+			assert(value.allocIndex != UINT32_MAX);
+			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(value.allocIndex));
 		}
 	}
 

@@ -76,27 +76,33 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 
 bool RenderTextureManager::SaveTexture(const std::string& filePath, std::string textureName, bool color)
 {
-	std::string fullPath = color ? filePath + "/" + textureName + ".png" : filePath + "/" + textureName + "_depth.png";
-	// もし同じ名前のファイルが存在していたらtextureName2みたいにして保存する
-	if (std::filesystem::exists(fullPath))
-	{
-		int32_t suffix = 2;
-		while (true)
-		{
-			fullPath = filePath + "/" + textureName + std::to_string(suffix) + ".png";
-			if (!std::filesystem::exists(fullPath))
-			{
-				break;
-			}
-			suffix++;
-		}
-	}
-
+	// そもそもそんな名前のレンダーテクスチャが存在しない場合は失敗
 	RenderTarget* targetRT = Get(textureName);
 	if (targetRT == nullptr)
 	{
+		Log("存在しないレンダーテクスチャを保存しようとしました:%s", textureName.c_str());
 		return false;
 	}
+
+    std::filesystem::path directory = StringConverter::Convert(filePath);
+    // 保存先フォルダが無ければ作る
+    std::error_code ec;
+    std::filesystem::create_directories(directory, ec);
+    if (ec)
+    {
+
+        Log("保存先フォルダを作成できませんでした:%s (エラーコード %d)", filePath.c_str(), ec.value());
+        return false;
+    }
+
+	// もし同じ名前のファイルが存在していたらtextureName2みたいにして保存する
+    std::wstring baseName = StringConverter::Convert(textureName);
+    std::wstring postfix = color ? L".png" : L"_depth.png";
+    std::filesystem::path fullPath = directory / (baseName + postfix);
+    for (int32_t suffix = 2; std::filesystem::exists(fullPath); suffix++)
+    {
+        fullPath = directory / (baseName + std::to_wstring(suffix) + postfix);
+    }
 
     DirectX::ScratchImage resultImage;
     HRESULT hr = CaptureTexture(
@@ -119,13 +125,11 @@ bool RenderTextureManager::SaveTexture(const std::string& filePath, std::string 
         return false;
     }
 
-    std::wstring wFilePath = StringConverter::Convert(fullPath);
-
     hr = DirectX::SaveToWICFile(
         *img,
         DirectX::WIC_FLAGS_NONE,
         DirectX::GetWICCodec(DirectX::WIC_CODEC_PNG),
-        wFilePath.c_str()
+        fullPath.c_str()
     );
 
     if (FAILED(hr))

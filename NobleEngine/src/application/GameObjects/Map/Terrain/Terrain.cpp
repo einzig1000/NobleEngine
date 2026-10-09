@@ -20,9 +20,18 @@ namespace
 
 Terrain::Terrain()
 {
-	drawRadius_.x = 6;
+	drawRadius_.x = 9;
 	drawRadius_.y = 2;
-	drawRadius_.z = 6;
+	drawRadius_.z = 9;
+
+#ifdef _DEBUG
+
+	drawRadius_.x = 2;
+	drawRadius_.y = 1;
+	drawRadius_.z = 2;
+
+#endif
+
 	updateRadius_.x = drawRadius_.x;
 	updateRadius_.y = 1;
 	updateRadius_.z = drawRadius_.z;
@@ -234,8 +243,6 @@ Chunk* Terrain::GetChunk(const Vector3int& chunkPos) const
 }
 void Terrain::EnsureChunkScheduled(const Vector3int& chunkPos)
 {
-	// 既にスケジュール済みならreturn
-	if (chunkScheduled_.find(chunkPos) != chunkScheduled_.end()) return;
 	// チャンクが既に作成されているならreturn
 	if (GetChunk(chunkPos) != nullptr) return;
 
@@ -441,9 +448,7 @@ bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIn
 		ItemID itemID = BlockIDtoItemID(*targetBlockID);
 		Event event;
 		event.type = EventType::ItemPickup;
-		event.value.resize(2);
-		event.value[0] = static_cast<int32_t>(itemID);
-		event.value[1] = 1;
+		event.data = itemID;
 
 		eventBus_->Notify(event);
 
@@ -462,7 +467,7 @@ bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIn
 
 	return true;
 }
-bool Terrain::ReplaceBlock(const lookAtBlock& lab, BlockID id, float power)
+bool Terrain::ReplaceBlock(const LookAtBlock& lab, BlockID id, float power)
 {
 	// 向きが不明ならreturn
 	if (lab.face == AABBFace::NONE) return false;
@@ -574,9 +579,9 @@ Sphere Terrain::GetSphere(const Vector3int& chunkPos, const Vector3int& index) c
 // ワールド座標からチャンクの整数座標/ブロックのチャンク内整数座標を取得
 Vector3int Terrain::ChunkIndexByPosition(const Vector3& position) const
 {
-	int32_t bx = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
-	int32_t by = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
-	int32_t bz = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
+	int32_t bx = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
+	int32_t by = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize));
+	int32_t bz = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize));
 
 	Vector3int chunk;
 	chunk.x = static_cast<int32_t>(std::floor((float)bx / Constexprs::kChunkBlockCountX));
@@ -587,9 +592,9 @@ Vector3int Terrain::ChunkIndexByPosition(const Vector3& position) const
 Vector3int Terrain::BlockIndexByPosition(const Vector3& position) const
 {
 	Vector3int worldBlockIndex;
-	worldBlockIndex.x = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
-	worldBlockIndex.y = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
-	worldBlockIndex.z = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize + Constexprs::kBlockIndexEpsilon));
+	worldBlockIndex.x = static_cast<int32_t>(std::floor(position.x / Constexprs::kBlockSize));
+	worldBlockIndex.y = static_cast<int32_t>(std::floor(position.y / Constexprs::kBlockSize));
+	worldBlockIndex.z = static_cast<int32_t>(std::floor(position.z / Constexprs::kBlockSize));
 
 	Vector3int local;
 	local.x = LocalMod(worldBlockIndex.x, Constexprs::kChunkBlockCountX);
@@ -727,7 +732,7 @@ int32_t Terrain::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount) 
 // AABBとマップ上のキャラの衝突判定(いずれSweepAABB形式に変えるか統合する)
 bool Terrain::IsOverlappingAnyCharacter(const AABB& aabb) const
 {
-	//for (ICharacter* c : Characters_)
+	//for (ICharacter* c : characters_)
 	//{
 	//	if (!c) continue;
 	//	const AABB& ca = c->data_.aabbs[0];
@@ -738,9 +743,9 @@ bool Terrain::IsOverlappingAnyCharacter(const AABB& aabb) const
 }
 
 // 視線とブロックの衝突判定
-std::optional<lookAtBlock> Terrain::GetBlockByCrossedRay(const Ray& ray, const float maxDistance) const
+std::optional<LookAtBlock> Terrain::GetBlockByCrossedRay(const Ray& ray, const float maxDistance) const
 {
-	lookAtBlock result;
+	LookAtBlock result;
 
 	const Vector3 rayStart = ray.origin;
 	const Vector3 dir = ray.diff;
@@ -943,8 +948,8 @@ RayHitResult Terrain::GetFirstHitByRay(const Ray& ray, float maxDistance, const 
 	//float bestCharDist = std::numeric_limits<float>::infinity();
 	//ICharacter* bestChar = nullptr;
 	//
-	//// ※ Characters_ を保持している前提（前の実装で追加）
-	//for (ICharacter* c : Characters_)
+	//// characters_ を保持している前提
+	//for (ICharacter* c : characters_)
 	//{
 	//	if (!c) continue;
 	//	if (c == ignore) continue;
@@ -1063,9 +1068,9 @@ std::optional<Vector3> Terrain::GetPositionByCrossedRay(const Ray& ray) const
 // キャラクター登録/解除
 void Terrain::RegisterCharacter(ICharacter* c)
 {
-	Characters_.push_back(c);
+	characters_.push_back(c);
 }
 void Terrain::UnregisterCharacter(ICharacter* c)
 {
-	Characters_.erase(std::remove(Characters_.begin(), Characters_.end(), c), Characters_.end());
+	characters_.erase(std::remove(characters_.begin(), characters_.end(), c), characters_.end());
 }

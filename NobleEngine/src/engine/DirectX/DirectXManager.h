@@ -20,14 +20,14 @@ public:
     DirectXManager(HWND hwnd);
     ~DirectXManager();
 
-    ID3D12Device2* GetDevice() const { return deviceManager->GetDevice(); }
-    CommandContextManager* GetCommandContextManager() const { return commandContextManager.get(); }
-    DescriptorHeapManager* GetDescriptorHeapManager() const { return descriptorHeapManager.get(); }
-    SwapChainManager* GetSwapChain() const { return swapChainManager.get(); };
-    PipelineStateManager* GetPipelineStateManager() const { return pipelineStateManager.get(); }
-    SynchronizationManager* GetSynchronizationManager() const { return synchronizationManager.get(); }
-    RenderTextureManager* GetRenderTextureManager() const { return renderTextureManager.get(); }
-    FrameProfiler* GetFrameProfiler() const { return frameProfiler.get(); }
+    ID3D12Device2* GetDevice() const { return deviceManager_->GetDevice(); }
+    CommandContextManager* GetCommandContextManager() const { return commandContextManager_.get(); }
+    DescriptorHeapManager* GetDescriptorHeapManager() const { return descriptorHeapManager_.get(); }
+    SwapChainManager* GetSwapChain() const { return swapChainManager_.get(); };
+    PipelineStateManager* GetPipelineStateManager() const { return pipelineStateManager_.get(); }
+    SynchronizationManager* GetSynchronizationManager() const { return synchronizationManager_.get(); }
+    RenderTextureManager* GetRenderTextureManager() const { return renderTextureManager_.get(); }
+    FrameProfiler* GetFrameProfiler() const { return frameProfiler_.get(); }
 
     // フレーム開始処理
     void BeginFrame();
@@ -42,12 +42,12 @@ public:
     void Resize();
 
 private:
-    std::unique_ptr<SwapChainManager> swapChainManager;
-    std::unique_ptr<DeviceManager> deviceManager;
-    std::unique_ptr<CommandContextManager> commandContextManager;
-    std::unique_ptr<PipelineStateManager> pipelineStateManager;
-    std::unique_ptr<DescriptorHeapManager> descriptorHeapManager;
-    std::unique_ptr<SynchronizationManager> synchronizationManager;
-	std::unique_ptr<RenderTextureManager> renderTextureManager;
-    std::unique_ptr<FrameProfiler> frameProfiler;
+    std::unique_ptr<SwapChainManager> swapChainManager_;
+    std::unique_ptr<DeviceManager> deviceManager_;
+    std::unique_ptr<CommandContextManager> commandContextManager_;
+    std::unique_ptr<PipelineStateManager> pipelineStateManager_;
+    std::unique_ptr<DescriptorHeapManager> descriptorHeapManager_;
+    std::unique_ptr<SynchronizationManager> synchronizationManager_;
+	std::unique_ptr<RenderTextureManager> renderTextureManager_;
+    std::unique_ptr<FrameProfiler> frameProfiler_;
 };

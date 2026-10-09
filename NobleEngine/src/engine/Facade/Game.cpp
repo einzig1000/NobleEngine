@@ -554,7 +554,7 @@ namespace Game
 
 		void SetTimeScale(float timeScale)
 		{
-			Engine::Instance().GetTimeManager()->SetTimeScale(timeScale);
+			Engine::Instance().GetTimeManager()->GetTimeScaler()->SetTimeScale(timeScale);
 		}
 
 		float GetScaledDeltaTimeMs()

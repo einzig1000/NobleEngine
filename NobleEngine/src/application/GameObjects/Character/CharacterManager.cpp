@@ -30,15 +30,14 @@ void CharacterManager::Update(int32_t cameraID)
 	if (eventBus_)
 	{
 		// 操作モード変更イベント
-		const std::vector<Event>& controlModeEvents = eventBus_->GetEvents(EventType::AbleMoveAllCharacters);
-		if (!controlModeEvents.empty())
+		for (const Event& event : eventBus_->GetEvents(EventType::AbleMoveAllCharacters))
 		{
-			// 1Fに一回しか変更フラグはされない
-			ableMoveAll_ = controlModeEvents[0].value[0];
+			const bool* flag = std::any_cast<bool>(&event.data);
+			if (!flag) continue;
+			ableMoveAll_ = *flag;
 		}
 	}
 	player_->CheckExternalEvents();
-
 
 	// キャラ更新
 	if (ableMoveAll_)

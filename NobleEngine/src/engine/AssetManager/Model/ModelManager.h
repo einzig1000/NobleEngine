@@ -1,6 +1,6 @@
 #pragma once
 #include "ModelLoader/ModelLoader.h"
-#include "ModelCreater/ModelCreater.h"
+#include "ModelCreator/ModelCreator.h"
 #include "ModelBank/ModelBank.h"
 #include <memory>
 
@@ -16,12 +16,12 @@ public:
 	~ModelManager();
 
 	ModelLoader* GetModelLoader() const { return loader_.get(); }
-	ModelCreater* GetModelCreater() const { return creater_.get(); }
+	ModelCreator* GetModelCreater() const { return creater_.get(); }
 	ModelBank* GetModelBank() const { return bank_.get(); }
 
 private:
 	std::unique_ptr<ModelLoader> loader_;
-	std::unique_ptr<ModelCreater> creater_;
+	std::unique_ptr<ModelCreator> creater_;
 	std::unique_ptr<ModelBank> bank_;
 };
 
