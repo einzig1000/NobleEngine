@@ -14,10 +14,11 @@ public:
 	Vector3 GetSlotPosition(int32_t index) const;
 
 
-	int32_t selectedIndex_ = 0;
 
 private:
 	Matrix4x4 orthographic_;
+
+	int32_t selectedIndex_ = 0;
 
 	std::vector<ElementData> icons_;
 };
