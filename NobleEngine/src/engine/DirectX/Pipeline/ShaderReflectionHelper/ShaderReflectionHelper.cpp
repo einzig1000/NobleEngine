@@ -173,7 +173,7 @@ namespace ShaderReflection
 
                 outParams.push_back(p);
             }
-
+            // SRV
             else if (bind.Type == D3D_SIT_STRUCTURED || bind.Type == D3D_SIT_BYTEADDRESS)
             {
                 RootParam p{};
@@ -197,7 +197,7 @@ namespace ShaderReflection
 
                 outParams.push_back(p);
             }
-			// Bindlessテクスチャ配列 (BindCountが0で、型がテクスチャ)
+            // Bindlessテクスチャ配列 (BindCountが0で、型がテクスチャ)
             else if (bind.Type == D3D_SIT_TEXTURE && bind.BindCount == 0)
             {
                 RootParam p{};
@@ -210,11 +210,11 @@ namespace ShaderReflection
                 switch (bind.Dimension)
                 {
                 case D3D_SRV_DIMENSION_TEXTURE2D:
-                    p.allocIndex = 0;
+                    p.isUnbounded = true;
                     break;
 
                 case D3D_SRV_DIMENSION_TEXTURECUBE:
-                    p.allocIndex = 0;
+                    p.isUnbounded = true;
                     break;
 
                 default:
@@ -224,7 +224,7 @@ namespace ShaderReflection
 
                 outParams.push_back(p);
             }
-			// 通常のテクスチャSRV 
+            // 通常のテクスチャSRV 
             else if (bind.Type == D3D_SIT_TEXTURE && bind.BindCount > 0)
             {
                 RootParam p{};

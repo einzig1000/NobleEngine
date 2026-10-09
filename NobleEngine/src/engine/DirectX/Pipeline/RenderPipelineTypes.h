@@ -30,23 +30,22 @@ struct InputElement
     D3D12_INPUT_ELEMENT_DESC desc;
 };
 
-
+// ルートパラメータ1個分の「形」。シェーダーのリフレクションで決まり、同じシェーダーを使うオブジェクト全員で共有する
 struct RootParam
 {
-	ParamType paramType = ParamType::None;
-	ShaderType shaderType = ShaderType::None;
+    ParamType paramType = ParamType::None;
+    ShaderType shaderType = ShaderType::None;
     uint32_t key = 0;           // "b0", "b1" など
-	uint32_t registerSpace = 0; // space0, space1 など。2Dテクスチャバインドレスとddsテクスチャバインドレスで区別
+    uint32_t registerSpace = 0; // space0, space1 など。2Dテクスチャバインドレスとddsテクスチャバインドレスで区別
     uint32_t hash = 0;          // paramType･shaderType･key･registerSpace のハッシュ
 
     // CBuffer用
     uint32_t sizeBytes = 0;     // 自身のサイズ。CBuffer用ストレージ内でどれだけのサイズが必要か。
-    D3D12_GPU_VIRTUAL_ADDRESS gpuAddress = 0; // RenderObject側:このフレームに書き込み済みのCB GPUアドレス
 
-    // SRV/UAV用 Allocation.index
-    uint32_t allocIndex = UINT32_MAX;
+    // SRV用。Bindlessテクスチャ配列(Texture2D tex[] のようにサイズ指定なし)ならtrue
+    bool isUnbounded = false;
 
-    void ComputeHash()
+    static uint32_t MakeHash(ParamType paramType, ShaderType shaderType, uint32_t key, uint32_t registerSpace)
     {
         uint32_t h = 0;
 
@@ -66,7 +65,39 @@ struct RootParam
         h *= 0xc2b2ae35;
         h ^= h >> 16;
 
-		hash = h;
+        return h;
+    }
+
+    void ComputeHash()
+    {
+        hash = MakeHash(paramType, shaderType, key, registerSpace);
+    }
+};
+
+// ルートパラメータ1個分の「値」。オブジェクトごとに持ち、RootLayout::params と同じ並びで使う
+struct RootParamValue
+{
+    D3D12_GPU_VIRTUAL_ADDRESS gpuAddress = 0; // CBV用:このフレームに書き込み済みのCB GPUアドレス
+    uint32_t allocIndex = UINT32_MAX;         // SRV/UAV用:Allocation.index
+};
+
+// シェーダーの組み合わせ1つ分のルートレイアウト。PipelineStateManagerが所有し、オブジェクトはポインタで参照する
+struct RootLayout
+{
+    std::vector<RootParam> params;
+    // RootParam::hash → params の添字
+    std::unordered_map<uint32_t, size_t> hashToIndex;
+    // シェーダーの組み合わせのハッシュ。PSOキャッシュのキーに使う
+    size_t shaderHash = 0;
+    // 作成済みのルートシグネチャ(所有はPipelineStateManagerのキャッシュ側)
+    ID3D12RootSignature* rootSignature = nullptr;
+
+    // 見つからなければ -1
+    int32_t Find(ParamType paramType, ShaderType shaderType, uint32_t key, uint32_t registerSpace) const
+    {
+        const auto it = hashToIndex.find(RootParam::MakeHash(paramType, shaderType, key, registerSpace));
+        if (it == hashToIndex.end()) return -1;
+        return static_cast<int32_t>(it->second);
     }
 };
 
@@ -109,16 +140,6 @@ enum class DSVFormatID : uint8_t
 	Unknown,
 };
 
-struct DrawPacket
-{
-    ID3D12RootSignature* rootSignature = nullptr;
-    ID3D12PipelineState* pso = nullptr;
-    std::vector<RootParam> rootParams;
-    int32_t modelID = -1;
-    uint32_t instanceNum = 1;
-    bool isMeshShader = false;
-    D3D12_PRIMITIVE_TOPOLOGY topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-};
 
 struct GraphicsPSOConfig
 {

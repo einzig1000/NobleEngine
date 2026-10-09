@@ -19,37 +19,27 @@ namespace
         return std::hash<std::string>{}(s);
     }
 
-	static size_t HashRootLayout(const std::vector<RootParam>& params)
+    static size_t HashRootLayout(const std::vector<RootParam>& params)
     {
         size_t h = 1469598103934665603ULL;
         h = HashCombine(h, params.size());
-		for (const auto& param : params)
+        for (const auto& param : params)
         {
-			h = HashCombine(h, param.hash);
+            h = HashCombine(h, param.hash);
+            h = HashCombine(h, static_cast<size_t>(param.isUnbounded));
         }
         return h;
     }
 
-    static size_t HashPsoConfig(const GraphicsPSOConfig& c)
+    static size_t HashPsoState(const GraphicsPSOConfig& c)
     {
         size_t h = 0;
-        h = HashCombine(h, HashString(c.vs));
-        h = HashCombine(h, HashString(c.ps));
-		h = HashCombine(h, HashString(c.ms));
-		h = HashCombine(h, HashString(c.as));
         h = HashCombine(h, static_cast<size_t>(c.blendID));
         h = HashCombine(h, static_cast<size_t>(c.depthStencilID));
         h = HashCombine(h, static_cast<size_t>(c.rasterizerID));
         h = HashCombine(h, static_cast<size_t>(c.topology));
         h = HashCombine(h, static_cast<size_t>(c.dsvFormatID));
 
-        return h;
-    }
-
-    static size_t HashPsoConfig(const ComputePSOConfig& c)
-    {
-        size_t h = 0;
-        h = HashCombine(h, HashString(c.cs));
         return h;
     }
 
@@ -265,7 +255,7 @@ void PipelineStateManager::InitializeDxc()
 
 
 
-Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::GetRootSignature(const std::vector<RootParam>& params)
+ID3D12RootSignature* PipelineStateManager::GetRootSignature(const std::vector<RootParam>& params)
 {
 	// ハッシュキーを生成
 	const size_t key = HashRootLayout(params);
@@ -274,7 +264,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::GetRootSignatu
     auto it = rootSignatureCache_.find(key);
     if (it != rootSignatureCache_.end())
     {
-        return it->second;
+        return it->second.Get();
     }
 
 	// ルートシグネチャ生成
@@ -282,55 +272,50 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::GetRootSignatu
 	assert(rs);
 	Log("成功: キー %zu", key);
 
-	// キャッシュに保存してから返す
-    rootSignatureCache_.emplace(key, rs);
-	return rs;
+    // キャッシュに保存してから返す
+    return rootSignatureCache_.emplace(key, std::move(rs)).first->second.Get();
 }
 
-Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::GetGraphicsPipelineState(const GraphicsPSOConfig& psoConfig, const std::vector<RootParam>& params)
+ID3D12PipelineState* PipelineStateManager::GetGraphicsPipelineState(const GraphicsPSOConfig& psoConfig, const RootLayout& layout)
 {
     // ハッシュキーを生成
-    const size_t rootKey = HashRootLayout(params);
-    const size_t psoKey = HashCombine(HashPsoConfig(psoConfig), rootKey);
+    const size_t psoKey = HashCombine(layout.shaderHash, HashPsoState(psoConfig));
 
     // キャッシュにあればそれを返す
     auto it = graphicsPsoCache_.find(psoKey);
     if (it != graphicsPsoCache_.end())
     {
-        return it->second;
+        return it->second.Get();
     }
 
     // パイプラインステート生成
-    auto pso = CreateGraphicsPipelineState(psoConfig, params);
+    auto pso = CreateGraphicsPipelineState(psoConfig, layout);
     assert(pso);
     Log("成功: キー %zu", psoKey);
 
     // キャッシュに保存してから返す
-    graphicsPsoCache_.emplace(psoKey, pso);
-    return pso;
+    return graphicsPsoCache_.emplace(psoKey, std::move(pso)).first->second.Get();
 }
 
-Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::GetComputePipelineState(const ComputePSOConfig& psoConfig, const std::vector<RootParam>& params)
+ID3D12PipelineState* PipelineStateManager::GetComputePipelineState(const ComputePSOConfig& psoConfig, const RootLayout& layout)
 {
-	// ハッシュキーを生成
-	const size_t rootKey = HashRootLayout(params);
-	const size_t psoKey = HashCombine(HashPsoConfig(psoConfig), rootKey);
+    // ハッシュキーを生成
+    const size_t psoKey = layout.shaderHash;
 
-	// キャッシュにあればそれを返す
-	auto it = computePsoCache_.find(psoKey);
-	if (it != computePsoCache_.end())
-	{
-		return it->second;
-	}
+    // キャッシュにあればそれを返す
+    auto it = computePsoCache_.find(psoKey);
+    if (it != computePsoCache_.end())
+    {
+        return it->second.Get();
+    }
 
-	// パイプラインステート生成
-	auto pso = CreateComputePipelineState(psoConfig, params);
-	assert(pso);
-	Log("成功: キー %zu", psoKey);
+    // パイプラインステート生成
+    auto pso = CreateComputePipelineState(psoConfig, layout);
+    assert(pso);
+    Log("成功: キー %zu", psoKey);
 
-	// キャッシュに保存してから返す
-	computePsoCache_.emplace(psoKey, pso);
-	return pso;
+    // キャッシュに保存してから返す
+    return computePsoCache_.emplace(psoKey, std::move(pso)).first->second.Get();
 }
 
 PipelineStateManager::ShaderCacheEntry& PipelineStateManager::GetShaderEntry(const wchar_t* path, const wchar_t* target)
@@ -372,14 +357,97 @@ const std::vector<RootParam>& PipelineStateManager::GetShaderRootParams(const wc
     return *entry.rootParams;
 }
 
+const RootLayout* PipelineStateManager::GetGraphicsRootLayout(const GraphicsPSOConfig& psoConfig)
+{
+    // キーはシェーダーパスの組み合わせ(ブレンド等はルートパラメータに影響しないので含めない)
+    std::string key = psoConfig.as + "|" + psoConfig.vs + "|" + psoConfig.ms + "|" + psoConfig.ps;
+
+    // キャッシュにあればそれを返す
+    auto it = graphicsLayoutCache_.find(key);
+    if (it != graphicsLayoutCache_.end())
+    {
+        return &it->second;
+    }
+
+
+    // ルートレイアウト生成
+    std::vector<RootParam> params;
+    if (psoConfig.as != "unknown")
+    {
+        std::wstring asPath = StringConverter::Convert(psoConfig.as);
+        const auto& asParams = GetShaderRootParams(asPath.c_str(), L"as_6_6", ShaderType::AmplificationShader);
+        params.insert(params.end(), asParams.begin(), asParams.end());
+    }
+    if (psoConfig.vs != "unknown")
+    {
+        std::wstring vsPath = StringConverter::Convert(psoConfig.vs);
+        const auto& vsParams = GetShaderRootParams(vsPath.c_str(), L"vs_6_6", ShaderType::VertexShader);
+        params.insert(params.end(), vsParams.begin(), vsParams.end());
+    }
+    else if (psoConfig.ms != "unknown")
+    {
+        std::wstring msPath = StringConverter::Convert(psoConfig.ms);
+        const auto& msParams = GetShaderRootParams(msPath.c_str(), L"ms_6_6", ShaderType::MeshShader);
+        params.insert(params.end(), msParams.begin(), msParams.end());
+    }
+    {
+        std::wstring psPath = StringConverter::Convert(psoConfig.ps);
+        const auto& psParams = GetShaderRootParams(psPath.c_str(), L"ps_6_6", ShaderType::PixelShader);
+        params.insert(params.end(), psParams.begin(), psParams.end());
+    }
+
+    // 組み立ててキャッシュに保存してから返す
+    RootLayout layout = BuildRootLayout(std::move(params), HashString(key));
+    return &graphicsLayoutCache_.emplace(std::move(key), std::move(layout)).first->second;
+}
+
+const RootLayout* PipelineStateManager::GetComputeRootLayout(const ComputePSOConfig& psoConfig)
+{
+    // キャッシュにあればそれを返す
+    auto it = computeLayoutCache_.find(psoConfig.cs);
+    if (it != computeLayoutCache_.end())
+    {
+        return &it->second;
+    }
+
+    std::wstring csPath = StringConverter::Convert(psoConfig.cs);
+    std::vector<RootParam> params = GetShaderRootParams(csPath.c_str(), L"cs_6_6", ShaderType::ComputeShader);
+
+    // 組み立ててキャッシュに保存してから返す
+    RootLayout layout = BuildRootLayout(std::move(params), HashString(psoConfig.cs));
+    return &computeLayoutCache_.emplace(psoConfig.cs, std::move(layout)).first->second;
+}
+
+RootLayout PipelineStateManager::BuildRootLayout(std::vector<RootParam> params, size_t shaderHash)
+{
+    RootLayout layout{};
+    layout.params = std::move(params);
+    layout.shaderHash = shaderHash;
+
+    // ハッシュ→添字の表を作る。衝突チェックもレイアウトごとに1回で済む
+    for (size_t i = 0; i < layout.params.size(); ++i)
+    {
+        const bool inserted = layout.hashToIndex.emplace(layout.params[i].hash, i).second;
+        if (!inserted)
+        {
+            Log("PipelineStateManager::BuildRootLayout() ルートパラメータのハッシュが衝突しました");
+            assert(false);
+        }
+    }
+
+    // ルートシグネチャもここで作っておく(描画のたびに探さなくて済む)
+    layout.rootSignature = GetRootSignature(layout.params);
+
+    return layout;
+}
 
 Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSignature(const std::vector<RootParam>& params)
 {
-	Log("ルートシグネチャ生成開始");
+    Log("ルートシグネチャ生成開始");
 
     size_t srvCount = 0;
-	size_t cbvCount = 0;
-	size_t uavCount = 0;
+    size_t cbvCount = 0;
+    size_t uavCount = 0;
     for (const auto& p : params)
     {
         if (p.paramType == ParamType::CBV)
@@ -390,10 +458,10 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
         {
             ++srvCount;
         }
-		else if (p.paramType == ParamType::UAV)
-		{
-			++uavCount;
-		}
+        else if (p.paramType == ParamType::UAV)
+        {
+            ++uavCount;
+        }
         else
         {
             assert(false && "Invalid RootParam");
@@ -401,7 +469,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
     }
 
     std::vector<D3D12_ROOT_PARAMETER> rootParams;
-	rootParams.resize(params.size());
+    rootParams.resize(params.size());
 
     std::vector<D3D12_DESCRIPTOR_RANGE> srvRanges;
     srvRanges.resize(srvCount);
@@ -411,18 +479,18 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
 
     size_t srvIndex = 0;
     size_t uavIndex = 0;
-	size_t vectorIndex = 0;
+    size_t vectorIndex = 0;
 
-	for (const auto& param : params)
+    for (const auto& param : params)
     {
-		D3D12_ROOT_PARAMETER rootParam{};
+        D3D12_ROOT_PARAMETER rootParam{};
 
         if (param.paramType == ParamType::CBV)
         {
             rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
             const UINT reg = static_cast<UINT>(param.key);
             rootParam.Descriptor.ShaderRegister = reg;
-            rootParam.Descriptor.RegisterSpace = 0;
+            rootParam.Descriptor.RegisterSpace = param.registerSpace;
             rootParam.ShaderVisibility = GetShaderVisibilityFromShaderType(param.shaderType);
         }
         else if (param.paramType == ParamType::SRV)
@@ -434,7 +502,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
             range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
             const UINT reg = static_cast<UINT>(param.key);
             range.BaseShaderRegister = reg;
-            if (param.allocIndex == 0)
+            if (param.isUnbounded)
             {
                 range.NumDescriptors = UINT_MAX;
             }
@@ -450,14 +518,14 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
             rootParam.DescriptorTable.pDescriptorRanges = &range;
             rootParam.ShaderVisibility = GetShaderVisibilityFromShaderType(param.shaderType);
         }
-		else if (param.paramType == ParamType::UAV)
-		{
-			assert(uavIndex < uavRanges.size());
+        else if (param.paramType == ParamType::UAV)
+        {
+            assert(uavIndex < uavRanges.size());
 
             D3D12_DESCRIPTOR_RANGE& range = uavRanges[uavIndex++];
 
-			range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-			const UINT reg = static_cast<UINT>(param.key);
+            range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+            const UINT reg = static_cast<UINT>(param.key);
             range.BaseShaderRegister = reg;
             range.NumDescriptors = 1;
             range.RegisterSpace = param.registerSpace;
@@ -467,14 +535,14 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
             rootParam.DescriptorTable.NumDescriptorRanges = 1;
             rootParam.DescriptorTable.pDescriptorRanges = &range;
             rootParam.ShaderVisibility = GetShaderVisibilityFromShaderType(param.shaderType);
-		}
-		else
-		{
-			assert(false && "Invalid RootParam");
-		}
+        }
+        else
+        {
+            assert(false && "Invalid RootParam");
+        }
 
         rootParams[vectorIndex] = rootParam;
-		vectorIndex++;
+        vectorIndex++;
     }
 
     // s0 Linear補間
@@ -487,7 +555,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
     staticSamplers[0].ShaderRegister = 0; // s0
     staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
-	// s1 Point補間
+    // s1 Point補間
     staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
     staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
     staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
@@ -522,105 +590,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
     assert(SUCCEEDED(hr));
 
     return rs;
-}
-
-Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphicsPipelineState(const GraphicsPSOConfig& cfg, const std::vector<RootParam>& params)
-{
-    bool isMeshShader = false;
-    if (cfg.ms != "unknown") isMeshShader = true;
-
-	if (isMeshShader) Log("パイプラインステート生成開始: MS=%s, PS=%s", cfg.ms.c_str(), cfg.ps.c_str());
-	else Log("パイプラインステート生成開始: VS = %s, PS=%s", cfg.vs.c_str(), cfg.ps.c_str());
-
-    HRESULT hr = S_OK;
-    CD3DX12PipelineStateStream stream{};
-
-    // ルートシグネチャ取得
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = GetRootSignature(params);
-
-    stream.pRootSignature = rs.Get();
-    std::wstring psPath = StringConverter::Convert(cfg.ps);
-    auto psBlob = GetShaderBlob(psPath.c_str(), L"ps_6_6");
-    stream.pPS = CD3DX12_SHADER_BYTECODE(psBlob->GetBufferPointer(), psBlob->GetBufferSize());
-    stream.pBlend = CD3DX12_BLEND_DESC(MakeBlendDesc(cfg.blendID));
-    stream.pDepthStencil = CD3DX12_DEPTH_STENCIL_DESC(MakeDepthStencilDesc(cfg.depthStencilID));
-    stream.pDSVFormat = MakeDsvFormat(cfg.dsvFormatID);
-    stream.pRasterizer = CD3DX12_RASTERIZER_DESC(MakeRasterizerDesc(cfg.rasterizerID));
-    D3D12_RT_FORMAT_ARRAY rtvFormats{};
-    rtvFormats.NumRenderTargets = 1;
-    rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-    stream.pRTVFormats = rtvFormats;
-
-    std::vector<InputElement> inputLayout;
-    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescs;
-
-    if (isMeshShader)
-    {
-        if (cfg.as != "unknown")
-        {
-            std::wstring asPath = StringConverter::Convert(cfg.as);
-            auto asBlob = GetShaderBlob(asPath.c_str(), L"as_6_6");
-            stream.pAS = CD3DX12_SHADER_BYTECODE(asBlob->GetBufferPointer(), asBlob->GetBufferSize());
-        }
-
-        std::wstring msPath = StringConverter::Convert(cfg.ms);
-        auto msBlob = GetShaderBlob(msPath.c_str(), L"ms_6_6");
-        stream.pMS = CD3DX12_SHADER_BYTECODE(msBlob->GetBufferPointer(), msBlob->GetBufferSize());
-    }
-    else
-    {
-        std::wstring vsPath = StringConverter::Convert(cfg.vs);
-        auto vsBlob = GetShaderBlob(vsPath.c_str(), L"vs_6_6");
-        stream.VS = CD3DX12_SHADER_BYTECODE(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize());
-        stream.PrimitiveTopologyType = ToTopologyType(cfg.topology);
-
-        inputLayout = ShaderReflection::GetInputLayoutFromShader(vsBlob.Get());
-        inputElementDescs;
-        inputElementDescs.reserve(inputLayout.size());
-        for (auto& elem : inputLayout)
-        {
-            elem.desc.SemanticName = elem.semanticName.c_str();
-            elem.desc.SemanticIndex = elem.semanticIndex;
-            inputElementDescs.push_back(elem.desc);
-        }
-
-        D3D12_INPUT_LAYOUT_DESC ilDesc{};
-        ilDesc.pInputElementDescs = inputElementDescs.data();
-        ilDesc.NumElements = static_cast<UINT>(inputElementDescs.size());
-        stream.InputLayout = ilDesc;
-    }
-
-    D3D12_PIPELINE_STATE_STREAM_DESC streamDesc{};
-    streamDesc.SizeInBytes = sizeof(stream);
-    streamDesc.pPipelineStateSubobjectStream = &stream;
-
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
-    hr = device_->CreatePipelineState(&streamDesc, IID_PPV_ARGS(&pso));
-    assert(SUCCEEDED(hr));
-
-    return pso;
-}
-
-Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateComputePipelineState(const ComputePSOConfig& cfg, const std::vector<RootParam>& params)
-{
-    Log("パイプラインステート生成開始: CS=%s", cfg.cs.c_str());
-
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> rs = GetRootSignature(params);
-
-    std::wstring csPath = StringConverter::Convert(cfg.cs);
-    auto csBlob = GetShaderBlob(csPath.c_str(), L"cs_6_6");
-
-    D3D12_COMPUTE_PIPELINE_STATE_DESC desc{};
-    //desc.CS = CD3DX12_SHADER_BYTECODE(csBlob->GetBufferPointer(), csBlob->GetBufferSize());
-	desc.CS.pShaderBytecode = csBlob->GetBufferPointer();
-	desc.CS.BytecodeLength = csBlob->GetBufferSize();
-    desc.pRootSignature = rs.Get();
-
-
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
-    HRESULT hr = device_->CreateComputePipelineState(&desc, IID_PPV_ARGS(&pso));
-    assert(SUCCEEDED(hr));
-    return pso;
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::wstring& filePath, const wchar_t* profile)
@@ -729,6 +698,102 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
     shaderResult->Release();
     // 実行用のバイナリを返却
     return shaderBlob;
+}
+
+
+Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphicsPipelineState(const GraphicsPSOConfig& cfg, const RootLayout& layout)
+{
+    bool isMeshShader = false;
+    if (cfg.ms != "unknown") isMeshShader = true;
+
+    if (isMeshShader) Log("パイプラインステート生成開始: MS=%s, PS=%s", cfg.ms.c_str(), cfg.ps.c_str());
+    else Log("パイプラインステート生成開始: VS = %s, PS=%s", cfg.vs.c_str(), cfg.ps.c_str());
+
+    HRESULT hr = S_OK;
+    CD3DX12PipelineStateStream stream{};
+
+    // ルートシグネチャはレイアウト作成時に作ってある
+    stream.pRootSignature = layout.rootSignature;
+    std::wstring psPath = StringConverter::Convert(cfg.ps);
+    auto psBlob = GetShaderBlob(psPath.c_str(), L"ps_6_6");
+    stream.pPS = CD3DX12_SHADER_BYTECODE(psBlob->GetBufferPointer(), psBlob->GetBufferSize());
+    stream.pBlend = CD3DX12_BLEND_DESC(MakeBlendDesc(cfg.blendID));
+    stream.pDepthStencil = CD3DX12_DEPTH_STENCIL_DESC(MakeDepthStencilDesc(cfg.depthStencilID));
+    stream.pDSVFormat = MakeDsvFormat(cfg.dsvFormatID);
+    stream.pRasterizer = CD3DX12_RASTERIZER_DESC(MakeRasterizerDesc(cfg.rasterizerID));
+    D3D12_RT_FORMAT_ARRAY rtvFormats{};
+    rtvFormats.NumRenderTargets = 1;
+    rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    stream.pRTVFormats = rtvFormats;
+
+    std::vector<InputElement> inputLayout;
+    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescs;
+
+    if (isMeshShader)
+    {
+        if (cfg.as != "unknown")
+        {
+            std::wstring asPath = StringConverter::Convert(cfg.as);
+            auto asBlob = GetShaderBlob(asPath.c_str(), L"as_6_6");
+            stream.pAS = CD3DX12_SHADER_BYTECODE(asBlob->GetBufferPointer(), asBlob->GetBufferSize());
+        }
+
+        std::wstring msPath = StringConverter::Convert(cfg.ms);
+        auto msBlob = GetShaderBlob(msPath.c_str(), L"ms_6_6");
+        stream.pMS = CD3DX12_SHADER_BYTECODE(msBlob->GetBufferPointer(), msBlob->GetBufferSize());
+    }
+    else
+    {
+        std::wstring vsPath = StringConverter::Convert(cfg.vs);
+        auto vsBlob = GetShaderBlob(vsPath.c_str(), L"vs_6_6");
+        stream.VS = CD3DX12_SHADER_BYTECODE(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize());
+        stream.PrimitiveTopologyType = ToTopologyType(cfg.topology);
+
+        inputLayout = ShaderReflection::GetInputLayoutFromShader(vsBlob.Get());
+        inputElementDescs;
+        inputElementDescs.reserve(inputLayout.size());
+        for (auto& elem : inputLayout)
+        {
+            elem.desc.SemanticName = elem.semanticName.c_str();
+            elem.desc.SemanticIndex = elem.semanticIndex;
+            inputElementDescs.push_back(elem.desc);
+        }
+
+        D3D12_INPUT_LAYOUT_DESC ilDesc{};
+        ilDesc.pInputElementDescs = inputElementDescs.data();
+        ilDesc.NumElements = static_cast<UINT>(inputElementDescs.size());
+        stream.InputLayout = ilDesc;
+    }
+
+    D3D12_PIPELINE_STATE_STREAM_DESC streamDesc{};
+    streamDesc.SizeInBytes = sizeof(stream);
+    streamDesc.pPipelineStateSubobjectStream = &stream;
+
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
+    hr = device_->CreatePipelineState(&streamDesc, IID_PPV_ARGS(&pso));
+    assert(SUCCEEDED(hr));
+
+    return pso;
+}
+
+Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateComputePipelineState(const ComputePSOConfig& cfg, const RootLayout& layout)
+{
+    Log("パイプラインステート生成開始: CS=%s", cfg.cs.c_str());
+
+    std::wstring csPath = StringConverter::Convert(cfg.cs);
+    auto csBlob = GetShaderBlob(csPath.c_str(), L"cs_6_6");
+
+    D3D12_COMPUTE_PIPELINE_STATE_DESC desc{};
+    //desc.CS = CD3DX12_SHADER_BYTECODE(csBlob->GetBufferPointer(), csBlob->GetBufferSize());
+    desc.CS.pShaderBytecode = csBlob->GetBufferPointer();
+    desc.CS.BytecodeLength = csBlob->GetBufferSize();
+    desc.pRootSignature = layout.rootSignature;
+
+
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
+    HRESULT hr = device_->CreateComputePipelineState(&desc, IID_PPV_ARGS(&pso));
+    assert(SUCCEEDED(hr));
+    return pso;
 }
 
 

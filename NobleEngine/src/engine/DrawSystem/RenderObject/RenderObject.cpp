@@ -11,102 +11,36 @@
 
 void RenderObject::SetupFromShaders()
 {
-	rootParams_.clear();
-	rootParamHashToIndexMap_.clear();
+	layout_ = Engine::Instance().GetDirectXManager()->GetPipelineStateManager()->GetGraphicsRootLayout(psoConfig_);
 
-	auto* psoManager = Engine::Instance().GetDirectXManager()->GetPipelineStateManager();
-
-	if (psoConfig_.as != "unknown")
+	// 値はレイアウトと同じ並びで用意する
+	rootValues_.assign(layout_->params.size(), RootParamValue{});
+	for (size_t i = 0; i < layout_->params.size(); ++i)
 	{
-		std::wstring asPath = StringConverter::Convert(psoConfig_.as);
-		const auto& asParams = psoManager->GetShaderRootParams(asPath.c_str(), L"as_6_6", ShaderType::AmplificationShader);
-
-		// ASのルートパラメータを取得
-		rootParams_.insert(rootParams_.end(), asParams.begin(), asParams.end());
-	}
-	if (psoConfig_.vs != "unknown")
-	{
-		std::wstring vsPath = StringConverter::Convert(psoConfig_.vs);
-		const auto& vsParams = psoManager->GetShaderRootParams(vsPath.c_str(), L"vs_6_6", ShaderType::VertexShader);
-
-		// VSのルートパラメータを取得
-		rootParams_.insert(rootParams_.end(), vsParams.begin(), vsParams.end());
-	}
-	else if (psoConfig_.ms != "unknown")
-	{
-		std::wstring msPath = StringConverter::Convert(psoConfig_.ms);
-		const auto& msParams = psoManager->GetShaderRootParams(msPath.c_str(), L"ms_6_6", ShaderType::MeshShader);
-
-		// MSのルートパラメータを取得
-		rootParams_.insert(rootParams_.end(), msParams.begin(), msParams.end());
-	}
-	{
-		std::wstring psPath = StringConverter::Convert(psoConfig_.ps);
-		const auto& psParams = psoManager->GetShaderRootParams(psPath.c_str(), L"ps_6_6", ShaderType::PixelShader);
-
-		// PSのルートパラメータを取得
-		rootParams_.insert(rootParams_.end(), psParams.begin(), psParams.end());
-	}
-
-
-#ifdef _DEBUG
-
-	// デバッグビルドではハッシュの衝突がないか確認する
-	for (size_t i = 0; i < rootParams_.size(); ++i)
-	{
-		const auto& param = rootParams_[i];
-		if (rootParamHashToIndexMap_.find(param.hash) != rootParamHashToIndexMap_.end())
+		// Bindless配列はヒープの先頭を指しておけばよいので、最初から0を入れておく
+		if (layout_->params[i].isUnbounded)
 		{
-			Log("RenderObject::SetupFromShaders() ルートパラメータのハッシュが衝突しました");
-			__debugbreak();
-		}
-		else
-		{
-			rootParamHashToIndexMap_[param.hash] = i;
+			rootValues_[i].allocIndex = 0;
 		}
 	}
-
-#else
-
-	for (size_t i = 0; i < rootParams_.size(); ++i)
-	{
-		rootParamHashToIndexMap_[rootParams_[i].hash] = i;
-	}
-
-#endif
 }
 
 void RenderObject::SetBRegisterData(const uint32_t key, ShaderType shaderType, const void* data, uint32_t space)
 {
-	RootParam tempParam{};
-	tempParam.paramType = ParamType::CBV;
-	tempParam.shaderType = shaderType;
-	tempParam.key = key;
-	tempParam.registerSpace = space;
-	tempParam.ComputeHash();
+	if (!layout_) return;
+	const int32_t index = layout_->Find(ParamType::CBV, shaderType, key, space);
+	if (index < 0) return;
 
-	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
-	if (it == rootParamHashToIndexMap_.end()) return;
-	auto& param = rootParams_.at(it->second);
-
-	param.gpuAddress = Engine::Instance().GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(param.sizeBytes, data);
-	return;
+	rootValues_[index].gpuAddress = Engine::Instance().GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(layout_->params[index].sizeBytes, data);
 }
 
 void RenderObject::SetTRegisterData(const uint32_t key, ShaderType shaderType, const uint32_t allocIndex, uint32_t space)
 {
-	RootParam tempParam{};
-	tempParam.paramType = ParamType::SRV;
-	tempParam.shaderType = shaderType;
-	tempParam.key = key;
-	tempParam.registerSpace = space;
-	tempParam.ComputeHash();
+	if (!layout_) return;
+	const int32_t index = layout_->Find(ParamType::SRV, shaderType, key, space);
+	if (index < 0) return;
 
-	const auto& it = rootParamHashToIndexMap_.find(tempParam.hash);
-	if (it == rootParamHashToIndexMap_.end()) return;
-	auto& param = rootParams_.at(it->second);
-
-	param.allocIndex = allocIndex;
+	rootValues_[index].allocIndex = allocIndex;
 }
 
 

@@ -9,7 +9,6 @@
 #include <DirectX/Pipeline/RenderPipelineTypes.h>
 #include <optional>
 
-
 class PipelineStateManager
 {
 private:
@@ -42,31 +41,41 @@ public:
     PipelineStateManager(ID3D12Device2* device);
     ~PipelineStateManager();
 
-	// ルートシグネチャの取得
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> GetRootSignature(const std::vector<RootParam>& params);
+    // ルートレイアウトの取得(シェーダーの組み合わせごとに1つ。ルートシグネチャもこの時に作る)
+    const RootLayout* GetGraphicsRootLayout(const GraphicsPSOConfig& psoConfig);
+    const RootLayout* GetComputeRootLayout(const ComputePSOConfig& psoConfig);
     // GraphicsPSO取得
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetGraphicsPipelineState(const GraphicsPSOConfig& psoConfig, const std::vector<RootParam>& params);
+    ID3D12PipelineState* GetGraphicsPipelineState(const GraphicsPSOConfig& psoConfig, const RootLayout& layout);
     // ComputePSO取得
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> GetComputePipelineState(const ComputePSOConfig& psoConfig, const std::vector<RootParam>& params);
-	// シェーダーBlobの取得
+    ID3D12PipelineState* GetComputePipelineState(const ComputePSOConfig& psoConfig, const RootLayout& layout);
+    // シェーダーBlobの取得
     Microsoft::WRL::ComPtr<IDxcBlob> GetShaderBlob(const wchar_t* path, const wchar_t* target);
-    // シェーダーのルートパラメータ取得
-    const std::vector<RootParam>& GetShaderRootParams(const wchar_t* path, const wchar_t* target, ShaderType shaderType);
 
 private:
-	// ルートシグネチャ生成
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> CreateRootSignature(const std::vector<RootParam>& params);
-	// GraphicsPSO生成
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(const GraphicsPSOConfig& cfg, const std::vector<RootParam>& params);
-	// ComputePSO生成
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateComputePipelineState(const ComputePSOConfig& cfg, const std::vector<RootParam>& params);
-	// シェーダーコンパイル
+
+    // シェーダーのルートパラメータ取得
+    const std::vector<RootParam>& GetShaderRootParams(const wchar_t* path, const wchar_t* target, ShaderType shaderType);
+    // ルートレイアウトを組み立てる
+    RootLayout BuildRootLayout(std::vector<RootParam> params, size_t shaderHash);
+    // ルートシグネチャの取得
+    ID3D12RootSignature* GetRootSignature(const std::vector<RootParam>& params);
+    // ルートシグネチャ生成
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> CreateRootSignature(const std::vector<RootParam>& params);
+    // GraphicsPSO生成
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateGraphicsPipelineState(const GraphicsPSOConfig& cfg, const RootLayout& layout);
+    // ComputePSO生成
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> CreateComputePipelineState(const ComputePSOConfig& cfg, const RootLayout& layout);
+    // シェーダーコンパイル
     Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
 	// シェーダーの情報を取得
     ShaderCacheEntry& GetShaderEntry(const wchar_t* path, const wchar_t* target);
 
+
     // シェーダーキャッシュ
     std::unordered_map<std::wstring, ShaderCacheEntry> shaderCache_;
+    // ルートレイアウトキャッシュ(キーはシェーダーパスの組み合わせ)。
+    std::unordered_map<std::string, RootLayout> graphicsLayoutCache_;
+    std::unordered_map<std::string, RootLayout> computeLayoutCache_;
     // ルートシグネチャキャッシュ
     std::unordered_map<size_t, Microsoft::WRL::ComPtr<ID3D12RootSignature>> rootSignatureCache_;
     // GraphicsPSOキャッシュ

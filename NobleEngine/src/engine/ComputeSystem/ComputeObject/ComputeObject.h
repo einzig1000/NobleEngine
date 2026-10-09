@@ -19,17 +19,18 @@ public:
 	void RegisterOutput(int32_t handle) { outputHandles_.push_back(handle); }
 	const std::vector<int32_t>& GetOutputHandles() const { return outputHandles_; }
 
-	const std::vector<RootParam>& GetRootParams() const { return rootParams_; }
+	const RootLayout* GetRootLayout() const { return layout_; }
+	const std::vector<RootParamValue>& GetRootValues() const { return rootValues_; }
 
 	ComputePSOConfig psoConfig_;
 
 	Vector3int size = { 1, 1, 1 };
 
 private:
-	// RootParameterにいれるものリスト。データ本体は入ってない。
-	std::vector<RootParam> rootParams_{};
-	std::unordered_map<uint32_t, size_t> rootParamHashToIndexMap_{};
+	// ルートパラメータの形(同じシェーダーを使うオブジェクト同士で共有。所有はPipelineStateManager)
+	const RootLayout* layout_ = nullptr;
+	// ルートパラメータの値(layout_->params と同じ並び)
+	std::vector<RootParamValue> rootValues_{};
 
 	std::vector<int32_t> outputHandles_{};
 };
-
