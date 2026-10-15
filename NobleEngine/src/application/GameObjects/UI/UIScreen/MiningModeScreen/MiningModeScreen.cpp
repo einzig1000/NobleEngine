@@ -12,7 +12,7 @@ MiningModeScreen::~MiningModeScreen()
 
 void MiningModeScreen::Initialize()
 {
-	nextUIMode_ = UIMode::MAX;
+	nextUIMode_ = UIScreenType::MAX;
 
 	for (const auto& element : uiElements_)
 	{
@@ -42,7 +42,7 @@ void MiningModeScreen::Update(int32_t cameraID)
 
 	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
 	{
-		nextUIMode_ = UIMode::Playing;
+		nextUIMode_ = UIScreenType::Playing;
 	}
 }
 

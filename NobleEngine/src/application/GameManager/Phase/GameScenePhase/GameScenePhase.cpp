@@ -29,7 +29,7 @@ GameScenePhase::GameScenePhase()
 	charcterManager_->SetViewCamera(c_player_);
 	// UIマネージャー生成
 	uiManager_ = std::make_unique<UIManager>();
-	uiManager_->ChangeScreen(UIMode::Playing);
+	uiManager_->ChangeScreen(UIScreenType::Playing);
 	uiManager_->SetEventBus(eventBus_.get());
 	uiManager_->SetInventory(charcterManager_->GetPlayer()->GetInventory());
 	uiManager_->SetMiningGauge(charcterManager_->GetPlayer()->GetMiningPointGauge());
@@ -47,9 +47,6 @@ void GameScenePhase::Initialize()
 	map_->Initialize();
 	uiManager_->Initialize();
 	charcterManager_->Initialize();
-
-	if (context_->isNewGame) map_->GetTerrain()->CreateNewMap(context_->mapName, context_->seed);
-	else map_->GetTerrain()->LoadMap(context_->mapName);
 }
 
 void GameScenePhase::Update()

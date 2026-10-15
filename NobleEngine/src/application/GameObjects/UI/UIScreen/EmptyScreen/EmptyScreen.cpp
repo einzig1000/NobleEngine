@@ -11,7 +11,7 @@ EmptyScreen::~EmptyScreen()
 
 void EmptyScreen::Initialize()
 {
-	nextUIMode_ = UIMode::MAX;
+	nextUIMode_ = UIScreenType::MAX;
 
 	if (eventBus_)
 	{

@@ -17,7 +17,6 @@ void RenderObject::SetupFromShaders()
 	rootValues_.assign(layout_->params.size(), RootParamValue{});
 	for (size_t i = 0; i < layout_->params.size(); ++i)
 	{
-		// Bindless配列はヒープの先頭を指しておけばよいので、最初から0を入れておく
 		if (layout_->params[i].isUnbounded)
 		{
 			rootValues_[i].allocIndex = 0;

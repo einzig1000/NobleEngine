@@ -1,7 +1,11 @@
 #pragma once
+#include <memory>
+#include <cstdint>
+#include <EngineDefinition/EngineDefinition.h>
+#include <DrawSystem/RenderObject/RenderObject.h>
 
 // UIモード
-enum class UIMode
+enum class UIScreenType
 {
 	Playing,	// プレイ中　(手持ちアイテムのみ表示)
 	Inventory,	// インベントリ表示中
@@ -23,4 +27,15 @@ enum class UIElementType
 	MiningPointGauge,
 
 	MAX
+};
+
+
+struct ElementData
+{
+	std::unique_ptr<RenderObject> render;
+
+	// テクスチャID
+	int32_t textureID = -1;
+
+	EulerTransforms transforms;
 };

@@ -21,7 +21,7 @@ public:
 	void Draw(int32_t renderTargetID);
 	void DrawImGui();
 
-	void ChangeScreen(UIMode mode);
+	void ChangeScreen(UIScreenType mode);
 
 	void SetEventBus(EventBus* eventBus);
 	void SetInventory(const ItemInventory* inventory);

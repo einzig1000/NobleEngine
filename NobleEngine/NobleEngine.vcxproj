@@ -162,7 +162,15 @@
     <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp" />
     <ClCompile Include="src\application\GameObjects\Effect\Trail\TrailManager.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\EmptyScreen\EmptyScreen.cpp" />
-    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainGenerator\TerrainGenerator.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Generator\TerrainGenerator.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Loader\TerrainLoader.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Saver\TerrainSaver.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\TerrainDataManager.cpp" />
+    <ClCompile Include="src\application\Editor\UIEditor\UIEditor.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\UI\UIDataManager.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Bank\UIDataBank.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Loader\UIDataLoader.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\application\System\EventBus\EventPayloads.h" />
@@ -472,7 +480,15 @@
     <ClInclude Include="src\engine\TimeManager\TimeScaler\TimeScaler.h" />
     <ClInclude Include="src\application\GameObjects\Effect\Trail\TrailManager.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIScreen\EmptyScreen\EmptyScreen.h" />
-    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainGenerator\TerrainGenerator.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Generator\TerrainGenerator.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Loader\TerrainLoader.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Saver\TerrainSaver.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\TerrainDataManager.h" />
+    <ClInclude Include="src\application\Editor\UIEditor\UIEditor.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\UI\UIDataManager.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\UI\Bank\UIDataBank.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\UI\Loader\UIDataLoader.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\Block\versionInfo.md">

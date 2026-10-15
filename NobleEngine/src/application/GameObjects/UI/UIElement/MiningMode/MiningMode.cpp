@@ -75,7 +75,7 @@ void MiningMode::Update(int32_t cameraID)
 			eventBus_->Notify(event);
 		}
 
-		*nextUIMode_ = UIMode::Playing;
+		*nextUIMode_ = UIScreenType::Playing;
 	}
 }
 

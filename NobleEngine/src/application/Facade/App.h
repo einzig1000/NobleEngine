@@ -1,6 +1,6 @@
 #pragma once
 #include <definition/definition.h>
-
+#include <GameObjects/UI/UIData.h>
 
 namespace App
 {
@@ -41,6 +41,19 @@ namespace App
 			const int32_t GetBlockInfoTableHeapSlot();
 			// BlockInfoTableを作成
 			void CreateBlockInfoTable();
+		}
+
+
+		namespace UI
+		{
+			// 一括読み込み
+			void Load();
+			// UIElementTypeを指定して個別読み込み
+			void Load(UIElementType type);
+			// UIElementTypeを指定して個別保存
+			void Save(UIElementType type, const ElementData& data);
+			// UIElementTypeを指定してデータ取得
+			const std::vector<ElementData>* Get(UIElementType type);
 		}
 	}
 }

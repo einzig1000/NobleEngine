@@ -32,7 +32,7 @@ TitlePhase::TitlePhase()
 	map_ = std::make_unique<MapManager>();
 	// UIマネージャー生成
 	uiManager_ = std::make_unique<UIManager>();
-	uiManager_->ChangeScreen(UIMode::EmptyScreen);
+	uiManager_->ChangeScreen(UIScreenType::EmptyScreen);
 
 	// カメラ作成
 	c_title_ = cameraController_->AddCamera("TitlePhaseCamera");

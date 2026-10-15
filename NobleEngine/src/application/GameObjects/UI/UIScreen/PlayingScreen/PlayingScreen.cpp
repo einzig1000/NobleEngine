@@ -14,7 +14,7 @@ PlayingScreen::~PlayingScreen()
 
 void PlayingScreen::Initialize()
 {
-	nextUIMode_ = UIMode::MAX;
+	nextUIMode_ = UIScreenType::MAX;
 
 	for (const auto& element : uiElements_)
 	{
@@ -44,15 +44,15 @@ void PlayingScreen::Update(int32_t cameraID)
 
 	if (Game::IO::Key::IsJustPressed('E'))
 	{
-		nextUIMode_ = UIMode::Inventory;
+		nextUIMode_ = UIScreenType::Inventory;
 	}
 	if (Game::IO::Key::IsJustPressed('F'))
 	{
-		nextUIMode_ = UIMode::MiningMode;
+		nextUIMode_ = UIScreenType::MiningMode;
 	}
 	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
 	{
-		nextUIMode_ = UIMode::Pause;
+		nextUIMode_ = UIScreenType::Pause;
 	}
 }
 

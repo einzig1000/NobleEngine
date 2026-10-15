@@ -48,9 +48,9 @@
     "miningPoint": 999.0
   },
   "Leaf": {
-    "color": 699334911,
+    "color": 699334816,
     "durability": 8.0,
-    "isTransparent": false,
+    "isTransparent": true,
     "miningPoint": 0.0
   },
   "Stone": {

@@ -135,9 +135,9 @@ void ModelPreview::DrawImGui()
 		}
 	}
 
-				const ImGuiStyle& style = ImGui::GetStyle();
-				const float copyButtonWidth = ImGui::CalcTextSize("Copy").x + style.FramePadding.x * 2.0f;
-				const float selectableWidth = std::max(ImGui::GetContentRegionAvail().x - copyButtonWidth - style.ItemSpacing.x, 1.0f);
+	const ImGuiStyle& style = ImGui::GetStyle();
+	const float copyButtonWidth = ImGui::CalcTextSize("Copy").x + style.FramePadding.x * 2.0f;
+	const float selectableWidth = std::max(ImGui::GetContentRegionAvail().x - copyButtonWidth - style.ItemSpacing.x, 1.0f);
 	if (ImGui::BeginListBox("##model list"))
 	{
 		for (int32_t i = 0; i < (int32_t)bank_->GetModelList().size(); ++i)

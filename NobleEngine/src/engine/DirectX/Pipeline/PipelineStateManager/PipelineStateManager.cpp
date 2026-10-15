@@ -228,6 +228,48 @@ namespace
 
         return d;
     }
+
+    static const wchar_t* ToShaderProfile(ShaderType shaderType)
+    {
+        switch (shaderType)
+        {
+        case ShaderType::VertexShader:
+            return L"vs_6_6";
+        case ShaderType::PixelShader:
+            return L"ps_6_6";
+        case ShaderType::ComputeShader:
+            return L"cs_6_6";
+        case ShaderType::MeshShader:
+            return L"ms_6_6";
+        case ShaderType::AmplificationShader:
+            return L"as_6_6";
+
+        default:
+            assert(false);
+            return L"";
+        }
+    }
+
+    static D3D12_SHADER_VISIBILITY GetShaderVisibilityFromShaderType(ShaderType shaderType)
+    {
+        switch (shaderType)
+        {
+        case ShaderType::VertexShader:
+            return D3D12_SHADER_VISIBILITY_VERTEX;
+        case ShaderType::PixelShader:
+            return D3D12_SHADER_VISIBILITY_PIXEL;
+        case ShaderType::MeshShader:
+            return D3D12_SHADER_VISIBILITY_MESH;
+        case ShaderType::AmplificationShader:
+            return D3D12_SHADER_VISIBILITY_AMPLIFICATION;
+        case ShaderType::ComputeShader:
+            return D3D12_SHADER_VISIBILITY_ALL;
+
+        default:
+            assert(false);
+            return D3D12_SHADER_VISIBILITY_ALL;
+        }
+    }
 }
 
 PipelineStateManager::PipelineStateManager(ID3D12Device2* device)
@@ -254,7 +296,7 @@ void PipelineStateManager::InitializeDxc()
 }
 
 
-
+// ルートシグネチャ取得
 ID3D12RootSignature* PipelineStateManager::GetRootSignature(const std::vector<RootParam>& params)
 {
 	// ハッシュキーを生成
@@ -275,7 +317,7 @@ ID3D12RootSignature* PipelineStateManager::GetRootSignature(const std::vector<Ro
     // キャッシュに保存してから返す
     return rootSignatureCache_.emplace(key, std::move(rs)).first->second.Get();
 }
-
+// PSO取得
 ID3D12PipelineState* PipelineStateManager::GetGraphicsPipelineState(const GraphicsPSOConfig& psoConfig, const RootLayout& layout)
 {
     // ハッシュキーを生成
@@ -296,7 +338,6 @@ ID3D12PipelineState* PipelineStateManager::GetGraphicsPipelineState(const Graphi
     // キャッシュに保存してから返す
     return graphicsPsoCache_.emplace(psoKey, std::move(pso)).first->second.Get();
 }
-
 ID3D12PipelineState* PipelineStateManager::GetComputePipelineState(const ComputePSOConfig& psoConfig, const RootLayout& layout)
 {
     // ハッシュキーを生成
@@ -317,11 +358,13 @@ ID3D12PipelineState* PipelineStateManager::GetComputePipelineState(const Compute
     // キャッシュに保存してから返す
     return computePsoCache_.emplace(psoKey, std::move(pso)).first->second.Get();
 }
-
-PipelineStateManager::ShaderCacheEntry& PipelineStateManager::GetShaderEntry(const wchar_t* path, const wchar_t* target)
+// シェーダー情報取得
+const PipelineStateManager::ShaderCacheEntry& PipelineStateManager::GetShaderEntry(const wchar_t* path, ShaderType shaderType)
 {
+	// シェーダーのターゲット文字列を取得
+    const wchar_t* profile = ToShaderProfile(shaderType);
     // キーを生成
-    std::wstring key = std::wstring(path) + L"|" + target;
+    std::wstring key = std::wstring(path) + L"|" + profile;
 
     // キャッシュにあればそれを返す
     auto it = shaderCache_.find(key);
@@ -332,34 +375,27 @@ PipelineStateManager::ShaderCacheEntry& PipelineStateManager::GetShaderEntry(con
 
     // blob生成
     ShaderCacheEntry entry{};
-    entry.blob = CompileShader(path, target);
+    entry.blob = CompileShader(path, profile);
     assert(entry.blob);
+
+	// リフレクションでルートパラメータを取得
+    ShaderReflection::BuildRootParamsFromShader(dxcUtils.Get(), entry.blob.Get(), shaderType, entry.rootParams);
 
     // キャッシュに保存してから返す
     return shaderCache_.emplace(std::move(key), std::move(entry)).first->second;
 }
-
-Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::GetShaderBlob(const wchar_t* path, const wchar_t* target)
+Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::GetShaderBlob(const wchar_t* path, ShaderType shaderType)
 {
-    return GetShaderEntry(path, target).blob;
+	return GetShaderEntry(path, shaderType).blob;
 }
-
-const std::vector<RootParam>& PipelineStateManager::GetShaderRootParams(const wchar_t* path, const wchar_t* target, ShaderType shaderType)
+const std::vector<RootParam>& PipelineStateManager::GetShaderRootParams(const wchar_t* path, ShaderType shaderType)
 {
-    ShaderCacheEntry& entry = GetShaderEntry(path, target);
-
-    // 初回だけリフレクションする
-    if (!entry.rootParams)
-    {
-        entry.rootParams.emplace();
-        ShaderReflection::BuildRootParamsFromShader(dxcUtils.Get(), entry.blob.Get(), shaderType, *entry.rootParams);
-    }
-    return *entry.rootParams;
+	return GetShaderEntry(path, shaderType).rootParams;
 }
-
+// ルートレイアウト取得
 const RootLayout* PipelineStateManager::GetGraphicsRootLayout(const GraphicsPSOConfig& psoConfig)
 {
-    // キーはシェーダーパスの組み合わせ(ブレンド等はルートパラメータに影響しないので含めない)
+    // キー作成
     std::string key = psoConfig.as + "|" + psoConfig.vs + "|" + psoConfig.ms + "|" + psoConfig.ps;
 
     // キャッシュにあればそれを返す
@@ -369,38 +405,36 @@ const RootLayout* PipelineStateManager::GetGraphicsRootLayout(const GraphicsPSOC
         return &it->second;
     }
 
-
     // ルートレイアウト生成
     std::vector<RootParam> params;
     if (psoConfig.as != "unknown")
     {
         std::wstring asPath = StringConverter::Convert(psoConfig.as);
-        const auto& asParams = GetShaderRootParams(asPath.c_str(), L"as_6_6", ShaderType::AmplificationShader);
+        const auto& asParams = GetShaderRootParams(asPath.c_str(), ShaderType::AmplificationShader);
         params.insert(params.end(), asParams.begin(), asParams.end());
     }
     if (psoConfig.vs != "unknown")
     {
         std::wstring vsPath = StringConverter::Convert(psoConfig.vs);
-        const auto& vsParams = GetShaderRootParams(vsPath.c_str(), L"vs_6_6", ShaderType::VertexShader);
+        const auto& vsParams = GetShaderRootParams(vsPath.c_str(), ShaderType::VertexShader);
         params.insert(params.end(), vsParams.begin(), vsParams.end());
     }
     else if (psoConfig.ms != "unknown")
     {
         std::wstring msPath = StringConverter::Convert(psoConfig.ms);
-        const auto& msParams = GetShaderRootParams(msPath.c_str(), L"ms_6_6", ShaderType::MeshShader);
+        const auto& msParams = GetShaderRootParams(msPath.c_str(), ShaderType::MeshShader);
         params.insert(params.end(), msParams.begin(), msParams.end());
     }
     {
         std::wstring psPath = StringConverter::Convert(psoConfig.ps);
-        const auto& psParams = GetShaderRootParams(psPath.c_str(), L"ps_6_6", ShaderType::PixelShader);
+        const auto& psParams = GetShaderRootParams(psPath.c_str(), ShaderType::PixelShader);
         params.insert(params.end(), psParams.begin(), psParams.end());
     }
 
-    // 組み立ててキャッシュに保存してから返す
+    // キャッシュに保存してから返す
     RootLayout layout = BuildRootLayout(std::move(params), HashString(key));
     return &graphicsLayoutCache_.emplace(std::move(key), std::move(layout)).first->second;
 }
-
 const RootLayout* PipelineStateManager::GetComputeRootLayout(const ComputePSOConfig& psoConfig)
 {
     // キャッシュにあればそれを返す
@@ -411,36 +445,14 @@ const RootLayout* PipelineStateManager::GetComputeRootLayout(const ComputePSOCon
     }
 
     std::wstring csPath = StringConverter::Convert(psoConfig.cs);
-    std::vector<RootParam> params = GetShaderRootParams(csPath.c_str(), L"cs_6_6", ShaderType::ComputeShader);
+    std::vector<RootParam> params = GetShaderRootParams(csPath.c_str(), ShaderType::ComputeShader);
 
     // 組み立ててキャッシュに保存してから返す
     RootLayout layout = BuildRootLayout(std::move(params), HashString(psoConfig.cs));
     return &computeLayoutCache_.emplace(psoConfig.cs, std::move(layout)).first->second;
 }
 
-RootLayout PipelineStateManager::BuildRootLayout(std::vector<RootParam> params, size_t shaderHash)
-{
-    RootLayout layout{};
-    layout.params = std::move(params);
-    layout.shaderHash = shaderHash;
-
-    // ハッシュ→添字の表を作る。衝突チェックもレイアウトごとに1回で済む
-    for (size_t i = 0; i < layout.params.size(); ++i)
-    {
-        const bool inserted = layout.hashToIndex.emplace(layout.params[i].hash, i).second;
-        if (!inserted)
-        {
-            Log("PipelineStateManager::BuildRootLayout() ルートパラメータのハッシュが衝突しました");
-            assert(false);
-        }
-    }
-
-    // ルートシグネチャもここで作っておく(描画のたびに探さなくて済む)
-    layout.rootSignature = GetRootSignature(layout.params);
-
-    return layout;
-}
-
+// ルートシグネチャ生成
 Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSignature(const std::vector<RootParam>& params)
 {
     Log("ルートシグネチャ生成開始");
@@ -591,116 +603,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
 
     return rs;
 }
-
-Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::wstring& filePath, const wchar_t* profile)
-{
-    ///////////////////////////////////////
-    //// 1 hlslファイルを読む
-    ///////////////////////////////////////
-    /// これからシェーダーをコンパイルする旨をログに出す
-    Log("シェーダーコンパイル開始 パス:%s", StringConverter::Convert(filePath).c_str());
-    // hlslファイルを読む
-
-    // hlslファイルを読む
-    IDxcBlobEncoding* shaderSource = nullptr;
-    UINT32 codePage = DXC_CP_UTF8;
-    HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), &codePage, &shaderSource);
-    // 読めなかったら停止する
-    if (FAILED(hr))
-    {
-		Log("ファイルが見つかりませんでした:%s", StringConverter::Convert(filePath).c_str());
-        assert(false);
-        return nullptr;
-	}
-    // 読み込んだファイルの内容を設定する
-    DxcBuffer shaderSourceBuffer;
-    shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
-    shaderSourceBuffer.Size = shaderSource->GetBufferSize();
-    shaderSourceBuffer.Encoding = DXC_CP_UTF8;
-
-    ///////////////////////////////////////
-    //// 2 Compileする
-    ///////////////////////////////////////
-    LPCWSTR arguments[] = {
-        filePath.c_str(),			// コンパイル対象のhlslファイル名
-        L"-E", L"main",				// エントリーポイントの指定。基本的にmain
-        L"-T", profile,				// ShaderProfileの設定
-        //L"-Zi", L"-Qembed_debug",	// デバック用の情報を埋め込む
-        //L"-Od",					// 最適化を外しておく
-        L"-Zpr",					// 目盛レイアウトは行優先
-    };
-
-    //LPCWSTR arguments[] = {
-    //filePath.c_str(),
-    //L"-E", L"main",
-    //L"-T", profile,
-    //L"-Zpr",
-    //L"-I", L"assets/shaders",   // ← これを追加
-    //};
-
-    // 実際にシェーダーをコンパイルする
-    IDxcResult* shaderResult = nullptr;
-    hr = dxcCompiler->Compile(
-        &shaderSourceBuffer,	// 読み込んだファイル
-        arguments,				// コンパイルオプション
-        _countof(arguments),	// コンパイルオプションの数
-        includeHandler.Get(),	// includeが含まれた諸々
-        IID_PPV_ARGS(&shaderResult)// コンパイル結果
-    );
-    // コンパイルエラーではなくdxcが起動出来ないなど致命的な状況
-	if (FAILED(hr))
-	{
-		Log("シェーダーのコンパイルに失敗しました。多分dxcが起動できていません。");
-		assert(false);
-		return nullptr;
-	}
-
-    ///////////////////////////////////////
-    //// 3 警告・エラーが出ていないか確認する
-    ///////////////////////////////////////
-    /// 警告・エラーが出たらログにだして止める
-    IDxcBlobUtf8* shaderError = nullptr;
-    IDxcBlobUtf16* outputName = nullptr;
-    shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), &outputName);
-
-    if (shaderError != nullptr && shaderError->GetStringLength() != 0)
-    {
-		Log("シェーダーのコンパイルに警告・エラーが出ました。%s", (const char*)shaderError->GetStringPointer());
-        assert(false); // コンパイルエラーが発生した場合は停止
-    }
-
-    ///////////////////////////////////////
-    //// 4 Compile結果を受け取って返す
-    ///////////////////////////////////////
-    // コンパイル結果から実行用のバイナリ部分を取得
-    IDxcBlob* shaderBlob = nullptr;
-    if (shaderResult->HasOutput(DXC_OUT_OBJECT))
-    {
-        IDxcBlobWide* dummyOutputName = nullptr;
-        hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), &dummyOutputName);
-        //hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
-    }
-    else
-    {
-        hr = E_FAIL;
-        shaderBlob = nullptr;
-    }
-	if (FAILED(hr) || shaderBlob == nullptr)
-	{
-		Log("シェーダーのコンパイルに失敗しました。");
-		assert(false);
-		return nullptr;
-	}
-    // 成功したログを出す;
-    Log("成功");
-    // もう使わないリソースを解放
-    shaderSource->Release();
-    shaderResult->Release();
-    // 実行用のバイナリを返却
-    return shaderBlob;
-}
-
-
+// PSO生成
 Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphicsPipelineState(const GraphicsPSOConfig& cfg, const RootLayout& layout)
 {
     bool isMeshShader = false;
@@ -715,7 +618,7 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
     // ルートシグネチャはレイアウト作成時に作ってある
     stream.pRootSignature = layout.rootSignature;
     std::wstring psPath = StringConverter::Convert(cfg.ps);
-    auto psBlob = GetShaderBlob(psPath.c_str(), L"ps_6_6");
+    auto psBlob = GetShaderBlob(psPath.c_str(), ShaderType::PixelShader);
     stream.pPS = CD3DX12_SHADER_BYTECODE(psBlob->GetBufferPointer(), psBlob->GetBufferSize());
     stream.pBlend = CD3DX12_BLEND_DESC(MakeBlendDesc(cfg.blendID));
     stream.pDepthStencil = CD3DX12_DEPTH_STENCIL_DESC(MakeDepthStencilDesc(cfg.depthStencilID));
@@ -734,18 +637,18 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
         if (cfg.as != "unknown")
         {
             std::wstring asPath = StringConverter::Convert(cfg.as);
-            auto asBlob = GetShaderBlob(asPath.c_str(), L"as_6_6");
+            auto asBlob = GetShaderBlob(asPath.c_str(), ShaderType::AmplificationShader);
             stream.pAS = CD3DX12_SHADER_BYTECODE(asBlob->GetBufferPointer(), asBlob->GetBufferSize());
         }
 
         std::wstring msPath = StringConverter::Convert(cfg.ms);
-        auto msBlob = GetShaderBlob(msPath.c_str(), L"ms_6_6");
+        auto msBlob = GetShaderBlob(msPath.c_str(), ShaderType::MeshShader);
         stream.pMS = CD3DX12_SHADER_BYTECODE(msBlob->GetBufferPointer(), msBlob->GetBufferSize());
     }
     else
     {
         std::wstring vsPath = StringConverter::Convert(cfg.vs);
-        auto vsBlob = GetShaderBlob(vsPath.c_str(), L"vs_6_6");
+        auto vsBlob = GetShaderBlob(vsPath.c_str(), ShaderType::VertexShader);
         stream.VS = CD3DX12_SHADER_BYTECODE(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize());
         stream.PrimitiveTopologyType = ToTopologyType(cfg.topology);
 
@@ -775,13 +678,12 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
 
     return pso;
 }
-
 Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateComputePipelineState(const ComputePSOConfig& cfg, const RootLayout& layout)
 {
     Log("パイプラインステート生成開始: CS=%s", cfg.cs.c_str());
 
     std::wstring csPath = StringConverter::Convert(cfg.cs);
-    auto csBlob = GetShaderBlob(csPath.c_str(), L"cs_6_6");
+    auto csBlob = GetShaderBlob(csPath.c_str(), ShaderType::ComputeShader);
 
     D3D12_COMPUTE_PIPELINE_STATE_DESC desc{};
     //desc.CS = CD3DX12_SHADER_BYTECODE(csBlob->GetBufferPointer(), csBlob->GetBufferSize());
@@ -795,25 +697,137 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateComputeP
     assert(SUCCEEDED(hr));
     return pso;
 }
-
-
-D3D12_SHADER_VISIBILITY PipelineStateManager::GetShaderVisibilityFromShaderType(ShaderType shaderType)
+// シェーダーコンパイル
+Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::wstring& filePath, const wchar_t* profile)
 {
-    switch (shaderType)
-    {
-    case ShaderType::VertexShader:
-        return D3D12_SHADER_VISIBILITY_VERTEX;
-    case ShaderType::PixelShader:
-        return D3D12_SHADER_VISIBILITY_PIXEL;
-    case ShaderType::MeshShader:
-        return D3D12_SHADER_VISIBILITY_MESH;
-	case ShaderType::AmplificationShader:
-		return D3D12_SHADER_VISIBILITY_AMPLIFICATION;
-	case ShaderType::ComputeShader:
-		return D3D12_SHADER_VISIBILITY_ALL;
+    ///////////////////////////////////////
+    //// 1 hlslファイルを読む
+    ///////////////////////////////////////
+    /// これからシェーダーをコンパイルする旨をログに出す
+    Log("シェーダーコンパイル開始 パス:%s", StringConverter::Convert(filePath).c_str());
 
-    default:
+    // hlslファイルを読む
+    Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource;
+    UINT32 codePage = DXC_CP_UTF8;
+    HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), &codePage, &shaderSource);
+    // 読めなかったら停止する
+    if (FAILED(hr))
+    {
+		Log("ファイルが見つかりませんでした:%s", StringConverter::Convert(filePath).c_str());
         assert(false);
-        return D3D12_SHADER_VISIBILITY_ALL;
+        return nullptr;
 	}
+    // 読み込んだファイルの内容を設定する
+    DxcBuffer shaderSourceBuffer;
+    shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
+    shaderSourceBuffer.Size = shaderSource->GetBufferSize();
+    shaderSourceBuffer.Encoding = DXC_CP_UTF8;
+
+    ///////////////////////////////////////
+    //// 2 Compileする
+    ///////////////////////////////////////
+#ifdef _DEBUG
+
+    LPCWSTR arguments[] = {
+        filePath.c_str(),			// コンパイル対象のhlslファイル名
+        L"-E", L"main",				// エントリーポイントの指定。基本的にmain
+        L"-T", profile,				// ShaderProfileの設定
+        L"-Zi", L"-Qembed_debug",	// デバック用の情報を埋め込む
+        L"-Od",					    // 最適化を外しておく
+        L"-Zpr",					// 目盛レイアウトは行優先
+        L"-I", L"assets/shaders",   // includeディレクトリ追加
+    };
+
+#else
+
+    LPCWSTR arguments[] = {
+        filePath.c_str(),			// コンパイル対象のhlslファイル名
+        L"-E", L"main",				// エントリーポイントの指定。基本的にmain
+        L"-T", profile,				// ShaderProfileの設定
+        L"-Zpr",					// 目盛レイアウトは行優先
+		L"-I", L"assets/shaders",   // includeディレクトリ追加
+    };
+
+#endif
+
+    // 実際にシェーダーをコンパイルする
+    Microsoft::WRL::ComPtr<IDxcResult> shaderResult;
+    hr = dxcCompiler->Compile(
+        &shaderSourceBuffer,	// 読み込んだファイル
+        arguments,				// コンパイルオプション
+        _countof(arguments),	// コンパイルオプションの数
+        includeHandler.Get(),	// includeが含まれた諸々
+        IID_PPV_ARGS(&shaderResult)// コンパイル結果
+    );
+    // コンパイルエラーではなくdxcが起動出来ないなど致命的な状況
+	if (FAILED(hr))
+	{
+		Log("シェーダーのコンパイルに失敗しました。多分dxcが起動できていません。");
+		assert(false);
+		return nullptr;
+	}
+
+    ///////////////////////////////////////
+    //// 3 警告・エラーが出ていないか確認する
+    ///////////////////////////////////////
+    /// 警告・エラーが出たらログにだして止める
+    Microsoft::WRL::ComPtr<IDxcBlobUtf8> shaderError;
+    Microsoft::WRL::ComPtr<IDxcBlobUtf16> outputName;
+    shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), &outputName);
+
+    if (shaderError != nullptr && shaderError->GetStringLength() != 0)
+    {
+		Log("シェーダーのコンパイルに警告・エラーが出ました。%s", (const char*)shaderError->GetStringPointer());
+        assert(false);
+    }
+
+    ///////////////////////////////////////
+    //// 4 Compile結果を受け取って返す
+    ///////////////////////////////////////
+    // コンパイル結果から実行用のバイナリ部分を取得
+    Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob;
+    if (shaderResult->HasOutput(DXC_OUT_OBJECT))
+    {
+        Microsoft::WRL::ComPtr<IDxcBlobWide> dummyOutputName;
+        hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), &dummyOutputName);
+    }
+    else
+    {
+        hr = E_FAIL;
+        shaderBlob = nullptr;
+    }
+    if (FAILED(hr) || shaderBlob == nullptr)
+    {
+        Log("シェーダーのコンパイルに失敗しました。");
+        assert(false);
+        return nullptr;
+    }
+    // 成功したログを出す;
+    Log("成功");
+    // 実行用のバイナリを返却
+    return shaderBlob;
 }
+// ルートレイアウト生成
+RootLayout PipelineStateManager::BuildRootLayout(std::vector<RootParam> params, size_t shaderHash)
+{
+    RootLayout layout{};
+    layout.params = std::move(params);
+    layout.shaderHash = shaderHash;
+
+    // ハッシュ→添字の表を作る
+    for (size_t i = 0; i < layout.params.size(); ++i)
+    {
+        const bool inserted = layout.hashToIndex.emplace(layout.params[i].hash, i).second;
+        if (!inserted)
+        {
+            Log("PipelineStateManager::BuildRootLayout() ルートパラメータのハッシュが衝突しました");
+            assert(false);
+        }
+    }
+
+    // ルートシグネチャも作る
+    layout.rootSignature = GetRootSignature(layout.params);
+
+    return layout;
+}
+

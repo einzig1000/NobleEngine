@@ -468,7 +468,31 @@
     <ClCompile Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainGenerator\TerrainGenerator.cpp">
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Generator\TerrainGenerator.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Loader\TerrainLoader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Saver\TerrainSaver.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\TerrainDataManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\Editor\UIEditor\UIEditor.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\System\ResourceLoader\Data\UI\UIDataManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Bank\UIDataBank.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Loader\UIDataLoader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1391,10 +1415,34 @@
     <ClInclude Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainGenerator\TerrainGenerator.h">
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Generator\TerrainGenerator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\System\EventBus\EventPayloads.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Loader\TerrainLoader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Saver\TerrainSaver.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\TerrainDataManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\Editor\UIEditor\UIEditor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\System\ResourceLoader\Data\UI\UIDataManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\System\ResourceLoader\Data\UI\Bank\UIDataBank.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\System\ResourceLoader\Data\UI\Loader\UIDataLoader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

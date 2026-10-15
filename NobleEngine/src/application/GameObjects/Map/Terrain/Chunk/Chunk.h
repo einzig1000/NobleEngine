@@ -2,6 +2,7 @@
 #include <Game.h>
 #include <Utilities/PerlinNoise.h>
 #include <definition/definition.h>
+#include <GameObjects/Map/Terrain/TerrainDataManager/TerrainDataManager.h>
 
 class FaceDataPagePool;
 
@@ -27,7 +28,7 @@ enum class BakeState
 class Chunk
 {
 public:
-	Chunk(const NoiseParameter& param, const Vector3int& chunkIndex, FaceDataPagePool* pagePool);
+	Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, FaceDataPagePool* pagePool);
 	~Chunk();
 	void Update(int32_t cameraID);
 	void Draw(int32_t renderTargetID);
@@ -48,12 +49,11 @@ public:
 private:
 
 	// 地形生成
-	void CreateChunkData(const NoiseParameter& param);
+	void CreateChunkData(const TerrainGenerator& generator);
 	void CreateChunkDataFromJson();		// Jsonからチャンクデータを読み込み
-	void CreateChunkDataNewly(const NoiseParameter& param);	// 新規生成チャンクデータ作成
+	void CreateChunkDataNewly(const TerrainGenerator& generator);	// 新規生成チャンクデータ作成
 	void GenerateOres(const NoiseParameter& param);	// 鉱石を生成
 	void GenerateTrees(const NoiseParameter& param);// 木を生成
-
 
 	// Count.CSの起動・ReadBack申請
 	void DispatchCountPhase();

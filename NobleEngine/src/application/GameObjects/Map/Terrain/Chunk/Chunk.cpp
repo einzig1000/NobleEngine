@@ -3,8 +3,6 @@
 #include <Utilities/Json/JsonManager.h>
 #include <Utilities/Logger/Logger.h>
 #include <Utilities/functions.h>
-#include <externals/DungeonTemplateLibrary/DTL.hpp>
-#include <externals/FastNoiseLite/FastNoiseLite.h>
 #include <App.h>
 
 namespace
@@ -82,7 +80,7 @@ namespace
 		static_cast<float>(Constexprs::kChunkBlockCountZ) * Constexprs::kBlockSize };
 }
 
-Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex, FaceDataPagePool* pagePool)
+Chunk::Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, FaceDataPagePool* pagePool)
 	: pagePool_(pagePool)
 {
 	// チャンク情報保存
@@ -146,7 +144,7 @@ Chunk::Chunk(const NoiseParameter& param, const Vector3int& chunkIndex, FaceData
 	writeCompute_->size = { static_cast<int32_t>(Constexprs::kGroupCount), 1, 1 };
 	writeCompute_->RegisterOutput(pagePool_->GetSharedBufferResourceID());
 
-	CreateChunkData(param);
+	CreateChunkData(generator);
 }
 
 Chunk::~Chunk()
@@ -156,12 +154,12 @@ Chunk::~Chunk()
 #pragma region 地形生成
 
 // チャンクデータ生成
-void Chunk::CreateChunkData(const NoiseParameter& param)
+void Chunk::CreateChunkData(const TerrainGenerator& generator)
 {
 	// 既にセーブデータが存在している場合		(Jsonに沿ってチャンクデータを生成)
 	//CreateChunkDataFromJson();
 	// 新規生成の場合							(ノイズに沿ってチャンクデータを生成)
-	CreateChunkDataNewly(param);
+	CreateChunkDataNewly(generator);
 
 	// 初回なので無条件でメッシュ生成
 	blockIdsDirty_ = true;
@@ -190,49 +188,65 @@ void Chunk::CreateChunkDataFromJson()
 	//}
 }
 
+///// 新規生成されたチャンクデータを作成
+//void Chunk::CreateChunkDataNewly(const TerrainGenerator& generator)
+//{
+//	// チャンク内すべてのブロック生成
+//	for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
+//	{
+//		for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
+//		{
+//			// ワールド座標でのブロックインデックス
+//			const int32_t worldX = chunkIndex_.x * Constexprs::kChunkBlockCountX + x;
+//			const int32_t worldZ = chunkIndex_.z * Constexprs::kChunkBlockCountZ + z;
+//
+//			// この列の地表の高さ
+//			const int32_t height = generator.SurfaceHeight(worldX, worldZ);
+//
+//			// 土の厚さ
+//			int32_t dirtThickness = int32_t(float(height) * 0.1f);
+//			if (height - dirtThickness < 0) dirtThickness = height;
+//
+//			for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
+//			{
+//				int32_t globalY = chunkIndex_.y * Constexprs::kChunkBlockCountY + y;
+//				if (globalY < -1)
+//				{
+//					continue;
+//				}
+//				BlockID id;
+//				if (globalY == 0)							id = BlockID::Bedrock;
+//				else if (globalY < height - dirtThickness)	id = BlockID::Stone;
+//				else if (globalY < height - 1)				id = BlockID::Dirt;
+//				else if (globalY < height)					id = BlockID::Grass;
+//				else										id = BlockID::Air;
+//				SetBlock(Vector3int(x, y, z), id);
+//			}
+//		}
+//	}
+//
+//	//GenerateOres(param);
+//	//GenerateTrees(param);
+//}
+
 /// 新規生成されたチャンクデータを作成
-void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
+void Chunk::CreateChunkDataNewly(const TerrainGenerator& generator)
 {
-	// 事前に定数を計算
-	const float invScale = 1.0f / param.scale;
-	const int32_t maxY = param.height - 1;
-
-	int32_t sizeX = Constexprs::kChunkBlockCountX + 2;
-	int32_t sizeY = Constexprs::kChunkBlockCountY + 2;
-	int32_t sizeZ = Constexprs::kChunkBlockCountZ + 2;
-
-	// チャンク内すべてのブロック生成
+	// 1. 地面
 	for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
 	{
 		for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
 		{
 			// ワールド座標でのブロックインデックス
 			const int32_t worldX = chunkIndex_.x * Constexprs::kChunkBlockCountX + x;
-			const int32_t worldY = chunkIndex_.y * Constexprs::kChunkBlockCountY;
 			const int32_t worldZ = chunkIndex_.z * Constexprs::kChunkBlockCountZ + z;
 
-			// ワールド座標をノイズサンプル空間へスケールダウン
-			const float sampleX = static_cast<float>(worldX) * invScale;
-			const float sampleZ = static_cast<float>(worldZ) * invScale;
+			// この列の地表の高さ(y < height がブロック)
+			const int32_t height = generator.SurfaceHeight(worldX, worldZ);
 
-			// フラクタルノイズ（0..1）
-			const float n = fractalPerlin(param.pn, sampleX, sampleZ, param.octaves, param.persistence);
-
-			// 高さへ変換（0..maxY）
-			int32_t height = static_cast<int32_t>(std::floor(n * float(maxY) + 0.5f));
-			if (height < 0) height = 0;
-			if (height > maxY) height = maxY;
-
-			// 素材の割り当て
-			std::mt19937 rng(MakeChunkSeed(param.seed, chunkIndex_));
-			//int32_t dirtThickness = RandRange(rng, 5, 9);
+			// 土の厚さ
 			int32_t dirtThickness = int32_t(float(height) * 0.1f);
 			if (height - dirtThickness < 0) dirtThickness = height;
-
-			// 境界を計算（yの区間でブロックIDが決まる）
-			const int32_t stoneEnd = std::max(0, height - dirtThickness); // [0, stoneEnd)
-			const int32_t dirtEnd = std::max(0, height - 1);              // [stoneEnd, dirtEnd)
-			const int32_t lawnY = height - 1;                           // y==lawnY が Lawn（height>0のとき）
 
 			for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
 			{
@@ -247,14 +261,29 @@ void Chunk::CreateChunkDataNewly(const NoiseParameter& param)
 				else if (globalY < height - 1)				id = BlockID::Dirt;
 				else if (globalY < height)					id = BlockID::Grass;
 				else										id = BlockID::Air;
-				SetBlock(Vector3int(x, y, z), id);
+				blocks_[x][y][z] = id;
+			}
+		}
+	}
+
+	// 2. 木
+	generator.PlaceTrees(chunkIndex_, blocks_);
+
+	// 3. blockIds_に反映
+	for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
+	{
+		for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
+		{
+			for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
+			{
+				SetBlockIDs(Vector3int(x, y, z), blocks_[x][y][z]);
 			}
 		}
 	}
 
 	//GenerateOres(param);
-	//GenerateTrees(param);
 }
+
 /// 鉱石生成
 void Chunk::GenerateOres(const NoiseParameter& param)
 {
@@ -654,6 +683,14 @@ void Chunk::Draw(int32_t renderTargetID)
 		render_->SetBRegisterData(1, ShaderType::MeshShader, &chunkInfo_);
 		render_->SetBRegisterData(2, ShaderType::MeshShader, &viewProjectionMatrix_);
 		render_->SetBRegisterData(3, ShaderType::MeshShader, &msPagePoolTable);
+
+		//if (msSrvIndexTable.x == UINT32_MAX) { __debugbreak(); }
+		//if (msSrvIndexTable.y == UINT32_MAX) { __debugbreak(); }
+		//if (msSrvIndexTable.z == UINT32_MAX) { __debugbreak(); }
+		//if (msSrvIndexTable.w == UINT32_MAX) { __debugbreak(); }
+
+		//if (msPagePoolTable.x == UINT32_MAX) { __debugbreak(); }
+		//if (msPagePoolTable.y == UINT32_MAX) { __debugbreak(); }
 
 		render_->Draw(renderTargetID);
 	}

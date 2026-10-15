@@ -7,15 +7,6 @@ class ItemInventory;
 class MiningPointGauge;
 class ItemIconManager;
 
-struct ElementData
-{
-	std::unique_ptr<RenderObject> render;
-
-	// テクスチャID
-	int32_t textureID = -1;
-
-	EulerTransforms transforms;
-};
 
 class IUIElement
 {
@@ -35,11 +26,11 @@ public:
 	virtual void SetInventory(const ItemInventory* inventory) { inventory_ = inventory; }
 	virtual void SetMiningGauge(const MiningPointGauge* miningGauge) { miningGauge_ = miningGauge; }
 	virtual void SetIconManager(ItemIconManager* iconManager) { iconManager_ = iconManager; }
-	virtual void SetNextUIMode(UIMode* nextUIMode) { nextUIMode_ = nextUIMode; }
+	virtual void SetNextUIMode(UIScreenType* nextUIMode) { nextUIMode_ = nextUIMode; }
 
 protected:
 	EventBus* eventBus_ = nullptr;
-	UIMode* nextUIMode_ = nullptr;
+	UIScreenType* nextUIMode_ = nullptr;
 
 	const MiningPointGauge* miningGauge_ = nullptr;
 	const ItemInventory* inventory_ = nullptr;

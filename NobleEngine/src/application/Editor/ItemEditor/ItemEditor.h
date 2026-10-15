@@ -8,7 +8,7 @@ class DataManager;
 class ItemEditor
 {
 public:
-	ItemEditor(DataManager* dataManager);
+	ItemEditor();
 	~ItemEditor();
 
 	void Update();
@@ -17,8 +17,6 @@ public:
 
 private:
 	void DrawIconImGui();
-
-	DataManager* dataManager_;
 
 	int32_t renderTextureID_ = -1;
 	int32_t cameraID_ = -1;

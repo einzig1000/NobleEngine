@@ -74,5 +74,19 @@ namespace App
 				Application::Instance().GetDataManager()->GetItemDataManager()->GetSaver()->Save(id, info);
 			}
 		}
+
+		namespace UI
+		{
+			void Load()
+			{}
+			void Load(UIElementType type)
+			{}
+			void Save(UIElementType type, const ElementData & data)
+			{}
+			const std::vector<ElementData>* Get(UIElementType type)
+			{
+				return nullptr;
+			}
+		}
 	}
 }
