@@ -4,13 +4,11 @@
 
 void FrameCbAllocator::Initialize(ID3D12Device2* device, size_t capacityBytes, const wchar_t* debugName)
 {
-	// デバイスが有効かチェック
-	assert(device);
-
 	// 256nに切り上げ
 	capacity_ = AlignUp(capacityBytes, 256);
 
 	// リソース作成
+	assert(device);
 	resource_ = Dx12ResourceFactory::CreateBufferResource(device, capacity_);
 	assert(resource_);
 

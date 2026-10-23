@@ -97,6 +97,7 @@ public:
 	// 手に持っているアイテムのコライダーを取得
 	virtual const ColliderShape& GetHaveItemWorldCollider() const { return haveItem_.GetWorldCollider(); }
 
+	virtual Vector3 GetSpawnPosition(int32_t x, int32_t z) const;
 
 protected:
 	EventBus* eventBus_ = nullptr;
@@ -113,12 +114,16 @@ protected:
 	float maxHP_ = 20.0f;		// 最大体力
 	float defense_ = 0.0f;		// 防御力
 
+	int32_t stepUpBlockCount_ = 1;		// 接地中に自動で登れる段差の高さ(ブロック数。0で登らない)
+	int32_t stepDownBlockCount_ = 1;	// 接地中に床へ吸着して降りられる段差の高さ(ブロック数。0で吸着しない)
+	float fallDamageSpeed_ = 12.0f;		// 着地したときの落下速度(distance/sec)がこれを超えたらダメージ
+
+
 	VectorDynamics translate_;
 	VectorDynamics scale_;
 	VectorDynamics rotate_;
 
 	float viewPhi_ = 0.0f;
-	float viewTheta_ = 0.0f;	// std::numbers::pi_v<float> / 2.0f;
-	float lookSensitivity_ = 0.003f;			// マウス感度（ラジアン/ピクセル）
+	float viewTheta_ = 0.0f;
 };
 

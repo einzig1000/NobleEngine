@@ -18,7 +18,7 @@ Camera::Camera()
 
 	fovY_ = 0.65f;
 
-	screenSize_ = Vector2{ float(WindowManager::winWidth_) , float(WindowManager::winHeight_) };
+	screenSize_ = Vector2{ float(Constexprs::kInitialWindowWidth) , float(Constexprs::kInitialWindowHeight) };
 
 	sphericalEye_.radius = 10.0f;
 	sphericalEye_.theta = std::numbers::pi_v<float> / 2.0f;

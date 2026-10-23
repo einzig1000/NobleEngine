@@ -4,7 +4,7 @@
 void TextureBank::AddTextureData(const std::string& filePath, const int32_t heapSlot, std::unique_ptr<TextureData> textureData)
 {
 	pathToIDMap_[filePath] = heapSlot;
-	textures_[heapSlot] = std::move(textureData);
+	dataMap_[heapSlot] = std::move(textureData);
 }
 
 int32_t TextureBank::IsTextureDataExist(const std::string& filePath) const
@@ -20,8 +20,8 @@ int32_t TextureBank::IsTextureDataExist(const std::string& filePath) const
 
 const TextureData* TextureBank::GetTextureData(int32_t textureID) const
 {
-	auto it = textures_.find(textureID);
-	if (it != textures_.end())
+	auto it = dataMap_.find(textureID);
+	if (it != dataMap_.end())
 	{
 		return it->second.get();
 	}

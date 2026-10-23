@@ -4,8 +4,8 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <memory>
-#include <Utilities/PerlinNoise.h>
 #include <definition/definition.h>
+#include <GameObjects/Map/Terrain/TerrainDataManager/TerrainDataManager.h>
 #include <GameObjects/Map/Terrain/FaceDataPagePool/FaceDataPagePool.h>
 
 class Chunk;
@@ -33,11 +33,6 @@ public:
 
 	void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; }
 
-	void LoadNameAndPathMap(const std::string& filePath);
-	void SaveNameAndPathMap(const std::string& filePath);
-	void LoadMap(const std::string& mapName);
-	void SaveMap();
-	void CreateNewMap(const std::string& mapName, uint32_t seed);
 
 	// チャンク一括生成
 	void GenerateChunks(Vector3 pos);
@@ -85,6 +80,30 @@ public:
 	/// <returns>何層分進めたか</returns>
 	int32_t SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount) const;
 
+	/// <summary>
+	// 強くなった自分で衝突判定再設計
+	/// </summary>
+	/// <param name="aabb">キャラクター衝突判定AABB</param>
+	/// <param name="movement">申請移動量(衝突していた場合修正される)</param>
+	/// <param name="stepUpHeight">接地中に自動で登れる段差の高さ(0なら登らない)</param>
+	/// <param name="stepDownHeight">接地中に床へ吸着して降りられる段差の高さ(0なら吸着しない)</param>
+	void SweepAABB(const AABB& aabb, Vector3& movement, float stepUpHeight, float stepDownHeight);
+
+	/// <summary>
+	/// aabbをaxis方向にmoveだけ動かしたとき、ブロックにめり込まずに進める移動量を返す
+	/// </summary>
+	/// <param name="aabb">キャラクター衝突判定AABB</param>
+	/// <param name="axis">0:X 1:Y 2:Z</param>
+	/// <param name="move">申請移動量</param>
+	/// <returns>実際に進める移動量</returns>
+	float SweepAxis(const AABB& aabb, int32_t axis, float move) const;
+
+	// ワールドのブロック番号の位置にブロックがあるか(チャンクが無い所は空気扱い)
+	bool IsSolidBlock(int32_t x, int32_t y, int32_t z) const;
+
+	
+
+
 
 	// 指定AABBにキャラがあるか
 	bool IsOverlappingAnyCharacter(const AABB& aabb) const;
@@ -108,8 +127,8 @@ public:
 	void RegisterCharacter(ICharacter* c);
 	void UnregisterCharacter(ICharacter* c);
 
-	// マップネーム->ファイルパスマップ
-	std::map<std::string, std::string> mapNameToFilePath_;
+
+	const TerrainDataManager* GetTerrainDataManager() const { return &terrainDataManager_; }
 
 private:
 	EventBus* eventBus_ = nullptr;
@@ -136,7 +155,9 @@ private:
 	// パラメータ
 	Vector3int drawRadius_;    // 描画半径（チャンク単位）
 	Vector3int updateRadius_;   // 更新半径（チャンク単位）
-	NoiseParameter noiseParam_;
+
+	// マップ生成器
+	TerrainDataManager terrainDataManager_;
 
 	// マップ中心座標
 	Vector3int centerChunkPos_;

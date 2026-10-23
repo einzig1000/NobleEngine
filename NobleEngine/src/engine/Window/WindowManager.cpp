@@ -5,17 +5,108 @@
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib, "winmm.lib")
 
-uint32_t WindowManager::winWidth_;
-uint32_t WindowManager::winHeight_;
-
-// ウィンドウプロシージャ(クリックした、×を押した等のイベントを処理する関数)
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+namespace
 {
-    // ImGuiの入力を優先的に処理（UI操作中はゲーム側へイベントを流さない）
+    // ウィンドウプロシージャ(クリックした、×を押した等のイベントを処理する関数)
+    //LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+    //{
+    //    // ImGuiの入力を優先的に処理（UI操作中はゲーム側へイベントを流さない）
+    //    if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) { return TRUE; }
+    //
+    //    switch (msg)
+    //    {
+    //        // マウスが動いた時
+    //    case WM_INPUT:
+    //    {
+    //        // Raw Inputから相対マウス移動を取得
+    //        UINT size = 0;
+    //        if (::GetRawInputData((HRAWINPUT)lparam, RID_INPUT, nullptr, &size, sizeof(RAWINPUTHEADER)) == 0 && size)
+    //        {
+    //            std::vector<BYTE> buf(size);
+    //            if (::GetRawInputData((HRAWINPUT)lparam, RID_INPUT, buf.data(), &size, sizeof(RAWINPUTHEADER)) == size)
+    //            {
+    //                RAWINPUT* ri = reinterpret_cast<RAWINPUT*>(buf.data());
+    //                if (ri->header.dwType == RIM_TYPEMOUSE)
+    //                {
+    //                    auto* mc = reinterpret_cast<MouseController*>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    //                    if (mc)
+    //                    {
+    //                        // 相対移動量をマウスコントローラに送る
+    //                        mc->OnRawMouseDelta(ri->data.mouse.lLastX, ri->data.mouse.lLastY);
+    //
+    //                        // ホイール回転量をマウスコントローラに送る
+    //                        if (ri->data.mouse.usButtonFlags & RI_MOUSE_WHEEL)
+    //                        {
+    //                            int32_t wheelDelta = static_cast<SHORT>(ri->data.mouse.usButtonData);
+    //                            mc->OnMouseWheelDelta(wheelDelta);
+    //                        }
+    //
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        return 0;
+    //    }
+    //
+    //    // ウィンドウが破壊された時
+    //    case WM_DESTROY:
+    //        PostQuitMessage(0);
+    //        return 0;
+    //    }
+    //
+    //    // 既定のメッセージ処理
+    //    return DefWindowProc(hwnd, msg, wparam, lparam);
+    //}
+}
+
+
+    // ウィンドウプロシージャの入口(Windowsはこの形の関数しか呼べないので static)
+LRESULT CALLBACK WindowManager::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    WindowManager* self = nullptr;
+
+    // WM_NCCREATE = ウィンドウが生成された時
+    if (msg == WM_NCCREATE)
+    {
+		// CreateWindowの最後の引数で渡したポインタがCREATESTRUCTのlpCreateParamsに入っている
+        const CREATESTRUCT* createStruct = reinterpret_cast<const CREATESTRUCT*>(lparam);
+        self = static_cast<WindowManager*>(createStruct->lpCreateParams);
+        ::SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+        self->hwnd_ = hwnd;
+    }
+    else
+    {
+        self = reinterpret_cast<WindowManager*>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    }
+
+	// まだWindowManagerが生成されていない
+    if (!self) return DefWindowProc(hwnd, msg, wparam, lparam);
+
+    return self->HandleMessage(hwnd, msg, wparam, lparam);
+}
+
+// ウィンドウプロシージャの本体(クリックした、×を押した等のイベントを処理する)
+LRESULT WindowManager::HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    // ImGuiの入力を優先的に処理
     if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) { return TRUE; }
 
     switch (msg)
     {
+    // ウィンドウの大きさが変わった時
+    case WM_SIZE:
+    {
+        const uint32_t width = LOWORD(lparam);
+        const uint32_t height = HIWORD(lparam);
+        // 最小化中は0x0になる
+        if (wparam != SIZE_MINIMIZED && width != 0 && height != 0)
+        {
+            winWidth_ = width;
+            winHeight_ = height;
+        }
+        return 0;
+    }
+
     // マウスが動いた時
     case WM_INPUT:
     {
@@ -27,21 +118,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             if (::GetRawInputData((HRAWINPUT)lparam, RID_INPUT, buf.data(), &size, sizeof(RAWINPUTHEADER)) == size)
             {
                 RAWINPUT* ri = reinterpret_cast<RAWINPUT*>(buf.data());
-                if (ri->header.dwType == RIM_TYPEMOUSE)
+                if (ri->header.dwType == RIM_TYPEMOUSE && mouseController_)
                 {
-                    auto* mc = reinterpret_cast<MouseController*>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));
-                    if (mc)
+                    // 相対移動量をマウスコントローラに送る
+                    mouseController_->OnRawMouseDelta(ri->data.mouse.lLastX, ri->data.mouse.lLastY);
+
+                    // ホイール回転量をマウスコントローラに送る
+                    if (ri->data.mouse.usButtonFlags & RI_MOUSE_WHEEL)
                     {
-						// 相対移動量をマウスコントローラに送る
-                        mc->OnRawMouseDelta(ri->data.mouse.lLastX, ri->data.mouse.lLastY);
-
-						// ホイール回転量をマウスコントローラに送る
-                        if (ri->data.mouse.usButtonFlags & RI_MOUSE_WHEEL)
-                        {
-                            int32_t wheelDelta = static_cast<SHORT>(ri->data.mouse.usButtonData);
-                            mc->OnMouseWheelDelta(wheelDelta);
-						}
-
+                        int32_t wheelDelta = static_cast<SHORT>(ri->data.mouse.usButtonData);
+                        mouseController_->OnMouseWheelDelta(wheelDelta);
                     }
                 }
             }
@@ -83,9 +169,13 @@ WindowManager::~WindowManager()
     }
 }
 
-void WindowManager::AttachMouseController(MouseController* mc)
+void WindowManager::Update()
 {
-    ::SetWindowLongPtr(hwnd_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(mc));
+}
+
+void WindowManager::SetMouseController(MouseController* mc)
+{
+	mouseController_ = mc;
 }
 
 void WindowManager::RegisterWindowClass() {
@@ -132,7 +222,7 @@ void WindowManager::CreateMainWindow(LONG width, LONG height, const std::wstring
         nullptr,				// 親ウィンドウハンドル
         nullptr,				// メニューハンドル
         wc_.hInstance,			// インスタンスハンドル
-        nullptr					// オプション
+        this					// オプション
     );
 
 	// ウィンドウ表示
@@ -156,8 +246,6 @@ void WindowManager::SetFullscreen(bool enable)
     {
         ExitBorderlessFullscreen();
     }
-	// ウィンドウサイズ更新
-	UpdateClientSize();
 }
 
 void WindowManager::ToggleFullscreen()
@@ -223,13 +311,4 @@ void WindowManager::ExitBorderlessFullscreen()
     );
 
     isFullscreen_ = false;
-}
-
-void WindowManager::UpdateClientSize()
-{
-    if (!hwnd_) return;
-    RECT rc{};
-    GetClientRect(hwnd_, &rc);
-    winWidth_ = static_cast<uint32_t>(rc.right - rc.left);
-    winHeight_ = static_cast<uint32_t>(rc.bottom - rc.top);
 }

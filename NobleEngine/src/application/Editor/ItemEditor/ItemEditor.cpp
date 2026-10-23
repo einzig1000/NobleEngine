@@ -1,10 +1,8 @@
 #include "ItemEditor.h"
-#include <System/ResourceLoader/Data/DataManager.h>
 #include <GameObjects/UI/ItemIcon/ItemIconManager.h>
-#include <Utilities/Json/JsonManager.h>
 #include <App.h>
 
-ItemEditor::ItemEditor(DataManager* dataManager)
+ItemEditor::ItemEditor()
 {
 	renderObject_ = std::make_unique<RenderObject>();
 	renderObject_->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";

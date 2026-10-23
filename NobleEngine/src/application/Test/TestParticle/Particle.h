@@ -20,6 +20,7 @@ public:
 	void Update(int32_t cameraID);
 	void Draw();
 
+private:
 	EmitterSphere emitterSphere;
 	std::unique_ptr<RenderObject> render_;
 	std::unique_ptr<ComputeObject> emitCompute_;

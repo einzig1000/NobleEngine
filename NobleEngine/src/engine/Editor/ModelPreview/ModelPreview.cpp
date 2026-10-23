@@ -117,69 +117,70 @@ void ModelPreview::Draw()
 
 void ModelPreview::DrawImGui()
 {
-	// モデルリスト表示
-	ImGui::Begin("Model Editor");
-
-	if (ImGui::Button("Open Model"))
+	if (ImGui::BeginTabItem("Model Preview"))
 	{
-		std::string path = FileDialog::OpenFile(
-			Engine::Instance().GetWindowManager()->GetHwnd(),
-			L"Open Model",
-			{ { L"Model Files", L"*.obj;*.gltf;*.fbx" }, { L"All Files", L"*.*" } }
-		);
-
-		if (!path.empty())
+		// ファイルからロードする
+		if (ImGui::Button("Open Model"))
 		{
-			int32_t newID = Engine::Instance().GetAssetManager()->GetModelManager()->GetModelLoader()->LoadModel(path);
-			SelectModel(newID);
-		}
-	}
+			std::string path = FileDialog::OpenFile(
+				Engine::Instance().GetWindowManager()->GetHwnd(),
+				L"Open Model",
+				{ { L"Model Files", L"*.obj;*.gltf;*.fbx" }, { L"All Files", L"*.*" } }
+			);
 
-				const ImGuiStyle& style = ImGui::GetStyle();
-				const float copyButtonWidth = ImGui::CalcTextSize("Copy").x + style.FramePadding.x * 2.0f;
-				const float selectableWidth = std::max(ImGui::GetContentRegionAvail().x - copyButtonWidth - style.ItemSpacing.x, 1.0f);
-	if (ImGui::BeginListBox("##model list"))
-	{
-		for (int32_t i = 0; i < (int32_t)bank_->GetModelList().size(); ++i)
-		{
-			ImGui::PushID(i);
-			ImGui::BeginGroup();
-			if (ImGui::SelectableWithCopy(bank_->GetModelList()[i]->filePath, modelRenderObject_->modelID_ == i))
+			if (!path.empty())
 			{
-				SelectModel(i);
+				int32_t newID = Engine::Instance().GetAssetManager()->GetModelManager()->GetModelLoader()->LoadModel(path);
+				SelectModel(newID);
 			}
-
-			ImGui::EndGroup();
-			ImGui::PopID();
 		}
-		ImGui::EndListBox();
-	}
-	ImGui::SameLine();
 
-
-	// ミニプレビュー表示
-	if (modelRenderObject_->modelID_ != -1 && ImGui::ImageButton("##ss", ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), ImVec2(128, 128)))
-	{
-		fullscreen_ = !fullscreen_;
-	}
-	// DAD処理
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
+		// モデルリスト表示
+		const ImGuiStyle& style = ImGui::GetStyle();
+		const float copyButtonWidth = ImGui::CalcTextSize("Copy").x + style.FramePadding.x * 2.0f;
+		const float selectableWidth = std::max(ImGui::GetContentRegionAvail().x - copyButtonWidth - style.ItemSpacing.x, 1.0f);
+		if (ImGui::BeginListBox("##model list", ImVec2(500, 130)))
 		{
-			IM_ASSERT(payload->DataSize == sizeof(int32_t));
-			textureID = *reinterpret_cast<const int32_t*>(payload->Data);
-		}
-		ImGui::EndDragDropTarget();
-	}
-	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-	{
-		ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
-		ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
-		ImGui::EndDragDropSource();
-	}
+			for (int32_t i = 0; i < (int32_t)bank_->GetModelList().size(); ++i)
+			{
+				ImGui::PushID(i);
+				ImGui::BeginGroup();
+				if (ImGui::SelectableWithCopy(bank_->GetModelList()[i]->filePath, modelRenderObject_->modelID_ == i))
+				{
+					SelectModel(i);
+				}
 
-	ImGui::End();
+				ImGui::EndGroup();
+				ImGui::PopID();
+			}
+			ImGui::EndListBox();
+		}
+		ImGui::SameLine();
+
+		// ミニプレビュー表示
+		if (modelRenderObject_->modelID_ != -1 && ImGui::ImageButton("##ss", ImTextureID(dxManager_->GetRenderTextureManager()->Get(renderTarget_)->colorsrvAlloc.gpu.ptr), ImVec2(128, 128)))
+		{
+			fullscreen_ = !fullscreen_;
+		}
+		// DAD処理
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DAD_TEXTURE_ID"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(int32_t));
+				textureID = *reinterpret_cast<const int32_t*>(payload->Data);
+			}
+			ImGui::EndDragDropTarget();
+		}
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			ImGui::SetDragDropPayload("DAD_MODEL_ID", &modelRenderObject_->modelID_, sizeof(int32_t));
+			ImGui::Text("Model ID %d", modelRenderObject_->modelID_);
+			ImGui::EndDragDropSource();
+		}
+
+		ImGui::EndTabItem();
+	}
 
 	// フルスクリーン表示
 	if (fullscreen_)

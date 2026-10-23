@@ -33,14 +33,19 @@ void Player::Initialize()
 	translate_.velocity = Vector3{ 0.0f, -0.0f, 0.0f };
 	translate_.acceleration = Vector3{ 0.0f, Constexprs::kGravity, 0.0f };
 
-	scale_.value = Vector3{ 0.6f, 0.6f, 0.6f };
-	//scale_.value = Vector3{ 0.1f, 0.1f, 0.1f };
+	float scale = 0.3f;
+	scale_.value = Vector3{ scale, scale, scale };
 	scale_.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 	scale_.acceleration = Vector3{ 0.0f, 0.0f, 0.0f };
 
 	rotate_.value = Vector3{ 0.0f, 0.0f, 0.0f };
 	rotate_.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 	rotate_.acceleration = Vector3{ 0.0f, 0.0f, 0.0f };
+
+	normalSpeed_ = 10.0f * scale_.value.x;
+	dashSpeed_ = 7.0f * scale_.value.x;
+	jumpPower_ = 24.0f * scale_.value.x;
+	stepUpBlockCount_ = 0;
 
 	RegisterToMap();
 
@@ -341,7 +346,7 @@ void Player::UpdateInputWASD(int32_t cameraID)
 void Player::UpdateInputSpace()
 {
 	// ジャンプ処置
-	if (Game::IO::Key::IsJustPressed(VK_SPACE))
+	if (Game::IO::Key::IsHeld(VK_SPACE))
 	{
 		Jump();
 	}

@@ -8,12 +8,29 @@
 #include <externals/MagicEnum/magic_enum.hpp>
 
 
+
+struct PostEffectParameters
+{
+	float exposure = 1.0f;
+	float bloomThreshold = 1.0f;
+	float bloomIntensity = 1.0f;
+	float bloomRadius = 1.0f;
+	float vignetteIntensity = 1.0f;
+	float vignetteSmoothness = 1.0f;
+	float chromaticAberrationIntensity = 1.0f;
+	float colorGradingSaturation = 1.0f;
+	float colorGradingContrast = 1.0f;
+	float colorGradingGain = 1.0f;
+	float colorGradingGamma = 1.0f;
+};
+
+
 // ゲームのフェーズ
 enum class Phase
 {
     Phase_None,
     Phase_Test,
-    Phase_Test2,
+	Phase_ShaderToyTest,
     Phase_Title,
     Phase_GameScene,
     Phase_StageSelect,

@@ -55,6 +55,8 @@ private:
 
 	// 視点カメラID
 	int32_t c_viewCameraID_ = -1;
+	// マウス感度
+	float lookSensitivity_ = 0.003f;
 
 	// 速度関連
 	CounterSec dashBufferTimer_;

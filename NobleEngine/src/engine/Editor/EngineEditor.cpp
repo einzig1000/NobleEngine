@@ -12,6 +12,7 @@
 #include <DrawSystem/DrawSystem.h>
 #include <Camera/CameraManager.h>
 #include <TimeManager/TimeManager.h>
+#include <ImGuiManager/ImGuiManager.h>
 
 EngineEditor::EngineEditor(
 	WindowManager* windowManager,
@@ -48,9 +49,15 @@ void EngineEditor::Draw()
 
 void EngineEditor::DrawImGui()
 {
+	// アセット表示
+	ImGui::Begin("Assets Editor");
+	ImGui::BeginTabBar("AssetsEditor");
 	modelEditor_->DrawImGui();
 	textureEditor_->DrawImGui();
 	audioPreview_->DrawImGui();
 	renderTexturePreview_->DrawImGui();
+	ImGui::EndTabBar();
+	ImGui::End();
+
 	timeEditor_->DrawImGui();
 }

@@ -60,7 +60,7 @@ namespace Game
 			/// </summary>
 			/// <param name="animationID">アニメーションID</param>
 			/// <returns>アニメーションデータ</returns>
-			AnimationData* GetData(int32_t animationID);
+			const AnimationData* GetData(int32_t animationID);
 
 			SkinInstance CreateSkinInstance(int32_t modelID);
 

@@ -41,6 +41,12 @@ bool ICharacter::IsItemMotionFinished() const
 	return false;
 }
 
+Vector3 ICharacter::GetSpawnPosition(int32_t x, int32_t z) const
+{
+	//mapManager_->GetTerrain()->
+	return Vector3{};
+}
+
 void ICharacter::UpdateHaveItem(int32_t cameraID)
 {
 	haveItem_.SetParentWorldMatrix(worldMatrix_);
@@ -66,26 +72,28 @@ void ICharacter::Jump()
 
 void ICharacter::ApplyMove()
 {
-	AABB aabb = aabb_;									// ワールド座標系でのプレイヤーのあたり判定を計算
-	aabb.max = translate_.value + aabb.max;
-	Vector3 aabbMin = aabb.min;
-	aabbMin.y += Constexprs::kBlockSize * 0.5f;			// 足元の判定を少し上げる
-	aabb.min = translate_.value + aabbMin;
+	const float dt = Game::Time::GetScaledDeltaTimeMs() * 0.001f;
+	if (dt <= 0.0f) return;
 
-	const float dt = Game::Time::GetScaledDeltaTimeMs() * 0.001f;	// 秒単位のデルタタイム
+	AABB aabb = aabb_ * scale_.value;	// ワールド座標でのプレイヤーのあたり判定を計算
+	aabb = aabb + translate_.value;
 
 	translate_.velocity += translate_.acceleration * dt;	// 加速度を速度に反映
 	Vector3 movement = translate_.velocity * dt;			// 移動量を計算
-	mapManager_->GetTerrain()->SweepAABB(aabb, movement);	// mapManager_に希望移動量を申請し修正してもらう
-	if (movement.y == 0.0f)isGrounded_ = true;				// 移動後の接地判定
-	else isGrounded_ = false;
+	const float requestedY = movement.y;					// 修正前のY軸移動量
+	const float stepUpHeight = stepUpBlockCount_ * Constexprs::kBlockSize;		// 自動で登れる段差の高さ
+	const float stepDownHeight = stepDownBlockCount_ * Constexprs::kBlockSize;	// 吸着して降りられる段差の高さ
+	mapManager_->GetTerrain()->SweepAABB(aabb, movement, stepUpHeight, stepDownHeight);	// mapManager_に希望移動量を申請し修正してもらう
+	const bool hitY = (movement.y != requestedY);			// 床か天井に当たった(段差を登った・降りたときも含む)
+	isGrounded_ = hitY && requestedY < 0.0f;				// 下へ動こうとして止められた = 接地
 	translate_.value += movement;			// 移動
-	if (isGrounded_ && translate_.velocity.y < -12.0f)
+	if (isGrounded_ && translate_.velocity.y < -fallDamageSpeed_)
 	{
 		TakeDamage(1);
 	}
 
-	translate_.velocity = movement / dt;							// 修正された移動量を速度(distance/sec)に戻す
+	translate_.velocity = movement / dt;	// 移動量を速度に戻す
+	if (hitY) translate_.velocity.y = 0.0f;
 	worldMatrix_ = Matrix4x4::MakeAffineMatrix(scale_.value, rotate_.value, translate_.value);
 }
 
@@ -114,7 +122,7 @@ void ICharacter::SetBlock(BlockID id)
 	//
 	//if (lab.block->blockInfo_.isExtraAction)
 	//{
-	//	uiManager_->ChangeScreen(UIMode::Crafting);
+	//	uiManager_->ChangeScreen(UIScreenType::Crafting);
 	//	// 特殊ブロックの上に置けない
 	//	return;
 	//}

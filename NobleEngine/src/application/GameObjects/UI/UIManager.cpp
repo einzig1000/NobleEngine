@@ -31,13 +31,13 @@ UIManager::UIManager()
 
 
 
-	screens_.resize(static_cast<size_t>(UIMode::MAX));
-	screens_[static_cast<size_t>(UIMode::Playing)] = std::make_unique<PlayingScreen>();
-	screens_[static_cast<size_t>(UIMode::Inventory)] = std::make_unique<InventoryScreen>();
-	screens_[static_cast<size_t>(UIMode::Crafting)] = std::make_unique<CraftScreen>();
-	screens_[static_cast<size_t>(UIMode::Pause)] = std::make_unique<PauseScreen>();
-	screens_[static_cast<size_t>(UIMode::MiningMode)] = std::make_unique<MiningModeScreen>();
-	screens_[static_cast<size_t>(UIMode::EmptyScreen)] = std::make_unique<EmptyScreen>();
+	screens_.resize(static_cast<size_t>(UIScreenType::MAX));
+	screens_[static_cast<size_t>(UIScreenType::Playing)] = std::make_unique<PlayingScreen>();
+	screens_[static_cast<size_t>(UIScreenType::Inventory)] = std::make_unique<InventoryScreen>();
+	screens_[static_cast<size_t>(UIScreenType::Crafting)] = std::make_unique<CraftScreen>();
+	screens_[static_cast<size_t>(UIScreenType::Pause)] = std::make_unique<PauseScreen>();
+	screens_[static_cast<size_t>(UIScreenType::MiningMode)] = std::make_unique<MiningModeScreen>();
+	screens_[static_cast<size_t>(UIScreenType::EmptyScreen)] = std::make_unique<EmptyScreen>();
 
 	for (size_t i = 0; i < screens_.size(); ++i)
 	{
@@ -95,8 +95,8 @@ void UIManager::Update(int32_t cameraID)
 		currentScreen_->Update(cameraID);
 
 		// 画面遷移確認
-		UIMode nextMode = currentScreen_->GetNextUIMode();
-		if (nextMode != UIMode::MAX)
+		UIScreenType nextMode = currentScreen_->GetNextUIMode();
+		if (nextMode != UIScreenType::MAX)
 		{
 			// 新画面生成
 			ChangeScreen(nextMode);
@@ -122,7 +122,7 @@ void UIManager::DrawImGui()
 	}
 }
 
-void UIManager::ChangeScreen(UIMode mode)
+void UIManager::ChangeScreen(UIScreenType mode)
 {
 	currentUIMode_ = static_cast<size_t>(mode);
 	currentScreen_ = screens_[currentUIMode_].get();

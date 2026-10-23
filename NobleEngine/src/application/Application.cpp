@@ -15,7 +15,7 @@ void Application::Initialize()
 	Game::Asset::Font::Load("Assets/application/fonts/DotGothic16/DotGothic16-Regular.ttf");
 	
 	dataManager_ = std::make_unique<DataManager>();
-	editor_ = std::make_unique<Editor>(dataManager_.get());
+	editor_ = std::make_unique<Editor>();
 
 
 	gameManager_ = std::make_unique<GameManager>();

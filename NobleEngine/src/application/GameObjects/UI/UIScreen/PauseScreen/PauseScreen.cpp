@@ -12,7 +12,7 @@ PauseScreen::~PauseScreen()
 
 void PauseScreen::Initialize()
 {
-	nextUIMode_ = UIMode::MAX;
+	nextUIMode_ = UIScreenType::MAX;
 
 	for (const auto& element : uiElements_)
 	{
@@ -24,7 +24,8 @@ void PauseScreen::Initialize()
 	{
 		Event event;
 		event.type = EventType::AbleMoveAllCharacters;
-		event.data = false;
+		//event.data = false;
+		event.data = true;
 		eventBus_->Notify(event);
 	}
 
@@ -41,7 +42,7 @@ void PauseScreen::Update(int32_t cameraID)
 
 	if (Game::IO::Key::IsJustPressed(VK_ESCAPE))
 	{
-		nextUIMode_ = UIMode::Playing;
+		nextUIMode_ = UIScreenType::Playing;
 	}
 }
 

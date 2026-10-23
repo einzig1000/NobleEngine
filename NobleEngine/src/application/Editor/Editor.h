@@ -1,13 +1,13 @@
 #pragma once
 #include "ItemEditor/ItemEditor.h"
-#include <memory>
+#include "UIEditor/UIEditor.h"
 
 class DataManager;
 
 class Editor
 {
 public:
-	Editor(DataManager* dataManager);
+	Editor();
 	~Editor();
 
 	void Update();
@@ -15,6 +15,7 @@ public:
 	void DrawImGui();
 
 private:
-	std::unique_ptr<ItemEditor> itemEditor_;
+	ItemEditor itemEditor_;
+	UIEditor uiEditor_;
 };
 

@@ -74,5 +74,25 @@ namespace App
 				Application::Instance().GetDataManager()->GetItemDataManager()->GetSaver()->Save(id, info);
 			}
 		}
+
+		namespace UI
+		{
+			void Load()
+			{
+				Application::Instance().GetDataManager()->GetUIDataManager()->GetLoader()->Load();
+			}
+			void Load(UIElementType type)
+			{
+				Application::Instance().GetDataManager()->GetUIDataManager()->GetLoader()->Load(type);
+			}
+			void Save(UIElementType type, const std::vector<ElementData>& data)
+			{
+				Application::Instance().GetDataManager()->GetUIDataManager()->GetSaver()->Save(type, data);
+			}
+			const std::vector<ElementData>* Get(UIElementType type)
+			{
+				return Application::Instance().GetDataManager()->GetUIDataManager()->GetBank()->GetData(type);
+			}
+		}
 	}
 }

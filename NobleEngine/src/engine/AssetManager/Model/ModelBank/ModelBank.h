@@ -13,12 +13,12 @@ public:
 	// modelIDからモデルデータを取得
 	const ModelData* GetModelData(int32_t modelID) const;
 	// モデルリストを取得
-	const std::vector<std::unique_ptr<ModelData>>& GetModelList() const { return objects_; }
+	const std::vector<std::unique_ptr<ModelData>>& GetModelList() const { return dataList_; }
 
 private:
-	// キー：テクスチャのファイルパス、値：ID
+	// キー：モデルのファイルパス、値：ID
 	std::unordered_map<std::string, int32_t> pathToIDMap_;
-	// キー：ID、値：テクスチャデータ
-	std::vector<std::unique_ptr<ModelData>> objects_;
+	// キー：ID、値：モデルデータ
+	std::vector<std::unique_ptr<ModelData>> dataList_;
 };
 

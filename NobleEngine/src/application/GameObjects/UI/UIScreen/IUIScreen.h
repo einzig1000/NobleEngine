@@ -21,7 +21,7 @@ public:
 	virtual void DrawImGui() = 0;
 
 
-	virtual UIMode GetNextUIMode() const { return nextUIMode_; }
+	virtual UIScreenType GetNextUIMode() const { return nextUIMode_; }
 
 	virtual void SetEventBus(EventBus* eventBus) { eventBus_ = eventBus; };
 
@@ -35,7 +35,7 @@ public:
 protected:
 	EventBus* eventBus_ = nullptr;
 
-	UIMode nextUIMode_ = UIMode::MAX;
+	UIScreenType nextUIMode_ = UIScreenType::MAX;
 
 	std::vector<UIElementType> elementTypes_;	// この画面で使用するエレメントの種類
 	std::vector<IUIElement*> uiElements_;

@@ -704,6 +704,10 @@ struct AABB
     {
         return AABB{ min + rhs, max + rhs };
 	}
+    AABB operator*(const Vector3& rhs) const
+    {
+        return AABB{ Vector3{min.x * rhs.x, min.y * rhs.y, min.z * rhs.z}, Vector3{max.x * rhs.x, max.y * rhs.y, max.z * rhs.z} };
+    }
 };
 
 // OBB

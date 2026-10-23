@@ -60,7 +60,7 @@ AnimationComputer::~AnimationComputer()
 
 Matrix4x4 AnimationComputer::SampleNodeHierarchy(int32_t animationID, const std::string& nodeName, float& time)
 {
-	AnimationData* animationData = bank_->GetAnimationData(animationID);
+	const AnimationData* animationData = bank_->GetAnimationData(animationID);
 	time = fmod(time, animationData->duration);
 
 	Matrix4x4 result = Matrix4x4::MakeIdentity4x4();
@@ -102,7 +102,7 @@ void AnimationComputer::ComputeAnimationData(int32_t animationID, SkinInstance& 
 {
 	if (skin.boundAnimationID != animationID)
 	{
-		AnimationData* animationData = bank_->GetAnimationData(animationID);
+		const AnimationData* animationData = bank_->GetAnimationData(animationID);
 		BindChannels(skin, *animationData, animationID);
 		skin.boundDuration = animationData->duration;
 	}

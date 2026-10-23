@@ -3,21 +3,22 @@
 
 ScreenDrawer::ScreenDrawer()
 {
-	rt_3D_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "3D");
+	rt_3D_ = Game::Asset::RenderTexture::CreateRenderTexture(Constexprs::kInitialWindowWidth, Constexprs::kInitialWindowHeight, "3D");
 	rt_3D_depth_ = Game::Asset::RenderTexture::GetRenderTextureDepthID("3D");
-	rt_UI_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "UI");
-	rt_Background_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Background");
-	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "Main");
+	rt_UI_ = Game::Asset::RenderTexture::CreateRenderTexture(Constexprs::kInitialWindowWidth, Constexprs::kInitialWindowHeight, "UI");
+	rt_Background_ = Game::Asset::RenderTexture::CreateRenderTexture(Constexprs::kInitialWindowWidth, Constexprs::kInitialWindowHeight, "Background");
+	rt_main_ = Game::Asset::RenderTexture::CreateRenderTexture(Constexprs::kInitialWindowWidth, Constexprs::kInitialWindowHeight, "Main");
 
 	for (int i = 0; i < 6; i++)
 	{
-		rt_PostEffect_.push_back(Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "PostEffect" + std::to_string(i)));
+		rt_PostEffect_.push_back(Game::Asset::RenderTexture::CreateRenderTexture(Constexprs::kInitialWindowWidth, Constexprs::kInitialWindowHeight, "PostEffect" + std::to_string(i)));
 	}
 
 	int32_t m_plane = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 
 
-	texelSize = Vector2(1.0f / Game::Window::GetWidth(), 1.0f / Game::Window::GetHeight());
+
+	texelSize = Vector2(1.0f / Constexprs::kInitialWindowWidth, 1.0f / Constexprs::kInitialWindowHeight);
 
 	draw_3D_Vignette_ = std::make_unique<RenderObject>();
 	draw_3D_Vignette_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";

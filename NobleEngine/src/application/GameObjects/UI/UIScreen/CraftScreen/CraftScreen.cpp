@@ -12,7 +12,7 @@ CraftScreen::~CraftScreen()
 
 void CraftScreen::Initialize()
 {
-	nextUIMode_ = UIMode::MAX;
+	nextUIMode_ = UIScreenType::MAX;
 
 	for (const auto& element : uiElements_)
 	{
@@ -42,7 +42,7 @@ void CraftScreen::Update(int32_t cameraID)
 	if (Game::IO::Key::IsJustPressed(VK_ESCAPE) ||
 		Game::IO::Key::IsJustPressed('E'))
 	{
-		nextUIMode_ = UIMode::Playing;
+		nextUIMode_ = UIScreenType::Playing;
 	}
 }
 

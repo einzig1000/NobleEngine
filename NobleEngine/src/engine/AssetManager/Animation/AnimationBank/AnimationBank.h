@@ -11,12 +11,12 @@ public:
 	// filePathが同じアニメーションデータが存在するか
 	int32_t IsAnimationDataExist(const std::string filePath) const;
 	// animationIDからアニメーションデータを取得
-	AnimationData* GetAnimationData(int32_t animationID);
+	const AnimationData* GetAnimationData(int32_t animationID) const;
 	// アニメーションリストを取得
-	std::vector<std::unique_ptr<AnimationData>>& GetAnimationList() { return objects_; }
+	const std::vector<std::unique_ptr<AnimationData>>& GetAnimationList() const { return dataList_; }
 
 private:
 	std::unordered_map<std::string, int32_t> pathToIDMap_;
-	std::vector<std::unique_ptr<AnimationData>> objects_;
+	std::vector<std::unique_ptr<AnimationData>> dataList_;
 };
 

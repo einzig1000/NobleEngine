@@ -9,7 +9,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #endif
 
 	// ウィンドウ、DirectX初期化
-	Engine::Instance().Initialize(1280, 720, L"MyCraft Builders");
+	Engine::Instance().Initialize(Constexprs::kInitialWindowWidth, Constexprs::kInitialWindowHeight, L"MyCraft Builders");
 	Engine::Instance().BeginFrame();
 	Application::Instance().Initialize();
 	Engine::Instance().EndFrame();

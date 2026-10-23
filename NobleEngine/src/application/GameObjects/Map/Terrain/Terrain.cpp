@@ -20,9 +20,9 @@ namespace
 
 Terrain::Terrain()
 {
-	drawRadius_.x = 9;
+	drawRadius_.x = 8;
 	drawRadius_.y = 2;
-	drawRadius_.z = 9;
+	drawRadius_.z = 8;
 
 #ifdef _DEBUG
 
@@ -37,7 +37,7 @@ Terrain::Terrain()
 	updateRadius_.z = drawRadius_.z;
 
 	// 露出面ページを生成(1 = 48面)
-	facePagePool_ = std::make_unique<FaceDataPagePool>(200000);
+	facePagePool_ = std::make_unique<FaceDataPagePool>(400000);
 
 	SetSeed(123456);
 }
@@ -45,7 +45,12 @@ Terrain::Terrain()
 Terrain::~Terrain() {}
 
 void Terrain::Initialize()
-{}
+{
+	// chunks 全clear
+	chunks.clear();
+	// chunkScheduled_ を clear
+	chunkScheduled_.clear();
+}
 
 void Terrain::Update(int32_t cameraID, Vector3 centerPos)
 {
@@ -102,10 +107,11 @@ void Terrain::Draw(int32_t renderTargetID)
 void Terrain::DrawImGui()
 {
 	ImGui::Begin("Terrain");
-	ImGui::Text("Chunks count : %zu", chunks.size());
-	ImGui::Text("GenerateQueue: %zu", chunkScheduled_.size());
-	ImGui::Text("Draw count : %d", drawCount_);
-	ImGui::DragInt3("Draw Radius", &drawRadius_.x);
+	ImGui::Text("生成済みチャンク数 : %zu", chunks.size());
+	ImGui::Text("生成待ちチャンク数: %zu", chunkScheduled_.size());
+	ImGui::Text("描画中のチャンク数 : %d", drawCount_);
+	ImGui::DragInt3("描画半径", &drawRadius_.x);
+	ImGui::Text("空きページ数 : %d", facePagePool_->GetFreePageCount());
 
 	if (ImGui::Button("Save Map"))
 	{
@@ -127,112 +133,32 @@ void Terrain::DrawImGui()
 		}
 	}
 
+	// 地形生成のパラメータとプレビュー
+	if (ImGui::CollapsingHeader("地形生成"))
+	{
+	}
+
 	ImGui::End();
 }
 
-void Terrain::GenerateChunks(Vector3 pos)
-{
-	centerChunkPos_ = ChunkIndexByPosition(pos);
 
-	// プレイヤー周囲更新
-	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
-	{
-		for (int32_t dy = -drawRadius_.y; dy <= drawRadius_.y; ++dy)
-		{
-			for (int32_t dz = -drawRadius_.z; dz <= drawRadius_.z; ++dz)
-			{
-				if (centerChunkPos_.y + dy < 0 || centerChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
-				{
-					continue;
-				}
-
-				Vector3int chunkPos(centerChunkPos_.x + dx, centerChunkPos_.y + dy, centerChunkPos_.z + dz);
-				Chunk* chunk = GetChunk(chunkPos);
-				if (!chunk)
-				{
-					EnsureChunkScheduled(chunkPos);
-					ProcessChunkGeneration(centerChunkPos_);
-				}
-			}
-		}
-	}
-}
 
 // マップのシード値を設定する
+//void Terrain::SetSeed(uint32_t seed)
+//{
+//	// ノイズパラメータ設定
+//	noiseParam_.seed = seed;			// 俗に言うシード値
+//	noiseParam_.scale = 1200.0f;			// 地形の粗さ（大きくすると緩やか）
+//	noiseParam_.octaves = 8;			// 反復回数 (大きくすると細かい起伏が増える)
+//	noiseParam_.persistence = 0.7f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
+//	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkBlockCountY;		// マップの高さ
+//	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
+//}
 void Terrain::SetSeed(uint32_t seed)
 {
-	// ノイズパラメータ設定
-	noiseParam_.seed = seed;			// 俗に言うシード値
-	noiseParam_.scale = 1200.0f;			// 地形の粗さ（大きくすると緩やか）
-	noiseParam_.octaves = 8;			// 反復回数 (大きくすると細かい起伏が増える)
-	noiseParam_.persistence = 0.7f;		// 各オクターブの振幅減衰 (大きくすると細かい起伏が増える)
-	noiseParam_.height = Constexprs::kChunkStackHeight * Constexprs::kChunkBlockCountY;		// マップの高さ
-	noiseParam_.pn = PerlinNoise(seed);	// PerlinNoise インスタンス生成
+	terrainDataManager_.GetGenerator().SetSeed(seed);
 }
 
-// マップ読込/保存/生成
-void Terrain::LoadNameAndPathMap(const std::string& filePath)
-{
-	std::string csvFilePath = filePath;
-	// CSVファイル存在確認
-	if (std::filesystem::exists(csvFilePath))
-	{
-		std::ifstream file(csvFilePath);
-		// 開けるか確認
-		if (!file.is_open()) return;
-
-		std::string line;
-		std::getline(file, line);
-
-		while (std::getline(file, line))
-		{
-			std::istringstream ss(line);
-			std::string name, path;
-			std::getline(ss, name, ',');
-			std::getline(ss, path, ',');
-			mapNameToFilePath_[name] = path;
-		}
-	}
-}
-void Terrain::SaveNameAndPathMap(const std::string& filePath)
-{
-	std::string csvFilePath = filePath;
-	std::ofstream file(csvFilePath);
-	// 開けるか確認
-	if (!file.is_open()) return;
-	// ヘッダー行
-	file << "MapName,FilePath\n";
-	for (const auto& [name, path] : mapNameToFilePath_)
-	{
-		file << name << "," << path << "\n";
-	}
-}
-void Terrain::CreateNewMap(const std::string& mapName, uint32_t seed)
-{
-	// mapNameToFilePath_ に新規マップ登録
-	mapNameToFilePath_[mapName] = "assets/application/Minecraft/Maps/" + mapName + ".json";
-	currentMapFilePath_ = "assets/application/Minecraft/Maps/" + mapName + ".json";
-}
-void Terrain::LoadMap(const std::string& mapName)
-{
-	// chunks 全clear
-	chunks.clear();
-	// chunkScheduled_ を clear
-	chunkScheduled_.clear();
-
-	// マップネーム保存
-	currentMapName_ = mapName;
-	// mapNameからファイルパスを取得
-	currentMapFilePath_ = mapNameToFilePath_[currentMapName_];
-}
-void Terrain::SaveMap()
-{
-	//JsonManager json;
-	// JSONへ保存
-	//json.SaveToJson(*this, currentMapFilePath_);
-
-	SaveNameAndPathMap("assets/application/Minecraft/Maps/MapNameAndPath.csv");
-}
 
 // チャンク取得/生成
 Chunk* Terrain::GetChunk(const Vector3int& chunkPos) const
@@ -269,7 +195,7 @@ void Terrain::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 		chunkScheduled_.erase(pos);
 
 		// 新規生成
-		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(noiseParam_, pos, facePagePool_.get());
+		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(terrainDataManager_.GetGenerator(), pos, facePagePool_.get());
 
 		// 隣接チャンク設定
 		static constexpr Vector3int dirOffsets[6] =
@@ -318,6 +244,33 @@ void Terrain::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 
 		// チャンク登録
 		chunks[pos] = std::move(chunk);
+	}
+}
+void Terrain::GenerateChunks(Vector3 pos)
+{
+	centerChunkPos_ = ChunkIndexByPosition(pos);
+
+	// プレイヤー周囲更新
+	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
+	{
+		for (int32_t dy = -drawRadius_.y; dy <= drawRadius_.y; ++dy)
+		{
+			for (int32_t dz = -drawRadius_.z; dz <= drawRadius_.z; ++dz)
+			{
+				if (centerChunkPos_.y + dy < 0 || centerChunkPos_.y + dy >= Constexprs::kChunkStackHeight)
+				{
+					continue;
+				}
+
+				Vector3int chunkPos(centerChunkPos_.x + dx, centerChunkPos_.y + dy, centerChunkPos_.z + dz);
+				Chunk* chunk = GetChunk(chunkPos);
+				if (!chunk)
+				{
+					EnsureChunkScheduled(chunkPos);
+					ProcessChunkGeneration(centerChunkPos_);
+				}
+			}
+		}
 	}
 }
 
@@ -605,128 +558,258 @@ Vector3int Terrain::BlockIndexByPosition(const Vector3& position) const
 }
 
 // AABBとブロックの衝突判定
-void Terrain::SweepAABB(const AABB& aabb, Vector3& movement)
+//void Terrain::SweepAABB(const AABB& aabb, Vector3& movement)
+//{
+//	// 何層分判定するか
+//	Vector3int layerCount = Vector3int(
+//		static_cast<int32_t>(std::ceil(std::abs(movement.x) / Constexprs::kBlockSize)),
+//		static_cast<int32_t>(std::ceil(std::abs(movement.y) / Constexprs::kBlockSize)),
+//		static_cast<int32_t>(std::ceil(std::abs(movement.z) / Constexprs::kBlockSize))
+//	);
+//
+//	AABB movedAABB = aabb;// +movement;
+//
+//	Vector3int ableToMove = Vector3int(0, 0, 0);
+//
+//	if (movement.x > 0) ableToMove.x = SweepAABB(movedAABB, AABBFace::XPlus, layerCount.x);
+//	else if (movement.x < 0) ableToMove.x = SweepAABB(movedAABB, AABBFace::XMinus, layerCount.x);
+//
+//	if (movement.y > 0) ableToMove.y = SweepAABB(movedAABB, AABBFace::YPlus, layerCount.y);
+//	else if (movement.y < 0) ableToMove.y = SweepAABB(movedAABB, AABBFace::YMinus, layerCount.y);
+//
+//	if (movement.z > 0) ableToMove.z = SweepAABB(movedAABB, AABBFace::ZPlus, layerCount.z);
+//	else if (movement.z < 0) ableToMove.z = SweepAABB(movedAABB, AABBFace::ZMinus, layerCount.z);
+//
+//
+//	// movement.x == nの時→nブロック分進んでも衝突はしない
+//	Vector3 wallDist = Vector3(ableToMove.x * Constexprs::kBlockSize, ableToMove.y * Constexprs::kBlockSize, ableToMove.z * Constexprs::kBlockSize);
+//	movement.x = (movement.x > 0) ? std::min(movement.x, wallDist.x) : std::max(movement.x, -wallDist.x);
+//	movement.y = (movement.y > 0) ? std::min(movement.y, wallDist.y) : std::max(movement.y, -wallDist.y);
+//	movement.z = (movement.z > 0) ? std::min(movement.z, wallDist.z) : std::max(movement.z, -wallDist.z);
+//}
+//int32_t Terrain::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount) const
+//{
+//	// AABBのサイズから各軸のブロック数を算出
+//	int32_t countX = std::max(1, static_cast<int32_t>((aabb.max.x - aabb.min.x) / Constexprs::kBlockSize));
+//	int32_t countY = std::max(1, static_cast<int32_t>((aabb.max.y - aabb.min.y) / Constexprs::kBlockSize));
+//	int32_t countZ = std::max(1, static_cast<int32_t>((aabb.max.z - aabb.min.z) / Constexprs::kBlockSize));
+//
+//	Vector3 basePos;
+//	Vector3 uDir, vDir, depthDir;
+//	int32_t countU = 0;
+//	int32_t countV = 0;
+//
+//	// 指定された面に応じて基準位置と走査する方向ベクトルを決定
+//	switch (face)
+//	{
+//	case AABBFace::XPlus:
+//		basePos = Vector3(aabb.max.x, aabb.min.y, aabb.min.z);
+//		uDir = Vector3(0, 1, 0); countU = countY; // Y軸方向へ走査
+//		vDir = Vector3(0, 0, 1); countV = countZ; // Z軸方向へ走査
+//		depthDir = Vector3(1, 0, 0);              // X軸正方向へ深さを測る
+//		break;
+//
+//	case AABBFace::XMinus:
+//		basePos = Vector3(aabb.min.x, aabb.min.y, aabb.min.z);
+//		uDir = Vector3(0, 1, 0); countU = countY; // Y軸方向へ走査
+//		vDir = Vector3(0, 0, 1); countV = countZ; // Z軸方向へ走査
+//		depthDir = Vector3(-1, 0, 0);             // X軸負方向へ深さを測る
+//		break;
+//
+//	case AABBFace::YPlus:
+//		basePos = Vector3(aabb.min.x, aabb.max.y, aabb.min.z);
+//		uDir = Vector3(1, 0, 0); countU = countX; // X軸方向へ走査
+//		vDir = Vector3(0, 0, 1); countV = countZ; // Z軸方向へ走査
+//		depthDir = Vector3(0, 1, 0);              // Y軸正方向へ深さを測る
+//		break;
+//
+//	case AABBFace::YMinus:
+//		basePos = Vector3(aabb.min.x, aabb.min.y, aabb.min.z);
+//		uDir = Vector3(1, 0, 0); countU = countX; // X軸方向へ走査
+//		vDir = Vector3(0, 0, 1); countV = countZ; // Z軸方向へ走査
+//		depthDir = Vector3(0, -1, 0);             // Y軸負方向へ深さを測る
+//		break;
+//
+//	case AABBFace::ZPlus:
+//		basePos = Vector3(aabb.min.x, aabb.min.y, aabb.max.z);
+//		uDir = Vector3(1, 0, 0); countU = countX; // X軸方向へ走査
+//		vDir = Vector3(0, 1, 0); countV = countY; // Y軸方向へ走査
+//		depthDir = Vector3(0, 0, 1);              // Z軸正方向へ深さを測る
+//		break;
+//
+//	case AABBFace::ZMinus:
+//		basePos = Vector3(aabb.min.x, aabb.min.y, aabb.min.z);
+//		uDir = Vector3(1, 0, 0); countU = countX; // X軸方向へ走査
+//		vDir = Vector3(0, 1, 0); countV = countY; // Y軸方向へ走査
+//		depthDir = Vector3(0, 0, -1);             // Z軸負方向へ深さを測る
+//		break;
+//	}
+//
+//	// 決定された軸とブロック数に従って走査
+//	for (int32_t d = 0; d < layerCount; ++d)
+//	{
+//		for (int32_t u = 0; u < countU; ++u)
+//		{
+//			for (int32_t v = 0; v < countV; ++v)
+//			{
+//				// 基準位置から現在の走査距離を加算してチェック座標を算出
+//				Vector3 checkPos = basePos
+//					+ uDir * (u * Constexprs::kBlockSize)
+//					+ vDir * (v * Constexprs::kBlockSize)
+//					+ depthDir * (d * Constexprs::kBlockSize);
+//
+//				// チャンク座標とローカル座標を取得
+//				Vector3int chunkIndex = ChunkIndexByPosition(checkPos);
+//				Vector3int localIndex = BlockIndexByPosition(checkPos);
+//
+//				// チャンクを取得
+//				Chunk* chunk = GetChunk(chunkIndex);
+//				if (!chunk) continue;
+//
+//				// ブロックを取得
+//				BlockID* blockID = chunk->GetBlockID(localIndex);
+//				if (!blockID) continue;
+//
+//				// 衝突判定
+//				if (*blockID != BlockID::Air)
+//				{
+//					return d;
+//				}
+//			}
+//		}
+//	}
+//
+//	return layerCount;
+//}
+
+// AABBとブロックの衝突判定
+void Terrain::SweepAABB(const AABB& aabb, Vector3& movement, float stepUpHeight, float stepDownHeight)
 {
-	// 何層分判定するか
-	Vector3int layerCount = Vector3int(
-		static_cast<int32_t>(std::ceil(std::abs(movement.x) / Constexprs::kBlockSize)),
-		static_cast<int32_t>(std::ceil(std::abs(movement.y) / Constexprs::kBlockSize)),
-		static_cast<int32_t>(std::ceil(std::abs(movement.z) / Constexprs::kBlockSize))
-	);
+	const Vector3 request = movement;	// 申請された移動量
 
-	AABB movedAABB = aabb;// +movement;
+	// 先にYを解決して床の上に立たせる
+	AABB moved = aabb;
+	movement.y = SweepAxis(moved, 1, request.y);
+	moved.Move(Vector3(0.0f, movement.y, 0.0f));
+	const bool isGrounded = (request.y < 0.0f && movement.y > request.y);	// 下へ動こうとして止められた = 接地
+	const AABB groundedBox = moved;											// 横に動く前の箱を保存
 
-	Vector3int ableToMove = Vector3int(0, 0, 0);
+	movement.x = SweepAxis(moved, 0, request.x);
+	moved.Move(Vector3(movement.x, 0.0f, 0.0f));
+	movement.z = SweepAxis(moved, 2, request.z);
+	moved.Move(Vector3(0.0f, 0.0f, movement.z));
 
-	if (movement.x > 0) ableToMove.x = SweepAABB(movedAABB, AABBFace::XPlus, layerCount.x);
-	else if (movement.x < 0) ableToMove.x = SweepAABB(movedAABB, AABBFace::XMinus, layerCount.x);
+	// 接地していなければreturn
+	if (!isGrounded) return;
 
-	if (movement.y > 0) ableToMove.y = SweepAABB(movedAABB, AABBFace::YPlus, layerCount.y);
-	else if (movement.y < 0) ableToMove.y = SweepAABB(movedAABB, AABBFace::YMinus, layerCount.y);
-
-	if (movement.z > 0) ableToMove.z = SweepAABB(movedAABB, AABBFace::ZPlus, layerCount.z);
-	else if (movement.z < 0) ableToMove.z = SweepAABB(movedAABB, AABBFace::ZMinus, layerCount.z);
-
-
-	// movement.x == nの時→nブロック分進んでも衝突はしない
-	Vector3 wallDist = Vector3(ableToMove.x * Constexprs::kBlockSize, ableToMove.y * Constexprs::kBlockSize, ableToMove.z * Constexprs::kBlockSize);
-	movement.x = (movement.x > 0) ? std::min(movement.x, wallDist.x) : std::max(movement.x, -wallDist.x);
-	movement.y = (movement.y > 0) ? std::min(movement.y, wallDist.y) : std::max(movement.y, -wallDist.y);
-	movement.z = (movement.z > 0) ? std::min(movement.z, wallDist.z) : std::max(movement.z, -wallDist.z);
-}
-int32_t Terrain::SweepAABB(const AABB& aabb, AABBFace face, int32_t layerCount) const
-{
-	// AABBのサイズから各軸のブロック数を算出
-	int32_t countX = std::max(1, static_cast<int32_t>((aabb.max.x - aabb.min.x) / Constexprs::kBlockSize));
-	int32_t countY = std::max(1, static_cast<int32_t>((aabb.max.y - aabb.min.y) / Constexprs::kBlockSize));
-	int32_t countZ = std::max(1, static_cast<int32_t>((aabb.max.z - aabb.min.z) / Constexprs::kBlockSize));
-
-	Vector3 basePos;
-	Vector3 uDir, vDir, depthDir;
-	int32_t countU = 0;
-	int32_t countV = 0;
-
-	// 指定された面に応じて基準位置と走査する方向ベクトルを決定
-	switch (face)
+	// 段差を登る: 横のどちらかが止められたら、持ち上げてから同じ横移動をやり直す
+	const bool isBlocked = (movement.x != request.x || movement.z != request.z);
+	if (stepUpHeight > 0.0f && isBlocked)
 	{
-	case AABBFace::XPlus:
-		basePos = Vector3(aabb.max.x, aabb.min.y, aabb.min.z);
-		uDir = Vector3(0, 1, 0); countU = countY; // Y軸方向へ走査
-		vDir = Vector3(0, 0, 1); countV = countZ; // Z軸方向へ走査
-		depthDir = Vector3(1, 0, 0);              // X軸正方向へ深さを測る
-		break;
+		AABB stepped = groundedBox;
+		const float up = SweepAxis(stepped, 1, stepUpHeight);// 頭上にブロックがあればそこまでしか上がらない
+		stepped.Move(Vector3(0.0f, up, 0.0f));
+		const float stepX = SweepAxis(stepped, 0, request.x);
+		stepped.Move(Vector3(stepX, 0.0f, 0.0f));
+		const float stepZ = SweepAxis(stepped, 2, request.z);
+		stepped.Move(Vector3(0.0f, 0.0f, stepZ));
+		const float down = SweepAxis(stepped, 1, -up);// 段差の上に降ろす
 
-	case AABBFace::XMinus:
-		basePos = Vector3(aabb.min.x, aabb.min.y, aabb.min.z);
-		uDir = Vector3(0, 1, 0); countU = countY; // Y軸方向へ走査
-		vDir = Vector3(0, 0, 1); countV = countZ; // Z軸方向へ走査
-		depthDir = Vector3(-1, 0, 0);             // X軸負方向へ深さを測る
-		break;
-
-	case AABBFace::YPlus:
-		basePos = Vector3(aabb.min.x, aabb.max.y, aabb.min.z);
-		uDir = Vector3(1, 0, 0); countU = countX; // X軸方向へ走査
-		vDir = Vector3(0, 0, 1); countV = countZ; // Z軸方向へ走査
-		depthDir = Vector3(0, 1, 0);              // Y軸正方向へ深さを測る
-		break;
-
-	case AABBFace::YMinus:
-		basePos = Vector3(aabb.min.x, aabb.min.y, aabb.min.z);
-		uDir = Vector3(1, 0, 0); countU = countX; // X軸方向へ走査
-		vDir = Vector3(0, 0, 1); countV = countZ; // Z軸方向へ走査
-		depthDir = Vector3(0, -1, 0);             // Y軸負方向へ深さを測る
-		break;
-
-	case AABBFace::ZPlus:
-		basePos = Vector3(aabb.min.x, aabb.min.y, aabb.max.z);
-		uDir = Vector3(1, 0, 0); countU = countX; // X軸方向へ走査
-		vDir = Vector3(0, 1, 0); countV = countY; // Y軸方向へ走査
-		depthDir = Vector3(0, 0, 1);              // Z軸正方向へ深さを測る
-		break;
-
-	case AABBFace::ZMinus:
-		basePos = Vector3(aabb.min.x, aabb.min.y, aabb.min.z);
-		uDir = Vector3(1, 0, 0); countU = countX; // X軸方向へ走査
-		vDir = Vector3(0, 1, 0); countV = countY; // Y軸方向へ走査
-		depthDir = Vector3(0, 0, -1);             // Z軸負方向へ深さを測る
-		break;
-	}
-
-	// 決定された軸とブロック数に従って走査
-	for (int32_t d = 0; d < layerCount; ++d)
-	{
-		for (int32_t u = 0; u < countU; ++u)
+		// 持ち上げた方が横に遠くまで進めたときだけ採用
+		if (stepX * stepX + stepZ * stepZ > movement.x * movement.x + movement.z * movement.z)
 		{
-			for (int32_t v = 0; v < countV; ++v)
-			{
-				// 基準位置から現在の走査距離を加算してチェック座標を算出
-				Vector3 checkPos = basePos
-					+ uDir * (u * Constexprs::kBlockSize)
-					+ vDir * (v * Constexprs::kBlockSize)
-					+ depthDir * (d * Constexprs::kBlockSize);
-
-				// チャンク座標とローカル座標を取得
-				Vector3int chunkIndex = ChunkIndexByPosition(checkPos);
-				Vector3int localIndex = BlockIndexByPosition(checkPos);
-
-				// チャンクを取得
-				Chunk* chunk = GetChunk(chunkIndex);
-				if (!chunk) continue;
-
-				// ブロックを取得
-				BlockID* blockID = chunk->GetBlockID(localIndex);
-				if (!blockID) continue;
-
-				// 衝突判定
-				if (*blockID != BlockID::Air)
-				{
-					return d;
-				}
-			}
+			movement.x = stepX;
+			movement.z = stepZ;
+			movement.y += up + down;
+			return;
 		}
 	}
 
-	return layerCount;
+	//// 段差を降りる: 足元が空いても、stepDownHeight以内に床があれば吸着させる
+	//if (stepDownHeight > 0.0f)
+	//{
+	//	const float probe = -(stepDownHeight + Constexprs::kBlockSize * 0.5f);	// 床の上面がちょうど探す距離の端にあっても拾えるよう半ブロック余分に探す
+	//	const float down = SweepAxis(moved, 1, probe);
+	//	if (down != probe) movement.y += down;	// 床が見つかったときだけ(見つからなければ普通に落ちる)
+	//}
+}
+float Terrain::SweepAxis(const AABB& aabb, int32_t axis, float move) const
+{
+	// 面がブロック境界にぴったり接しているだけのブロックを「重なっている」と数えないための幅
+	constexpr float kSkin = 0.001f;
+
+	auto ToIndex = [](float value) { return static_cast<int32_t>(std::floor(value / Constexprs::kBlockSize)); };
+
+	const float minPos[3] = { aabb.min.x, aabb.min.y, aabb.min.z };
+	const float maxPos[3] = { aabb.max.x, aabb.max.y, aabb.max.z };
+
+	// 移動方向に調べる層の範囲(今の面の1つ先の層 ～ 移動後の面がある層)
+	int32_t first = 0;
+	int32_t last = 0;
+	int32_t step = 0;
+	if (move > 0.0f)
+	{
+		first = ToIndex(maxPos[axis] - kSkin) + 1;
+		last = ToIndex(maxPos[axis] + move);
+		step = 1;
+	}
+	else if (move < 0.0f)
+	{
+		first = ToIndex(minPos[axis] + kSkin) - 1;
+		last = ToIndex(minPos[axis] + move);
+		step = -1;
+	}
+	else
+	{
+		return 0.0f;	// 移動なし(NaNもここに来る)
+	}
+
+	// 移動方向以外の2軸で、AABBが重なっているブロックの範囲
+	const int32_t u = (axis + 1) % 3;
+	const int32_t v = (axis + 2) % 3;
+	const int32_t uBegin = ToIndex(minPos[u] + kSkin);
+	const int32_t uEnd = ToIndex(maxPos[u] - kSkin);
+	const int32_t vBegin = ToIndex(minPos[v] + kSkin);
+	const int32_t vEnd = ToIndex(maxPos[v] - kSkin);
+
+	// 近い層から順に調べ、ブロックが見つかったらその面の手前で止める
+	const int32_t layerCount = (last - first) * step + 1;
+	for (int32_t n = 0; n < layerCount; ++n)
+	{
+		int32_t index[3] = {};
+		index[axis] = first + n * step;
+
+		for (int32_t a = uBegin; a <= uEnd; ++a)
+		{
+			for (int32_t b = vBegin; b <= vEnd; ++b)
+			{
+				index[u] = a;
+				index[v] = b;
+				if (!IsSolidBlock(index[0], index[1], index[2])) continue;
+
+				if (move > 0.0f) return std::max(0.0f, index[axis] * Constexprs::kBlockSize - maxPos[axis]);
+				else return std::min(0.0f, (index[axis] + 1) * Constexprs::kBlockSize - minPos[axis]);
+			}
+		}
+	}
+	return move;
+}
+bool Terrain::IsSolidBlock(int32_t x, int32_t y, int32_t z) const
+{
+	const Vector3int chunkIndex = Vector3int(
+		static_cast<int32_t>(std::floor(static_cast<float>(x) / Constexprs::kChunkBlockCountX)),
+		static_cast<int32_t>(std::floor(static_cast<float>(y) / Constexprs::kChunkBlockCountY)),
+		static_cast<int32_t>(std::floor(static_cast<float>(z) / Constexprs::kChunkBlockCountZ)));
+
+	Chunk* chunk = GetChunk(chunkIndex);
+	if (!chunk) return false;
+
+	const Vector3int localIndex = Vector3int(
+		LocalMod(x, Constexprs::kChunkBlockCountX),
+		LocalMod(y, Constexprs::kChunkBlockCountY),
+		LocalMod(z, Constexprs::kChunkBlockCountZ));
+
+	return *chunk->GetBlockID(localIndex) != BlockID::Air;
 }
 
 // AABBとマップ上のキャラの衝突判定(いずれSweepAABB形式に変えるか統合する)

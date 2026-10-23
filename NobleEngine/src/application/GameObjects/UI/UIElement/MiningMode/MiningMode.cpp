@@ -1,33 +1,17 @@
 #include "MiningMode.h"
 #include <System/EventBus/EventBus.h>
+#include <EngineDefinition/EngineConstexprs.h>
+#include <cmath>
+
+namespace
+{
+	// 選ばれている側のアイコンを揺らす大きさ(ラジアン)
+	constexpr float kWobbleAngle = 0.2f;
+}
 
 MiningMode::MiningMode()
 {
-	Vector2 windowSize = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
-
-	// sprites_[0] : 採掘モードアイコン１
-	sprites_.emplace_back(ElementData{});
-	sprites_[0].render = std::make_unique<RenderObject>();
-	sprites_[0].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
-	sprites_[0].render->SetupFromShaders();
-	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/texture/UI/MiningMode/mode1.png");
-	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
-	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) / 2.0f, float(textureData->metadata.height) / -2.0f, 1.0f);
-	sprites_[0].transforms.translate = Vector3(windowSize.x * 0.3f, windowSize.y * 0.5f, 1.0f);
-
-	// sprites_[1] : 採掘モードアイコン２
-	sprites_.emplace_back(ElementData{});
-	sprites_[1].render = std::make_unique<RenderObject>();
-	sprites_[1].render->psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
-	sprites_[1].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	sprites_[1].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
-	sprites_[1].render->SetupFromShaders();
-	sprites_[1].textureID = Game::Asset::Texture::Load("assets/application/texture/UI/MiningMode/mode2.png");
-	const TextureData* textureData2 = Game::Asset::Texture::GetData(sprites_[1].textureID);
-	sprites_[1].transforms.scale = Vector3(float(textureData2->metadata.width) / 2.0f, float(textureData2->metadata.height) / -2.0f, 1.0f);
-	sprites_[1].transforms.translate = Vector3(windowSize.x * 0.7f, windowSize.y * 0.5f, 1.0f);
+	BuildLayout();
 }
 
 MiningMode::~MiningMode()
@@ -40,69 +24,75 @@ void MiningMode::Update(int32_t cameraID)
 {
 	orthographic_ = Game::Camera::Getter::GetOrthoProjectionMatrix(cameraID);
 
+	// マウスが画面の左半分ならSwing、右半分ならRange
+	const Vector2 mouse = GetMouseUIPosition();
+	const bool leftKey = mouse.x < static_cast<float>(Constexprs::kInitialWindowWidth) * 0.5f;
 
-	float rotateZ = 0.0f;
-	float elapsedTime = Game::Time::GetElapsedSecTime();
-	rotateZ = std::sinf(elapsedTime) * 0.2f;
-
-	Vector2 mousePos = Game::IO::Mouse::Get2DPosition();
-	bool leftKey = mousePos.x < static_cast<float>(Game::Window::GetWidth()) / 2.0f;
-
-	if (leftKey)
+	// 選ばれている側のアイコンを揺らす
+	const float wobble = std::sinf(Game::Time::GetElapsedSecTime()) * kWobbleAngle;
+	if (ElementInstanceData* swing = GetPart(Part::Swing))
 	{
-		sprites_[0].transforms.rotate.z = rotateZ;
-		sprites_[1].transforms.rotate.z = 0.0f;
+		swing->data.rotate.z = baseRotateZ_[static_cast<size_t>(Part::Swing)] + (leftKey ? wobble : 0.0f);
 	}
-	else
+	if (ElementInstanceData* range = GetPart(Part::Range))
 	{
-		sprites_[0].transforms.rotate.z = 0.0f;
-		sprites_[1].transforms.rotate.z = rotateZ;
+		range->data.rotate.z = baseRotateZ_[static_cast<size_t>(Part::Range)] + (leftKey ? 0.0f : wobble);
 	}
 
+	// クリックで決定
 	if (Game::IO::Mouse::IsJustPressed(0))
 	{
-		Event event;
-		event.type = EventType::MiningModeChanged;
-		MiningPattern pattern = leftKey ? MiningPattern::Swing : MiningPattern::Range;
-		event.data = pattern;
-
-		if (leftKey)
+		if (eventBus_)
 		{
-			eventBus_->Notify(event);
-		}
-		else
-		{
+			Event event;
+			event.type = EventType::MiningModeChanged;
+			MiningPattern pattern = leftKey ? MiningPattern::Swing : MiningPattern::Range;
+			event.data = pattern;
 			eventBus_->Notify(event);
 		}
 
-		*nextUIMode_ = UIMode::Playing;
+		if (nextUIMode_)
+		{
+			*nextUIMode_ = UIScreenType::Playing;
+		}
 	}
+
+	// 静的スプライトの更新
+	UpdateStaticRenderObject(orthographic_);
 }
 
 void MiningMode::Draw(int32_t rt_ID)
 {
-	for (const auto& sprite : sprites_)
-	{
-		Matrix4x4 worldMatrix_ = Matrix4x4::MakeAffineMatrix(sprite.transforms.scale, sprite.transforms.rotate, sprite.transforms.translate);
-		Matrix4x4 wvpMatrix_ = worldMatrix_ * orthographic_;
-		Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	// 静的スプライトの描画
+	DrawStaticRenderObject(rt_ID);
 
-		sprite.render->SetBRegisterData(0, ShaderType::VertexShader, &wvpMatrix_);
-		sprite.render->SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix_);
-		sprite.render->SetBRegisterData(0, ShaderType::PixelShader, &color);
-		sprite.render->SetBRegisterData(1, ShaderType::PixelShader, &sprite.textureID);
-		sprite.render->Draw(rt_ID);
-	}
 }
 
 void MiningMode::DrawImGui()
 {
 	ImGui::Begin("MiningMode");
-	ImGui::DragFloat3("Position1", &sprites_[0].transforms.translate.x);
-	ImGui::DragFloat3("Scale1", &sprites_[0].transforms.scale.x);
-	ImGui::DragFloat3("rotate1", &sprites_[0].transforms.rotate.x);
-	ImGui::DragFloat3("Position2", &sprites_[1].transforms.translate.x);
-	ImGui::DragFloat3("Scale2", &sprites_[1].transforms.scale.x);
-	ImGui::DragFloat3("rotate2", &sprites_[1].transforms.rotate.x);
+	// UIEditorで保存したあとなどに、データを読み直す
+	if (ImGui::Button("UIデータを読み直す"))
+	{
+		BuildLayout();
+	}
 	ImGui::End();
+}
+
+void MiningMode::BuildLayout()
+{
+	BuildSprites(UIElementType::MiningMode);
+	parts_ = FindParts<Part>();
+
+	// Jsonの回転を覚えておく
+	for (Part part : magic_enum::enum_values<Part>())
+	{
+		const ElementInstanceData* sprite = GetPart(part);
+		baseRotateZ_[static_cast<size_t>(part)] = sprite ? sprite->data.rotate.z : 0.0f;
+	}
+}
+
+ElementInstanceData* MiningMode::GetPart(Part part, int32_t labelIndex)
+{
+	return GetSprite(parts_[static_cast<size_t>(part)], labelIndex);
 }

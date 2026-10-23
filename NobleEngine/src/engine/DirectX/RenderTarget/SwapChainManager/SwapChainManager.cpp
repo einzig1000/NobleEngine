@@ -2,9 +2,12 @@
 #include <Utilities/Logger/Logger.h>
 #include <Window/WindowManager.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
-#include "DirectX/DescriptorHeapManager/DescriptorHeapManager.h"
+#include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
 #include <Windows.h> 
 #include <cassert>
+#include <Utilities/Logger/Logger.h>
+#include <Window/WindowManager.h>
+#include <Engine.h>
 
 SwapChainManager::SwapChainManager(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd, DescriptorHeapManager* descriptorHeapManager)
 	: device_(device), descriptorHeapManager_(descriptorHeapManager)
@@ -27,29 +30,14 @@ SwapChainManager::~SwapChainManager()
 	Log("デストラクタ実行成功 : SwapChainManager");
 }
 
-RenderTarget* SwapChainManager::GetCurrentRenderTarget() const
-{
-	RenderTarget* rt = renderTargets_[backBufferIndex_].get();
-	rt->colorResource = swapChainResources_[backBufferIndex_];
-	rt->depthResource = depthStencilResource_;
-	rt->rtvAlloc = rtvAllocations_[backBufferIndex_];
-	rt->dsvAlloc = dsvAllocation_;
-	rt->width = swapChainDesc_.Width;
-	rt->height = swapChainDesc_.Height;
-	rt->format = swapChainDesc_.Format;
-	rt->viewport = { 0.0f, 0.0f, static_cast<float>(swapChainDesc_.Width), static_cast<float>(swapChainDesc_.Height), 0.0f, 1.0f };
-	rt->scissorRect = { 0, 0, static_cast<LONG>(swapChainDesc_.Width), static_cast<LONG>(swapChainDesc_.Height) };
-	return rt;
-}
-
 void SwapChainManager::InitializeSwapChainInternal(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd)
 {
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
     HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
     assert(SUCCEEDED(hr));
 
-    swapChainDesc_.Width = UINT(WindowManager::winWidth_);
-    swapChainDesc_.Height = UINT(WindowManager::winHeight_);
+    swapChainDesc_.Width = UINT(Engine::Instance().GetWindowManager()->GetWindowWidth());
+    swapChainDesc_.Height = UINT(Engine::Instance().GetWindowManager()->GetWindowHeight());
     swapChainDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     //swapChainDesc_.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     swapChainDesc_.SampleDesc.Count = 1;
@@ -90,7 +78,7 @@ void SwapChainManager::InitializeRenderTargetView(ID3D12Device2* device)
 
 void SwapChainManager::InitializeDepthStencilView(ID3D12Device2* device)
 {
-    depthStencilResource_ = Dx12ResourceFactory::CreateDepthStencilResource(device, UINT(WindowManager::winWidth_), UINT(WindowManager::winHeight_));
+    depthStencilResource_ = Dx12ResourceFactory::CreateDepthStencilResource(device, UINT(Engine::Instance().GetWindowManager()->GetWindowWidth()), UINT(Engine::Instance().GetWindowManager()->GetWindowHeight()));
 
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
     dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -99,8 +87,28 @@ void SwapChainManager::InitializeDepthStencilView(ID3D12Device2* device)
 
     if (dsvAllocation_.index == UINT32_MAX)
     {
-		dsvAllocation_ = descriptorHeapManager_->GetDSVManager()->CreateDSV(depthStencilResource_.Get(), &dsvDesc);
+        dsvAllocation_ = descriptorHeapManager_->GetDSVManager()->CreateDSV(depthStencilResource_.Get(), &dsvDesc);
     }
+    else
+    {
+        // リサイズ時：スロットはそのままで、新しい深度バッファを指すように作り直す
+        device->CreateDepthStencilView(depthStencilResource_.Get(), &dsvDesc, dsvAllocation_.handle);
+    }
+}
+
+RenderTarget* SwapChainManager::GetCurrentRenderTarget() const
+{
+    RenderTarget* rt = renderTargets_[backBufferIndex_].get();
+    rt->colorResource = swapChainResources_[backBufferIndex_];
+    rt->depthResource = depthStencilResource_;
+    rt->rtvAlloc = rtvAllocations_[backBufferIndex_];
+    rt->dsvAlloc = dsvAllocation_;
+    rt->width = swapChainDesc_.Width;
+    rt->height = swapChainDesc_.Height;
+    rt->format = swapChainDesc_.Format;
+    rt->viewport = { 0.0f, 0.0f, static_cast<float>(swapChainDesc_.Width), static_cast<float>(swapChainDesc_.Height), 0.0f, 1.0f };
+    rt->scissorRect = { 0, 0, static_cast<LONG>(swapChainDesc_.Width), static_cast<LONG>(swapChainDesc_.Height) };
+    return rt;
 }
 
 void SwapChainManager::Present()
@@ -125,7 +133,7 @@ void SwapChainManager::UpdateBackBufferIndex()
 
 void SwapChainManager::Resize(ID3D12Device2* device, ID3D12CommandQueue* commandQueue)
 {
-    if (WindowManager::winWidth_ == 0 || WindowManager::winHeight_ == 0) return;
+    if (Engine::Instance().GetWindowManager()->GetWindowWidth() == 0 || Engine::Instance().GetWindowManager()->GetWindowHeight() == 0) return;
 
     // 全GPU作業の完了待ち
     Microsoft::WRL::ComPtr<ID3D12Fence> fence;
@@ -141,21 +149,28 @@ void SwapChainManager::Resize(ID3D12Device2* device, ID3D12CommandQueue* command
     WaitForSingleObject(evt, INFINITE);
     CloseHandle(evt);
 
-    // バックバッファの参照を解放
-    swapChainResources_[0].Reset();
-    swapChainResources_[1].Reset();
+    // バッファの参照を解放
+    for (size_t i = 0; i < 2; ++i)
+    {
+        swapChainResources_[i].Reset();
+        renderTargets_[i]->colorResource.Reset();
+        renderTargets_[i]->depthResource.Reset();
+
+        renderTargets_[i]->state = D3D12_RESOURCE_STATE_PRESENT;
+        renderTargets_[i]->dsvState = D3D12_RESOURCE_STATE_COMMON;
+    }
     depthStencilResource_.Reset();
 
     hr = swapChain_->ResizeBuffers(
         swapChainDesc_.BufferCount,
-        UINT(WindowManager::winWidth_),
-        UINT(WindowManager::winHeight_),
+        UINT(Engine::Instance().GetWindowManager()->GetWindowWidth()),
+        UINT(Engine::Instance().GetWindowManager()->GetWindowHeight()),
         swapChainDesc_.Format,
         0);
     assert(SUCCEEDED(hr));
 
-    swapChainDesc_.Width = UINT(WindowManager::winWidth_);
-    swapChainDesc_.Height = UINT(WindowManager::winHeight_);
+    swapChainDesc_.Width = UINT(Engine::Instance().GetWindowManager()->GetWindowWidth());
+    swapChainDesc_.Height = UINT(Engine::Instance().GetWindowManager()->GetWindowHeight());
 
     // 新しいバックバッファの取得とRTV再作成
     hr = swapChain_->GetBuffer(0, IID_PPV_ARGS(&swapChainResources_[0]));

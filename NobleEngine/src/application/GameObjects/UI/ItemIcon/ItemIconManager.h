@@ -11,9 +11,6 @@
 class ItemIconManager
 {
 public:
-	// アイコンの大きさ(px)。UIでの表示(64x64)と同じにして、そのままの大きさで貼る
-	static constexpr uint32_t kIconSize = 64;
-
 	ItemIconManager();
 	~ItemIconManager();
 
@@ -21,6 +18,8 @@ public:
 	int32_t GetIcon(ItemID id);
 	// 描く必要のあるアイコンを描く。UIを描く前に毎フレーム呼ぶ
 	void Draw();
+
+	uint32_t GetIconSize() const { return iconSize; }
 
 	// アイコン用のRenderObjectを作る(ItemEditorのプレビューでも使う)
 	static std::unique_ptr<RenderObject> CreateRenderObject();
@@ -36,6 +35,8 @@ private:
 		// 描くときに使う(同じフレームに複数描くことがあるので、アイコンごとに持つ)
 		std::unique_ptr<RenderObject> render;
 	};
+
+	uint32_t iconSize = 64;
 
 	// モデルが画面に収まるようにカメラを置いて、ビュープロジェクション行列を作る
 	static Matrix4x4 MakeViewProjection(const ItemInfo& info, const ModelData& model);

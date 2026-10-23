@@ -14,7 +14,7 @@ InventoryScreen::~InventoryScreen()
 
 void InventoryScreen::Initialize()
 {
-	nextUIMode_ = UIMode::MAX;
+	nextUIMode_ = UIScreenType::MAX;
 
 	for (const auto& element : uiElements_)
 	{
@@ -44,7 +44,7 @@ void InventoryScreen::Update(int32_t cameraID)
 	if (Game::IO::Key::IsJustPressed(VK_ESCAPE) ||
 		Game::IO::Key::IsJustPressed('E'))
 	{
-		nextUIMode_ = UIMode::Playing;
+		nextUIMode_ = UIScreenType::Playing;
 	}
 }
 

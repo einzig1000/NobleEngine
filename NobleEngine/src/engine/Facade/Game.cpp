@@ -45,7 +45,7 @@ namespace Game
 				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationLoader()->LoadAnimation(filePath, animationName);
 			}
 
-			AnimationData* GetData(int32_t animationID)
+			const AnimationData* GetData(int32_t animationID)
 			{
 				return Engine::Instance().GetAssetManager()->GetAnimationManager()->GetAnimationBank()->GetAnimationData(animationID);
 			}
@@ -577,24 +577,18 @@ namespace Game
 	{
 		uint32_t GetWidth()
 		{
-			return WindowManager::winWidth_;
+			return Engine::Instance().GetWindowManager()->GetWindowWidth();
 		}
 
 		uint32_t GetHeight()
 		{
-			return WindowManager::winHeight_;
+			return Engine::Instance().GetWindowManager()->GetWindowHeight();
 		}
 
 		void ToggleFullscreen()
 		{
 			// ウィンドウサイズ変更
 			Engine::Instance().GetWindowManager()->ToggleFullscreen();
-
-			// DirectXのリサイズ処理
-			Engine::Instance().GetDirectXManager()->Resize();
-
-			// カメラのアスペクト比更新
-			//Engine::Instance().GetCameraManager()->Resize();
 		}
 	}
 

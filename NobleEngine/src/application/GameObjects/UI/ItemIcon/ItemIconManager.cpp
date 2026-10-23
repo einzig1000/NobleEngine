@@ -8,7 +8,7 @@
 
 namespace
 {
-	// 視野角・クリップ(エンジンのCameraの初期値と同じ)
+	// 視野角・クリップ
 	constexpr float kIconFovY = 0.65f;
 	constexpr float kIconNearZ = 0.01f;
 	constexpr float kIconFarZ = 500.0f;
@@ -34,7 +34,7 @@ int32_t ItemIconManager::GetIcon(ItemID id)
 	if (icon.renderTextureID < 0)
 	{
 		const std::string label = "ItemIcon_" + std::to_string(static_cast<int32_t>(id));
-		icon.renderTextureID = Game::Asset::RenderTexture::CreateRenderTexture(kIconSize, kIconSize, label);
+		icon.renderTextureID = Game::Asset::RenderTexture::CreateRenderTexture(iconSize, iconSize, label);
 		icon.render = CreateRenderObject();
 		needsDrawIcons_[id] = &icon;
 	}
