@@ -7,6 +7,13 @@
 class MiningPointGaugeUI : public IUIElement
 {
 public:
+	enum class Part
+	{
+		Gauge,
+		LevelText,
+	};
+
+public:
 	MiningPointGaugeUI();
 	~MiningPointGaugeUI() override;
 	void Initialize() override;
@@ -15,10 +22,10 @@ public:
 	void DrawImGui() override;
 
 private:
-	// 同時に出せる波の数(PS側のkMaxWaveCountと合わせる)
+	// 同時に出せる波の数。MiningPointGauge.PS.hlslのGaugeParams参照
 	static constexpr int32_t kMaxWaveCount = 8;
 
-	// MiningPointGauge.PS.hlsl の GaugeParams と同じ並び・サイズにする
+	// MiningPointGauge.PS.hlslのGaugeParams参照
 	struct GaugeParams
 	{
 		// 溜まった部分の色
@@ -36,7 +43,6 @@ private:
 		// 波の先頭の位置(0〜1)。負なら波なし。HLSL側では float4 waveHeads[2]
 		float waveHeads[kMaxWaveCount] = { -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f };
 	};
-	static_assert(sizeof(GaugeParams) == 80, "GaugeParamsのサイズがシェーダ側と合っていない");
 
 	// 1本の波
 	struct Wave
@@ -48,11 +54,23 @@ private:
 		bool isActive = false;
 	};
 
+private:
 	Matrix4x4 orthographic_;
 
+	// Jsonのデータからsprites_を作る
+	void BuildLayout();
+	// PartのlabelIndex番目のスプライト
+	ElementInstanceData* GetPart(Part part, int32_t labelIndex = 0);
+
+	// parts_[パーツ][labelIndex] = sprites_のインデックス
+	std::array<std::vector<int32_t>, magic_enum::enum_count<Part>()> parts_;
+
+
+
+	ElementInstanceData gauge_;
 	GaugeParams gaugeParams_;
 
-	// 波(順番に使い回す。全部流れている最中なら一番古い波を使い直す)
+	// 波
 	std::array<Wave, kMaxWaveCount> waves_;
 	int32_t nextWaveIndex_ = 0;
 	// 波の速さ(1秒に進む距離。ゲージ全体が1)

@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\UI\UIElement\SkillTree\SkillTree.cpp" />
     <ClCompile Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.cpp" />
     <ClCompile Include="src\engine\RootBinding\RootBindingManager.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.cpp" />
@@ -92,7 +93,7 @@
     <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp" />
     <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp" />
-    <ClCompile Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.cpp" />
+    <ClCompile Include="src\application\GameManager\Phase\ShaderToyTestPhase\ShaderToyTestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\MapManager.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\UI\UIElement\SkillTree\SkillTree.h" />
     <ClInclude Include="src\application\System\EventBus\EventPayloads.h" />
     <ClInclude Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.h" />
     <ClInclude Include="src\engine\RootBinding\RootBindingManager.h" />
@@ -408,7 +410,7 @@
     <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h" />
     <ClInclude Include="src\engine\Editor\EngineEditor.h" />
     <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h" />
-    <ClInclude Include="src\application\GameManager\Phase\EditorTestPhase\EditorTestPhase.h" />
+    <ClInclude Include="src\application\GameManager\Phase\ShaderToyTestPhase\ShaderToyTestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h" />
     <ClInclude Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.h" />
     <ClInclude Include="src\application\GameObjects\Map\MapManager.h" />

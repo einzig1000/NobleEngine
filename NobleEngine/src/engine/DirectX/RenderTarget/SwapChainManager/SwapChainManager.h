@@ -33,8 +33,8 @@ private:
 	RTVManager::Allocation rtvAllocations_[2]{ {UINT32_MAX}, {UINT32_MAX} };
 	DSVManager::Allocation dsvAllocation_{ UINT32_MAX };
 
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_;
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc_;
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc_{};
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc_{};
 	UINT backBufferIndex_;
 
 

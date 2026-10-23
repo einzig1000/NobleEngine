@@ -12,8 +12,8 @@ DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager, Ro
 	:dxManager_(dxManager), assetManager_(assetManager), rootBindingManager_(rootBindingManager)
 {
 	rt_nobleScreenID_ = dxManager_->GetRenderTextureManager()->CreateRenderTarget(
-		Engine::Instance().GetWindowManager()->winWidth_,
-		Engine::Instance().GetWindowManager()->winHeight_,
+		Constexprs::kInitialWindowWidth,
+		Constexprs::kInitialWindowHeight,
 		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, "NobleScreen", Vector4{ 0.11f, 0.11f, 0.11f, 1.0f });
 
 	screenRenderObject_ = std::make_unique<RenderObject>();

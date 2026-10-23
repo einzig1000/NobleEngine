@@ -11,12 +11,12 @@ public:
 
 
 	ItemDataManager* const GetItemDataManager() { return itemDataManager_.get(); }
-	UIDataManager* const GetUIElementDataManager() { return uiElementDataManager_.get(); }
+	UIDataManager* const GetUIDataManager() { return uiDataManager_.get(); }
 
 
 private:
 	std::unique_ptr<ItemDataManager> itemDataManager_;
-	std::unique_ptr<UIDataManager> uiElementDataManager_;
+	std::unique_ptr<UIDataManager> uiDataManager_;
 
 
 	bool loaded_ = false;

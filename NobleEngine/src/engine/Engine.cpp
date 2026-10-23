@@ -72,7 +72,7 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 	computeSystem_ = std::make_unique<ComputeSystem>(dxManager_.get(), rootBindingManager_.get());
 	timeManager_ = std::make_unique<TimeManager>();
 
-	windowManager_->AttachMouseController(ioManager_->GetMouseController());
+	windowManager_->SetMouseController(ioManager_->GetMouseController());
 
 //#ifdef _DEBUG
 	engineEditor_ = std::make_unique<EngineEditor>(
@@ -107,6 +107,9 @@ bool Engine::ProcessMessage()
 }
 void Engine::BeginFrame()
 {
+	// ウィンドウ更新
+	windowManager_->Update();
+
 	// imguiを更新
 	imguiManager_->BeginFrame();
 

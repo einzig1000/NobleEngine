@@ -27,7 +27,7 @@ TitlePhase::TitlePhase()
 	cameraController_ = std::make_unique<CameraController>();
 	// スクリーンドロワー生成
 	screenDrawer_ = std::make_unique<ScreenDrawer>();
-	screenDrawer_->SetFogParams(FogParams{ Vector3{ 0.5f, 0.5f, 0.5 }, 0.05f, 20.0f, 50.0f });
+	screenDrawer_->SetFogParams(FogParams{ Vector3{ 0.5f, 0.5f, 0.5 }, 0.01f, 20.0f, 50.0f });
 	// マップマネージャー生成
 	map_ = std::make_unique<MapManager>();
 	// UIマネージャー生成
@@ -41,6 +41,8 @@ TitlePhase::TitlePhase()
 	buttonColliderModelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
 	buttonModelID_ = buttonColliderModelID_;
 	buttonColliderModel_ = Game::Asset::Model::GetData(buttonColliderModelID_);
+
+	generateCenterPosition_ = Vector3{ 0.0f, 150.000, 3.0f };
 }
 
 TitlePhase::~TitlePhase()
@@ -52,7 +54,7 @@ void TitlePhase::Initialize()
 	nextPhase_ = Phase::Phase_None;
 
 	map_->Initialize();
-	map_->GetTerrain()->SetDrawRadius(Vector3int{8,1,12});
+	map_->GetTerrain()->SetDrawRadius(Vector3int{9,2,13});
 	//map_->GetTerrain()->SetDrawRadius(Vector3int{ 3,1,3 });
 	map_->GetTerrain()->SetSeed(12345);
 
@@ -62,15 +64,14 @@ void TitlePhase::Initialize()
 
 	LoadButtonData();
 
-	Vector3 pos = Vector3{ 0.0f, 25.0f, 0.0f };
-	map_->GetTerrain()->GenerateChunks(pos);
+	map_->GetTerrain()->GenerateChunks(generateCenterPosition_);
 }
 
 
 void TitlePhase::Update()
 {
 	// マップ更新
-	map_->Update(c_title_, Vector3{ 0.0f, 25.0f, 3.0f });
+	map_->Update(c_title_, generateCenterPosition_);
 	// UI更新
 	uiManager_->Update(c_title_);
 	// ポストエフェクト更新
@@ -138,7 +139,7 @@ void TitlePhase::Draw()
 
 	for (auto& button : buttons_)
 	{
-		button.render_->Draw(rt_3D);
+		//button.render_->Draw(rt_3D);
 	}
 }
 
@@ -148,6 +149,10 @@ void TitlePhase::DrawImGui()
 	map_->GetTerrain()->DrawImGui();
 
 	screenDrawer_->DrawImGui();
+
+	ImGui::Begin("Camera");
+	ImGui::DragFloat3("Position", &generateCenterPosition_.x, 0.1f);
+	ImGui::End();
 
 	ImGui::Begin("Button");
 	for (auto& button : buttons_)
@@ -219,7 +224,6 @@ void TitlePhase::DrawImGui()
 		Game::Asset::Font::DrawString(button.textureID, button.text, button.charSize, button.textPos, button.textColor, button.textSpace);
 
 	}
-
 	if (ImGui::Button("Save"))
 	{
 		JsonManager::AddParam(buttonJsonPath_, "/buttonCount", static_cast<int32_t>(buttons_.size()));
@@ -273,25 +277,22 @@ void TitlePhase::MoveCamera(Stage stage, float duration)
 	case Stage::None:
 		break;
 	case Stage::Title:
-		Game::Camera::Setter::CenterTarget(Vector3{ 0.5f, 18.0f, 30.0f }, duration, EaseType::LINEAR, c_title_);
-		//Game::Camera::Setter::Rotate(Vector3{ 0.7f, 1.37f, 0.0f }, duration, EaseType::LINEAR, c_title_);
-		Game::Camera::Setter::ThetaTarget(1.37f, duration, EaseType::LINEAR, c_title_);
-		Game::Camera::Setter::PhiTarget(0.7f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::CenterTarget(Vector3{ -12.0f, 145.0f, -26.0f }, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::ThetaTarget(-2.03f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::PhiTarget(0.42f, duration, EaseType::LINEAR, c_title_);
 		Game::Camera::Setter::DistanceTarget(25.0f, duration, EaseType::LINEAR, c_title_);
 		break;
 	case Stage::Menu:
-		Game::Camera::Setter::CenterTarget(Vector3{ 0.0f, 17.0f, 3.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		//Game::Camera::Setter::Rotate(Vector3{ 0.1f, -1.5f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		Game::Camera::Setter::ThetaTarget(-1.5f, duration, EaseType::LINEAR, c_title_);
-		Game::Camera::Setter::PhiTarget(0.1f, duration, EaseType::LINEAR, c_title_);
+		Game::Camera::Setter::CenterTarget(Vector3{ -7.6f, 142.0f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::ThetaTarget(-1.8f, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::PhiTarget(0.5f, duration, EaseType::OUT_CUBIC, c_title_);
 		Game::Camera::Setter::DistanceTarget(10.0f, duration, EaseType::OUT_CUBIC, c_title_);
 		break;
 	case Stage::WorldSelect:
-		Game::Camera::Setter::CenterTarget(Vector3{ -1.0f, 17.0f, 2.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		//Game::Camera::Setter::Rotate(Vector3{ 0.1f, -2.0f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
-		Game::Camera::Setter::ThetaTarget(-2.0f, duration, EaseType::LINEAR, c_title_);
-		Game::Camera::Setter::PhiTarget(0.1f, duration, EaseType::LINEAR, c_title_);
-		Game::Camera::Setter::DistanceTarget(15.0f, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::CenterTarget(Vector3{ -7.6f, 142.0f, 0.0f }, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::ThetaTarget(-1.8f, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::PhiTarget(0.5f, duration, EaseType::OUT_CUBIC, c_title_);
+		Game::Camera::Setter::DistanceTarget(10.0f, duration, EaseType::OUT_CUBIC, c_title_);
 		break;
 	case Stage::CreateNewWorld:
 		//Game::Camera::Setter::CenterTarget(Vector3{ -1.0f, 17.0f, 2.0f }, duration, EaseType::OUT_CUBIC, c_title_);

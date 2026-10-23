@@ -26,4 +26,6 @@ namespace Constexprs
 	// 重力
 	//static constexpr float kGravity = -18.0f;
 	static constexpr float kGravity = -9.0f;
+
+
 }

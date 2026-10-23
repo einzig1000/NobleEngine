@@ -30,7 +30,7 @@ enum class Phase
 {
     Phase_None,
     Phase_Test,
-    Phase_Test2,
+	Phase_ShaderToyTest,
     Phase_Title,
     Phase_GameScene,
     Phase_StageSelect,

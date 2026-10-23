@@ -195,8 +195,8 @@ void MouseController::Compute2DPosition()
 Ray MouseController::ComputeRay(Matrix4x4& viewProjection)
 {
     // 左下が０、右上が１とした時のマウスポジション
-    float ndcX = (position_.x / WindowManager::winWidth_) * 2.0f - 1.0f;
-    float ndcY = 1.0f - (position_.y / WindowManager::winHeight_) * 2.0f; // Yは上下反転
+    float ndcX = (position_.x / Engine::Instance().GetWindowManager()->GetWindowWidth()) * 2.0f - 1.0f;
+    float ndcY = 1.0f - (position_.y / Engine::Instance().GetWindowManager()->GetWindowHeight()) * 2.0f; // Yは上下反転
 
     // クリップ空間でZ=0(near)とZ=1(far)の2点を作る
     Vector4 nearPoint = { ndcX, ndcY, 0.0f, 1.0f };

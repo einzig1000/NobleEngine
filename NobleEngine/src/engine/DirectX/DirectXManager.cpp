@@ -1,6 +1,8 @@
 #include "DirectXManager.h"
 #include <Utilities/Logger/Logger.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
+#include <Window/WindowManager.h>
+#include <Engine.h>
 
 namespace
 {
@@ -40,6 +42,14 @@ DirectXManager::~DirectXManager()
 
 void DirectXManager::BeginFrame()
 {
+    // ウィンドウの大きさが変わっていたらスワップチェーンを合わせる
+    // (コマンドリストを開く前にやる。フレームの途中だとバックバッファ番号がずれる)
+    const DXGI_SWAP_CHAIN_DESC1& swapChainDesc = swapChainManager_->GetSwapChainDesc();
+    if (swapChainDesc.Width != Engine::Instance().GetWindowManager()->GetWindowWidth() || swapChainDesc.Height != Engine::Instance().GetWindowManager()->GetWindowHeight())
+    {
+        Resize();
+    }
+
     // バックバッファのインデックスを更新
     swapChainManager_->UpdateBackBufferIndex();
     UINT backBufferIndex = swapChainManager_->GetCurrentBackBufferIndex();

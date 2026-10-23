@@ -209,12 +209,12 @@ void Player::CheckExternalEvents()
 void Player::Draw(int32_t renderTextureID)
 {
 	// プレイヤー描画
-	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	render_.SetBRegisterData(0, ShaderType::VertexShader, &wvpMatrix_);
-	render_.SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix_);
-	render_.SetBRegisterData(0, ShaderType::PixelShader, &color);
-	render_.SetBRegisterData(1, ShaderType::PixelShader, &t_player_);
-	render_.Draw(renderTextureID);
+	//Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	//render_.SetBRegisterData(0, ShaderType::VertexShader, &wvpMatrix_);
+	//render_.SetBRegisterData(1, ShaderType::VertexShader, &worldMatrix_);
+	//render_.SetBRegisterData(0, ShaderType::PixelShader, &color);
+	//render_.SetBRegisterData(1, ShaderType::PixelShader, &t_player_);
+	//render_.Draw(renderTextureID);
 
 	DrawHaveItem(renderTextureID);
 }

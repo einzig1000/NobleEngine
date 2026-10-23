@@ -1,0 +1,1372 @@
+{
+    "Inventory": {
+        "elementsSize": 47,
+        "elements": [
+            {
+                "label": "Background",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/Inventory/Inventory.png",
+                "translateRate": {
+                    "x": 50.0,
+                    "y": 50.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "AccessorySlots",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 25.3125,
+                    "y": 12.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "AccessorySlots",
+                "labelIndex": 1,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 25.3125,
+                    "y": 22.777778
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "AccessorySlots",
+                "labelIndex": 2,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 25.3125,
+                    "y": 33.333333
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "AccessorySlots",
+                "labelIndex": 3,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 25.3125,
+                    "y": 43.888889
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "AccessorySlots",
+                "labelIndex": 4,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 42.8125,
+                    "y": 12.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "AccessorySlots",
+                "labelIndex": 5,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 42.8125,
+                    "y": 22.777778
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "AccessorySlots",
+                "labelIndex": 6,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 42.8125,
+                    "y": 33.333333
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "AccessorySlots",
+                "labelIndex": 7,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 42.8125,
+                    "y": 43.888889
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 25.625,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 1,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 31.25,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 2,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 36.875,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 3,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 42.5,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 4,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 48.125,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 5,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 53.75,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 6,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 59.375,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 7,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 65.0,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 8,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 70.625,
+                    "y": 55.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 9,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 25.625,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 10,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 31.25,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 11,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 36.875,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 12,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 42.5,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 13,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 48.125,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 14,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 53.75,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 15,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 59.375,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 16,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 65.0,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 17,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 70.625,
+                    "y": 65.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 18,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 25.625,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 19,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 31.25,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 20,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 36.875,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 21,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 42.5,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 22,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 48.125,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 23,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 53.75,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 24,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 59.375,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 25,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 65.0,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "MainSlots",
+                "labelIndex": 26,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 70.625,
+                    "y": 75.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 25.625,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 1,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 31.25,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 2,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 36.875,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 3,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 42.5,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 4,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 48.125,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 5,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 53.75,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 6,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 59.375,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 7,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 65.0,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "HotbarSlots",
+                "labelIndex": 8,
+                "texturePath": "assets/application/texture/UI/Inventory/Slot.png",
+                "translateRate": {
+                    "x": 70.625,
+                    "y": 87.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "GaugeFill",
+                "labelIndex": 0,
+                "texturePath": "assets/engine/texture/white1x1.png",
+                "translateRate": {
+                    "x": 46.875,
+                    "y": 46.944444
+                },
+                "pivot": {
+                    "x": 0.0,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 296.0,
+                    "y": 20.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "LevelText",
+                "labelIndex": 0,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 72.5,
+                    "y": 46.944444
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            }
+        ]
+    },
+    "Hotbar": {
+        "elementsSize": 10,
+        "elements": [
+            {
+                "label": "Background",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/Hotbar/Hotbar.png",
+                "translateRate": {
+                    "x": 50.0,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 0,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 25.0,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 1,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 31.25,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 2,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 37.5,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 3,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 43.75,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 4,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 50.0,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 5,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 56.25,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 6,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 62.5,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 7,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 68.75,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Slots",
+                "labelIndex": 8,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 75.0,
+                    "y": 93.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            }
+        ]
+    },
+    "Craft": {
+        "elementsSize": 0,
+        "elements": []
+    },
+    "Pause": {
+        "elementsSize": 0,
+        "elements": []
+    },
+    "MiningMode": {
+        "elementsSize": 2,
+        "elements": [
+            {
+                "label": "Swing",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/MiningMode/mode1.png",
+                "translateRate": {
+                    "x": 30.0,
+                    "y": 50.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": -1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "Range",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/MiningMode/mode2.png",
+                "translateRate": {
+                    "x": 70.0,
+                    "y": 50.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": -1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            }
+        ]
+    },
+    "MiningPointGauge": {
+        "elementsSize": 2,
+        "elements": [
+            {
+                "label": "Gauge",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/MiningPointGauge/MiningPointGauge.png",
+                "translateRate": {
+                    "x": 50.0,
+                    "y": 84.7
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "LevelText",
+                "labelIndex": 0,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 50.0,
+                    "y": 82.470008
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            }
+        ]
+    }
+}

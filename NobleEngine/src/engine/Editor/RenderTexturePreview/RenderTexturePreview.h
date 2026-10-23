@@ -2,6 +2,7 @@
 #include <EngineDefinition/EngineDefinition.h>
 #include <DrawSystem/RenderObject/RenderObject.h>
 #include <memory>
+#include <optional>
 
 class DirectXManager;
 
@@ -18,7 +19,8 @@ private:
 	DirectXManager* dxManager_ = nullptr;
 	std::unique_ptr<RenderObject> renderObject_;
 	UINT64 gpuDescriptorHandlePtr_ = 0;
-	size_t renderTargetIndex_ = 22193211;
+	std::optional<size_t> renderTargetIndex_ = std::nullopt;
+	//size_t renderTargetIndex_ = 22193211;
 	bool fullscreen_ = false;
 	Vector2int windowSize_ = Vector2int(512, 512);
 };

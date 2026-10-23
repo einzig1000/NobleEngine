@@ -19,6 +19,8 @@ void ItemDataSaver::Save(BlockID id, const BlockInfo& info)
 	const std::string path = "assets/application/json/BlockConfig.json";
 	const std::string idStr = std::string(magic_enum::enum_name(id));
 
+	JsonManager::AddParam(path, "/" + idStr, nlohmann::json::object());
+
 	JsonManager::AddParam(path, "/" + idStr + "/color", info.color);
 	JsonManager::AddParam(path, "/" + idStr + "/durability", info.durability);
 	JsonManager::AddParam(path, "/" + idStr + "/miningPoint", info.miningPoint);
@@ -33,6 +35,8 @@ void ItemDataSaver::Save(ToolID id, const ToolInfo& info)
 
 	const std::string path = "assets/application/json/ToolConfig.json";
 	const std::string idStr = std::string(magic_enum::enum_name(id));
+	
+	JsonManager::AddParam(path, "/" + idStr, nlohmann::json::object());
 
 	JsonManager::AddParam(path, "/" + idStr + "/miningPower", info.miningPower);
 	JsonManager::AddParam(path, "/" + idStr + "/miningSpeed", info.miningSpeed);
@@ -48,6 +52,8 @@ void ItemDataSaver::Save(ItemID id, const ItemInfo& info)
 	const std::string idStr = std::string(magic_enum::enum_name(id));
 	const std::string modelPath = Game::Asset::Model::GetData(info.modelID)->filePath;
 	const std::string texturePath = Game::Asset::Texture::GetData(info.textureID)->filePath;
+
+	JsonManager::AddParam(path, "/" + idStr, nlohmann::json::object());
 
 	JsonManager::AddParam(path, "/" + idStr + "/itemGenre", magic_enum::enum_name(info.genre).data());
 	JsonManager::AddParam(path, "/" + idStr + "/blockID", magic_enum::enum_name(info.blockID).data());

@@ -2,10 +2,10 @@
 
 int32_t AnimationBank::AddAnimationData(const std::string& filePath, std::unique_ptr<AnimationData> animationData)
 {
-	int32_t ID = static_cast<int32_t>(objects_.size());
+	int32_t ID = static_cast<int32_t>(dataList_.size());
 
 	pathToIDMap_[filePath] = ID;
-	objects_.push_back(std::move(animationData));
+	dataList_.push_back(std::move(animationData));
 
 	return ID;
 }
@@ -20,11 +20,11 @@ int32_t AnimationBank::IsAnimationDataExist(const std::string filePath) const
 	return -1;
 }
 
-AnimationData* AnimationBank::GetAnimationData(int32_t animationID)
+const AnimationData* AnimationBank::GetAnimationData(int32_t animationID) const
 {
-	if (animationID >= 0 && animationID < static_cast<int32_t>(objects_.size()))
+	if (animationID >= 0 && animationID < static_cast<int32_t>(dataList_.size()))
 	{
-		return objects_[animationID].get();
+		return dataList_[animationID].get();
 	}
 	return nullptr;
 }

@@ -78,14 +78,20 @@ namespace App
 		namespace UI
 		{
 			void Load()
-			{}
+			{
+				Application::Instance().GetDataManager()->GetUIDataManager()->GetLoader()->Load();
+			}
 			void Load(UIElementType type)
-			{}
-			void Save(UIElementType type, const ElementData & data)
-			{}
+			{
+				Application::Instance().GetDataManager()->GetUIDataManager()->GetLoader()->Load(type);
+			}
+			void Save(UIElementType type, const std::vector<ElementData>& data)
+			{
+				Application::Instance().GetDataManager()->GetUIDataManager()->GetSaver()->Save(type, data);
+			}
 			const std::vector<ElementData>* Get(UIElementType type)
 			{
-				return nullptr;
+				return Application::Instance().GetDataManager()->GetUIDataManager()->GetBank()->GetData(type);
 			}
 		}
 	}

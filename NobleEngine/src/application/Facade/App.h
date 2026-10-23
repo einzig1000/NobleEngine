@@ -51,7 +51,7 @@ namespace App
 			// UIElementTypeを指定して個別読み込み
 			void Load(UIElementType type);
 			// UIElementTypeを指定して個別保存
-			void Save(UIElementType type, const ElementData& data);
+			void Save(UIElementType type, const std::vector<ElementData>& data);
 			// UIElementTypeを指定してデータ取得
 			const std::vector<ElementData>* Get(UIElementType type);
 		}

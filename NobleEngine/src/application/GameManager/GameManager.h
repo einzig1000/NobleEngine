@@ -17,11 +17,16 @@ public:
 private:
 
 	// フェーズクラス
-	std::unique_ptr<IPhase> currentPhase_;
+	std::unique_ptr<IPhase> phaseInstance_;
+
+	Phase currentPhase_ = Phase::Phase_None;
+	Phase nextPhase_ = Phase::Phase_None;
+
+	PhaseContext phaseContext_;
+
 
 	std::unique_ptr<IPhase> CreatePhase(Phase phase);
 
-	PhaseContext phaseContext_;
 
 };
 

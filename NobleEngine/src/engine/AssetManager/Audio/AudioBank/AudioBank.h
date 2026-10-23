@@ -14,17 +14,17 @@ public:
 	// filePathが同じオーディオデータが存在するか
 	int32_t IsAudioDataExist(const std::string& filePath);
 	// 次のIDを取得
-	int32_t AllocateAudioID() const { return static_cast<int32_t>(audioList_.size()); }
+	int32_t AllocateAudioID() const { return static_cast<int32_t>(dataList_.size()); }
 	// audioIDからオーディオデータを取得
 	const AudioData* GetAudioData(int32_t audioID) const;
 	// オーディオリストを取得
-	const std::vector<std::unique_ptr<AudioData>>& GetAudioList() const { return audioList_; }
+	const std::vector<std::unique_ptr<AudioData>>& GetAudioList() const { return dataList_; }
 
 private:
 	// キー：オーディオのファイルパス、値：ID
 	std::unordered_map<std::string, int32_t> pathToIDMap_;
 	// キー：ID、値：オーディオデータ
-	std::vector<std::unique_ptr<AudioData>> audioList_;
+	std::vector<std::unique_ptr<AudioData>> dataList_;
 
 	// オーディオの解放
 	void CleanupAudioData(AudioData& entry);

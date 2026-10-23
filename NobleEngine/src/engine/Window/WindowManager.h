@@ -1,7 +1,6 @@
 #pragma once
-#include <Windows.h>        // ウィンドウ関連のAPI
-#include <string>           // std::wstring 用
-#include <mmsystem.h>
+#include <Windows.h>
+#include <string>
 
 class MouseController;
 
@@ -12,30 +11,42 @@ class WindowManager {
 public:
     WindowManager(uint32_t width, uint32_t height, const std::wstring& title);
     ~WindowManager();
+    void SetMouseController(MouseController* mc);
+	void Update();
 
-    void AttachMouseController(MouseController* mc);
-
-	// ウィンドウハンドル取得
-    HWND GetHwnd() const { return hwnd_; }
 
 	// フルスクリーン制御
     void SetFullscreen(bool enable);
     void ToggleFullscreen();
     bool IsFullscreen() const { return isFullscreen_; }
 
+    // 終了
     void Quit();
-
-    // ウィンドウサイズ
-    static uint32_t winWidth_;
-    static uint32_t winHeight_;
 
     // 前面にあって、かつ最小化されていない
     bool IsActive() const { return ::GetForegroundWindow() == hwnd_ && !::IsIconic(hwnd_); }
 
-private:
-    HWND hwnd_;
-    WNDCLASS wc_;
+	// ウィンドウサイズ取得
+	uint32_t GetWindowWidth() const { return winWidth_; }
+	uint32_t GetWindowHeight() const { return winHeight_; }
 
+	// ウィンドウハンドル取得
+    HWND GetHwnd() const { return hwnd_; }
+
+private:
+	MouseController* mouseController_ = nullptr;
+
+    // Windowsから呼ばれる入口
+    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    // ウィンドウプロシージャの本体
+    LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+    HWND hwnd_ = nullptr;
+    WNDCLASS wc_{};
+
+    // ウィンドウサイズ
+    uint32_t winWidth_;
+    uint32_t winHeight_;
 
     // フルスクリーン制御
     bool isFullscreen_ = false;
@@ -48,8 +59,6 @@ private:
     void EnterBorderlessFullscreen();
 	// フルスクリーンモード解除
     void ExitBorderlessFullscreen();
-	// クライアントサイズ更新
-    void UpdateClientSize();
 
 	// ウィンドウクラス登録
     void RegisterWindowClass();
@@ -57,4 +66,8 @@ private:
     void RegisterMouseRawInput(HWND hwnd);
 	// メインウィンドウ生成
     void CreateMainWindow(LONG width, LONG height, const std::wstring& title);
+
+
+
+    //LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 };

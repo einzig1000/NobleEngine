@@ -2,34 +2,19 @@
 #include <GameObjects/Character/MiningPointGauge/MiningPointGauge.h>
 #include <algorithm>
 
-namespace
-{
-	// DotGothic16の、行の上端からベースラインまでの割合(ascent / (ascent - descent) = 1160 / 1448)
-	constexpr float kFontAscentRatio = 1160.0f / 1448.0f;
-	// レベルの数字の下端を、ゲージの上端からどれだけ重ねるか(ゲージの絵の1px = 4px)
-	constexpr float kLevelTextOverlap = 4.0f;
-	// 縁取りの太さ(文字サイズ46のときのフォント1ドット分)
-	constexpr float kLevelOutlineWidth = 2.0f;
-}
-
-
 MiningPointGaugeUI::MiningPointGaugeUI()
 {
-	Vector2 windowSize = Vector2(float(Game::Window::GetWidth()), float(Game::Window::GetHeight()));
+	// sprites_生成、parts_作成
+	BuildLayout();
 
-	// sprites_[0] : 経験値ゲージ
-	sprites_.emplace_back(ElementData{});
-	sprites_[0].render = std::make_unique<RenderObject>();
-	sprites_[0].render->psoConfig_.ps = "assets/shaders/UI/MiningPointGauge.PS.hlsl";
-	sprites_[0].render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
-	sprites_[0].render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
-	sprites_[0].render->SetupFromShaders();
-	sprites_[0].textureID = Game::Asset::Texture::Load("assets/application/texture/UI/MiningPointGauge/MiningPointGauge.png");
-	const TextureData* textureData = Game::Asset::Texture::GetData(sprites_[0].textureID);
-	sprites_[0].transforms.scale = Vector3(float(textureData->metadata.width) * 0.5f, float(textureData->metadata.height) * 0.5f, 1.0f);
-	sprites_[0].transforms.translate = Vector3(windowSize.x * 0.5f, windowSize.y * 0.847f, 1.0f);
-
-	gaugeParams_.textureIndex = sprites_[0].textureID;
+	// 動的スプライト
+	gauge_.render = std::make_unique<RenderObject>();
+	gauge_.render->psoConfig_.vs = "assets/shaders/SimpleModel/SimpleModel.VS.hlsl";
+	gauge_.render->psoConfig_.ps = "assets/shaders/UI/MiningPointGauge.PS.hlsl";
+	gauge_.render->psoConfig_.depthStencilID = DepthStencilID::Disable;
+	gauge_.render->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
+	gauge_.render->SetupFromShaders();
+	gaugeParams_.textureIndex = Game::Asset::Texture::Load("assets/application/texture/UI/MiningPointGauge/MiningPointGauge.png");
 }
 
 MiningPointGaugeUI::~MiningPointGaugeUI()
@@ -77,52 +62,50 @@ void MiningPointGaugeUI::Update(int32_t cameraID)
 		gaugeParams_.waveHeads[i] = progress * wave.distance;
 	}
 
-	// レベルの文字(0のときは出さない)
+	// レベルの文字(LevelTextの位置を数字の中心にする)
 	levelText_ = std::to_string(level);
-	if (!levelText_.empty())
+	if (ElementInstanceData* marker = GetPart(Part::LevelText))
 	{
-		const Vector2 textSize = Game::Asset::Font::MeasureJustTextureSize(levelText_, levelCharSize_, Vector2{ 0.0f, 0.0f }, 0.0f);
-		const Vector3& gaugePos = sprites_[0].transforms.translate;
-		const float gaugeTop = gaugePos.y - sprites_[0].transforms.scale.y;
-		const float baselineY = gaugeTop + kLevelTextOverlap;
-		levelTextPos_ = Vector2{ gaugePos.x - textSize.x * 0.5f, baselineY - static_cast<float>(levelCharSize_) * kFontAscentRatio };
+		levelTextPos_ = GetDigitTextPosition(levelText_, levelCharSize_, GetCenter(marker->data));
 	}
+
+	ElementInstanceData* slotSprite = GetSprite(parts_[static_cast<size_t>(Part::Gauge)], 0);
+
+	// スロットの中心に置く(スロットのscale・回転に合わせる)
+	const Vector2 iconSize = Vector2{ slotSprite->data.textureSize.x * slotSprite->data.scale.x, slotSprite->data.textureSize.y * slotSprite->data.scale.y };
+	UpdateQuad(gauge_, GetCenter(slotSprite->data), iconSize, slotSprite->data.rotate, orthographic_);
+
+	// 静的スプライトの更新
+	UpdateStaticRenderObject(orthographic_);
 }
 
 void MiningPointGaugeUI::Draw(int32_t rt_ID)
 {
-	// ゲージ
-	const auto& gauge = sprites_[0];
-	Matrix4x4 world = Matrix4x4::MakeAffineMatrix(gauge.transforms.scale, gauge.transforms.rotate, gauge.transforms.translate);
-	Matrix4x4 wvp = world * orthographic_;
+	// 静的スプライトの描画
+	DrawStaticRenderObject(rt_ID);
 
-	gauge.render->SetBRegisterData(0, ShaderType::VertexShader, &wvp);
-	gauge.render->SetBRegisterData(1, ShaderType::VertexShader, &world);
-	gauge.render->SetBRegisterData(0, ShaderType::PixelShader, &gaugeParams_);
-	gauge.render->Draw(rt_ID);
-
+	// 動的スプライトの描画
+	gauge_.render->SetBRegisterData(0, ShaderType::VertexShader, &gauge_.wvp);
+	gauge_.render->SetBRegisterData(1, ShaderType::VertexShader, &gauge_.world);
+	gauge_.render->SetBRegisterData(0, ShaderType::PixelShader, &gaugeParams_);
+	gauge_.render->Draw(rt_ID);
 
 	// レベル
-	if (levelText_.empty()) return;
-
-	const Vector4 outlineColor = Vector4{ 0.0f, 0.0f, 0.0f, 1.0f };
-	const Vector2 outlineOffsets[] =
+	if (!miningGauge_ || levelText_.empty())
 	{
-		Vector2{ -kLevelOutlineWidth, 0.0f },
-		Vector2{ kLevelOutlineWidth, 0.0f },
-		Vector2{ 0.0f, -kLevelOutlineWidth },
-		Vector2{ 0.0f, kLevelOutlineWidth },
-	};
-	for (const Vector2& offset : outlineOffsets)
-	{
-		Game::Asset::Font::DrawString(rt_ID, levelText_, levelCharSize_, levelTextPos_ + offset, outlineColor);
+		DrawOutlinedString(rt_ID, levelText_, levelCharSize_, levelTextPos_, gaugeParams_.fillColor, 2.0f);
 	}
-	Game::Asset::Font::DrawString(rt_ID, levelText_, levelCharSize_, levelTextPos_, gaugeParams_.fillColor);
 }
 
 void MiningPointGaugeUI::DrawImGui()
 {
 	ImGui::Begin("MiningPointGaugeUI");
+
+	// UIEditorで保存したあとなどに、データを読み直す
+	if (ImGui::Button("UIデータを読み直す"))
+	{
+		BuildLayout();
+	}
 
 	ImGui::ColorEdit4("Fill Color", &gaugeParams_.fillColor.x);
 	ImGui::ColorEdit4("Wave Color", &gaugeParams_.waveColor.x);
@@ -131,4 +114,15 @@ void MiningPointGaugeUI::DrawImGui()
 	ImGui::DragInt("Level Char Size", &levelCharSize_, 1.0f, 8, 128);
 
 	ImGui::End();
+}
+
+void MiningPointGaugeUI::BuildLayout()
+{
+	BuildSprites(UIElementType::MiningPointGauge);
+	parts_ = FindParts<Part>();
+}
+
+ElementInstanceData* MiningPointGaugeUI::GetPart(Part part, int32_t labelIndex)
+{
+	return GetSprite(parts_[static_cast<size_t>(part)], labelIndex);
 }

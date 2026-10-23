@@ -3,7 +3,7 @@
 
 UIEditor::UIEditor()
 {
-	rt_ID = Game::Asset::RenderTexture::CreateRenderTexture(Game::Window::GetWidth(), Game::Window::GetHeight(), "UIEditorTexture");
+	rt_ID = Game::Asset::RenderTexture::CreateRenderTexture(Constexprs::kInitialWindowWidth, Constexprs::kInitialWindowHeight, "UIEditorTexture");
 
 	c_ID = Game::Camera::AddCamera("UIEditorCamera");
 }
@@ -47,7 +47,7 @@ void UIEditor::DrawImGui()
 					if (ImGui::Selectable(uiElementTypeNames[i].data(), selected))
 					{
 						elementType_ = value;
-						//elementData_ = *(App::Data::UI::Get(elementType_));
+						elementData_ = *(App::Data::UI::Get(elementType_));
 					}
 					if (selected) ImGui::SetItemDefaultFocus();
 				}
@@ -89,9 +89,9 @@ void UIEditor::DrawImGui()
 
 		// 選択中のエレメントのパラメータ編集
 		{
-			ImGui::DragFloat2("translate", &elementData_[selectedElementIndex_].transforms.translate.x, 0.1f);
-			ImGui::DragFloat2("scale", &elementData_[selectedElementIndex_].transforms.scale.x, 0.1f);
-			ImGui::DragFloat2("rotate", &elementData_[selectedElementIndex_].transforms.rotate.x, 0.1f);
+			ImGui::DragFloat2("translate", &elementData_[selectedElementIndex_].translateRate.x, 0.1f);
+			ImGui::DragFloat2("scale", &elementData_[selectedElementIndex_].scale.x, 0.1f);
+			ImGui::DragFloat2("rotate", &elementData_[selectedElementIndex_].rotate.x, 0.1f);
 
 
 			//// テクスチャ表示 & DADの設定

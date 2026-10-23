@@ -5,17 +5,17 @@ AudioBank::AudioBank()
 
 AudioBank::~AudioBank()
 {
-    for (auto& pair : audioList_)
+    for (auto& pair : dataList_)
     {
         CleanupAudioData(*pair);
     }
-    audioList_.clear();
+    dataList_.clear();
 }
 
 void AudioBank::AddAudioData(const std::string& filePath, const int32_t ID, std::unique_ptr<AudioData> audioData)
 {
 	pathToIDMap_[filePath] = ID;
-	audioList_.push_back(std::move(audioData));
+	dataList_.push_back(std::move(audioData));
 }
 
 int32_t AudioBank::IsAudioDataExist(const std::string & filePath)
@@ -30,9 +30,9 @@ int32_t AudioBank::IsAudioDataExist(const std::string & filePath)
 
 const AudioData* AudioBank::GetAudioData(int32_t audioID) const
 {
-	if (audioID >= 0 && audioID < static_cast<int32_t>(audioList_.size()))
+	if (audioID >= 0 && audioID < static_cast<int32_t>(dataList_.size()))
 	{
-		return audioList_[audioID].get();
+		return dataList_[audioID].get();
 	}
 	return nullptr;
 }

@@ -90,6 +90,7 @@ private:
 
 	// マップ
 	std::unique_ptr<MapManager> map_;
+	Vector3 generateCenterPosition_;
 
 	// UIマネージャー
 	std::unique_ptr<UIManager> uiManager_;

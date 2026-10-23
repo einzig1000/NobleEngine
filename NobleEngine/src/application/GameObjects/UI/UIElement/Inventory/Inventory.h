@@ -4,9 +4,20 @@
 #include <GameObjects/UI/UIElement/IUIElement.h>
 #include <array>
 #include <string>
+#include <vector>
 
 class Inventory : public IUIElement
 {
+public:
+	enum class Part
+	{
+		MainSlots,		// メイン3段のスロット		(labelIndex 0〜26 = インベントリの9〜35番)
+		HotbarSlots,	// ホットバー段のスロット	(labelIndex 0〜8 = インベントリの0〜8番)
+		AccessorySlots,	// アクセサリのスロット		(labelIndex 0〜7)
+		GaugeFill,		// 採掘ptゲージの塗り		(Jsonのscaleが満タンの大きさ。pivotを左端にすると左から伸びる)
+		LevelText,		// レベルの数字の中心		(テクスチャなしの目印)
+	};
+
 public:
 	Inventory();
 	~Inventory() override;
@@ -15,59 +26,35 @@ public:
 	void Draw(int32_t rt_ID) override;
 	void DrawImGui() override;
 
-	Vector3 GetSlotPosition(int32_t index) const;
-
 private:
-	// グレードアップ先の最大数(枠に収まる3つまで)
-	static constexpr int32_t kMaxUpgradeCount = 3;
-
 	Matrix4x4 orthographic_;
 
-	// 右上の枠の1行分(グレードアップ先1つ)
-	struct UpgradeRow
-	{
-		// グレードアップ先
-		ItemID resultID = ItemID::MAX;
-		// 消費レベル
-		int32_t levelCost = 0;
-		// レベルが足りているか
-		bool canAfford = false;
-		// 「消費レベル:N」の文字と位置
-		std::string costText;
-		Vector2 costTextPos;
-		// 矢印の位置
-		Vector2 arrowPos;
-	};
-
-	// クリック(グレードアップ先・スロットの選択)
+	// Jsonのデータからsprites_を作る
+	void BuildLayout();
+	// PartのlabelIndex番目のスプライト
+	ElementInstanceData* GetPart(Part part, int32_t labelIndex = 0);
+	// インベントリの番号(0〜35)のスロットのスプライト。0〜8はホットバー段、9〜35はメイン3段
+	ElementInstanceData* GetInventorySlotSprite(int32_t index);
+	// クリック(スロットの選択)
 	void HandleClick();
-	// 右上の枠(ツールのグレードアップ)の中身を更新
-	void UpdateUpgradeTable();
-	// 右上の枠を描く
-	void DrawUpgradeTable(int32_t rt_ID);
-	// Inventory.png上の座標(px)を画面の座標に直す
-	Vector3 TextureToScreen(float x, float y) const;
 
-	// 4x9 のインベントリ用アイコン
-	std::vector<ElementData> inventoryIcons_;
-	// 4x2 のアクセサリ用アイコン
-	std::vector<ElementData> accessoryIcons_;
-	// 装備アップグレード欄で使うアイコン
-	std::vector<ElementData> upgradeIcons_;
+	// parts_[パーツ][labelIndex] = sprites_のインデックス
+	std::array<std::vector<int32_t>, magic_enum::enum_count<Part>()> parts_;
 
-	// 選んでいるスロット(-1なら選んでいない)
+	// アイコン
+	std::vector<ElementInstanceData> inventoryIcons_;
+	std::vector<ElementInstanceData> accessoryIcons_;
+
+	// 選んでいるスロット
 	int32_t selectedSlot_ = -1;
-	// グレードアップ先
-	std::array<UpgradeRow, kMaxUpgradeCount> upgradeRows_;
-	int32_t upgradeRowCount_ = 0;
-	// 矢印と消費レベルの文字サイズ(Updateで決める)
-	int32_t arrowCharSize_ = 0;
-	int32_t costCharSize_ = 0;
+
+	// 個数の文字の座標オフセット
+	Vector2 countTextOffset_;
 
 	// 採掘ptゲージ
-	ElementData gaugeFill_;
+	Vector2 gaugeFullScale_;
 	Vector4 gaugeFillColor_ = Vector4{ 0.216f, 1.0f, 0.015f, 1.0f };
 	std::string levelText_;
 	Vector2 levelTextPos_;
-	int32_t levelCharSize_ = 0;
+	int32_t levelCharSize_ = 46;
 };

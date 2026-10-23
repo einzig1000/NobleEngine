@@ -18,55 +18,60 @@ void RenderTexturePreview::Draw()
 
 void RenderTexturePreview::DrawImGui()
 {
-	ImGui::Begin("RenderTexture Preview");
+	const std::vector<std::unique_ptr<RenderTarget>>& renderTargets = dxManager_->GetRenderTextureManager()->GetRenderTargets();
 
-	std::vector<std::unique_ptr<RenderTarget>>& renderTargets = dxManager_->GetRenderTextureManager()->GetRenderTargets();
-
-	if (ImGui::BeginListBox("##renderTexture list"))
+	if (ImGui::BeginTabItem("RenderTexture Preview"))
 	{
-		for (int32_t i = 0; i < renderTargets.size(); ++i)
+		// RenderTextureリスト表示
+		if (ImGui::BeginListBox("##renderTexture list", ImVec2(500, 130)))
 		{
-			ImGui::PushID(i);
-			ImGui::BeginGroup();
-			if (ImGui::Selectable(renderTargets[i]->name.c_str(), false, 0))
+			for (int32_t i = 0; i < renderTargets.size(); ++i)
 			{
-				gpuDescriptorHandlePtr_ = renderTargets[i]->colorsrvAlloc.gpu.ptr;
-				renderTargetIndex_ = i;
+				ImGui::PushID(i);
+				ImGui::BeginGroup();
+				if (ImGui::Selectable(renderTargets[i]->name.c_str(), false, 0))
+				{
+					gpuDescriptorHandlePtr_ = renderTargets[i]->colorsrvAlloc.gpu.ptr;
+					renderTargetIndex_ = i;
 
-				size_t textureW = size_t(renderTargets[renderTargetIndex_]->width);
-				size_t textureH = size_t(renderTargets[renderTargetIndex_]->height);
-				// 長い方を512に合わせて正規化
-				bool isWidthLonger = textureW > textureH;
-				if (isWidthLonger)
-				{
-					windowSize_.x = 512;
-					windowSize_.y = static_cast<int32_t>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
+					size_t textureW = size_t(renderTargets[renderTargetIndex_.value()]->width);
+					size_t textureH = size_t(renderTargets[renderTargetIndex_.value()]->height);
+					// 長い方を512に合わせて正規化
+					bool isWidthLonger = textureW > textureH;
+					if (isWidthLonger)
+					{
+						windowSize_.x = 512;
+						windowSize_.y = static_cast<int32_t>(512.0f * (static_cast<float>(textureH) / static_cast<float>(textureW)));
+					}
+					else
+					{
+						windowSize_.y = 512;
+						windowSize_.x = static_cast<int32_t>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
+					}
 				}
-				else
-				{
-					windowSize_.y = 512;
-					windowSize_.x = static_cast<int32_t>(512.0f * (static_cast<float>(textureW) / static_cast<float>(textureH)));
-				}
+				ImGui::EndGroup();
+				ImGui::PopID();
 			}
-			ImGui::EndGroup();
-			ImGui::PopID();
+			ImGui::EndListBox();
 		}
-		ImGui::EndListBox();
-	}
-	ImGui::SameLine();
+		ImGui::SameLine();
 
+		// ミニプレビュー表示
+		if (renderTargetIndex_.has_value() && ImGui::ImageButton("##sssed", ImTextureID(gpuDescriptorHandlePtr_), ImVec2(128, 128)))
+		{
+			fullscreen_ = !fullscreen_;
+		}
+		if (renderTargetIndex_.has_value() && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			ImGui::SetDragDropPayload("DAD_TEXTURE_ID", &renderTargets[renderTargetIndex_.value()]->colorsrvAlloc.index, sizeof(int32_t));
+			ImGui::Text("Texture ID %d", renderTargets[renderTargetIndex_.value()]->colorsrvAlloc.index);
+			ImGui::EndDragDropSource();
+		}
 
-	if (renderTargetIndex_ != 22193211 && ImGui::ImageButton("##sssed", ImTextureID(gpuDescriptorHandlePtr_), ImVec2(128, 128)))
-	{
-		fullscreen_ = !fullscreen_;
-	}
-	if (renderTargetIndex_ != 22193211 && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-	{
-		ImGui::SetDragDropPayload("DAD_TEXTURE_ID", &renderTargets[renderTargetIndex_]->colorsrvAlloc.index, sizeof(int32_t));
-		ImGui::Text("Texture ID %d", renderTargets[renderTargetIndex_]->colorsrvAlloc.index);
-		ImGui::EndDragDropSource();
+		ImGui::EndTabItem();
 	}
 
+	// フルスクリーン表示
 	if (fullscreen_)
 	{
 		ImGui::Begin("rendertexturepreview");
@@ -75,13 +80,10 @@ void RenderTexturePreview::DrawImGui()
 
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 		{
-			ImGui::SetDragDropPayload("DAD_TEXTURE_ID", &renderTargets[renderTargetIndex_]->colorsrvAlloc.index, sizeof(int32_t));
-			ImGui::Text("Texture ID %d", renderTargets[renderTargetIndex_]->colorsrvAlloc.index);
+			ImGui::SetDragDropPayload("DAD_TEXTURE_ID", &renderTargets[renderTargetIndex_.value()]->colorsrvAlloc.index, sizeof(int32_t));
+			ImGui::Text("Texture ID %d", renderTargets[renderTargetIndex_.value()]->colorsrvAlloc.index);
 			ImGui::EndDragDropSource();
 		}
 		ImGui::End();
 	}
-
-
-	ImGui::End();
 }
