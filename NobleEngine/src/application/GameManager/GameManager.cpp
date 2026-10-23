@@ -12,7 +12,7 @@ GameManager::GameManager()
 {
 	currentPhase_ = Phase::Phase_None;
 	nextPhase_ = Phase::Phase_ShaderToyTest;
-	nextPhase_ = Phase::Phase_Title;
+	nextPhase_ = Phase::Phase_GameScene;
 
 	//JsonManager::LoadAll("assets/application/json");
 }
