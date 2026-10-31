@@ -23,6 +23,8 @@ public:
 	void SpeedUp() { animationSpeed_ *= 1.3f; }
 	void ScaleUp() { pivotTransform_.scale.x += 0.3f; pivotTransform_.scale.y += 0.3f; pivotTransform_.scale.z += 0.3f; };
 
+	void SetSkillBonus(float speedRate, float extraScale) { skillSpeedRate_ = speedRate; skillExtraScale_ = extraScale; }
+
 private:
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> render_;
@@ -32,6 +34,10 @@ private:
 	int32_t t_haveItem_ = -1;
 	float animationTime_ = 0.0f;
 	float animationSpeed_ = 1.0f;
+
+	// スキルの効果
+	float skillSpeedRate_ = 0.0f;
+	float skillExtraScale_ = 0.0f;
 
 	const ItemInfo* itemInfo_ = nullptr;
 	const ModelData* modelData_ = nullptr;

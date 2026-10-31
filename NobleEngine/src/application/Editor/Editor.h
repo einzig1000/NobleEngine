@@ -1,6 +1,7 @@
 #pragma once
 #include "ItemEditor/ItemEditor.h"
 #include "UIEditor/UIEditor.h"
+#include "SkillTreeEditor/SkillTreeEditor.h"
 
 class DataManager;
 
@@ -17,5 +18,5 @@ public:
 private:
 	ItemEditor itemEditor_;
 	UIEditor uiEditor_;
+	SkillTreeEditor skillTreeEditor_;
 };
-

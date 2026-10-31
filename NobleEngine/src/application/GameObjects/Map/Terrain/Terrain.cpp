@@ -37,7 +37,7 @@ Terrain::Terrain()
 	updateRadius_.z = drawRadius_.z;
 
 	// 露出面ページを生成(1 = 48面)
-	facePagePool_ = std::make_unique<FaceDataPagePool>(400000);
+	facePagePool_ = std::make_unique<FaceDataPagePool>(4000000);
 
 	SetSeed(123456);
 }

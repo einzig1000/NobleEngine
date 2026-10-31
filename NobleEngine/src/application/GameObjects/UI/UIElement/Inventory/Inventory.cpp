@@ -120,6 +120,9 @@ void Inventory::Update(int32_t cameraID)
 		HandleClick();
 	}
 
+	// タブのクリック(スキルツリーへ)
+	HandleTabClick();
+
 	// 静的スプライトの更新
 	UpdateStaticRenderObject(orthographic_);
 }
@@ -219,5 +222,16 @@ void Inventory::HandleClick()
 
 		selectedSlot_ = GetToolInfo(inventory_->GetInventorySlot(i)) ? i : -1;
 		return;
+	}
+}
+
+void Inventory::HandleTabClick()
+{
+	if (!Game::IO::Mouse::IsJustPressed(0) || !nextUIMode_) return;
+
+	const ElementInstanceData* tab = GetPart(Part::SkillTreeTab);
+	if (tab && IsMouseOver(tab->data, GetMouseUIPosition()))
+	{
+		*nextUIMode_ = UIScreenType::SkillTree;
 	}
 }

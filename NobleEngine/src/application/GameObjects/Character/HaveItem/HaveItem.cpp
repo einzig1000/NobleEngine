@@ -207,7 +207,8 @@ void HaveItem::Update(int32_t cameraID)
 
 		Vector3 cameraDir = Game::Camera::Getter::GetCameraDirection(cameraID);
 		pivotTransform_.rotate = Game::Math::YawPitchFromDirection(cameraDir);
-		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(pivotTransform_.scale, pivotTransform_.rotate, pivotTransform_.translate);
+		const Vector3 itemScale = pivotTransform_.scale + Vector3{ skillExtraScale_, skillExtraScale_, skillExtraScale_ };
+		Matrix4x4 pivotWorld = Matrix4x4::MakeAffineMatrix(itemScale, pivotTransform_.rotate, pivotTransform_.translate);
 		worldMatrix_ = itemAnimWorld * pivotWorld * parentWorldMatrix_;
 		wvpMatrix_ = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 

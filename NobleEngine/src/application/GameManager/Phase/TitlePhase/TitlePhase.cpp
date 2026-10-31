@@ -139,7 +139,7 @@ void TitlePhase::Draw()
 
 	for (auto& button : buttons_)
 	{
-		//button.render_->Draw(rt_3D);
+		button.render_->Draw(rt_3D);
 	}
 }
 

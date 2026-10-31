@@ -3,6 +3,7 @@
 #include <Game.h>
 #include <GameObjects/Character/ICharacter.h>
 #include <GameObjects/Character/MiningPointGauge/MiningPointGauge.h>
+#include <GameObjects/Character/SkillState/SkillState.h>
 
 class UIManager;
 class SwingMining;
@@ -46,6 +47,7 @@ public:
 	const Vector3& GetPosition() const { return translate_.value; }
 
 	const MiningPointGauge* GetMiningPointGauge() const { return &miningPointGauge_; }
+	const SkillState* GetSkillState() const { return &skillState_; }
 
 private:
 	Matrix4x4 wvpMatrix_;
@@ -67,6 +69,11 @@ private:
 
 	// 採掘ptの管理
 	MiningPointGauge miningPointGauge_;
+
+	// スキルツリーの開放状況
+	SkillState skillState_;
+	// スキルの効果を手に持っているアイテムなどに反映する(開放したときに呼ぶ)
+	void ApplySkillEffects();
 
 
 	// hp

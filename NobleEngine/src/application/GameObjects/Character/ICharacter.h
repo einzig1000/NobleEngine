@@ -74,14 +74,16 @@ public:
 	virtual std::optional<LookAtBlock> GetLookedAtBlock() const;
 	// 指定ブロックのワールドAABBを取得
 	virtual AABB GetBlockWorldAABB(const Vector3int& chunkIndex, const Vector3int& localIndex) const;
-
-
 	// インベントリの読み取り専用参照
 	virtual const ItemInventory* GetInventory() const { return &inventory_; }
 	// アイテム獲得
 	virtual void AddItem(ItemID id, uint32_t count) { inventory_.AddItem(id, count); }
-	// 指定スロットの中身を置き換える(ツールのグレードアップで使う)
+	// 指定スロットの中身を置き換える
 	virtual void ReplaceItem(int32_t index, ItemID id, uint32_t count) { inventory_.ReplaceItem(index, id, count); }
+	// 持っている数
+	virtual uint32_t CountItem(ItemID id) const { return inventory_.CountItem(id); }
+	// アイテムを減らす(足りなければ何もせず false)
+	virtual bool RemoveItem(ItemID id, uint32_t count) { return inventory_.RemoveItem(id, count); }
 	// 手に持っているアイテムを取得
 	virtual const ItemID GetHaveItem() const { return inventory_.GetCurrentSelectedItemID(); }
 	// 手に持っているアイテムの採掘力を取得
@@ -93,6 +95,10 @@ public:
 	// 手に持っているアイテムのスケールを拡大
 	virtual void ScaleUpItem() { haveItem_.ScaleUp(); }
 	virtual void SpeedUpItem() { haveItem_.SpeedUp(); }
+	// スキルの効果を手に持っているアイテムに反映(振る速さの増加率・大きさの増加量)
+	virtual void SetHaveItemSkillBonus(float speedRate, float extraScale) { haveItem_.SetSkillBonus(speedRate, extraScale); }
+
+
 
 	// 手に持っているアイテムのコライダーを取得
 	virtual const ColliderShape& GetHaveItemWorldCollider() const { return haveItem_.GetWorldCollider(); }

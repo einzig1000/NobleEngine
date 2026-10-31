@@ -47,7 +47,6 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	rt->dsvAlloc = descriptorHeapManager_->GetDSVManager()->CreateDSV(rt->depthResource.Get(), &dsvDesc);
     rt->depthsrvAlloc = descriptorHeapManager_->GetSRV_UAVManager()->CreateSRVforDepthTexture(rt->depthResource.Get());
 
-    // 5) Viewport / Scissor 初期化
     rt->viewport.TopLeftX = 0.0f;
     rt->viewport.TopLeftY = 0.0f;
     rt->viewport.Width = static_cast<float>(width);
