@@ -1,6 +1,9 @@
 #include "ComputeSystem.h"
 #include <DirectX/DirectXManager.h>
-#include <RootBinding/RootBindingManager.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
 
 ComputeSystem::ComputeSystem(DirectXManager* dxManager, RootBindingManager* rootBindingManager)
 	: dxManager_(dxManager), rootBindingManager_(rootBindingManager) {}
@@ -10,7 +13,7 @@ ComputeSystem::~ComputeSystem()
 
 void ComputeSystem::Reset()
 {
-	backBufferIndex_ = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	backBufferIndex_ = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
 
 	computeObjects_.clear();
 }
@@ -22,7 +25,7 @@ void ComputeSystem::AddComputeObject(const ComputeObject* computeObject)
 
 void ComputeSystem::Execute()
 {
-	auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	auto backBufferIndex = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
 	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
 	auto* sBufferManager = rootBindingManager_->GetStructuredBufferManager();
 

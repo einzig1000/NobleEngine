@@ -4,6 +4,9 @@
 #include <DirectX/DirectXManager.h>
 #include <AssetManager/Model/ModelBank/ModelBank.h>
 #include <AssetManager/Model/ModelHelper/ModelHelper.h>
+#include <DirectX/DeviceManager/DeviceManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
 #include <filesystem>
 #include <fstream>
 #include <externals/meshoptimizer-1.1/meshoptimizer.h>
@@ -78,7 +81,7 @@ MaterialData ModelLoader::LoadMaterialTemplateFile(const std::string& filePath)
 
 bool ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelData)
 {
-    uint32_t backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    uint32_t backBufferIndex = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
     auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
     auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 
@@ -430,7 +433,7 @@ Node ModelLoader::ReadNode(const aiNode* node)
 
 SkinBindData ModelLoader::CreateSkinBindData(const ModelData* modelData, const std::map<std::string, JointWeightData>& skinClusterData)
 {
-    auto backbufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto backbufferIndex = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
     auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backbufferIndex);
 
     SkinBindData bind;

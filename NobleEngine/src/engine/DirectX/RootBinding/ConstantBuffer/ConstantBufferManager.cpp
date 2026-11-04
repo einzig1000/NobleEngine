@@ -1,12 +1,12 @@
 #include "ConstantBufferManager.h"
-#include <DirectX/DirectXManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
 
-ConstantBufferManager::ConstantBufferManager(DirectXManager* dxManager)
-	: dxManager_(dxManager)
+ConstantBufferManager::ConstantBufferManager(ID3D12Device2* device, SwapChainManager* swapChainManager)
+	: swapChainManager_(swapChainManager)
 {
 	for (uint32_t i = 0; i < Constexprs::kFrameCount; ++i)
 	{
-		cbAllocators_[i].Initialize(dxManager_->GetDevice(), 8 * 1024 * 1024, L"FrameCBAllocator");
+		cbAllocators_[i].Initialize(device, 8 * 1024 * 1024, L"FrameCBAllocator");
 	}
 }
 
@@ -15,7 +15,7 @@ ConstantBufferManager::~ConstantBufferManager()
 
 void ConstantBufferManager::Reset()
 {
-	backBufferIndex_ = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	backBufferIndex_ = swapChainManager_->GetCurrentBackBufferIndex();
 	// CBアロケータをリセット
 	cbAllocators_[backBufferIndex_].Reset();
 }

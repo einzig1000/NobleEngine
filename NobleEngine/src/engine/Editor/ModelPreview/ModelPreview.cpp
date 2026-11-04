@@ -4,6 +4,7 @@
 #include <Camera/CameraManager.h>
 #include <Camera/Camera.h>
 #include <DirectX/DirectXManager.h>
+#include <DirectX/RenderTarget/RenderTextureManager/RenderTextureManager.h>
 #include <ImGuiManager/ImGuiManager.h>
 #include <AssetManager/Model/ModelBank/ModelBank.h>
 #include <AssetManager/Model/ModelHelper/ModelHelper.h>

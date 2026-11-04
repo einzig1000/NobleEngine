@@ -36,7 +36,7 @@
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeapManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.cpp">
+    <ClCompile Include="src\engine\DirectX\RootBinding\ConstantBuffer\FrameCbAllocator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp">
@@ -291,7 +291,7 @@
     <ClCompile Include="src\engine\ComputeSystem\ComputeSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.cpp">
+    <ClCompile Include="src\engine\DirectX\RootBinding\StructuredBuffer\StructuredBufferManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Character\ICharacter.cpp">
@@ -462,10 +462,10 @@
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\RootBindingManager.cpp">
+    <ClCompile Include="src\engine\DirectX\RootBinding\RootBindingManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.cpp">
+    <ClCompile Include="src\engine\DirectX\RootBinding\ConstantBuffer\ConstantBufferManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Generator\TerrainGenerator.cpp">
@@ -548,7 +548,7 @@
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeapManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.h">
+    <ClInclude Include="src\engine\DirectX\RootBinding\ConstantBuffer\FrameCbAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h">
@@ -1259,7 +1259,7 @@
     <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.h">
+    <ClInclude Include="src\engine\DirectX\RootBinding\StructuredBuffer\StructuredBufferManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Character\ICharacter.h">
@@ -1439,10 +1439,10 @@
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\RootBindingManager.h">
+    <ClInclude Include="src\engine\DirectX\RootBinding\RootBindingManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.h">
+    <ClInclude Include="src\engine\DirectX\RootBinding\ConstantBuffer\ConstantBufferManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Generator\TerrainGenerator.h">

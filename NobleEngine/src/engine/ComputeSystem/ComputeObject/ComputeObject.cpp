@@ -1,11 +1,10 @@
 #include "ComputeObject.h"
 #include <Engine.h>
 #include <DirectX/DirectXManager.h>
-#include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
-#include <Utilities/Converter/StringConverter/StringConverter.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
+#include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
 #include <Utilities/Logger/Logger.h>
 #include <ComputeSystem/ComputeSystem.h>
-#include <RootBinding/RootBindingManager.h>
 #include <cstdint>
 
 void ComputeObject::SetupFromShaders()
@@ -31,7 +30,7 @@ void ComputeObject::SetBRegisterData(const uint32_t key, const void* data, uint3
 	const int32_t index = layout_->Find(ParamType::CBV, ShaderType::ComputeShader, key, space);
 	if (index < 0) return;
 
-	rootValues_[index].gpuAddress = Engine::Instance().GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(layout_->params[index].sizeBytes, data);
+	rootValues_[index].gpuAddress =  Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(layout_->params[index].sizeBytes, data);
 }
 
 void ComputeObject::SetTRegisterData(const uint32_t key, const uint32_t allocIndex, uint32_t space)

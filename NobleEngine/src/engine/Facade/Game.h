@@ -2,7 +2,7 @@
 #include <EngineDefinition/EngineConstexprs.h>
 #include <EngineDefinition/EngineDefinition.h>
 #include <Utilities/Easing/Easing.h>
-#include <RootBinding/RootBindingManager.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
 #include <ImGuiManager/ImGuiManager.h>
 #include <Engine.h>
 #include <DrawSystem/RenderObject/RenderObject.h>
@@ -764,7 +764,7 @@ namespace Game
 		int32_t CreateStatic(const Range& data)
 		{
 			using T = std::ranges::range_value_t<Range>;
-			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->CreateStatic(std::ranges::data(data), sizeof(T), std::ranges::size(data));
+			return Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->CreateStatic(std::ranges::data(data), sizeof(T), std::ranges::size(data));
 		}
 
 		/// <summary>
@@ -804,7 +804,7 @@ namespace Game
 		void UpdateData(int32_t resourceID, const Range& data)
 		{
 			using T = std::ranges::range_value_t<Range>;
-			Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->UpdateData(resourceID, std::ranges::data(data), sizeof(T), std::ranges::size(data));
+			Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->UpdateData(resourceID, std::ranges::data(data), sizeof(T), std::ranges::size(data));
 		}
 
 		/// <summary>

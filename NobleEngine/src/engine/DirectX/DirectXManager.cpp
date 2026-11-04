@@ -2,6 +2,15 @@
 #include <Utilities/Logger/Logger.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
 #include <Window/WindowManager.h>
+#include <DirectX/DeviceManager/DeviceManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
+#include <DirectX/RenderTarget/RenderTextureManager/RenderTextureManager.h>
+#include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
+#include <DirectX/DescriptorHeapManager/DescriptorHeapManager.h>
+#include <DirectX/SynchronizationManager/SynchronizationManager.h>
+#include <DirectX/FrameProfiler/FrameProfiler.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
 #include <Engine.h>
 
 namespace
@@ -30,6 +39,7 @@ DirectXManager::DirectXManager(HWND hwnd)
     swapChainManager_ = std::make_unique<SwapChainManager>(deviceManager_->GetDevice(), commandContextManager_->GetCommandQueue(), hwnd, descriptorHeapManager_.get());
 	renderTextureManager_ = std::make_unique<RenderTextureManager>(deviceManager_->GetDevice(), commandContextManager_->GetCommandQueue(), descriptorHeapManager_.get());
     synchronizationManager_ = std::make_unique<SynchronizationManager>(deviceManager_->GetDevice());
+	rootBindingManager_ = std::make_unique<RootBindingManager>(deviceManager_->GetDevice(), swapChainManager_.get(), commandContextManager_.get(), descriptorHeapManager_->GetSRV_UAVManager(), synchronizationManager_.get());
     frameProfiler_ = std::make_unique<FrameProfiler>(deviceManager_->GetDevice(), commandContextManager_->GetCommandQueue());
 
     Log("成功");
@@ -37,7 +47,22 @@ DirectXManager::DirectXManager(HWND hwnd)
 
 DirectXManager::~DirectXManager()
 {
+	frameProfiler_.reset();
+	rootBindingManager_.reset();
+	synchronizationManager_.reset();
+	renderTextureManager_.reset();
+	swapChainManager_.reset();
+	pipelineStateManager_.reset();
+	descriptorHeapManager_.reset();
+	commandContextManager_.reset();
+	deviceManager_.reset();
+
     Log("デストラクタ実行成功 : DirectXManager");
+}
+
+ID3D12Device2* DirectXManager::GetDevice() const
+{
+    return deviceManager_->GetDevice();
 }
 
 void DirectXManager::BeginFrame()
@@ -70,6 +95,9 @@ void DirectXManager::BeginFrame()
 	// SRV/UAV用のDescriptorHeapをセット
     ID3D12DescriptorHeap* descriptorHeaps[] = { descriptorHeapManager_->GetSRV_UAVManager()->GetSRVDescriptorHeap() };
     commandContextManager_->GetCommandList(backBufferIndex)->SetDescriptorHeaps(1, descriptorHeaps);
+
+    // RootBindingデータを初期化・解放
+    rootBindingManager_->Reset();
 }
 
 void DirectXManager::BeginRenderPass(RenderTarget* target, bool isDepthWrite)
@@ -125,6 +153,9 @@ void DirectXManager::EndFrame()
     // バックバッファのインデックスを取得
     UINT backBufferIndex = swapChainManager_->GetCurrentBackBufferIndex();
 
+    // ReadBack処理
+    GetRootBindingManager()->GetStructuredBufferManager()->FlushPendingReadbackRequests();
+
     // GPU計測区間の終了 + CPU計測終了
     frameProfiler_->EndGpuScope(commandContextManager_->GetCommandList(backBufferIndex), backBufferIndex);
     frameProfiler_->EndCpuScope();
@@ -150,6 +181,6 @@ void DirectXManager::Resize()
 {
 	// スワップチェーンのリサイズ
 	swapChainManager_->Resize(
-		GetDevice(),
+        GetDevice(),
 		GetCommandContextManager()->GetCommandQueue());
 }

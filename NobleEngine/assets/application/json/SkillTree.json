@@ -24,7 +24,7 @@
       "itemCosts": [
         {
           "count": 10000,
-          "id": "Block_Stone"
+          "id": "Block_Dirt"
         }
       ],
       "levelCost": 10,
@@ -46,7 +46,7 @@
       "itemCosts": [
         {
           "count": 99999,
-          "id": "Block_Stone"
+          "id": "Block_Dirt"
         }
       ],
       "levelCost": 150,
@@ -83,7 +83,7 @@
       "itemCosts": [
         {
           "count": 10000,
-          "id": "Block_Dirt"
+          "id": "Block_Stone"
         }
       ],
       "levelCost": 10,
@@ -105,7 +105,7 @@
       "itemCosts": [
         {
           "count": 99999,
-          "id": "Block_Dirt"
+          "id": "Block_Stone"
         }
       ],
       "levelCost": 150,

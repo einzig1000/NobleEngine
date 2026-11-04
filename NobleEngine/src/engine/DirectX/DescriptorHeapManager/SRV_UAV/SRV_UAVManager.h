@@ -42,6 +42,14 @@ public:
     // スロットを空きに戻す。
     void Free(uint32_t index);
 
+
+    // 使用中のスロット数(デバッグ表示用)
+    uint32_t GetUsedCount() const { return nextBufferIndex_ - static_cast<uint32_t>(freeIndices_.size()); }
+    // 最大スロット数(デバッグ表示用)
+    uint32_t GetCapacity() const { return capacity_; }
+    // 起動してから一番多く使った時のスロット数(デバッグ表示用)
+    uint32_t GetPeakUsedCount() const { return peakUsedCount_; }
+
     // Allocate()で取得したスロットインデックスのCPU/GPUハンドルを取得
     D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandleAt(uint32_t index) const;
     D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandleAt(uint32_t index) const;
@@ -60,6 +68,7 @@ private:
     Allocation CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc);
     Allocation CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc);
 
+
     // デバイス
     ID3D12Device2* device_ = nullptr;
 
@@ -75,4 +84,6 @@ private:
     uint32_t capacity_ = 0;
     // 次のスロットインデックス
     uint32_t nextBufferIndex_ = 0;
+    // 使用数の最大値
+    uint32_t peakUsedCount_ = 0;
 };

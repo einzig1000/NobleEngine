@@ -1,14 +1,17 @@
 #include "FontManager.h"
 #include <Engine.h>
+#include <d3d12.h>
 #include <TimeManager/TimeManager.h>
-#include <DirectX/DirectXManager.h>
+#include <DirectX/DeviceManager/DeviceManager.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
+#include <DirectX/RenderTarget/RenderTextureManager/RenderTextureManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
 #include <DrawSystem/RenderObject/RenderObject.h>
-#include <RootBinding/RootBindingManager.h>
 #include <AssetManager/AssetManager.h>
 #include <Utilities/Logger/Logger.h>
 #include <fstream>
-#include <d3d12.h>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <externals/stb/stb_truetype.h>
@@ -62,7 +65,7 @@ bool FontManager::Load(const std::string& filePath)
 
     auto* device = dxManager_->GetDevice();
     auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto backBufferIndex = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
     auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
 
     std::ifstream file(filePath, std::ios::binary | std::ios::ate);
@@ -126,7 +129,7 @@ bool FontManager::AllocateAtlasRect(int32_t width, int32_t height, Vector2int& o
 void FontManager::UpdateAtlasRegion(int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* pixels)
 {
     auto* device = dxManager_->GetDevice();
-    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto backBufferIndex = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
     auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
 
     // CopyTextureRegionの転送元バッファは行の先頭アドレスが256バイト境界である必要がある
@@ -252,7 +255,7 @@ void FontManager::DrawString(int32_t renderTextureID, const std::string& text, i
     }
     if (instances.empty()) return;
 
-    auto* sbManager = Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager();
+    auto* sbManager = dxManager_->GetRootBindingManager()->GetStructuredBufferManager();
 
     const RenderTarget* target = dxManager_->GetRenderTextureManager()->Get(renderTextureID);
 

@@ -1,8 +1,13 @@
 #include "StructuredBufferManager.h"
 #include <Utilities/Logger/Logger.h>
+#include <DirectX/DeviceManager/DeviceManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
+#include <DirectX/SynchronizationManager/SynchronizationManager.h>
+#include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
 
-StructuredBufferManager::StructuredBufferManager(DirectXManager* dxManager)
-	: dxManager_(dxManager)
+StructuredBufferManager::StructuredBufferManager(ID3D12Device2* device, SwapChainManager* swapChainManager, CommandContextManager* cmdContextManager, SRV_UAVManager* srvUavManager, SynchronizationManager* syncManager)
+	: device_(device), swapChainManager_(swapChainManager), cmdContextManager_(cmdContextManager), srvUavManager_(srvUavManager), syncManager_(syncManager)
 {}
 
 
@@ -15,21 +20,21 @@ int32_t StructuredBufferManager::CreateStatic(const void* data, size_t elementSi
 	}
 
 	// このフレームで使うコマンドリストを取得
-	const auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+	const auto backBufferIndex = swapChainManager_->GetCurrentBackBufferIndex();
+	auto* cmdList = cmdContextManager_->GetCommandList(backBufferIndex);
 
 	StaticEntry entry{};
 	const size_t bytes = elementSize * elementCount;
 
 	// デフォルトヒープ(GPUからの高速アクセス)に作る
-	entry.buffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bytes);
+	entry.buffer = Dx12ResourceFactory::CreateDefaultBufferResource(device_, bytes);
 
 	// デフォルトヒープに送るためにこのフレームでだけ使いたいアップロードヒープを作る
-	auto intermediate = Dx12ResourceFactory::CreateUploadResource(entry.buffer.Get(), data, bytes, dxManager_->GetDevice(), cmdList);
+	auto intermediate = Dx12ResourceFactory::CreateUploadResource(entry.buffer.Get(), data, bytes, device_, cmdList);
 	pendingIntermediates_.push_back(intermediate);
 
 	// SRVを作る
-	entry.srv = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+	entry.srv = srvUavManager_->CreateSRVforStructuredBuffer(
 		entry.buffer.Get(), static_cast<UINT>(elementCount), static_cast<UINT>(elementSize));
 
 	staticBuffers_[nextResourceID_] = std::move(entry);
@@ -56,12 +61,12 @@ int32_t StructuredBufferManager::CreateCompute(size_t elementSize, size_t elemen
 	const size_t bytes = elementSize * elementCount;
 
 	// デフォルトヒープ(GPUからの高速アクセス)に作る
-	entry.buffer = Dx12ResourceFactory::CreateDefaultBufferResource(dxManager_->GetDevice(), bytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	entry.buffer = Dx12ResourceFactory::CreateDefaultBufferResource(device_, bytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
 	// 同じバッファに対して UAVとSRVの両方を作る
-	entry.uav = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateUAVforStructuredBuffer(
+	entry.uav = srvUavManager_->CreateUAVforStructuredBuffer(
 		entry.buffer.Get(), static_cast<UINT>(elementCount), static_cast<UINT>(elementSize));
-	entry.srv = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->CreateSRVforStructuredBuffer(
+	entry.srv = srvUavManager_->CreateSRVforStructuredBuffer(
 		entry.buffer.Get(), static_cast<UINT>(elementCount), static_cast<UINT>(elementSize));
 
 	computeOutBuffers_[nextResourceID_] = std::move(entry);
@@ -87,13 +92,13 @@ void StructuredBufferManager::UpdateData(int32_t resourceID, const void* data, s
 
 	auto& entry = dynamicBuffers_[resourceID];
 	const size_t bytes = elementSize * elementCount;
-	const uint32_t frameIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	auto* srvUav = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+	const uint32_t frameIndex = swapChainManager_->GetCurrentBackBufferIndex();
+	auto* srvUav = srvUavManager_;
 
 	// resourceが(そもそも作成されてない || サイズが足りない)なら作る
 	if ((entry.buffers[frameIndex] == nullptr) || (bytes > entry.buffers[frameIndex]->GetDesc().Width))
 	{
-		entry.buffers[frameIndex] = Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), bytes);
+		entry.buffers[frameIndex] = Dx12ResourceFactory::CreateBufferResource(device_, bytes);
  		entry.buffers[frameIndex]->Map(0, nullptr, &entry.mapped[frameIndex]);
 	}
 
@@ -130,12 +135,12 @@ void StructuredBufferManager::ZeroFillCompute(int32_t resourceID, size_t bytes)
 	}
 
 	auto& entry = computeOutBuffers_.at(resourceID);
-	const auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
+	const auto backBufferIndex = swapChainManager_->GetCurrentBackBufferIndex();
+	auto* cmdList = cmdContextManager_->GetCommandList(backBufferIndex);
 
 	std::vector<uint8_t> zeros(bytes, 0);
 	Microsoft::WRL::ComPtr<ID3D12Resource> intermediate =
-		Dx12ResourceFactory::CreateBufferResource(dxManager_->GetDevice(), bytes);
+		Dx12ResourceFactory::CreateBufferResource(device_, bytes);
 	void* mapped = nullptr;
 	intermediate->Map(0, nullptr, &mapped);
 	std::memcpy(mapped, zeros.data(), bytes);
@@ -162,7 +167,7 @@ void StructuredBufferManager::Destroy(int32_t resourceID)
 
 	PendingRelease release{};
 	// このフレームのコマンドが完了した時点で解放してよい
-	release.fenceValue = dxManager_->GetSynchronizationManager()->GetNextFenceValue();
+	release.fenceValue = syncManager_->GetNextFenceValue();
 
 	switch (type->second)
 	{
@@ -218,11 +223,11 @@ void StructuredBufferManager::ProcessPendingReleases()
 {
 	for (auto it = pendingReleases_.begin(); it != pendingReleases_.end();)
 	{
-		if (dxManager_->GetSynchronizationManager()->IsFenceValueReached(it->fenceValue))
+		if (syncManager_->IsFenceValueReached(it->fenceValue))
 		{
 			for (uint32_t index : it->descriptorIndices)
 			{
-				dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->Free(index);
+				srvUavManager_->Free(index);
 			}
 			it = pendingReleases_.erase(it);
 		}
@@ -248,7 +253,7 @@ uint32_t StructuredBufferManager::GetSRV(int32_t resourceID) const
 	switch (it->second)
 	{
 	case BufferType::Static:        return staticBuffers_.at(resourceID).srv.index;
-	case BufferType::Dynamic:       return dynamicBuffers_.at(resourceID).srvAllocations[dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()].index;
+	case BufferType::Dynamic:       return dynamicBuffers_.at(resourceID).srvAllocations[swapChainManager_->GetCurrentBackBufferIndex()].index;
 	case BufferType::ComputeOutput: return computeOutBuffers_.at(resourceID).srv.index;
 	}
 
@@ -287,7 +292,7 @@ ID3D12Resource* StructuredBufferManager::GetResource(int32_t resourceID) const
 	switch (bufferTypeMap_.at(resourceID))
 	{
 	case BufferType::Static:        return staticBuffers_.at(resourceID).buffer.Get();
-	case BufferType::Dynamic:       return dynamicBuffers_.at(resourceID).buffers[dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()].Get();
+	case BufferType::Dynamic:       return dynamicBuffers_.at(resourceID).buffers[swapChainManager_->GetCurrentBackBufferIndex()].Get();
 	case BufferType::ComputeOutput: return computeOutBuffers_.at(resourceID).buffer.Get();
 	}
 
@@ -321,9 +326,9 @@ void StructuredBufferManager::FlushPendingReadbackRequests()
 {
 	if (pendingReadbacks_.empty()) return;
 
-	const auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
-	const UINT64 targetFenceValue = dxManager_->GetSynchronizationManager()->GetNextFenceValue();
+	const auto backBufferIndex = swapChainManager_->GetCurrentBackBufferIndex();
+	auto* cmdList = cmdContextManager_->GetCommandList(backBufferIndex);
+	const UINT64 targetFenceValue = syncManager_->GetNextFenceValue();
 
 	for (auto& [token, pending] : pendingReadbacks_)
 	{
@@ -331,7 +336,7 @@ void StructuredBufferManager::FlushPendingReadbackRequests()
 
 		auto& entry = computeOutBuffers_.at(pending.sourceResourceID);
 
-		pending.readbackResource = Dx12ResourceFactory::CreateReadbackResource(dxManager_->GetDevice(), pending.bytes);
+		pending.readbackResource = Dx12ResourceFactory::CreateReadbackResource(device_, pending.bytes);
 
 		D3D12_RESOURCE_STATES originalState = entry.currentState;
 		Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), originalState, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -355,7 +360,7 @@ bool StructuredBufferManager::TryGetReadbackResult(int32_t readbackToken, void* 
 	PendingReadback& pending = it->second;
 	if (!pending.copyRecorded) return false; // まだこのフレームのFlushが呼ばれていない
 
-	if (!dxManager_->GetSynchronizationManager()->IsFenceValueReached(pending.targetFenceValue))
+	if (!syncManager_->IsFenceValueReached(pending.targetFenceValue))
 	{
 		return false; // まだGPU側の処理が終わっていない
 	}

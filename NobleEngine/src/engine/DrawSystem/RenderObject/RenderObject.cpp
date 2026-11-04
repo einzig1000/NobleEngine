@@ -1,12 +1,10 @@
 #include "RenderObject.h"
 #include <Engine.h>
 #include <DirectX/DirectXManager.h>
-#include <DirectX/Pipeline/ShaderReflectionHelper/ShaderReflectionHelper.h>
-#include <Utilities/Converter/StringConverter/StringConverter.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
+#include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
 #include <Utilities/Logger/Logger.h>
 #include <DrawSystem/DrawSystem.h>
-#include <RootBinding/RootBindingManager.h>
-#include <cstring>
 #include <cstdint>
 
 void RenderObject::SetupFromShaders()
@@ -30,7 +28,7 @@ void RenderObject::SetBRegisterData(const uint32_t key, ShaderType shaderType, c
 	const int32_t index = layout_->Find(ParamType::CBV, shaderType, key, space);
 	if (index < 0) return;
 
-	rootValues_[index].gpuAddress = Engine::Instance().GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(layout_->params[index].sizeBytes, data);
+	rootValues_[index].gpuAddress = Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(layout_->params[index].sizeBytes, data);
 }
 
 void RenderObject::SetTRegisterData(const uint32_t key, ShaderType shaderType, const uint32_t allocIndex, uint32_t space)

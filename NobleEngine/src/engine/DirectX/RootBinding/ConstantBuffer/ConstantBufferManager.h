@@ -1,13 +1,13 @@
 #pragma once
 #include <EngineDefinition/EngineConstexprs.h>
-#include <RootBinding/ConstantBuffer/FrameCbAllocator.h>
+#include "FrameCbAllocator.h"
 
-class DirectXManager;
+class SwapChainManager;
 
 class ConstantBufferManager
 {
 public:
-	ConstantBufferManager(DirectXManager* dxManager);
+	ConstantBufferManager(ID3D12Device2* device, SwapChainManager* swapChainManager);
 	~ConstantBufferManager();
 	void Reset();
 	void Update();
@@ -15,7 +15,7 @@ public:
 	D3D12_GPU_VIRTUAL_ADDRESS GetCurrentFrameCbGpuAddress(size_t sizeBytes, const void* data);
 
 private:
-	DirectXManager* dxManager_ = nullptr;
+	SwapChainManager* swapChainManager_ = nullptr;
 	UINT backBufferIndex_ = 0;
 
 	FrameCbAllocator cbAllocators_[Constexprs::kFrameCount]{};

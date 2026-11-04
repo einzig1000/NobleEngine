@@ -7,13 +7,15 @@
 #include <EngineDefinition/EngineConstexprs.h>
 #include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
-#include <DirectX/DirectXManager.h>
 
+class SwapChainManager;
+class CommandContextManager;
+class SynchronizationManager;
 
 class StructuredBufferManager
 {
 public:
-	StructuredBufferManager(DirectXManager* dxManager);
+	StructuredBufferManager(ID3D12Device2* device, SwapChainManager* swapChainManager, CommandContextManager* cmdContextManager, SRV_UAVManager* srvUavManager, SynchronizationManager* syncManager);
 
 	/// <summary>
 	/// 静的リソースの作成(モデルやテクスチャ等)
@@ -113,7 +115,11 @@ public:
 	void ProcessPendingReleases();
 
 private:
-	DirectXManager* dxManager_ = nullptr;
+	ID3D12Device2* device_ = nullptr;
+	SwapChainManager* swapChainManager_ = nullptr;
+	CommandContextManager* cmdContextManager_ = nullptr;
+	SRV_UAVManager* srvUavManager_ = nullptr;
+	SynchronizationManager* syncManager_ = nullptr;
 
 	enum class BufferType
 	{

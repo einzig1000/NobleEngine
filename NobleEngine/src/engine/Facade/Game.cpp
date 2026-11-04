@@ -3,13 +3,14 @@
 #include <Camera/CameraManager.h>
 #include <Camera/Camera.h>
 #include <AssetManager/AssetManager.h>
-#include <DrawSystem/DrawSystem.h>
 #include <IO/IOManager.h>
 #include <IO/Keyboard/KeyboardController.h>
 #include <IO/Pad/PadController.h>
 #include <IO/Mouse/MouseController.h>
 #include <TimeManager/TimeManager.h>
 #include <DirectX/DirectXManager.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
+#include <DirectX/RenderTarget/RenderTextureManager/RenderTextureManager.h>
 #include <Window/WindowManager.h>
 #include <Utilities/Converter/ColorConverter/ColorConverter.h>
 #include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
@@ -596,41 +597,41 @@ namespace Game
 	{
 		int32_t CreateDynamic()
 		{
-			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->CreateDynamic();
+			return Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->CreateDynamic();
 		}
 		int32_t CreateCompute(size_t elementSize, size_t elementCount)
 		{
-			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->CreateCompute(elementSize, elementCount);
+			return Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->CreateCompute(elementSize, elementCount);
 		}
 
 		void ZeroFillCompute(int32_t resourceID, size_t bytes)
 		{
-			Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->ZeroFillCompute(resourceID, bytes);
+			Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->ZeroFillCompute(resourceID, bytes);
 		}
 
 		void Destroy(int32_t resourceID)
 		{
-			Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->Destroy(resourceID);
+			Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->Destroy(resourceID);
 		}
 
 		uint32_t GetSRV(int32_t resourceID)
 		{
-			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->GetSRV(resourceID);
+			return Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->GetSRV(resourceID);
 		}
 
 		uint32_t GetUAV(int32_t resourceID)
 		{
-			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->GetUAV(resourceID);
+			return Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->GetUAV(resourceID);
 		}
 
 		int32_t RequestReadback(int32_t resourceID, size_t bytes)
 		{
-			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->RequestReadback(resourceID, bytes);
+			return Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->RequestReadback(resourceID, bytes);
 		}
 
 		bool TryGetReadbackResult(int32_t token, void* outData, size_t bytes)
 		{
-			return Engine::Instance().GetRootBindingManager()->GetStructuredBufferManager()->TryGetReadbackResult(token, outData, bytes);
+			return Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetStructuredBufferManager()->TryGetReadbackResult(token, outData, bytes);
 		}
 	}
 

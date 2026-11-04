@@ -1,7 +1,9 @@
 #include "ModelCreator.h"
 #include <Utilities/Logger/Logger.h>
 #include <DirectX/ResourceUtilities/ResourceUtilities.h>
-#include <DirectX/DirectXManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/DeviceManager/DeviceManager.h>
 #include <AssetManager/Model/ModelBank/ModelBank.h>
 #include <AssetManager/Model/ModelHelper/ModelHelper.h>
 #include <filesystem>
@@ -22,7 +24,7 @@ int32_t ModelCreator::CreateModel(const std::vector<VertexData>& vertices, const
 
     Log("モデル作成開始:%s", name.c_str());
 
-    uint32_t backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    uint32_t backBufferIndex = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
     auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
     auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
 

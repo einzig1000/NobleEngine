@@ -1,6 +1,9 @@
 #include <ImGuiManager/ImGuiManager.h>
-#include <DirectX/DirectXManager.h>
 #include <Window/WindowManager.h>
+#include <DirectX/DirectXManager.h>
+#include <DirectX/DeviceManager/DeviceManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
 
 ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManager)
 	: dxManager_(dxManager), windowManager_(windowManager)
@@ -27,8 +30,8 @@ ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManag
 	uint32_t slot = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->Allocate();
 	ImGui_ImplDX12_Init(
 		dxManager_->GetDevice(),
-		dxManager_->GetSwapChain()->GetSwapChainDesc().BufferCount,
-		dxManager_->GetSwapChain()->GetRtvDesc().Format,
+		dxManager_->GetSwapChainManager()->GetSwapChainDesc().BufferCount,
+		dxManager_->GetSwapChainManager()->GetRtvDesc().Format,
 		dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetSRVDescriptorHeap(),
 		dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetCPUHandleAt(slot),                    // ImGuiフォントSRV用のCPUハンドル
 		dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(slot)                     // ImGuiフォントSRV用のGPUハンドル
@@ -71,7 +74,7 @@ void ImGuiManager::Draw()
 	ImDrawData* draw_data = ImGui::GetDrawData();
 	if (draw_data != nullptr && draw_data->CmdListsCount > 0)
 	{
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxManager_->GetCommandContextManager()->GetCommandList(dxManager_->GetSwapChain()->GetCurrentBackBufferIndex()));
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxManager_->GetCommandContextManager()->GetCommandList(dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex()));
 	}
 }
 
