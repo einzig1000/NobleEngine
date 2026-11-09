@@ -127,17 +127,20 @@ private:
 		Dynamic,
 		ComputeOutput
 	};
+	// 静的リソース
 	struct StaticEntry
 	{
 		Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
 		SRV_UAVManager::Allocation srv;
 	};
+	// ダブルバッファリング用にフレーム数分のリソースを持つ
 	struct DynamicEntry
 	{
 		Microsoft::WRL::ComPtr<ID3D12Resource> buffers[Constexprs::kFrameCount];
 		void* mapped[Constexprs::kFrameCount] = { nullptr };
 		SRV_UAVManager::Allocation srvAllocations[Constexprs::kFrameCount];
 	};
+	// UAVも搭載されたコンピュート用のリソース
 	struct ComputeOutEntry
 	{
 		Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
@@ -172,8 +175,24 @@ private:
 	std::vector<PendingRelease> pendingReleases_{};
 
 
-	// TextureLoaderにもmodelLoaderにもある中間リソース　いつか統合。毎フレーム解放
-	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> pendingIntermediates_{};
+	//// TextureLoaderにもmodelLoaderにもある中間リソース　いつか統合。毎フレーム解放
+	//std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> pendingIntermediates_{};
+
+
+
+	// 0埋め用のアップロードバッファ(中身は常に0。ZeroFillComputeのコピー元として全フレームで共有する)
+	Microsoft::WRL::ComPtr<ID3D12Resource> zeroUpload_{};
+	size_t zeroUploadBytes_ = 0;
+
+	// キー：リソースサイズ 値：使い終わったReadbackリソースの配列
+	// サイズが同じ時は再利用する。サイズが違う場合は新規作成する。
+	std::unordered_map<size_t, std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>> freeReadbackResources_{};
+
+	// このフレームのGPU処理が終わったら解放する(中間リソースなど)
+	void ReleaseAfterGpu(Microsoft::WRL::ComPtr<ID3D12Resource> resource);
+	// 0埋め用バッファを bytes 以上の大きさで用意する
+	void EnsureZeroUpload(size_t bytes);
+
 
 };
 

@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.cpp" />
+    <ClCompile Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.cpp" />
     <ClCompile Include="src\application\definition\SkillTreeData\SkillTreeData.cpp" />
     <ClCompile Include="src\application\Editor\SkillTreeEditor\SkillTreeEditor.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\SkillTreeView\SkillTreeView.cpp" />
@@ -183,6 +185,8 @@
     <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.h" />
+    <ClInclude Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.h" />
     <ClInclude Include="src\application\definition\SkillTreeData\SkillTreeData.h" />
     <ClInclude Include="src\application\Editor\SkillTreeEditor\SkillTreeEditor.h" />
     <ClInclude Include="src\application\GameObjects\UI\SkillTreeView\SkillTreeView.h" />

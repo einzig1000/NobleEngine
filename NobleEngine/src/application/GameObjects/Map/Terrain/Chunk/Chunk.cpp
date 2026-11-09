@@ -1,9 +1,11 @@
 #include "Chunk.h"
 #include <GameObjects/Map/Terrain/FaceDataPagePool/FaceDataPagePool.h>
+#include <GameObjects/Map/Terrain/ChunkGpuSlotPool/ChunkGpuSlotPool.h>
 #include <Utilities/Json/JsonManager.h>
 #include <Utilities/Logger/Logger.h>
 #include <Utilities/functions.h>
 #include <App.h>
+#include <algorithm>
 
 namespace
 {
@@ -80,8 +82,8 @@ namespace
 		static_cast<float>(Constexprs::kChunkBlockCountZ) * Constexprs::kBlockSize };
 }
 
-Chunk::Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, FaceDataPagePool* pagePool)
-	: pagePool_(pagePool)
+Chunk::Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, FaceDataPagePool* pagePool, ChunkGpuSlotPool* gpuPool)
+	: pagePool_(pagePool), gpuPool_(gpuPool)
 {
 	// チャンク情報保存
 	chunkIndex_ = chunkIndex;
@@ -91,64 +93,31 @@ Chunk::Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, Fa
 		static_cast<float>(chunkIndex.z) * kChunkSize.z };
 	chunkAABB_ = AABB(chunkInfo_.chunkWorldOrigin, chunkInfo_.chunkWorldOrigin + kChunkSize);
 
+	// blockIds_初期化
+	std::fill(std::begin(blockIds_), std::end(blockIds_), static_cast<uint32_t>(BlockID::Stone));
 
-	// ヒープ領域確保
-	faceCountResourceID_[0] = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
-	faceCountResourceID_[1] = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
-	groupOffsetResourceID_[0] = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
-	groupOffsetResourceID_[1] = Game::Resource::CreateCompute(sizeof(uint32_t), Constexprs::kGroupCount);
-	faceWriteCounterResourceID_ = Game::Resource::CreateCompute(sizeof(uint32_t), 1);
-	blockIDsResourceID_ = Game::Resource::CreateDynamic();
-	myPagesResourceID_[0] = Game::Resource::CreateDynamic();
-	myPagesResourceID_[1] = Game::Resource::CreateDynamic();
-
-	// myPagesResourceID_のSRVを最初から有効にしておく
-	// (初回Bake完了前にAS/MSが実行されてUINT32_MAXを掴むのを防ぐため。ダミーで1ページ分(page 0)だけ入れておく)
-	std::vector<uint32_t> dummyPage = { 0 };
-	Game::Resource::UpdateData(myPagesResourceID_[0], dummyPage);
-	Game::Resource::UpdateData(myPagesResourceID_[1], dummyPage);
-
-	// faceCountResourceID_ / groupOffsetResourceID_ も同じ理由(初回Bake完了前にAS/MSから読まれる)で0クリア
-	Game::Resource::ZeroFillCompute(faceCountResourceID_[0], sizeof(uint32_t) * Constexprs::kGroupCount);
-	Game::Resource::ZeroFillCompute(faceCountResourceID_[1], sizeof(uint32_t) * Constexprs::kGroupCount);
-	Game::Resource::ZeroFillCompute(groupOffsetResourceID_[0], sizeof(uint32_t) * Constexprs::kGroupCount);
-	Game::Resource::ZeroFillCompute(groupOffsetResourceID_[1], sizeof(uint32_t) * Constexprs::kGroupCount);
-
-	// 描画オブジェクトの初期化
-	render_ = std::make_unique<RenderObject>();
-	//render_->psoConfig_.ms = "assets/shaders/Block/4.2.0/Block.MS.hlsl";
-	render_->psoConfig_.ms = "assets/shaders/Block/4.3.0/Block.MS.hlsl";
-	render_->psoConfig_.ps = "assets/shaders/Block/2.0.0/Block.PS.hlsl";
-	//render_->psoConfig_.ps = "assets/shaders/Block/4.3.0/Block.PS.hlsl";
-	render_->psoConfig_.as = "assets/shaders/Block/4.3.0/Block.AS.hlsl";
-	render_->psoConfig_.rasterizerID = RasterizerID::Solid_FrontCull;
-	render_->SetupFromShaders();
-	constexpr uint32_t kASGroupSize = 32;
-	render_->instanceNum_ = (Constexprs::kGroupCount + kASGroupSize - 1) / kASGroupSize;
-
-	// 露出面カウント用の計算オブジェクト初期化
-	countCompute_ = std::make_unique<ComputeObject>();
-	countCompute_->psoConfig_.cs = "assets/shaders/Block/4.4.0/Block.CreateMesh.Count.CS.hlsl";
-	countCompute_->SetupFromShaders();
-	countCompute_->size = { static_cast<int32_t>(Constexprs::kGroupCount), 1, 1 };
-	countCompute_->RegisterOutput(faceCountResourceID_[0]);
-	countCompute_->RegisterOutput(faceCountResourceID_[1]);
-	countCompute_->RegisterOutput(faceWriteCounterResourceID_);
-	countCompute_->RegisterOutput(groupOffsetResourceID_[0]);
-	countCompute_->RegisterOutput(groupOffsetResourceID_[1]);
-
-	// 露出面書き込み用の計算オブジェクト初期化
-	writeCompute_ = std::make_unique<ComputeObject>();
-	writeCompute_->psoConfig_.cs = "assets/shaders/Block/4.4.0/Block.CreateMesh.Write.CS.hlsl";
-	writeCompute_->SetupFromShaders();
-	writeCompute_->size = { static_cast<int32_t>(Constexprs::kGroupCount), 1, 1 };
-	writeCompute_->RegisterOutput(pagePool_->GetSharedBufferResourceID());
-
+	// 地形生成
 	CreateChunkData(generator);
 }
 
 Chunk::~Chunk()
 {
+	// 保有ページを返す
+	for (auto& pages : myPages_)
+	{
+		if (!pages.empty())
+		{
+			pagePool_->Release(pages);
+			pages.clear();
+		}
+	}
+
+	// GPUスロットを返す
+	if (gpu_)
+	{
+		gpuPool_->Release(gpu_);
+		gpu_ = nullptr;
+	}
 }
 
 #pragma region 地形生成
@@ -277,6 +246,7 @@ void Chunk::CreateChunkDataNewly(const TerrainGenerator& generator)
 			for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
 			{
 				SetBlockIDs(Vector3int(x, y, z), blocks_[x][y][z]);
+				if (blocks_[x][y][z] != BlockID::Air) isAllAir_ = false;
 			}
 		}
 	}
@@ -509,12 +479,30 @@ bool Chunk::IsNeighborExist(DirectionXYZ direction)
 
 void Chunk::Update(int32_t cameraID)
 {
+	viewProjectionMatrix_ = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
+	inCamera_ = Game::Camera::InCamera(chunkAABB_, cameraID);
+
+	// GPUスロットを借りていなければ借りる
+	if (!gpu_)
+	{
+		// 全部空気のチャンクはGPUを使わない(ブロックが置かれたら借りる)
+		if (isAllAir_) return;
+
+		// 空きスロットを借りる
+		gpu_ = gpuPool_->TryGetFreeSlot();
+		if (!gpu_) return;
+
+		// データ更新フラグ
+		blockIdsDirty_ = true;
+	}
+
 	switch (bakeState_)
 	{
 	case BakeState::Idle:
 	{
-		// ブロック配列に更新が来ている かつ 
-		if (blockIdsDirty_ && pendingActiveSlot_ == -1)
+		// ブロック配列に更新が来ている かつ 直前のWrite.CSをGPUが実行し終えている
+		// (Write.CSが読むblockIdsのアップロードバッファを、読み終わる前に上書きしないため)		
+		if (blockIdsDirty_ && IsLastWriteFinished())
 		{
 			blockIdsDirty_ = false;
 			DispatchCountPhase();
@@ -529,35 +517,10 @@ void Chunk::Update(int32_t cameraID)
 		{
 			// ページに面を書きこむ
 			FinishBakeWithPageAssignment(totalFaces);
-
-			// 待っている間にさらに編集されていたら、続けて次のベイクを始める
-			if (blockIdsDirty_ && pendingActiveSlot_ == -1)
-			{
-				blockIdsDirty_ = false;
-				DispatchCountPhase();
-			}
 		}
 		break;
 	}
 	}
-
-	if (pendingActiveSlot_ >= 0)
-	{
-		Game::Resource::UpdateData(myPagesResourceID_[pendingActiveSlot_],myPages_[pendingActiveSlot_]);
-		
-		--pendingSlotUpdateCount_;
-
-		if (pendingSlotUpdateCount_ == 0)
-		{
-			activeSlot_ = pendingActiveSlot_;
-			pendingActiveSlot_ = -1;
-			pendingSlotUpdateCount_ = 0;
-		}
-	}
-
-
-	viewProjectionMatrix_ = Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
-	inCamera_ = Game::Camera::InCamera(chunkAABB_, cameraID);
 }
 
 
@@ -565,32 +528,35 @@ void Chunk::Update(int32_t cameraID)
 void Chunk::DispatchCountPhase()
 {
 	// blockIds_を更新
-	Game::Resource::UpdateData(blockIDsResourceID_, blockIds_);
+	Game::Resource::UpdateData(gpu_->blockIDsResourceID, blockIds_);
 	// このベイクで使うblockIdsのSRVを記録
-	bakeBlockIdsSrv_ = Game::Resource::GetSRV(blockIDsResourceID_);
+	bakeBlockIdsSrv_ = Game::Resource::GetSRV(gpu_->blockIDsResourceID);
 
-	// Bakeは常に「今表示していない裏側」のスロットに対して行う
-	const int32_t unActiveSlot = 1 - activeSlot_;
+
+	// 表示されてない側のスロットを更新
+	const int32_t unactiveSlot = 1 - activeSlot_;
 
 	// 面カウンタを0にリセット
-	Game::Resource::ZeroFillCompute(faceWriteCounterResourceID_, sizeof(uint32_t));
+	Game::Resource::ZeroFillCompute(gpu_->faceWriteCounterResourceID, sizeof(uint32_t));
+
+
 
 	// このチャンクの総面数を計算
 	Vector2uint csHeapSlotTable = Vector2uint(
 		App::Data::Item::GetBlockInfoTableHeapSlot(),
 		bakeBlockIdsSrv_);
 	Vector3int toCSChunkInfo = Vector3int(Constexprs::kChunkBlockCountX, Constexprs::kChunkBlockCountY, Constexprs::kChunkBlockCountZ);
-	countCompute_->SetBRegisterData(0, &csHeapSlotTable);
-	countCompute_->SetBRegisterData(1, &toCSChunkInfo);
-	countCompute_->SetURegisterData(0, Game::Resource::GetUAV(faceCountResourceID_[unActiveSlot]));
-	countCompute_->SetURegisterData(1, Game::Resource::GetUAV(faceWriteCounterResourceID_));
-	countCompute_->SetURegisterData(2, Game::Resource::GetUAV(groupOffsetResourceID_[unActiveSlot]));
-	countCompute_->Dispatch();
+	gpu_->countCompute->SetBRegisterData(0, &csHeapSlotTable);
+	gpu_->countCompute->SetBRegisterData(1, &toCSChunkInfo);
+	gpu_->countCompute->SetURegisterData(0, Game::Resource::GetUAV(gpu_->faceCountResourceID[unactiveSlot]));
+	gpu_->countCompute->SetURegisterData(1, Game::Resource::GetUAV(gpu_->faceWriteCounterResourceID));
+	gpu_->countCompute->SetURegisterData(2, Game::Resource::GetUAV(gpu_->groupOffsetResourceID[unactiveSlot]));
+	gpu_->countCompute->Dispatch();
 
 	// カウントした総面数をReadBack要請
-	pendingReadbackToken_ = Game::Resource::RequestReadback(faceWriteCounterResourceID_, sizeof(uint32_t));
+	pendingReadbackToken_ = Game::Resource::RequestReadback(gpu_->faceWriteCounterResourceID, sizeof(uint32_t));
 
-	// カウント待ち(ReadBank待ち)状態に遷移
+	// カウント待ち(ReadBack待ち)状態に遷移
 	bakeState_ = BakeState::WaitingForCount;
 }
 
@@ -599,62 +565,85 @@ void Chunk::FinishBakeWithPageAssignment(uint32_t totalFaces)
 	// 待機状態に遷移
 	bakeState_ = BakeState::Idle;
 
-	// 非活性スロット側を更新する
-	const int32_t unActiveSlot = 1 - activeSlot_;
-
-	// 今まで保有していたページを返却
-	if (!myPages_[unActiveSlot].empty())
-	{
-		pagePool_->ReleasePages(myPages_[unActiveSlot]);
-		myPages_[unActiveSlot].clear();
-	}
+	// 表示されてない側のスロットを更新
+	const int32_t unactiveSlot = 1 - activeSlot_;
 
 	// 描画面0だったら帰宅
 	if (totalFaces == 0)
 	{
-		// 面が0の場合はDynamicの世代同期を待つ必要が無いので即座に切り替える
-		activeSlot_ = unActiveSlot;
-		pendingActiveSlot_ = -1;
+		SwitchActiveSlot(unactiveSlot);
 		return;
 	}
 
 	// 最低限必要なページ数を計算して確保
 	uint32_t needPages = (totalFaces + FaceDataPagePool::kPageSize - 1) / FaceDataPagePool::kPageSize;
-	if (needPages > 0)
+	std::vector<uint32_t> pages = pagePool_->ClaimPages(needPages);
+	if (pages.empty())
 	{
-		myPages_[unActiveSlot] = pagePool_->ClaimPages(needPages);
-	}
-
-	// ページが無かったら帰宅(activeSlot_側とunActiveSlot側でがっつりデータが食い違う)
-	if (myPages_[unActiveSlot].empty())
-	{
-		__debugbreak();
+		Log("面ページが足りません。FaceDataPagePoolのページ数を増やしてください。");
+		blockIdsDirty_ = true;
 		return;
 	}
 
-	// ページ番号一覧を更新
-	Game::Resource::UpdateData(myPagesResourceID_[unActiveSlot], myPages_[unActiveSlot]);
+	myPages_[unactiveSlot] = std::move(pages);
+
+
+	// ページ番号一覧を、このフレーム用のバッファに書き込む
+	Game::Resource::UpdateData(gpu_->myPagesResourceID[unactiveSlot], myPages_[unactiveSlot]);
 
 	// 取得したページに面を書きこむ
 	Vector4uint writeHeapSlotTable = Vector4uint(
 		App::Data::Item::GetBlockInfoTableHeapSlot(),
 		bakeBlockIdsSrv_,
-		Game::Resource::GetSRV(groupOffsetResourceID_[unActiveSlot]),
-		Game::Resource::GetSRV(myPagesResourceID_[unActiveSlot]));
+		Game::Resource::GetSRV(gpu_->groupOffsetResourceID[unactiveSlot]),
+		Game::Resource::GetSRV(gpu_->myPagesResourceID[unactiveSlot]));
 	Vector4uint writeChunkInfo = Vector4uint(
 		Constexprs::kChunkBlockCountX,
 		Constexprs::kChunkBlockCountY,
 		Constexprs::kChunkBlockCountZ,
 		FaceDataPagePool::kPageSize);
-	writeCompute_->SetBRegisterData(0, &writeHeapSlotTable);
-	writeCompute_->SetBRegisterData(1, &writeChunkInfo);
-	writeCompute_->SetURegisterData(0, Game::Resource::GetUAV(pagePool_->GetSharedBufferResourceID()));
-	writeCompute_->Dispatch();
+	gpu_->writeCompute->SetBRegisterData(0, &writeHeapSlotTable);
+	gpu_->writeCompute->SetBRegisterData(1, &writeChunkInfo);
+	gpu_->writeCompute->SetURegisterData(0, Game::Resource::GetUAV(pagePool_->GetSharedResourceID()));
+	gpu_->writeCompute->Dispatch();
+
+	// GPUがWrite.CSを実行したフレーム番号を記録
+	lastWriteFrame_ = Game::Time::GetElapsedFrameTime();
+
+	// すぐに切り替える
+	SwitchActiveSlot(unactiveSlot);
+}
 
 
-	//activeSlot_ = unActiveSlot;
-	pendingActiveSlot_ = unActiveSlot;
-	pendingSlotUpdateCount_ = Constexprs::kFrameCount;
+
+void Chunk::SwitchActiveSlot(int32_t newSlot)
+{
+	const int32_t oldSlot = activeSlot_;
+	if (oldSlot != newSlot && !myPages_[oldSlot].empty())
+	{
+		pagePool_->Release(myPages_[oldSlot]);
+		myPages_[oldSlot].clear();
+	}
+	activeSlot_ = newSlot;
+}
+
+bool Chunk::IsLastWriteFinished() const
+{
+	const uint32_t now = Game::Time::GetElapsedFrameTime();
+	return now - lastWriteFrame_ >= Constexprs::kFrameCount;
+}
+
+bool Chunk::PrepareUnload()
+{
+	if (bakeState_ == BakeState::WaitingForCount)
+	{
+		uint32_t discarded = 0;
+		if (!Game::Resource::TryGetReadbackResult(pendingReadbackToken_, &discarded, sizeof(uint32_t))) return false;
+		bakeState_ = BakeState::Idle;
+	}
+
+	// 最後のWrite.CSをGPUが実行し終わるまで待つ
+	return IsLastWriteFinished();
 }
 
 
@@ -663,37 +652,33 @@ void Chunk::FinishBakeWithPageAssignment(uint32_t totalFaces)
 
 void Chunk::Draw(int32_t renderTargetID)
 {
-	if (inCamera_)
-	{
-		uint32_t asHeapSlotTable = Game::Resource::GetSRV(faceCountResourceID_[activeSlot_]);
-		render_->SetBRegisterData(0, ShaderType::AmplificationShader, &asHeapSlotTable);
-		render_->SetBRegisterData(1, ShaderType::AmplificationShader, &chunkInfo_);
-		render_->SetBRegisterData(2, ShaderType::AmplificationShader, &viewProjectionMatrix_);
+	// GPUスロットが無い || 画面外 || 面が無い
+	if (!gpu_ || !inCamera_ || myPages_[activeSlot_].empty()) return;
 
 
-		Vector4uint msSrvIndexTable = Vector4uint(
-			App::Data::Item::GetBlockInfoTableHeapSlot(),
-			Game::Resource::GetSRV(pagePool_->GetSharedBufferResourceID()),
-			Game::Resource::GetSRV(faceCountResourceID_[activeSlot_]),
-			Game::Resource::GetSRV(groupOffsetResourceID_[activeSlot_]));
-		Vector2uint msPagePoolTable = Vector2uint(
-			Game::Resource::GetSRV(myPagesResourceID_[activeSlot_]),
-			FaceDataPagePool::kPageSize);
-		render_->SetBRegisterData(0, ShaderType::MeshShader, &msSrvIndexTable);
-		render_->SetBRegisterData(1, ShaderType::MeshShader, &chunkInfo_);
-		render_->SetBRegisterData(2, ShaderType::MeshShader, &viewProjectionMatrix_);
-		render_->SetBRegisterData(3, ShaderType::MeshShader, &msPagePoolTable);
+	Game::Resource::UpdateData(gpu_->myPagesResourceID[activeSlot_], myPages_[activeSlot_]);
 
-		//if (msSrvIndexTable.x == UINT32_MAX) { __debugbreak(); }
-		//if (msSrvIndexTable.y == UINT32_MAX) { __debugbreak(); }
-		//if (msSrvIndexTable.z == UINT32_MAX) { __debugbreak(); }
-		//if (msSrvIndexTable.w == UINT32_MAX) { __debugbreak(); }
 
-		//if (msPagePoolTable.x == UINT32_MAX) { __debugbreak(); }
-		//if (msPagePoolTable.y == UINT32_MAX) { __debugbreak(); }
 
-		render_->Draw(renderTargetID);
-	}
+	uint32_t asHeapSlotTable = Game::Resource::GetSRV(gpu_->faceCountResourceID[activeSlot_]);
+	gpu_->render->SetBRegisterData(0, ShaderType::AmplificationShader, &asHeapSlotTable);
+	gpu_->render->SetBRegisterData(1, ShaderType::AmplificationShader, &chunkInfo_);
+	gpu_->render->SetBRegisterData(2, ShaderType::AmplificationShader, &viewProjectionMatrix_);
+
+	Vector4uint msSrvIndexTable = Vector4uint(
+		App::Data::Item::GetBlockInfoTableHeapSlot(),
+		Game::Resource::GetSRV(pagePool_->GetSharedResourceID()),
+		Game::Resource::GetSRV(gpu_->faceCountResourceID[activeSlot_]),
+		Game::Resource::GetSRV(gpu_->groupOffsetResourceID[activeSlot_]));
+	Vector2uint msPagePoolTable = Vector2uint(
+		Game::Resource::GetSRV(gpu_->myPagesResourceID[activeSlot_]),
+		FaceDataPagePool::kPageSize);
+	gpu_->render->SetBRegisterData(0, ShaderType::MeshShader, &msSrvIndexTable);
+	gpu_->render->SetBRegisterData(1, ShaderType::MeshShader, &chunkInfo_);
+	gpu_->render->SetBRegisterData(2, ShaderType::MeshShader, &viewProjectionMatrix_);
+	gpu_->render->SetBRegisterData(3, ShaderType::MeshShader, &msPagePoolTable);
+
+	gpu_->render->Draw(renderTargetID);
 }
 
 BlockID* Chunk::GetBlockID(const Vector3int& pos)
@@ -759,6 +744,9 @@ void Chunk::SetBlock(const Vector3int& localIndex, const BlockID id)
 	// チャンク更新フラグ
 	blockIdsDirty_ = true;
 
+	// 空気以外が置かれたら次のUpdateでGPUスロットを借りる
+	if (id != BlockID::Air) isAllAir_ = false;
+
 	// 3次元配列に入れる
 	blocks_[localIndex.x][localIndex.y][localIndex.z] = id;
 	// 1次元配列に入れる
@@ -779,6 +767,13 @@ void Chunk::SetBlockIDs(const Vector3int& localIndex, BlockID id)
 	const int32_t index = (localIndex.x + 1) + ((localIndex.y + 1) * sizeX) + ((localIndex.z + 1) * sizeX * sizeY);
 	blockIds_[index] = static_cast<uint32_t>(id);
 	blockIdsDirty_ = true;
+}
+
+void Chunk::ApplyEdit(const Vector3int& localIndex, BlockID id)
+{
+	if (id != BlockID::Air) isAllAir_ = false;
+	blocks_[localIndex.x][localIndex.y][localIndex.z] = id;
+	SetBlockIDs(localIndex, id);
 }
 
 void Chunk::PushToNeighborHalo(DirectionXYZ direction, const Vector3int& localIndex, BlockID id)

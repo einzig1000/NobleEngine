@@ -64,10 +64,10 @@ public:
     void RewriteSRVforStructuredBuffer(Allocation& allocation, ID3D12Resource* resource, UINT numElements, UINT structureByteStride);
 
 private:
+
     // SRV・UAVの作成とスロットの割り当て
     Allocation CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc);
     Allocation CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc);
-
 
     // デバイス
     ID3D12Device2* device_ = nullptr;

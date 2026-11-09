@@ -5,6 +5,8 @@
 #include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
 #include <DirectX/SynchronizationManager/SynchronizationManager.h>
 #include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
+#include <algorithm>
+#include <cstring>
 
 StructuredBufferManager::StructuredBufferManager(ID3D12Device2* device, SwapChainManager* swapChainManager, CommandContextManager* cmdContextManager, SRV_UAVManager* srvUavManager, SynchronizationManager* syncManager)
 	: device_(device), swapChainManager_(swapChainManager), cmdContextManager_(cmdContextManager), srvUavManager_(srvUavManager), syncManager_(syncManager)
@@ -31,7 +33,7 @@ int32_t StructuredBufferManager::CreateStatic(const void* data, size_t elementSi
 
 	// デフォルトヒープに送るためにこのフレームでだけ使いたいアップロードヒープを作る
 	auto intermediate = Dx12ResourceFactory::CreateUploadResource(entry.buffer.Get(), data, bytes, device_, cmdList);
-	pendingIntermediates_.push_back(intermediate);
+	ReleaseAfterGpu(std::move(intermediate));
 
 	// SRVを作る
 	entry.srv = srvUavManager_->CreateSRVforStructuredBuffer(
@@ -126,30 +128,27 @@ void StructuredBufferManager::ZeroFillCompute(int32_t resourceID, size_t bytes)
 	if (bufferTypeMap_.find(resourceID) == bufferTypeMap_.end())
 	{
 		Log("存在しないハンドルのComputeOutputバッファをゼロクリアしようとしました。");
+		__debugbreak();
 		return;
 	}
 	if (bufferTypeMap_.at(resourceID) != BufferType::ComputeOutput)
 	{
 		Log("ComputeOutput以外のバッファはZeroFillComputeOutputできません");
+		__debugbreak();
 		return;
 	}
+
 
 	auto& entry = computeOutBuffers_.at(resourceID);
 	const auto backBufferIndex = swapChainManager_->GetCurrentBackBufferIndex();
 	auto* cmdList = cmdContextManager_->GetCommandList(backBufferIndex);
 
-	std::vector<uint8_t> zeros(bytes, 0);
-	Microsoft::WRL::ComPtr<ID3D12Resource> intermediate =
-		Dx12ResourceFactory::CreateBufferResource(device_, bytes);
-	void* mapped = nullptr;
-	intermediate->Map(0, nullptr, &mapped);
-	std::memcpy(mapped, zeros.data(), bytes);
-	intermediate->Unmap(0, nullptr);
-	pendingIntermediates_.push_back(intermediate);
+	// 毎回アップロードバッファを作らず、中身が0のバッファを使い回してコピーする
+	EnsureZeroUpload(bytes);
 
 	D3D12_RESOURCE_STATES currentState = entry.currentState;
 	Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), currentState, D3D12_RESOURCE_STATE_COPY_DEST);
-	cmdList->CopyBufferRegion(entry.buffer.Get(), 0, intermediate.Get(), 0, bytes);
+	cmdList->CopyBufferRegion(entry.buffer.Get(), 0, zeroUpload_.Get(), 0, bytes);
 	Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	entry.currentState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 }
@@ -236,6 +235,36 @@ void StructuredBufferManager::ProcessPendingReleases()
 			++it;
 		}
 	}
+}
+
+void StructuredBufferManager::ReleaseAfterGpu(Microsoft::WRL::ComPtr<ID3D12Resource> resource)
+{
+	if (!resource) return;
+
+	PendingRelease release{};
+	// このフレームのコマンドが完了した時点で解放してよい
+	release.fenceValue = syncManager_->GetNextFenceValue();
+	release.resources.push_back(std::move(resource));
+	pendingReleases_.push_back(std::move(release));
+}
+
+void StructuredBufferManager::EnsureZeroUpload(size_t bytes)
+{
+	// リソースがある && サイズが足りるなら何もしない
+	if (zeroUpload_ && zeroUploadBytes_ >= bytes) return;
+
+	// 解放の目印にするFenceを更新する
+	ReleaseAfterGpu(std::move(zeroUpload_));
+
+	// 最低64KBで作る
+	constexpr size_t kMinBytes = 64 * 1024;
+	zeroUploadBytes_ = std::max(bytes, kMinBytes);
+	zeroUpload_ = Dx12ResourceFactory::CreateBufferResource(device_, zeroUploadBytes_);
+
+	void* mapped = nullptr;
+	zeroUpload_->Map(0, nullptr, &mapped);
+	std::memset(mapped, 0, zeroUploadBytes_);
+	zeroUpload_->Unmap(0, nullptr);
 }
 
 
@@ -336,7 +365,18 @@ void StructuredBufferManager::FlushPendingReadbackRequests()
 
 		auto& entry = computeOutBuffers_.at(pending.sourceResourceID);
 
-		pending.readbackResource = Dx12ResourceFactory::CreateReadbackResource(device_, pending.bytes);
+
+		// 同じサイズの使い終わったReadbackリソースがあれば使い回す。無ければ作る
+		auto& freeList = freeReadbackResources_[pending.bytes];
+		if (!freeList.empty())
+		{
+			pending.readbackResource = std::move(freeList.back());
+			freeList.pop_back();
+		}
+		else
+		{
+			pending.readbackResource = Dx12ResourceFactory::CreateReadbackResource(device_, pending.bytes);
+		}
 
 		D3D12_RESOURCE_STATES originalState = entry.currentState;
 		Dx12ResourceTransition::Transition(cmdList, entry.buffer.Get(), originalState, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -379,6 +419,9 @@ bool StructuredBufferManager::TryGetReadbackResult(int32_t readbackToken, void* 
 
 	D3D12_RANGE writtenRange{ 0, 0 }; // CPU側は書き込んでいない
 	pending.readbackResource->Unmap(0, &writtenRange);
+
+	// リソースはサイズをキーに保存して使いまわす
+	freeReadbackResources_[pending.bytes].push_back(std::move(pending.readbackResource));
 
 	pendingReadbacks_.erase(it);
 	return true;

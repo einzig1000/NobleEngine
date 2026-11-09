@@ -10,11 +10,58 @@
 #include <System/EventBus/EventBus.h>
 #include <App.h>
 
+#include <chrono>
+#include <cstdlib>
+
 namespace
 {
 	int32_t LocalMod(int32_t a, int32_t n)
 	{
 		return (a % n + n) % n;
+	}
+
+
+	constexpr Vector3int kDirOffsets[6] =
+	{
+		Vector3int(-1, 0, 0),	// Left
+		Vector3int(1, 0, 0),	// Right
+		Vector3int(0, 0, -1),	// Back
+		Vector3int(0, 0, 1),	// Front
+		Vector3int(0, -1, 0),	// Down
+		Vector3int(0, 1, 0)		// Up
+	};
+	constexpr DirectionXYZ kDirs[6] =
+	{
+		DirectionXYZ::Left, 
+		DirectionXYZ::Right,
+		DirectionXYZ::Back,
+		DirectionXYZ::Front,
+		DirectionXYZ::Down, 
+		DirectionXYZ::Up,
+	};
+	constexpr DirectionXYZ kOppositeDirs[6] =
+	{
+		DirectionXYZ::Right, 
+		DirectionXYZ::Left, 
+		DirectionXYZ::Front,
+		DirectionXYZ::Back, 
+		DirectionXYZ::Up, 
+		DirectionXYZ::Down,
+	};
+
+
+	// チャンク内のブロック座標 <-> 1つの番号
+	uint32_t PackLocalIndex(const Vector3int& i)
+	{
+		return static_cast<uint32_t>(i.x + Constexprs::kChunkBlockCountX * (i.y + Constexprs::kChunkBlockCountY * i.z));
+	}
+	Vector3int UnpackLocalIndex(uint32_t packed)
+	{
+		const int32_t p = static_cast<int32_t>(packed);
+		return Vector3int(
+			p % Constexprs::kChunkBlockCountX,
+			(p / Constexprs::kChunkBlockCountX) % Constexprs::kChunkBlockCountY,
+			p / (Constexprs::kChunkBlockCountX * Constexprs::kChunkBlockCountY));
 	}
 }
 
@@ -36,13 +83,23 @@ Terrain::Terrain()
 	updateRadius_.y = 1;
 	updateRadius_.z = drawRadius_.z;
 
-	// 露出面ページを生成(1 = 48面)
-	facePagePool_ = std::make_unique<FaceDataPagePool>(4000000);
+	unloadMargin_.x = 2;
+	unloadMargin_.y = 2;
+	unloadMargin_.z = 2;
+
+	// 露出面ページを生成(1ページ = 48面)
+	constexpr uint32_t kMaxPagesByD3D12 = (1u << 27) / FaceDataPagePool::kPageSize; // 2,796,202ページ
+	facePagePool_ = std::make_unique<FaceDataPagePool>(std::min<uint32_t>(4000000, kMaxPagesByD3D12));
+	gpuSlotPool_ = std::make_unique<ChunkGpuSlotPool>(facePagePool_.get());
 
 	SetSeed(123456);
 }
 
-Terrain::~Terrain() {}
+Terrain::~Terrain()
+{
+	chunks.clear();
+	chunkScheduled_.clear();
+}
 
 void Terrain::Initialize()
 {
@@ -54,10 +111,17 @@ void Terrain::Initialize()
 
 void Terrain::Update(int32_t cameraID, Vector3 centerPos)
 {
+	// 中心チャンク座標を更新
 	centerChunkPos_ = ChunkIndexByPosition(centerPos);
 
-	// 1Fに1つのチャンクを作成する
-	ProcessChunkGeneration(centerChunkPos_);
+	// GPUスロットプールのフレーム開始
+	gpuSlotPool_->BeginFrame();
+
+	// アンロード待ちのチャンクを消す
+	UnloadChunks();
+
+	// 予約されているチャンクをgenerationBudgetMs_以内に最大限作る
+	ProcessChunkGenerationWithBudget();
 
 	// プレイヤー周囲更新
 	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
@@ -112,6 +176,12 @@ void Terrain::DrawImGui()
 	ImGui::Text("描画中のチャンク数 : %d", drawCount_);
 	ImGui::DragInt3("描画半径", &drawRadius_.x);
 	ImGui::Text("空きページ数 : %d", facePagePool_->GetFreePageCount());
+	ImGui::Text("ページ : 使用 %u / %u (最大使用 %u)", facePagePool_->GetUsedPageCount(), facePagePool_->GetTotalPageCount(), facePagePool_->GetPeakUsedPageCount());
+	ImGui::Text("GPUスロット : %zu 個 (空き %zu)", gpuSlotPool_->GetTotalCount(), gpuSlotPool_->GetFreeCount());
+	ImGui::Text("このフレームの生成 : %d 個 / %.2f ms", lastGeneratedCount_, lastGenerationMs_);
+	ImGui::DragFloat("生成の時間予算(ms)", &generationBudgetMs_, 0.1f, 0.1f, 16.0f);
+	ImGui::Text("変更を記録したチャンク数 : %zu", editedBlocks_.size());
+
 
 	if (ImGui::Button("Save Map"))
 	{
@@ -131,11 +201,6 @@ void Terrain::DrawImGui()
 				}
 			}
 		}
-	}
-
-	// 地形生成のパラメータとプレビュー
-	if (ImGui::CollapsingHeader("地形生成"))
-	{
 	}
 
 	ImGui::End();
@@ -195,50 +260,30 @@ void Terrain::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 		chunkScheduled_.erase(pos);
 
 		// 新規生成
-		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(terrainDataManager_.GetGenerator(), pos, facePagePool_.get());
+		std::unique_ptr<Chunk> chunk = std::make_unique<Chunk>(terrainDataManager_.GetGenerator(), pos, facePagePool_.get(), gpuSlotPool_.get());
+
+
+		// 過去の編集を適用。一時敵な機能
+		//if (auto edited = editedBlocks_.find(pos); edited != editedBlocks_.end())
+		//{
+		//	for (const auto& [packed, id] : edited->second)
+		//	{
+		//		chunk->ApplyEdit(UnpackLocalIndex(packed), id);
+		//	}
+		//}
 
 		// 隣接チャンク設定
-		static constexpr Vector3int dirOffsets[6] =
-		{
-			Vector3int(-1, 0, 0),	// Left
-			Vector3int(1, 0, 0),	// Right
-			Vector3int(0, 0, -1),	// Back
-			Vector3int(0, 0, 1),	// Front
-			Vector3int(0, -1, 0),	// Down
-			Vector3int(0, 1, 0)		// Up
-		};
-
-		static constexpr DirectionXYZ dirArr[6] =
-		{
-			DirectionXYZ::Left,
-			DirectionXYZ::Right,
-			DirectionXYZ::Back,
-			DirectionXYZ::Front,
-			DirectionXYZ::Down,
-			DirectionXYZ::Up,
-		};
-
-		static constexpr DirectionXYZ opposite[6] =
-		{
-			DirectionXYZ::Right,// Left  の反対
-			DirectionXYZ::Left,	// Right の反対
-			DirectionXYZ::Front,// Back  の反対
-			DirectionXYZ::Back,	// Front の反対
-			DirectionXYZ::Up,	// Down  の反対
-			DirectionXYZ::Down,	// Up    の反対
-		};
-
 		for (int32_t dir = 0; dir < 6; ++dir)
 		{
-			Chunk* neighbor = GetChunk(pos + dirOffsets[dir]);
+			Chunk* neighbor = GetChunk(pos + kDirOffsets[dir]);
 
 			// 自分→隣（隣が無ければnullptrでOK）
-			chunk->SetNeighborChunk(dirArr[dir], neighbor);
+			chunk->SetNeighborChunk(kDirs[dir], neighbor);
 
 			// 隣→自分（隣がある時だけ）
 			if (neighbor)
 			{
-				neighbor->SetNeighborChunk(opposite[dir], chunk.get());
+				neighbor->SetNeighborChunk(kOppositeDirs[dir], chunk.get());
 			}
 		}
 
@@ -246,11 +291,13 @@ void Terrain::ProcessChunkGeneration(const Vector3int& cameraChunkPos)
 		chunks[pos] = std::move(chunk);
 	}
 }
+
+// チャンク一括生成
 void Terrain::GenerateChunks(Vector3 pos)
 {
 	centerChunkPos_ = ChunkIndexByPosition(pos);
 
-	// プレイヤー周囲更新
+	// チャンク一括生成
 	for (int32_t dx = -drawRadius_.x; dx <= drawRadius_.x; ++dx)
 	{
 		for (int32_t dy = -drawRadius_.y; dy <= drawRadius_.y; ++dy)
@@ -272,6 +319,77 @@ void Terrain::GenerateChunks(Vector3 pos)
 			}
 		}
 	}
+
+	// GPUリソース一括確保
+	size_t needSlotCount = 0;
+	for (const auto& [chunkPos, chunk] : chunks)
+	{
+		if (!chunk->IsAllAir() && !chunk->HasGpuSlot()) ++needSlotCount;
+	}
+	gpuSlotPool_->CreateSlots(needSlotCount);
+}
+// このチャンクを消すべきか
+bool Terrain::ShouldUnload(const Vector3int& chunkPos) const
+{
+	return std::abs(chunkPos.x - centerChunkPos_.x) > drawRadius_.x + unloadMargin_.x ||
+		std::abs(chunkPos.y - centerChunkPos_.y) > drawRadius_.y + unloadMargin_.y ||
+		std::abs(chunkPos.z - centerChunkPos_.z) > drawRadius_.z + unloadMargin_.z;
+}
+
+// アンロード待ちのチャンクを消す
+void Terrain::UnloadChunks()
+{
+	for (auto it = chunks.begin(); it != chunks.end();)
+	{
+		const Vector3int pos = it->first;
+		Chunk* chunk = it->second.get();
+
+		// 消す対象でない、またはGPUの処理待ちで今は消せないなら次へ(消せるようになるまで毎フレーム試す)
+		if (!ShouldUnload(pos) || !chunk->PrepareUnload())
+		{
+			++it;
+			continue;
+		}
+
+		// 隣接チャンクの参照を解除
+		for (int32_t dir = 0; dir < 6; ++dir)
+		{
+			if (Chunk* neighbor = GetChunk(pos + kDirOffsets[dir]))
+			{
+				neighbor->SetNeighborChunk(kOppositeDirs[dir], nullptr);
+			}
+		}
+
+		// ~Chunk でページとGPUスロットが返る
+		it = chunks.erase(it);
+	}
+}
+
+// 予約されているチャンクをgenerationBudgetMs_以内に最大限作る
+void Terrain::ProcessChunkGenerationWithBudget()
+{
+	const auto start = std::chrono::steady_clock::now();
+	int32_t generatedCount = 0;
+	float elapsedMs = 0.0f;
+
+	// 最低1個は作り、時間予算を使い切るまで近い順に作る
+	while (!chunkScheduled_.empty())
+	{
+		ProcessChunkGeneration(centerChunkPos_);
+		++generatedCount;
+
+		elapsedMs = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - start).count();
+		if (elapsedMs >= generationBudgetMs_) break;
+	}
+
+	lastGeneratedCount_ = generatedCount;
+	lastGenerationMs_ = elapsedMs;
+}
+
+// 変更があった地形(ブロック単位)を記録する
+void Terrain::RecordEdit(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id)
+{
+	editedBlocks_[chunkPos][PackLocalIndex(localIndex)] = id;
 }
 
 // 指定範囲のブロックを一括で置き換える
@@ -417,6 +535,9 @@ bool Terrain::ReplaceBlock(const Vector3int& chunkPos, const Vector3int& localIn
 
 	// ブロック設置
 	chunk->SetBlock(localIndex, id);
+
+	// 変更を記録
+	RecordEdit(chunkPos, localIndex, id);
 
 	return true;
 }

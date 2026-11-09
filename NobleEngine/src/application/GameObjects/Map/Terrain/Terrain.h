@@ -7,6 +7,7 @@
 #include <definition/definition.h>
 #include <GameObjects/Map/Terrain/TerrainDataManager/TerrainDataManager.h>
 #include <GameObjects/Map/Terrain/FaceDataPagePool/FaceDataPagePool.h>
+#include <GameObjects/Map/Terrain/ChunkGpuSlotPool/ChunkGpuSlotPool.h>
 
 class Chunk;
 class ICharacter;
@@ -123,6 +124,9 @@ public:
 	// スケジュールに登録されたチャンクを1つ生成
 	void ProcessChunkGeneration(const Vector3int& cameraChunkPos);
 
+	// このチャンクを消すべきか
+	bool ShouldUnload(const Vector3int& chunkPos) const;
+
 	// キャラクター登録/解除
 	void RegisterCharacter(ICharacter* c);
 	void UnregisterCharacter(ICharacter* c);
@@ -131,30 +135,50 @@ public:
 	const TerrainDataManager* GetTerrainDataManager() const { return &terrainDataManager_; }
 
 private:
+	// アンロード待ちのチャンクを消す
+	void UnloadChunks();
+
+	// 予約されているチャンクをgenerationBudgetMs_以内に最大限作る
+	void ProcessChunkGenerationWithBudget();
+
+	// プレイヤーが変更したブロックを記録する
+	void RecordEdit(const Vector3int& chunkPos, const Vector3int& localIndex, BlockID id);
+
+private:
 	EventBus* eventBus_ = nullptr;
 
 	// マップデータ
 	std::unordered_map<Vector3int, std::unique_ptr<Chunk>, Vector3intHash> chunks;
 	// スケジュール中チャンク集合
 	std::unordered_set<Vector3int, Vector3intHash> chunkScheduled_;
+	// プレイヤーが変更したブロック [チャンク座標][チャンク内番号] = ブロック
+	std::unordered_map<Vector3int, std::unordered_map<uint32_t, BlockID>, Vector3intHash> editedBlocks_;
 
-	// 露出面プール
+	// 露出面データプール
 	std::unique_ptr<FaceDataPagePool> facePagePool_;
+	// チャンクのGPUリソースのプール
+	std::unique_ptr<ChunkGpuSlotPool> gpuSlotPool_;
+
+
+	// 1フレームでチャンク生成に使ってよい時間(ms)
+	float generationBudgetMs_ = 3.0f;
+	// 直前のフレームで生成した数と、かかった時間(デバッグ表示用)
+	int32_t lastGeneratedCount_ = 0;
+	float lastGenerationMs_ = 0.0f;
+
+
 
 	// キャラクター管理
 	std::vector<ICharacter*> characters_;
 
-	// マップファイルパス
-	std::string currentMapFilePath_;
-	// マップネーム
-	std::string currentMapName_;
 
 	// リアルタイム描画数
 	int32_t drawCount_ = 0;
 
 	// パラメータ
-	Vector3int drawRadius_;    // 描画半径（チャンク単位）
+	Vector3int drawRadius_;		// 描画半径（チャンク単位）
 	Vector3int updateRadius_;   // 更新半径（チャンク単位）
+	Vector3int unloadMargin_;	// アンロードマージン（チャンク単位）
 
 	// マップ生成器
 	TerrainDataManager terrainDataManager_;

@@ -5,6 +5,7 @@ class WindowManager;
 
 class DirectXManager;
 class RenderTexturePreview;
+class GPURespurcePreview;
 
 class DrawSystem;
 
@@ -45,5 +46,7 @@ private:
 	std::unique_ptr<RenderTexturePreview> renderTexturePreview_;
 
 	std::unique_ptr<TimeEditor> timeEditor_;
+
+	std::unique_ptr<GPURespurcePreview> gpuResourcePreview_;
 };
 

@@ -1,6 +1,9 @@
 #include "DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h"
-#include "Utilities/functions.h"
-#include "Utilities/Logger/Logger.h"
+#include <Utilities/functions.h>
+#include <Utilities/Logger/Logger.h>
+#include <algorithm>
+#include <cstdlib>
+#include <string>
 
 SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     :device_(device)
@@ -27,25 +30,38 @@ SRV_UAVManager::~SRV_UAVManager()
 {
     Log("デストラクタ実行成功 : SRV_UAVManager");
 }
-  
+
 uint32_t SRV_UAVManager::Allocate()
 {
+    uint32_t index = UINT32_MAX;
+
     // 空きスロットがあれば再利用
     if (!freeIndices_.empty())
     {
-        uint32_t index = freeIndices_.back();
+        index = freeIndices_.back();
         freeIndices_.pop_back();
-        return index;
     }
-
-    if (nextBufferIndex_ >= capacity_)
+    // 無ければ新しいスロットを使う
+    else if (nextBufferIndex_ < capacity_)
+    {
+        index = nextBufferIndex_++;
+    }
+    // 容量オーバー
+    else
     {
         Log("SRVスロットが足りません。容量を増やしてください。");
-        assert(false);
-        return UINT32_MAX;
+        __debugbreak();
+        std::abort();
     }
-    return nextBufferIndex_++;
+
+    peakUsedCount_ = std::max(peakUsedCount_, GetUsedCount());
+    return index;
 }
+
+
+
+
+
 
 void SRV_UAVManager::Free(uint32_t index)
 {

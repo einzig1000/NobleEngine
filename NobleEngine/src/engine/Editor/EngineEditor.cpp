@@ -4,6 +4,7 @@
 #include "AudioPreview/AudioPreview.h"
 #include "RenderTexturePreview/RenderTexturePreview.h"
 #include "TimeEditor/TimeEditor.h"
+#include "GPURespurcePreview/GPURespurcePreview.h"
 
 #include <IO/IOManager.h>
 #include <Window/WindowManager.h>
@@ -29,6 +30,8 @@ EngineEditor::EngineEditor(
 	renderTexturePreview_ = std::make_unique<RenderTexturePreview>(dxManager);
 
 	timeEditor_ = std::make_unique<TimeEditor>(timeManager, dxManager->GetFrameProfiler());
+
+	gpuResourcePreview_ = std::make_unique<GPURespurcePreview>(dxManager->GetDescriptorHeapManager());
 }
 
 EngineEditor::~EngineEditor()
@@ -60,4 +63,6 @@ void EngineEditor::DrawImGui()
 	ImGui::End();
 
 	timeEditor_->DrawImGui();
+
+	gpuResourcePreview_->DrawImGui();
 }
