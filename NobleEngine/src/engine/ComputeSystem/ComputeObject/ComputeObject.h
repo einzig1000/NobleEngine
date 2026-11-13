@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include <DirectX/PipeLine/RenderPipelineTypes.h>
+#include <DirectX/Pipeline/RenderPipelineTypes.h>
 #include <EngineDefinition/EngineDefinition.h>
 
 class ComputeObject

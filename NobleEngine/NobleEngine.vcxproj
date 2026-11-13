@@ -11,9 +11,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\Editor\AssetsEditor\AssetsEditor.cpp" />
+    <ClCompile Include="src\engine\Editor\IEditorPanel\IEditorPanel.cpp" />
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.cpp" />
+    <ClCompile Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.cpp" />
+    <ClCompile Include="src\application\definition\SkillTreeData\SkillTreeData.cpp" />
+    <ClCompile Include="src\application\Editor\SkillTreeEditor\SkillTreeEditor.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\SkillTreeView\SkillTreeView.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\SkillState\SkillState.cpp" />
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\SkillTreeScreen\SkillTreeScreen.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\SkillTree\Saver\SkillTreeDataSaver.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\SkillTree\Loader\SkillTreeDataLoader.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\SkillTree\Bank\SkillTreeDataBank.cpp" />
+    <ClCompile Include="src\application\System\ResourceLoader\Data\SkillTree\SkillTreeDataManager.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\SkillTree\SkillTree.cpp" />
-    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.cpp" />
-    <ClCompile Include="src\engine\RootBinding\RootBindingManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\RootBinding\ConstantBuffer\ConstantBufferManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\RootBinding\RootBindingManager.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\ItemIcon\ItemIconManager.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningPointGauge\MiningPointGaugeUI.cpp" />
@@ -24,7 +37,7 @@
     <ClCompile Include="src\application\GameObjects\Effect\Particle\IParticle.cpp" />
     <ClCompile Include="src\application\GameObjects\Effect\Particle\ParticleManager.cpp" />
     <ClCompile Include="src\application\GameObjects\Effect\EffectManager.cpp" />
-    <ClCompile Include="src\engine\Editor\AudioPreview\AudioPreview.cpp" />
+    <ClCompile Include="src\engine\Editor\AssetsEditor\AudioPreview\AudioPreview.cpp" />
     <ClCompile Include="src\engine\Utilities\FileDialog\FileDialog.cpp" />
     <ClCompile Include="src\application\Test\TestParticle\Particle.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\TestPhase\TestPhase.cpp" />
@@ -90,9 +103,9 @@
     <ClCompile Include="externals\meshoptimizer-1.1\vertexfilter.cpp" />
     <ClCompile Include="externals\meshoptimizer-1.1\vfetchoptimizer.cpp" />
     <ClCompile Include="src\application\definition\definition.cpp" />
-    <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp" />
+    <ClCompile Include="src\engine\Editor\AssetsEditor\RenderTexturePreview\RenderTexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp" />
-    <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp" />
+    <ClCompile Include="src\engine\Editor\AssetsEditor\ModelPreview\ModelPreview.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\ShaderToyTestPhase\ShaderToyTestPhase.cpp" />
     <ClCompile Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.cpp" />
@@ -120,7 +133,7 @@
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\SRV_UAVManager.cpp" />
     <ClCompile Include="src\engine\DirectX\DeviceManager\DeviceManager.cpp" />
     <ClCompile Include="src\engine\DirectX\DirectXManager.cpp" />
-    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.cpp" />
+    <ClCompile Include="src\engine\DirectX\RootBinding\ConstantBuffer\FrameCbAllocator.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp" />
     <ClCompile Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.cpp" />
     <ClCompile Include="src\engine\DirectX\RenderTarget\RenderTextureManager\RenderTextureManager.cpp" />
@@ -155,9 +168,9 @@
     <ClCompile Include="src\application\Test\TestParticle\TestParticle.cpp" />
     <ClCompile Include="src\engine\AssetManager\Texture\TextureBank\TextureBank.cpp" />
     <ClCompile Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.cpp" />
-    <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp" />
+    <ClCompile Include="src\engine\Editor\AssetsEditor\TexturePreview\TexturePreview.cpp" />
     <ClCompile Include="src\engine\Editor\TimeEditor\TimeEditor.cpp" />
-    <ClCompile Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.cpp" />
+    <ClCompile Include="src\engine\DirectX\RootBinding\StructuredBuffer\StructuredBufferManager.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Terrain\Terrain.cpp" />
     <ClCompile Include="src\engine\TimeManager\TimeManager.cpp" />
     <ClCompile Include="src\engine\TimeManager\TimeScaler\TimeScaler.cpp" />
@@ -174,10 +187,23 @@
     <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\Editor\AssetsEditor\AssetsEditor.h" />
+    <ClInclude Include="src\engine\Editor\IEditorPanel\IEditorPanel.h" />
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.h" />
+    <ClInclude Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.h" />
+    <ClInclude Include="src\application\definition\SkillTreeData\SkillTreeData.h" />
+    <ClInclude Include="src\application\Editor\SkillTreeEditor\SkillTreeEditor.h" />
+    <ClInclude Include="src\application\GameObjects\UI\SkillTreeView\SkillTreeView.h" />
+    <ClInclude Include="src\application\GameObjects\Character\SkillState\SkillState.h" />
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\SkillTreeScreen\SkillTreeScreen.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\SkillTree\Saver\SkillTreeDataSaver.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\SkillTree\Loader\SkillTreeDataLoader.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\SkillTree\Bank\SkillTreeDataBank.h" />
+    <ClInclude Include="src\application\System\ResourceLoader\Data\SkillTree\SkillTreeDataManager.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\SkillTree\SkillTree.h" />
     <ClInclude Include="src\application\System\EventBus\EventPayloads.h" />
-    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.h" />
-    <ClInclude Include="src\engine\RootBinding\RootBindingManager.h" />
+    <ClInclude Include="src\engine\DirectX\RootBinding\ConstantBuffer\ConstantBufferManager.h" />
+    <ClInclude Include="src\engine\DirectX\RootBinding\RootBindingManager.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.h" />
     <ClInclude Include="src\application\GameObjects\UI\ItemIcon\ItemIconManager.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningPointGauge\MiningPointGaugeUI.h" />
@@ -188,7 +214,7 @@
     <ClInclude Include="src\application\GameObjects\Effect\Particle\IParticle.h" />
     <ClInclude Include="src\application\GameObjects\Effect\Particle\ParticleManager.h" />
     <ClInclude Include="src\application\GameObjects\Effect\EffectManager.h" />
-    <ClInclude Include="src\engine\Editor\AudioPreview\AudioPreview.h" />
+    <ClInclude Include="src\engine\Editor\AssetsEditor\AudioPreview\AudioPreview.h" />
     <ClInclude Include="src\engine\ImGuiManager\ImGuiExtensions.h" />
     <ClInclude Include="src\engine\Utilities\FileDialog\FileDialog.h" />
     <ClInclude Include="src\application\Test\TestParticle\Particle.h" />
@@ -407,9 +433,9 @@
     <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h" />
     <ClInclude Include="src\application\definition\constexprs.h" />
     <ClInclude Include="src\application\definition\definition.h" />
-    <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h" />
+    <ClInclude Include="src\engine\Editor\AssetsEditor\RenderTexturePreview\RenderTexturePreview.h" />
     <ClInclude Include="src\engine\Editor\EngineEditor.h" />
-    <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h" />
+    <ClInclude Include="src\engine\Editor\AssetsEditor\ModelPreview\ModelPreview.h" />
     <ClInclude Include="src\application\GameManager\Phase\ShaderToyTestPhase\ShaderToyTestPhase.h" />
     <ClInclude Include="src\application\GameManager\Phase\GameScenePhase\GameScenePhase.h" />
     <ClInclude Include="src\application\GameObjects\Map\Terrain\Chunk\Chunk.h" />
@@ -437,7 +463,7 @@
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\SRV_UAV\SRV_UAVManager.h" />
     <ClInclude Include="src\engine\DirectX\DeviceManager\DeviceManager.h" />
     <ClInclude Include="src\engine\DirectX\DirectXManager.h" />
-    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.h" />
+    <ClInclude Include="src\engine\DirectX\RootBinding\ConstantBuffer\FrameCbAllocator.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\RenderPipelineTypes.h" />
     <ClInclude Include="src\engine\DirectX\Pipeline\ShaderReflectionHelper\ShaderReflectionHelper.h" />
@@ -474,9 +500,9 @@
     <ClInclude Include="src\application\Test\TestParticle\TestParticle.h" />
     <ClInclude Include="src\engine\AssetManager\Texture\TextureBank\TextureBank.h" />
     <ClInclude Include="src\engine\AssetManager\Texture\TextureLoader\TextureLoader.h" />
-    <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h" />
+    <ClInclude Include="src\engine\Editor\AssetsEditor\TexturePreview\TexturePreview.h" />
     <ClInclude Include="src\engine\Editor\TimeEditor\TimeEditor.h" />
-    <ClInclude Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.h" />
+    <ClInclude Include="src\engine\DirectX\RootBinding\StructuredBuffer\StructuredBufferManager.h" />
     <ClInclude Include="src\application\GameObjects\Map\Terrain\Terrain.h" />
     <ClInclude Include="src\engine\TimeManager\TimeManager.h" />
     <ClInclude Include="src\engine\TimeManager\TimeScaler\TimeScaler.h" />

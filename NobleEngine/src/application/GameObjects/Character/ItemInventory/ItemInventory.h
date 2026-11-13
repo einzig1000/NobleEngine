@@ -64,6 +64,10 @@ public:
     void AddItem(ItemID id, uint32_t count);
     // 指定スロットの中身を置き換える(ツールのグレードアップで使う)
     void ReplaceItem(int32_t index, ItemID id, uint32_t count);
+    // 持っている数(36マスの合計。アクセサリ欄は数えない)
+    uint32_t CountItem(ItemID id) const;
+    // count個減らす(後ろのマスから。ホットバーは最後)。足りなければ何もせず false
+    bool RemoveItem(ItemID id, uint32_t count);
     // hpっとバーの選択中スロットを変更
     void SetHotbarSelectedIndex(int32_t index);
     // スロットごとアイテム入れ替え

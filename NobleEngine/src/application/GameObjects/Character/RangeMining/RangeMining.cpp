@@ -42,7 +42,9 @@ void RangeMining::Update()
 	if (!itemInfo) return;
 	const ToolInfo* toolInfo = App::Data::Item::Get(itemInfo->toolID);
 	if (!toolInfo) return;
-	owner_->DestroyBlockInAABB(AABB(min, max),toolInfo->miningPower + 100.0f);
+	// スキルで上がった採掘力
+	const float skillPower = owner_->GetSkillState()->GetTotal(SkillEffectType::MiningPower);
+	owner_->DestroyBlockInAABB(AABB(min, max), toolInfo->miningPower + 100.0f + skillPower);
 
 	state_ = State::WaitingForStart;
 }

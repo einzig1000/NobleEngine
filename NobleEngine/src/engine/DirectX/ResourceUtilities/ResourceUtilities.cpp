@@ -1,8 +1,9 @@
 #include "ResourceUtilities.h"
 #include <Utilities/Logger/Logger.h>
 #include <filesystem>
+#include <d3d12.h>
 #include <fstream>
-#include <externals/meshoptimizer-1.1/meshoptimizer.h>
+#include <externals/DirectXTex/d3dx12.h>
 
 namespace Dx12ResourceFactory
 {

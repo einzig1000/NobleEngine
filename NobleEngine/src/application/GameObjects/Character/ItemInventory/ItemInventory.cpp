@@ -66,3 +66,36 @@ void ItemInventory::ReplaceItem(int32_t index, ItemID id, uint32_t count)
     if (index < 0 || index >= kSlotCount) return;
     inventory_[static_cast<size_t>(index)] = InventorySlot{ id, count };
 }
+
+uint32_t ItemInventory::CountItem(ItemID id) const
+{
+    if (id == ItemID::MAX) return 0;
+
+    uint32_t total = 0;
+    for (const InventorySlot& slot : inventory_)
+    {
+        if (slot.itemID == id) total += slot.count;
+    }
+    return total;
+}
+
+bool ItemInventory::RemoveItem(ItemID id, uint32_t count)
+{
+    if (CountItem(id) < count) return false;
+
+    // 後ろのマスから減らす(ホットバー段 0〜8 は最後まで残る)
+    for (int32_t index = kSlotCount - 1; index >= 0 && count > 0; --index)
+    {
+        InventorySlot& slot = inventory_[static_cast<size_t>(index)];
+        if (slot.itemID != id) continue;
+
+        const uint32_t remove = std::min(count, slot.count);
+        slot.count -= remove;
+        count -= remove;
+        if (slot.count == 0)
+        {
+            slot.itemID = ItemID::MAX;
+        }
+    }
+    return true;
+}

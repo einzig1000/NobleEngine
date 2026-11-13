@@ -33,6 +33,7 @@ GameScenePhase::GameScenePhase()
 	uiManager_->SetEventBus(eventBus_.get());
 	uiManager_->SetInventory(charcterManager_->GetPlayer()->GetInventory());
 	uiManager_->SetMiningGauge(charcterManager_->GetPlayer()->GetMiningPointGauge());
+	uiManager_->SetSkillState(charcterManager_->GetPlayer()->GetSkillState());
 	// エフェクトマネージャー生成
 	effectManager_ = std::make_unique<EffectManager>();
 	effectManager_->SetEventBus(eventBus_.get());

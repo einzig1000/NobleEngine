@@ -1,0 +1,183 @@
+{
+  "nodes": [
+    {
+      "description": "",
+      "effectType": "SwingScale",
+      "effectValue": 0.5,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 0,
+      "itemCosts": [],
+      "levelCost": 1,
+      "name": "採掘範囲向上１",
+      "parents": [],
+      "position": {
+        "x": 100.0,
+        "y": 0.0
+      }
+    },
+    {
+      "description": "",
+      "effectType": "SwingScale",
+      "effectValue": 0.699999988079071,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 1,
+      "itemCosts": [
+        {
+          "count": 10000,
+          "id": "Block_Dirt"
+        }
+      ],
+      "levelCost": 10,
+      "name": "採掘範囲向上２",
+      "parents": [
+        0
+      ],
+      "position": {
+        "x": 200.0,
+        "y": 0.0
+      }
+    },
+    {
+      "description": "",
+      "effectType": "SwingScale",
+      "effectValue": 1.0,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 2,
+      "itemCosts": [
+        {
+          "count": 99999,
+          "id": "Block_Dirt"
+        }
+      ],
+      "levelCost": 150,
+      "name": "採掘範囲向上３",
+      "parents": [
+        1
+      ],
+      "position": {
+        "x": 300.0,
+        "y": 0.0
+      }
+    },
+    {
+      "description": "",
+      "effectType": "SwingSpeed",
+      "effectValue": 0.10000000149011612,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 3,
+      "itemCosts": [],
+      "levelCost": 1,
+      "name": "採掘速度向上１",
+      "parents": [],
+      "position": {
+        "x": 0.0,
+        "y": 100.0
+      }
+    },
+    {
+      "description": "",
+      "effectType": "SwingSpeed",
+      "effectValue": 0.20000000298023224,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 4,
+      "itemCosts": [
+        {
+          "count": 10000,
+          "id": "Block_Stone"
+        }
+      ],
+      "levelCost": 10,
+      "name": "採掘速度向上２",
+      "parents": [
+        3
+      ],
+      "position": {
+        "x": 0.0,
+        "y": 200.0
+      }
+    },
+    {
+      "description": "",
+      "effectType": "SwingSpeed",
+      "effectValue": 0.10000000149011612,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 5,
+      "itemCosts": [
+        {
+          "count": 99999,
+          "id": "Block_Stone"
+        }
+      ],
+      "levelCost": 150,
+      "name": "採掘速度向上３",
+      "parents": [
+        4
+      ],
+      "position": {
+        "x": 0.0,
+        "y": 300.0
+      }
+    },
+    {
+      "description": "",
+      "effectType": "MiningPower",
+      "effectValue": 1.0,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 6,
+      "itemCosts": [],
+      "levelCost": 1,
+      "name": "採掘力向上１",
+      "parents": [],
+      "position": {
+        "x": -100.0,
+        "y": 0.0
+      }
+    },
+    {
+      "description": "",
+      "effectType": "MiningPower",
+      "effectValue": 2.0,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 7,
+      "itemCosts": [
+        {
+          "count": 10000,
+          "id": "Block_Wood"
+        }
+      ],
+      "levelCost": 2,
+      "name": "採掘力向上２",
+      "parents": [
+        6
+      ],
+      "position": {
+        "x": -200.0,
+        "y": 0.0
+      }
+    },
+    {
+      "description": "",
+      "effectType": "MiningPower",
+      "effectValue": 5.0,
+      "iconPath": "assets/engine/texture/uvChecker.png",
+      "id": 8,
+      "itemCosts": [
+        {
+          "count": 99999,
+          "id": "Block_Wood"
+        }
+      ],
+      "levelCost": 50,
+      "name": "採掘力向上３",
+      "parents": [
+        6,
+        7
+      ],
+      "position": {
+        "x": -300.0,
+        "y": 0.0
+      }
+    }
+  ],
+  "nodesSize": 9
+}

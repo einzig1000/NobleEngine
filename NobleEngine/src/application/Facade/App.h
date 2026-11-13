@@ -1,6 +1,7 @@
 #pragma once
 #include <definition/definition.h>
 #include <GameObjects/UI/UIData.h>
+#include <definition/SkillTreeData/SkillTreeData.h>
 
 namespace App
 {
@@ -54,6 +55,20 @@ namespace App
 			void Save(UIElementType type, const std::vector<ElementData>& data);
 			// UIElementTypeを指定してデータ取得
 			const std::vector<ElementData>* Get(UIElementType type);
+		}
+
+		namespace SkillTree
+		{
+			// 読み込み
+			void Load();
+			// 全ノードを保存
+			void Save(const std::vector<SkillNodeData>& nodes);
+			// 全ノード
+			const std::vector<SkillNodeData>& GetNodes();
+			// 番号を指定してノードを取得。無ければ nullptr
+			const SkillNodeData* Get(int32_t id);
+			// 保存・読み込みのたびに1増える番号(作り直しが要るかの判定に使う)
+			int32_t GetRevision();
 		}
 	}
 }

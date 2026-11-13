@@ -18,8 +18,10 @@ void SwingMining::Update()
 	if (!itemInfo) return;
 	const ToolInfo* toolInfo = App::Data::Item::Get(itemInfo->toolID);
 	if (!toolInfo) return;
+	// スキルで上がった採掘力
+	const float skillPower = owner_->GetSkillState()->GetTotal(SkillEffectType::MiningPower);
 	for (const auto& sphere : collider.spheres)
 	{
-		owner_->DestroyBlockInSphere(sphere, toolInfo->miningPower + 100.0f);
+		owner_->DestroyBlockInSphere(sphere, toolInfo->miningPower + 100.0f + skillPower);
 	}
 }

@@ -7,6 +7,7 @@
 #include "UIScreen/PauseScreen/PauseScreen.h"
 #include "UIScreen/MiningModeScreen/MiningModeScreen.h"
 #include "UIScreen/EmptyScreen/EmptyScreen.h"
+#include "UIScreen/SkillTreeScreen/SkillTreeScreen.h"
 
 #include "UIElement/Craft/Craft.h"
 #include "UIElement/Hotbar/Hotbar.h"
@@ -14,6 +15,7 @@
 #include "UIElement/Pause/Pause.h"
 #include "UIElement/MiningMode/MiningMode.h"
 #include "UIElement/MiningPointGauge/MiningPointGaugeUI.h"
+#include "UIElement/SkillTree/SkillTree.h"
 
 
 UIManager::UIManager()
@@ -28,6 +30,7 @@ UIManager::UIManager()
 	elements_[static_cast<size_t>(UIElementType::Hotbar)] = std::make_unique<Hotbar>();
 	elements_[static_cast<size_t>(UIElementType::MiningMode)] = std::make_unique<MiningMode>();
 	elements_[static_cast<size_t>(UIElementType::MiningPointGauge)] = std::make_unique<MiningPointGaugeUI>();
+	elements_[static_cast<size_t>(UIElementType::SkillTree)] = std::make_unique<SkillTree>();
 
 
 
@@ -38,6 +41,7 @@ UIManager::UIManager()
 	screens_[static_cast<size_t>(UIScreenType::Pause)] = std::make_unique<PauseScreen>();
 	screens_[static_cast<size_t>(UIScreenType::MiningMode)] = std::make_unique<MiningModeScreen>();
 	screens_[static_cast<size_t>(UIScreenType::EmptyScreen)] = std::make_unique<EmptyScreen>();
+	screens_[static_cast<size_t>(UIScreenType::SkillTree)] = std::make_unique<SkillTreeScreen>();
 
 	for (size_t i = 0; i < screens_.size(); ++i)
 	{
@@ -53,7 +57,6 @@ UIManager::UIManager()
 		element->SetIconManager(iconManager_.get());
 	}
 }
-
 
 void UIManager::SetEventBus(EventBus* eventBus)
 {
@@ -74,12 +77,19 @@ void UIManager::SetInventory(const ItemInventory* inventory)
 {
 	elements_[static_cast<size_t>(UIElementType::Hotbar)]->SetInventory(inventory);
 	elements_[static_cast<size_t>(UIElementType::Inventory)]->SetInventory(inventory);
+	elements_[static_cast<size_t>(UIElementType::SkillTree)]->SetInventory(inventory);
 }
 
 void UIManager::SetMiningGauge(const MiningPointGauge* miningGauge)
 {
 	elements_[static_cast<size_t>(UIElementType::MiningPointGauge)]->SetMiningGauge(miningGauge);
 	elements_[static_cast<size_t>(UIElementType::Inventory)]->SetMiningGauge(miningGauge);
+	elements_[static_cast<size_t>(UIElementType::SkillTree)]->SetMiningGauge(miningGauge);
+}
+
+void UIManager::SetSkillState(const SkillState* skillState)
+{
+	elements_[static_cast<size_t>(UIElementType::SkillTree)]->SetSkillState(skillState);
 }
 
 UIManager::~UIManager(){}

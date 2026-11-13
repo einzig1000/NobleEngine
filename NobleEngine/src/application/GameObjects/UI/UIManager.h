@@ -9,6 +9,7 @@ class EventBus;
 class ItemInventory;
 class MiningPointGauge;
 class ItemIconManager;
+class SkillState;
 
 class UIManager
 {
@@ -26,6 +27,7 @@ public:
 	void SetEventBus(EventBus* eventBus);
 	void SetInventory(const ItemInventory* inventory);
 	void SetMiningGauge(const MiningPointGauge* miningGauge);
+	void SetSkillState(const SkillState* skillState);
 
 private:
 	EventBus* eventBus_ = nullptr;

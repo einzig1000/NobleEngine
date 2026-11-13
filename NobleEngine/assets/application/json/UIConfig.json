@@ -1,6 +1,6 @@
 {
     "Inventory": {
-        "elementsSize": 47,
+        "elementsSize": 48,
         "elements": [
             {
                 "label": "Background",
@@ -1035,6 +1035,28 @@
                     "y": 0.0,
                     "z": 0.0
                 }
+            },
+            {
+                "label": "SkillTreeTab",
+                "labelIndex": 0,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 77.5,
+                    "y": 22.222222
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 48.0,
+                    "y": 64.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
             }
         ]
     },
@@ -1352,6 +1374,99 @@
                 "translateRate": {
                     "x": 50.0,
                     "y": 82.470008
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            }
+        ]
+    },
+    "SkillTree": {
+        "elementsSize": 4,
+        "elements": [
+            {
+                "label": "Background",
+                "labelIndex": 0,
+                "texturePath": "assets/application/texture/UI/Inventory/SkillTree.png",
+                "translateRate": {
+                    "x": 50.0,
+                    "y": 50.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "TreeArea",
+                "labelIndex": 0,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 47.96875,
+                    "y": 50.0
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 636.0,
+                    "y": 600.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "InventoryTab",
+                "labelIndex": 0,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 77.5,
+                    "y": 12.777778
+                },
+                "pivot": {
+                    "x": 0.5,
+                    "y": 0.5
+                },
+                "scale": {
+                    "x": 48.0,
+                    "y": 64.0
+                },
+                "rotate": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                }
+            },
+            {
+                "label": "LevelText",
+                "labelIndex": 0,
+                "texturePath": "",
+                "translateRate": {
+                    "x": 25.78125,
+                    "y": 13.194444
                 },
                 "pivot": {
                     "x": 0.5,

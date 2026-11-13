@@ -1,9 +1,11 @@
 #include "EngineEditor.h"
-#include "ModelPreview/ModelPreview.h"
-#include "TexturePreview/TexturePreview.h"
-#include "AudioPreview/AudioPreview.h"
-#include "RenderTexturePreview/RenderTexturePreview.h"
+#include "AssetsEditor/AssetsEditor.h"
+#include "AssetsEditor/ModelPreview/ModelPreview.h"
+#include "AssetsEditor/TexturePreview/TexturePreview.h"
+#include "AssetsEditor/AudioPreview/AudioPreview.h"
+#include "AssetsEditor/RenderTexturePreview/RenderTexturePreview.h"
 #include "TimeEditor/TimeEditor.h"
+#include "GPURespurcePreview/GPURespurcePreview.h"
 
 #include <IO/IOManager.h>
 #include <Window/WindowManager.h>
@@ -23,12 +25,9 @@ EngineEditor::EngineEditor(
 	AssetManager* assetManager,
 	TimeManager* timeManager)
 {
-	modelEditor_ = std::make_unique<ModelPreview>(dxManager, cameraManager, assetManager->GetModelManager()->GetModelBank());
-	textureEditor_ = std::make_unique<TexturePreview>(dxManager, assetManager->GetTextureManager()->GetTextureBank());
-	audioPreview_ = std::make_unique<AudioPreview>(assetManager->GetAudioManager()->GetAudioBank(), assetManager->GetAudioManager()->GetAudioPlayer());
-	renderTexturePreview_ = std::make_unique<RenderTexturePreview>(dxManager);
-
-	timeEditor_ = std::make_unique<TimeEditor>(timeManager, dxManager->GetFrameProfiler());
+	panels_.push_back(std::make_unique<AssetsEditor>(dxManager, cameraManager, assetManager));
+	panels_.push_back(std::make_unique<TimeEditor>(timeManager, dxManager->GetFrameProfiler()));
+	panels_.push_back(std::make_unique<GPURespurcePreview>(dxManager->GetDescriptorHeapManager()));
 }
 
 EngineEditor::~EngineEditor()
@@ -39,25 +38,24 @@ void EngineEditor::Initialize()
 
 void EngineEditor::Update()
 {
-	modelEditor_->Update();
+	for (auto& panel : panels_)
+	{
+		panel->Update();
+	}
 }
 
 void EngineEditor::Draw()
 {
-	modelEditor_->Draw();
+	for (auto& panel : panels_)
+	{
+		panel->Draw();
+	}
 }
 
 void EngineEditor::DrawImGui()
 {
-	// アセット表示
-	ImGui::Begin("Assets Editor");
-	ImGui::BeginTabBar("AssetsEditor");
-	modelEditor_->DrawImGui();
-	textureEditor_->DrawImGui();
-	audioPreview_->DrawImGui();
-	renderTexturePreview_->DrawImGui();
-	ImGui::EndTabBar();
-	ImGui::End();
-
-	timeEditor_->DrawImGui();
+	for (auto& panel : panels_)
+	{
+		panel->DrawImGui();
+	}
 }

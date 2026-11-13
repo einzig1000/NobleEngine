@@ -5,6 +5,8 @@
 #include <GameObjects/Map/Terrain/TerrainDataManager/TerrainDataManager.h>
 
 class FaceDataPagePool;
+class ChunkGpuSlotPool;
+struct ChunkGpuSlot;
 
 struct ChunkInfo
 {
@@ -28,7 +30,7 @@ enum class BakeState
 class Chunk
 {
 public:
-	Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, FaceDataPagePool* pagePool);
+	Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, FaceDataPagePool* pagePool, ChunkGpuSlotPool* gpuPool);
 	~Chunk();
 	void Update(int32_t cameraID);
 	void Draw(int32_t renderTargetID);
@@ -46,6 +48,21 @@ public:
 	void SetBlockIDs(const Vector3int& localIndex, BlockID id);
 	void PushToNeighborHalo(DirectionXYZ direction, const Vector3int& localIndex, const BlockID id);
 
+	// 記録しておいた変更を書き戻す(生成直後、隣と接続する前に使う。隣のhaloには触らない)
+	void ApplyEdit(const Vector3int& localIndex, BlockID id);
+
+	/// <summary>
+	/// 削除の準備。削除してよければ true
+	/// (読み戻し待ち・直前のWrite.CSがGPUで実行中の間は false。毎フレーム呼べば、いずれ true になる)
+	/// </summary>
+	bool PrepareUnload();
+
+	// 全部空気か(GPUスロットを使わないチャンク)
+	bool IsAllAir() const { return isAllAir_; }
+	// GPUスロットを借りているか
+	bool HasGpuSlot() const { return gpu_ != nullptr; }
+
+
 private:
 
 	// 地形生成
@@ -59,12 +76,26 @@ private:
 	void DispatchCountPhase();
 	// 総面数ReadBack取得・ページ確保・Write.CSの起動
 	void FinishBakeWithPageAssignment(uint32_t totalFaces);
+	// 総面数ReadBack取得・ページ確保・Write.CSの起動
+	//void FinishBakeWithPageAssignment(uint32_t totalFaces, int64_t frameNumber);
+	// 描画スロットを切り替え、今まで描画していたページを返す
+	void SwitchActiveSlot(int32_t newSlot);
+
+
+	// 最後のWrite.CSをGPUが実行し終えたか
+	bool IsLastWriteFinished() const;
+
 
 private:
 	// 隣接チャンク static_cast<size_t>(DirectionXYZ)でアクセス
-	Chunk* neighbors_[6];
+	Chunk* neighbors_[6] = {};
 	// 全チャンク共有の面ページプール
 	FaceDataPagePool* pagePool_ = nullptr;
+	// 全チャンク共有のGPUスロットプール
+	ChunkGpuSlotPool* gpuPool_ = nullptr;
+	// 借りているGPUスロット(全部空気の間は nullptr)
+	ChunkGpuSlot* gpu_ = nullptr;
+
 
 	Matrix4x4 viewProjectionMatrix_;
 
@@ -75,17 +106,10 @@ private:
 	// ブロックデータ配列
 	BlockID blocks_[Constexprs::kChunkBlockCountX][Constexprs::kChunkBlockCountY][Constexprs::kChunkBlockCountZ];
 	uint32_t blockIds_[Constexprs::kMaxBlocksPerChunkPlusHalo];
-
 	// ブロックID配列更新フラグ
 	bool blockIdsDirty_ = false;
-
-
-	// 描画オブジェクト
-	std::unique_ptr<RenderObject> render_;
-	// Count.CS用の計算オブジェクト
-	std::unique_ptr<ComputeObject> countCompute_;
-	// Write.CS用の計算オブジェクト
-	std::unique_ptr<ComputeObject> writeCompute_;
+	// 全部空気か
+	bool isAllAir_ = true;
 
 
 	// ベイクの進行状況
@@ -94,30 +118,15 @@ private:
 	int32_t pendingReadbackToken_ = -1;
 	// Count.CSに読ませたblockIdsのSRV。Write.CSにも同じものを読ませる
 	uint32_t bakeBlockIdsSrv_ = UINT32_MAX;
+	// 最後にWrite.CSを積んだフレーム(Game::Time::GetElapsedFrameTime() の値)
+	uint32_t lastWriteFrame_ = 0;
+
 
 	// 描画に使っているスロット番号(0 or 1)。Bakeは常にもう片方のスロットに対して行う
 	int32_t activeSlot_ = 0;
 	// このチャンクが現在保有しているページ番号一覧
 	std::vector<uint32_t> myPages_[2];
 
-
-	// このチャンクのブロックID配列のリソースID
-	int32_t blockIDsResourceID_ = -1;
-	// グループごとの面数のリソースID
-	int32_t faceCountResourceID_[Constexprs::kFrameCount] = { -1, -1 };
-	// グループごとの書き込み開始オフセットのリソースID
-	int32_t groupOffsetResourceID_[Constexprs::kFrameCount] = { -1, -1 };
-	// 面カウンタ(InterlockedAdd用、1要素だけ)のリソースID
-	int32_t faceWriteCounterResourceID_ = -1;
-	// 保有ページ番号一覧のリソースID(可変長)
-	int32_t myPagesResourceID_[Constexprs::kFrameCount] = { -1, -1 };
-
 	bool inCamera_ = false;
-
-
-	// activeSlot_切り替え待ちのスロット番号(-1なら待ちなし)
-	int32_t pendingActiveSlot_ = -1;
-	// pendingActiveSlot_への送信済みフレーム数
-	int32_t pendingSlotUpdateCount_ = 0;
 };
 

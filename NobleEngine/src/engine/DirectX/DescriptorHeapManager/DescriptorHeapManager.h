@@ -1,10 +1,10 @@
 #pragma once
 #include <d3d12.h>
 #include <memory>
-#include <DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h>
-#include <DirectX/DescriptorHeapManager/DSV/DSVManager.h>
-#include <DirectX/DescriptorHeapManager/RTV/RTVManager.h>
 
+class SRV_UAVManager;
+class RTVManager;
+class DSVManager;
 
 class DescriptorHeapManager
 {

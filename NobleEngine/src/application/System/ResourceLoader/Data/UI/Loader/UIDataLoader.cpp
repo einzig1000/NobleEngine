@@ -53,6 +53,11 @@ void UIDataLoader::Load(UIElementType type)
 				data.textureSize = Vector2(float(textureData->metadata.width), float(textureData->metadata.height));
 			}
 		}
+		else
+		{
+			// テクスチャなしなら1x1として扱う(scale = pxにし、クリック判定の四角に使う)
+			data.textureSize = Vector2(1.0f, 1.0f);
+		}
 	}
 
 	bank_->SetData(type, dataList);

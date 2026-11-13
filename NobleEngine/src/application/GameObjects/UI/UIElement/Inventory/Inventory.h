@@ -16,6 +16,7 @@ public:
 		AccessorySlots,	// アクセサリのスロット		(labelIndex 0〜7)
 		GaugeFill,		// 採掘ptゲージの塗り		(Jsonのscaleが満タンの大きさ。pivotを左端にすると左から伸びる)
 		LevelText,		// レベルの数字の中心		(テクスチャなしの目印)
+		SkillTreeTab,	// スキルツリーへのタブ		(クリック判定。テクスチャなしの目印なら scale が大きさpx)
 	};
 
 public:
@@ -35,8 +36,11 @@ private:
 	ElementInstanceData* GetPart(Part part, int32_t labelIndex = 0);
 	// インベントリの番号(0〜35)のスロットのスプライト。0〜8はホットバー段、9〜35はメイン3段
 	ElementInstanceData* GetInventorySlotSprite(int32_t index);
+
 	// クリック(スロットの選択)
 	void HandleClick();
+	// タブのクリック
+	void HandleTabClick();
 
 	// parts_[パーツ][labelIndex] = sprites_のインデックス
 	std::array<std::vector<int32_t>, magic_enum::enum_count<Part>()> parts_;

@@ -10,6 +10,7 @@ enum class UIScreenType
 {
 	Playing,	// プレイ中　(手持ちアイテムのみ表示)
 	Inventory,	// インベントリ表示中
+	SkillTree,	// スキルツリー画面
 	Crafting,	// クラフト画面
 	Pause,		// ポーズ画面
 	MiningMode,	// 採掘モード選択画面
@@ -21,6 +22,7 @@ enum class UIScreenType
 enum class UIElementType
 {
 	Inventory,
+	SkillTree,
 	Hotbar,
 	Craft,
 	Pause,

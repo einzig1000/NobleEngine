@@ -29,7 +29,7 @@ Player::~Player()
 
 void Player::Initialize()
 {
-	translate_.value = Vector3{ 0.0f, 60.0f, 0.0f };
+	translate_.value = Vector3{ 0.0f, 200.0f, 0.0f };
 	translate_.velocity = Vector3{ 0.0f, -0.0f, 0.0f };
 	translate_.acceleration = Vector3{ 0.0f, Constexprs::kGravity, 0.0f };
 
@@ -42,14 +42,19 @@ void Player::Initialize()
 	rotate_.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 	rotate_.acceleration = Vector3{ 0.0f, 0.0f, 0.0f };
 
-	normalSpeed_ = 10.0f * scale_.value.x;
-	dashSpeed_ = 7.0f * scale_.value.x;
+	normalSpeed_ = 15.0f * scale_.value.x;
+	dashSpeed_ = 30.0f * scale_.value.x;
+	speed_ = normalSpeed_;
 	jumpPower_ = 24.0f * scale_.value.x;
 	stepUpBlockCount_ = 0;
 
 	RegisterToMap();
 
 	AddItem(ItemID::Tool_Hammer, 1);
+
+	// スキルは全部未開放から
+	skillState_.Reset();
+	ApplySkillEffects();
 }
 
 //void Player::Update(int32_t 俯瞰カメラID, int32_t 自身の視点カメラID)
@@ -98,8 +103,8 @@ void Player::CheckExternalEvents()
 {
 	if (eventBus_)
 	{
-		// ブロック破壊イベント(採掘ptをためて、たまった分だけオーブを出す)
-		Vector3 orbStart;
+		// ブロック破壊イベント(たまった分だけオーブを出す)
+		// これは採掘ptManagerがやるべきでは
 		for (const Event& event : eventBus_->GetEvents(EventType::BlockDestroyed))
 		{
 			// 壊れたブロックの情報を取得
@@ -136,7 +141,6 @@ void Player::CheckExternalEvents()
 			}
 		}
 
-
 		// ツールのグレードアップ依頼
 		for (const Event& event : eventBus_->GetEvents(EventType::ToolUpgradeRequested))
 		{
@@ -163,6 +167,28 @@ void Player::CheckExternalEvents()
 			}
 		}
 
+		// スキルの開放依頼
+		for (const Event& event : eventBus_->GetEvents(EventType::SkillUnlockRequested))
+		{
+			const auto* nodeID = std::any_cast<int32_t>(&event.data);
+			if (!nodeID) continue;
+			const SkillNodeData* node = App::Data::SkillTree::Get(*nodeID);
+			if (!node) continue;
+			// 届くまでに状況が変わっていたら何もしない(同じフレームに2回押した、など)
+			if (skillState_.GetStatus(*node, &miningPointGauge_, GetInventory()) != SkillNodeStatus::Unlockable) continue;
+
+			// 支払い
+			miningPointGauge_.UseLevel(node->levelCost);
+			for (const SkillCostItem& cost : node->itemCosts)
+			{
+				RemoveItem(cost.id, cost.count);
+			}
+
+			// 開放
+			skillState_.Unlock(*node);
+			ApplySkillEffects();
+		}
+
 		// 採掘オーブが届いた
 		for (const Event& event : eventBus_->GetEvents(EventType::MiningOrbAbsorbed))
 		{
@@ -177,7 +203,12 @@ void Player::CheckExternalEvents()
 		if (!miningModeEvents.empty())
 		{
 			// 1Fに一回しか変更フラグはされない
-			miningMode_ = std::any_cast<MiningPattern>(miningModeEvents[0].data);
+			const MiningPattern pattern = std::any_cast<MiningPattern>(miningModeEvents[0].data);
+			// 範囲採掘はスキルで解放するまで使えない
+			if (pattern != MiningPattern::Range || skillState_.HasFeature(SkillEffectType::UnlockRangeMining))
+			{
+				miningMode_ = pattern;
+			}
 		}
 
 		// アイテム取得イベント
@@ -206,6 +237,9 @@ void Player::CheckExternalEvents()
 	}
 }
 
+
+
+
 void Player::Draw(int32_t renderTextureID)
 {
 	// プレイヤー描画
@@ -228,7 +262,6 @@ void Player::DrawImGui()
 	ImGui::DragFloat3("Scale", &scale_.value.x, 0.1f);
 	ImGui::DragFloat3("Velocity", &translate_.velocity.x, 1.0f);
 
-	// モード選択UIがまだ無いので暫定でImGuiから切り替える
 	if (ImGui::RadioButton("Swing", miningMode_ == MiningPattern::Swing))
 	{
 		SetMiningPattern(MiningPattern::Swing);
@@ -243,7 +276,30 @@ void Player::DrawImGui()
 		ImGui::Text(rangeMining_->HasStartPoint() ? "Range: waiting for 2nd point" : "Range: waiting for 1st point");
 	}
 
+	// スキル(確認用)
+	ImGui::SeparatorText("スキル");
+	ImGui::Text("開放済み: %zu", skillState_.GetUnlockedCount());
+	for (SkillEffectType type : magic_enum::enum_values<SkillEffectType>())
+	{
+		if (type == SkillEffectType::None) continue;
+		ImGui::Text("%s : %.2f", magic_enum::enum_name(type).data(), skillState_.GetTotal(type));
+	}
+	if (ImGui::Button("スキルを全部未開放に戻す"))
+	{
+		skillState_.Reset();
+		ApplySkillEffects();
+	}
+
 	ImGui::End();
+}
+
+void Player::ApplySkillEffects()
+{
+	// 手に持っているアイテムの振る速さ・大きさ
+	SetHaveItemSkillBonus(skillState_.GetTotal(SkillEffectType::SwingSpeed), skillState_.GetTotal(SkillEffectType::SwingScale));
+
+	// 採掘力は SwingMining / RangeMining が毎回 GetSkillState() から読む
+	// 範囲採掘の解放は採掘モード切り替えイベントのところで見ている
 }
 
 void Player::SetMiningPattern(MiningPattern pattern)
@@ -295,7 +351,7 @@ void Player::UpdateInputWASD(int32_t cameraID)
 		if (Game::IO::Key::IsJustPressed('W'))
 		{
 			dash_ = true;
-			speed_ = dashSpeed_;
+ 			speed_ = dashSpeed_;
 		}
 	}
 	// 10/60秒以内の単タップを検知したら
@@ -339,7 +395,7 @@ void Player::UpdateInputWASD(int32_t cameraID)
 			cameraDir.x * sinA + cameraDir.z * cosA
 		);
 
-		moveDir.Normalize();
+ 		moveDir.Normalize();
 	}
 	Move(moveDir, speed_);
 }

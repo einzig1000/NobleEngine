@@ -37,6 +37,10 @@ enum class EventType
 	// ツールのグレードアップを頼まれた
 	ToolUpgradeRequested,
 
+	// スキルの開放を頼まれた
+	// data -> int32_t(ノード番号)
+	SkillUnlockRequested,
+
 
 	// GoTargetCurvingを出してほしい
 	ParticleRequest_GoTargetCurving,

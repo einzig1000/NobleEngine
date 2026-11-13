@@ -3,8 +3,10 @@
 #include <externals/DirectXTex/DirectXTex.h>
 #include <Utilities/Logger/Logger.h>
 #include <AssetManager/Texture/TextureBank/TextureBank.h>
-#include <RootBinding/RootBindingManager.h>
-#include <DirectX/DirectXManager.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
+#include <DirectX/DeviceManager/DeviceManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
 #include <filesystem>
 
 TextureLoader::TextureLoader(DirectXManager* dxManager, TextureBank* textureBank)
@@ -47,7 +49,7 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
 
 bool TextureLoader::LoadTextureFile(const std::string& filePath, TextureData* textureData, uint32_t& srvAllocationIndex)
 {
-    auto backBufferIndex = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+    auto backBufferIndex = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
     auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
     auto* device = dxManager_->GetDevice();
     auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();

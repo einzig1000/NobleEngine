@@ -36,7 +36,7 @@
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeapManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.cpp">
+    <ClCompile Include="src\engine\DirectX\RootBinding\ConstantBuffer\FrameCbAllocator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.cpp">
@@ -201,16 +201,16 @@
     <ClCompile Include="src\application\GameManager\Phase\ShaderToyTestPhase\ShaderToyTestPhase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp">
+    <ClCompile Include="src\engine\Editor\AssetsEditor\ModelPreview\ModelPreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp">
+    <ClCompile Include="src\engine\Editor\AssetsEditor\TexturePreview\TexturePreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp">
+    <ClCompile Include="src\engine\Editor\AssetsEditor\RenderTexturePreview\RenderTexturePreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\meshoptimizer-1.1\allocator.cpp">
@@ -291,7 +291,7 @@
     <ClCompile Include="src\engine\ComputeSystem\ComputeSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.cpp">
+    <ClCompile Include="src\engine\DirectX\RootBinding\StructuredBuffer\StructuredBufferManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Character\ICharacter.cpp">
@@ -423,7 +423,7 @@
     <ClCompile Include="src\engine\Utilities\FileDialog\FileDialog.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\AudioPreview\AudioPreview.cpp">
+    <ClCompile Include="src\engine\Editor\AssetsEditor\AudioPreview\AudioPreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Effect\EffectManager.cpp">
@@ -462,10 +462,10 @@
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\RootBindingManager.cpp">
+    <ClCompile Include="src\engine\DirectX\RootBinding\RootBindingManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.cpp">
+    <ClCompile Include="src\engine\DirectX\RootBinding\ConstantBuffer\ConstantBufferManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Generator\TerrainGenerator.cpp">
@@ -498,6 +498,45 @@
     <ClCompile Include="src\application\GameObjects\UI\UIElement\SkillTree\SkillTree.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="src\application\System\ResourceLoader\Data\SkillTree\SkillTreeDataManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\System\ResourceLoader\Data\SkillTree\Bank\SkillTreeDataBank.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\System\ResourceLoader\Data\SkillTree\Loader\SkillTreeDataLoader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\System\ResourceLoader\Data\SkillTree\Saver\SkillTreeDataSaver.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Character\SkillState\SkillState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\SkillTreeView\SkillTreeView.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\UI\UIScreen\SkillTreeScreen\SkillTreeScreen.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\Editor\SkillTreeEditor\SkillTreeEditor.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\definition\SkillTreeData\SkillTreeData.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Editor\IEditorPanel\IEditorPanel.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Editor\AssetsEditor\AssetsEditor.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Camera\Camera.h">
@@ -521,7 +560,7 @@
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeapManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\FrameCbAllocator.h">
+    <ClInclude Include="src\engine\DirectX\RootBinding\ConstantBuffer\FrameCbAllocator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\Pipeline\PipelineStateManager\PipelineStateManager.h">
@@ -692,16 +731,16 @@
     <ClInclude Include="src\application\GameManager\Phase\ShaderToyTestPhase\ShaderToyTestPhase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h">
+    <ClInclude Include="src\engine\Editor\AssetsEditor\ModelPreview\ModelPreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Editor\EngineEditor.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h">
+    <ClInclude Include="src\engine\Editor\AssetsEditor\TexturePreview\TexturePreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h">
+    <ClInclude Include="src\engine\Editor\AssetsEditor\RenderTexturePreview\RenderTexturePreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h">
@@ -1232,7 +1271,7 @@
     <ClInclude Include="src\engine\ComputeSystem\ComputeSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\StructuredBuffer\StructuredBufferManager.h">
+    <ClInclude Include="src\engine\DirectX\RootBinding\StructuredBuffer\StructuredBufferManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Character\ICharacter.h">
@@ -1370,7 +1409,7 @@
     <ClInclude Include="src\engine\Utilities\FileDialog\FileDialog.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\AudioPreview\AudioPreview.h">
+    <ClInclude Include="src\engine\Editor\AssetsEditor\AudioPreview\AudioPreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Effect\EffectManager.h">
@@ -1412,10 +1451,10 @@
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MessageWindow\MessageWindow.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\RootBindingManager.h">
+    <ClInclude Include="src\engine\DirectX\RootBinding\RootBindingManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\RootBinding\ConstantBuffer\ConstantBufferManager.h">
+    <ClInclude Include="src\engine\DirectX\RootBinding\ConstantBuffer\ConstantBufferManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Map\Terrain\TerrainDataManager\Generator\TerrainGenerator.h">
@@ -1449,6 +1488,45 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\UI\UIElement\SkillTree\SkillTree.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\System\ResourceLoader\Data\SkillTree\SkillTreeDataManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\System\ResourceLoader\Data\SkillTree\Bank\SkillTreeDataBank.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\System\ResourceLoader\Data\SkillTree\Loader\SkillTreeDataLoader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\System\ResourceLoader\Data\SkillTree\Saver\SkillTreeDataSaver.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Character\SkillState\SkillState.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\SkillTreeView\SkillTreeView.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\UI\UIScreen\SkillTreeScreen\SkillTreeScreen.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\Editor\SkillTreeEditor\SkillTreeEditor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\definition\SkillTreeData\SkillTreeData.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Editor\IEditorPanel\IEditorPanel.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Editor\AssetsEditor\AssetsEditor.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

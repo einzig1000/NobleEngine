@@ -1,34 +1,26 @@
 #pragma once
 #include <memory>
+#include <vector>
 
 class WindowManager;
-
 class DirectXManager;
-class RenderTexturePreview;
-
 class DrawSystem;
-
 class IOManager;
-
 class CameraManager;
-
 class AssetManager;
-class ModelPreview;
-class TexturePreview;
-class AudioPreview;
-
 class TimeManager;
-class TimeEditor;
+
+class IEditorPanel;
 
 class EngineEditor
 {
 public:
 	EngineEditor(
-		WindowManager* windowManager, 
-		DirectXManager* dxManager, 
-		DrawSystem* drawSystem, 
-		IOManager* ioManager, 
-		CameraManager* cameraManager, 
+		WindowManager* windowManager,
+		DirectXManager* dxManager,
+		DrawSystem* drawSystem,
+		IOManager* ioManager,
+		CameraManager* cameraManager,
 		AssetManager* assetManager,
 		TimeManager* timeManager);
 	~EngineEditor();
@@ -39,11 +31,5 @@ public:
 	void DrawImGui();
 
 private:
-	std::unique_ptr<ModelPreview> modelEditor_;
-	std::unique_ptr<TexturePreview> textureEditor_;
-	std::unique_ptr<AudioPreview> audioPreview_;
-	std::unique_ptr<RenderTexturePreview> renderTexturePreview_;
-
-	std::unique_ptr<TimeEditor> timeEditor_;
+	std::vector<std::unique_ptr<IEditorPanel>> panels_;
 };
-

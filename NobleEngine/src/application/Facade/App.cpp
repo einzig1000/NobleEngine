@@ -94,5 +94,29 @@ namespace App
 				return Application::Instance().GetDataManager()->GetUIDataManager()->GetBank()->GetData(type);
 			}
 		}
+
+		namespace SkillTree
+		{
+			void Load()
+			{
+				Application::Instance().GetDataManager()->GetSkillTreeDataManager()->GetLoader()->Load();
+			}
+			void Save(const std::vector<SkillNodeData>& nodes)
+			{
+				Application::Instance().GetDataManager()->GetSkillTreeDataManager()->GetSaver()->Save(nodes);
+			}
+			const std::vector<SkillNodeData>& GetNodes()
+			{
+				return Application::Instance().GetDataManager()->GetSkillTreeDataManager()->GetBank()->GetNodes();
+			}
+			const SkillNodeData* Get(int32_t id)
+			{
+				return Application::Instance().GetDataManager()->GetSkillTreeDataManager()->GetBank()->Find(id);
+			}
+			int32_t GetRevision()
+			{
+				return Application::Instance().GetDataManager()->GetSkillTreeDataManager()->GetBank()->GetRevision();
+			}
+		}
 	}
 }

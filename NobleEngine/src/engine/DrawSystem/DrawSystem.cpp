@@ -1,11 +1,13 @@
 #include "DrawSystem.h"
 #include <AssetManager/AssetManager.h>
 #include <ImGuiManager/ImGuiManager.h>
-#include <RootBinding/RootBindingManager.h>
 #include <DirectX/DirectXManager.h>
-#include <Window/WindowManager.h>
+#include <DirectX/RootBinding/RootBindingManager.h>
+#include <DirectX/CommandContextManager/CommandContextManager.h>
+#include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
+#include <DirectX/Pipeline/PipelineStateManager/PipelineStateManager.h>
+#include <DirectX/RenderTarget/RenderTextureManager/RenderTextureManager.h>
 #include <Utilities/Logger/Logger.h>
-#include <Engine.h>
 #include <queue>
 
 DrawSystem::DrawSystem(DirectXManager* dxManager, AssetManager* assetManager, RootBindingManager* rootBindingManager)
@@ -29,7 +31,7 @@ DrawSystem::~DrawSystem()
 
 void DrawSystem::Reset()
 {
-	backBufferIndex_ = dxManager_->GetSwapChain()->GetCurrentBackBufferIndex();
+	backBufferIndex_ = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
 
 	drawNodes_.clear();
 }
