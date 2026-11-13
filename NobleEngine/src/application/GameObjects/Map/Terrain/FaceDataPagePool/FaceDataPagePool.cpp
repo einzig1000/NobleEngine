@@ -14,7 +14,6 @@ FaceDataPagePool::FaceDataPagePool(uint32_t totalPageCount)
 		// (使ったページ番号の最大値 + 1) == (使用ページ数の最大値)になるように末尾から入れる
 		freePages_[i] = totalPageCount_ - 1 - i;
 	}
-
 }
 
 FaceDataPagePool::~FaceDataPagePool()

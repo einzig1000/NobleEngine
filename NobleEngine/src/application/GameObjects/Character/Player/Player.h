@@ -63,8 +63,8 @@ private:
 	// 速度関連
 	CounterSec dashBufferTimer_;
 	bool dash_ = false;
-	float normalSpeed_ = 5.0f;
-	float dashSpeed_ = 7.0f;
+	float normalSpeed_;
+	float dashSpeed_;
 
 
 	// 採掘ptの管理

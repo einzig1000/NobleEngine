@@ -201,16 +201,16 @@
     <ClCompile Include="src\application\GameManager\Phase\ShaderToyTestPhase\ShaderToyTestPhase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\ModelPreview\ModelPreview.cpp">
+    <ClCompile Include="src\engine\Editor\AssetsEditor\ModelPreview\ModelPreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Editor\EngineEditor.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\TexturePreview\TexturePreview.cpp">
+    <ClCompile Include="src\engine\Editor\AssetsEditor\TexturePreview\TexturePreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.cpp">
+    <ClCompile Include="src\engine\Editor\AssetsEditor\RenderTexturePreview\RenderTexturePreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\meshoptimizer-1.1\allocator.cpp">
@@ -423,7 +423,7 @@
     <ClCompile Include="src\engine\Utilities\FileDialog\FileDialog.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\AudioPreview\AudioPreview.cpp">
+    <ClCompile Include="src\engine\Editor\AssetsEditor\AudioPreview\AudioPreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Effect\EffectManager.cpp">
@@ -529,6 +529,12 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Editor\IEditorPanel\IEditorPanel.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Editor\AssetsEditor\AssetsEditor.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -725,16 +731,16 @@
     <ClInclude Include="src\application\GameManager\Phase\ShaderToyTestPhase\ShaderToyTestPhase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\ModelPreview\ModelPreview.h">
+    <ClInclude Include="src\engine\Editor\AssetsEditor\ModelPreview\ModelPreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Editor\EngineEditor.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\TexturePreview\TexturePreview.h">
+    <ClInclude Include="src\engine\Editor\AssetsEditor\TexturePreview\TexturePreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\RenderTexturePreview\RenderTexturePreview.h">
+    <ClInclude Include="src\engine\Editor\AssetsEditor\RenderTexturePreview\RenderTexturePreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="externals\meshoptimizer-1.1\meshoptimizer.h">
@@ -1403,7 +1409,7 @@
     <ClInclude Include="src\engine\Utilities\FileDialog\FileDialog.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\AudioPreview\AudioPreview.h">
+    <ClInclude Include="src\engine\Editor\AssetsEditor\AudioPreview\AudioPreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Effect\EffectManager.h">
@@ -1515,6 +1521,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Editor\IEditorPanel\IEditorPanel.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Editor\AssetsEditor\AssetsEditor.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

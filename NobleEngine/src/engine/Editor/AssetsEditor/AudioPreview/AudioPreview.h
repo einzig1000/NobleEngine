@@ -1,16 +1,17 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
+#include <Editor/IEditorPanel/IEditorPanel.h>
 
 class AudioBank;
 class AudioPlayer;
 
-class AudioPreview
+class AudioPreview : public IEditorPanel
 {
 public:
 	AudioPreview(AudioBank* bank, AudioPlayer* audioPlayer);
 	~AudioPreview();
 
-	void DrawImGui();
+	void DrawImGui() override;
 
 private:
 	AudioBank* bank_;

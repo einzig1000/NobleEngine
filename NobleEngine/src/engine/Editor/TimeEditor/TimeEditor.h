@@ -1,15 +1,16 @@
 #pragma once
 #include <cstdint>
+#include <Editor/IEditorPanel/IEditorPanel.h>
 
 class TimeManager;
 class FrameProfiler;
 
-class TimeEditor
+class TimeEditor : public IEditorPanel
 {
 public:
 	TimeEditor(TimeManager* timeManager, FrameProfiler* frameProfiler);
 	~TimeEditor();
-	void DrawImGui();
+	void DrawImGui() override;
 
 private:
 	TimeManager* timeManager_ = nullptr;

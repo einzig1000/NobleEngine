@@ -1,18 +1,19 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
+#include <Editor/IEditorPanel/IEditorPanel.h>
 
 class TextureBank;
 class DirectXManager;
 
-class TexturePreview
+class TexturePreview : public IEditorPanel
 {
 public:
 	TexturePreview(DirectXManager* dxManager, TextureBank* bank);
 	~TexturePreview();
 
-	void Update();
-	void Draw();
-	void DrawImGui();
+	void Update() override;
+	void Draw() override;
+	void DrawImGui() override;
 
 private:
 	TextureBank* bank_;

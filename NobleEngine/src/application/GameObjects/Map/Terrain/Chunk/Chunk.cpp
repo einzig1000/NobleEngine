@@ -157,47 +157,6 @@ void Chunk::CreateChunkDataFromJson()
 	//}
 }
 
-///// 新規生成されたチャンクデータを作成
-//void Chunk::CreateChunkDataNewly(const TerrainGenerator& generator)
-//{
-//	// チャンク内すべてのブロック生成
-//	for (int32_t x = 0; x < Constexprs::kChunkBlockCountX; ++x)
-//	{
-//		for (int32_t z = 0; z < Constexprs::kChunkBlockCountZ; ++z)
-//		{
-//			// ワールド座標でのブロックインデックス
-//			const int32_t worldX = chunkIndex_.x * Constexprs::kChunkBlockCountX + x;
-//			const int32_t worldZ = chunkIndex_.z * Constexprs::kChunkBlockCountZ + z;
-//
-//			// この列の地表の高さ
-//			const int32_t height = generator.SurfaceHeight(worldX, worldZ);
-//
-//			// 土の厚さ
-//			int32_t dirtThickness = int32_t(float(height) * 0.1f);
-//			if (height - dirtThickness < 0) dirtThickness = height;
-//
-//			for (int32_t y = 0; y < Constexprs::kChunkBlockCountY; ++y)
-//			{
-//				int32_t globalY = chunkIndex_.y * Constexprs::kChunkBlockCountY + y;
-//				if (globalY < -1)
-//				{
-//					continue;
-//				}
-//				BlockID id;
-//				if (globalY == 0)							id = BlockID::Bedrock;
-//				else if (globalY < height - dirtThickness)	id = BlockID::Stone;
-//				else if (globalY < height - 1)				id = BlockID::Dirt;
-//				else if (globalY < height)					id = BlockID::Grass;
-//				else										id = BlockID::Air;
-//				SetBlock(Vector3int(x, y, z), id);
-//			}
-//		}
-//	}
-//
-//	//GenerateOres(param);
-//	//GenerateTrees(param);
-//}
-
 /// 新規生成されたチャンクデータを作成
 void Chunk::CreateChunkDataNewly(const TerrainGenerator& generator)
 {

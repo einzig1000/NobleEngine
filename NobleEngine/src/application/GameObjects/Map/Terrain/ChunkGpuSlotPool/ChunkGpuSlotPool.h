@@ -12,13 +12,13 @@ struct ChunkGpuSlot
 	// このチャンクのブロックID配列のリソースID
 	int32_t blockIDsResourceID = -1;
 	// グループごとの面数のリソースID
-	int32_t faceCountResourceID[Constexprs::kFrameCount] = { -1, -1 };
+	int32_t faceCountResourceID[2] = { -1, -1 };
 	// グループごとの書き込み開始オフセットのリソースID
-	int32_t groupOffsetResourceID[Constexprs::kFrameCount] = { -1, -1 };
+	int32_t groupOffsetResourceID[2] = { -1, -1 };
 	// 面カウンタ(InterlockedAdd用、1要素だけ)のリソースID
 	int32_t faceWriteCounterResourceID = -1;
 	// 保有ページ番号一覧のリソースID(可変長)
-	int32_t myPagesResourceID[Constexprs::kFrameCount] = { -1, -1 };
+	int32_t myPagesResourceID[2] = { -1, -1 };
 
 	// 描画オブジェクト
 	std::unique_ptr<RenderObject> render;

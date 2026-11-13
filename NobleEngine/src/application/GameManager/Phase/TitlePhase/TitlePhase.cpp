@@ -79,7 +79,7 @@ void TitlePhase::Update()
 	// カメラ更新
 	cameraController_->Update(c_title_);
 
-	if (Game::IO::Key::IsJustPressed(VK_SPACE))
+	if (Game::IO::Key::IsJustPressed(VK_SPACE) || Game::IO::Mouse::IsJustPressed(0))
 	{
 		MoveCamera(Stage::Menu, 1.5f);
 	}

@@ -1,6 +1,7 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
 #include <DrawSystem/RenderObject/RenderObject.h>
+#include <Editor/IEditorPanel/IEditorPanel.h>
 #include <memory>
 
 class ModelBank;
@@ -14,15 +15,15 @@ struct HitBoxInfo
 	std::vector<Vector3> vertices;
 };
 
-class ModelPreview
+class ModelPreview : public IEditorPanel
 {
 public:
 	ModelPreview(DirectXManager* dxManager, CameraManager* cameraManager, ModelBank* bank);
 	~ModelPreview();
 
-	void Update();
-	void Draw();
-	void DrawImGui();
+	void Update() override;
+	void Draw() override;
+	void DrawImGui() override;
 
 private:
 	ModelBank* bank_;

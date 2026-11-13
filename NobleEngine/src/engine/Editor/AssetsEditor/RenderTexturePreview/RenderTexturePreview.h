@@ -1,19 +1,20 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
+#include <Editor/IEditorPanel/IEditorPanel.h>
 #include <DrawSystem/RenderObject/RenderObject.h>
 #include <memory>
 #include <optional>
 
 class DirectXManager;
 
-class RenderTexturePreview
+class RenderTexturePreview : public IEditorPanel
 {
 public:
 	RenderTexturePreview(DirectXManager* dxManager);
 	~RenderTexturePreview();
-	void Update();
-	void Draw();
-	void DrawImGui();
+	void Update() override;
+	void Draw() override;
+	void DrawImGui() override;
 
 private:
 	DirectXManager* dxManager_ = nullptr;

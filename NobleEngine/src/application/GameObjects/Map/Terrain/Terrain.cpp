@@ -88,8 +88,8 @@ Terrain::Terrain()
 	unloadMargin_.z = 2;
 
 	// 露出面ページを生成(1ページ = 48面)
-	constexpr uint32_t kMaxPagesByD3D12 = (1u << 27) / FaceDataPagePool::kPageSize; // 2,796,202ページ
-	facePagePool_ = std::make_unique<FaceDataPagePool>(std::min<uint32_t>(4000000, kMaxPagesByD3D12));
+	facePagePool_ = std::make_unique<FaceDataPagePool>(120000);
+	// GPUスロットプールを生成
 	gpuSlotPool_ = std::make_unique<ChunkGpuSlotPool>(facePagePool_.get());
 
 	SetSeed(123456);

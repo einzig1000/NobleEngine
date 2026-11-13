@@ -42,8 +42,9 @@ void Player::Initialize()
 	rotate_.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 	rotate_.acceleration = Vector3{ 0.0f, 0.0f, 0.0f };
 
-	normalSpeed_ = 10.0f * scale_.value.x;
-	dashSpeed_ = 7.0f * scale_.value.x;
+	normalSpeed_ = 15.0f * scale_.value.x;
+	dashSpeed_ = 30.0f * scale_.value.x;
+	speed_ = normalSpeed_;
 	jumpPower_ = 24.0f * scale_.value.x;
 	stepUpBlockCount_ = 0;
 
@@ -350,7 +351,7 @@ void Player::UpdateInputWASD(int32_t cameraID)
 		if (Game::IO::Key::IsJustPressed('W'))
 		{
 			dash_ = true;
-			speed_ = dashSpeed_;
+ 			speed_ = dashSpeed_;
 		}
 	}
 	// 10/60秒以内の単タップを検知したら
@@ -394,7 +395,7 @@ void Player::UpdateInputWASD(int32_t cameraID)
 			cameraDir.x * sinA + cameraDir.z * cosA
 		);
 
-		moveDir.Normalize();
+ 		moveDir.Normalize();
 	}
 	Move(moveDir, speed_);
 }
