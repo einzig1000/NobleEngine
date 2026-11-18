@@ -20,7 +20,7 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
         return renderTarget->colorsrvAlloc.index;
 	}
 
-    Log("レンダーテクスチャ作成開始:%s", label.c_str());
+    Logger::Log("レンダーテクスチャ作成開始:%s", label.c_str());
     
     auto rt = std::make_unique<RenderTarget>();
 	rt->name = label;
@@ -68,7 +68,7 @@ int32_t RenderTextureManager::CreateRenderTarget(UINT width, UINT height, DXGI_F
 	idToIndexMap_[rt->depthsrvAlloc.index] = id;
 	renderTargets_.push_back(std::move(rt));
 
-    Log("成功 %d", renderTargets_.back()->colorsrvAlloc.index);
+    Logger::Log("成功 %d", renderTargets_.back()->colorsrvAlloc.index);
 
 	return renderTargets_.back()->colorsrvAlloc.index;
 }
@@ -79,7 +79,7 @@ bool RenderTextureManager::SaveTexture(const std::string& filePath, std::string 
 	RenderTarget* targetRT = Get(textureName);
 	if (targetRT == nullptr)
 	{
-		Log("存在しないレンダーテクスチャを保存しようとしました:%s", textureName.c_str());
+		Logger::Log("存在しないレンダーテクスチャを保存しようとしました:%s", textureName.c_str());
 		return false;
 	}
 
@@ -90,7 +90,7 @@ bool RenderTextureManager::SaveTexture(const std::string& filePath, std::string 
     if (ec)
     {
 
-        Log("保存先フォルダを作成できませんでした:%s (エラーコード %d)", filePath.c_str(), ec.value());
+        Logger::Log("保存先フォルダを作成できませんでした:%s (エラーコード %d)", filePath.c_str(), ec.value());
         return false;
     }
 

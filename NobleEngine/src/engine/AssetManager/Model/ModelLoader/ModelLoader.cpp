@@ -55,21 +55,21 @@ int32_t ModelLoader::LoadModel(const std::string & filePath)
 	int32_t modelID = bank_->IsModelDataExist(filePath);
 	if (modelID != -1) return modelID;
 
-    Log("モデル読み込み開始:\"%s\"", filePath.c_str());
+    Logger::Log("モデル読み込み開始:\"%s\"", filePath.c_str());
 
     std::unique_ptr<ModelData> obj = std::make_unique<ModelData>();
 
     // モデルデータ読みこみ
     if (!LoadModelFile(filePath, obj.get()))
     {
-		Log("読み込み失敗しました。デフォルトモデルが使用されます。");
+		Logger::Log("読み込み失敗しました。デフォルトモデルが使用されます。");
         return defaultModelID_;
     }
 
 	// モデルバンクに登録
 	modelID = bank_->AddModelData(filePath, std::move(obj));
 
-    Log("成功 ID:%d", modelID);
+    Logger::Log("成功 ID:%d", modelID);
 
     return modelID;
 }
@@ -94,14 +94,14 @@ bool ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
     );
     if (!scene)
     {
-        Log("ファイルが見つかりませんでした:\"%s\"", filePath.c_str());
-        //Log("%s", importer.GetErrorString());
+        Logger::Log("ファイルが見つかりませんでした:\"%s\"", filePath.c_str());
+        //Logger::Log("%s", importer.GetErrorString());
 		return false;
     }
 
 	if (!scene->HasMeshes())
 	{
-		Log("ファイルにモデルが含まれていません:\"%s\"", filePath.c_str());
+		Logger::Log("ファイルにモデルが含まれていません:\"%s\"", filePath.c_str());
         return false;
 	}
 
@@ -111,9 +111,9 @@ bool ModelLoader::LoadModelFile(const std::string& filePath, ModelData* modelDat
 
     // 各情報が存在するか
     const bool hasNormals = mesh->HasNormals();
-    if (!hasNormals) Log("法線データが存在しません。自動生成された数値が使用されます");
+    if (!hasNormals) Logger::Log("法線データが存在しません。自動生成された数値が使用されます");
     const bool hasTexCoords = mesh->HasTextureCoords(0);
-    if (!hasTexCoords) Log("テクスチャ座標データが存在しません。(0.0f,0.0f)で初期化されます");
+    if (!hasTexCoords) Logger::Log("テクスチャ座標データが存在しません。(0.0f,0.0f)で初期化されます");
 
     // 頂点データ & インデックスデータの読み込み
     modelData->vertices.resize(mesh->mNumVertices);

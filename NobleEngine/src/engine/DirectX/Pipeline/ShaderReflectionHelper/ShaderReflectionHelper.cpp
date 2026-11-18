@@ -74,7 +74,7 @@ namespace ShaderReflection
         HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils));
         if (FAILED(hr))
         {
-            Log("IDxcUtilsの生成に失敗しました");
+            Logger::Log("IDxcUtilsの生成に失敗しました");
             return inputElements;
         }
 
@@ -87,7 +87,7 @@ namespace ShaderReflection
         hr = dxcUtils->CreateReflection(&dxcBuffer, __uuidof(ID3D12ShaderReflection), (void**)&reflection);
         if (FAILED(hr))
         {
-            Log("シェーダーリフレクションの取得失敗");
+            Logger::Log("シェーダーリフレクションの取得失敗");
             return inputElements;
         }
 
@@ -126,7 +126,7 @@ namespace ShaderReflection
 
         if (inputElements.empty())
         {
-            Log("シェーダーから入力レイアウトが見つかりませんでした。");
+            Logger::Log("シェーダーから入力レイアウトが見つかりませんでした。");
         }
 
         return inputElements;
@@ -143,7 +143,7 @@ namespace ShaderReflection
         HRESULT hr = dxcUtils->CreateReflection(&dxcBuffer, __uuidof(ID3D12ShaderReflection), (void**)&reflection);
         if (FAILED(hr))
         {
-            Log("シェーダーリフレクションの取得失敗");
+            Logger::Log("シェーダーリフレクションの取得失敗");
             return;
         }
 
@@ -218,7 +218,7 @@ namespace ShaderReflection
                     break;
 
                 default:
-                    Log("未対応のテクスチャタイプ");
+                    Logger::Log("未対応のテクスチャタイプ");
                     break;
                 }
 

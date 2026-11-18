@@ -120,7 +120,7 @@ void ItemDataLoader::Load(ItemID id)
 	}
 	else
 	{
-		Log("アイテムID:%s のジャンルが不正です。デフォルト値を使用します。", idStr.c_str());
+		Logger::Log("アイテムID:%s のジャンルが不正です。デフォルト値を使用します。", idStr.c_str());
 	}
 
 	auto blockEnum = magic_enum::enum_cast<BlockID>(blockIDStr);
@@ -130,7 +130,7 @@ void ItemDataLoader::Load(ItemID id)
 	}
 	else
 	{
-		Log("アイテムID:%s のブロックIDが不正です。デフォルト値を使用します。", idStr.c_str());
+		Logger::Log("アイテムID:%s のブロックIDが不正です。デフォルト値を使用します。", idStr.c_str());
 	}
 
 	auto toolEnum = magic_enum::enum_cast<ToolID>(toolIDStr);
@@ -140,7 +140,7 @@ void ItemDataLoader::Load(ItemID id)
 	}
 	else
 	{
-		Log("アイテムID:%s のツールIDが不正です。デフォルト値を使用します。", idStr.c_str());
+		Logger::Log("アイテムID:%s のツールIDが不正です。デフォルト値を使用します。", idStr.c_str());
 	}
 
 	auto objectEnum = magic_enum::enum_cast<ObjectID>(objectIDStr);
@@ -150,7 +150,7 @@ void ItemDataLoader::Load(ItemID id)
 	}
 	else
 	{
-		Log("アイテムID:%s のオブジェクトIDが不正です。デフォルト値を使用します。", idStr.c_str());
+		Logger::Log("アイテムID:%s のオブジェクトIDが不正です。デフォルト値を使用します。", idStr.c_str());
 	}
 
 	bank_->SetItemInfo(id, info);

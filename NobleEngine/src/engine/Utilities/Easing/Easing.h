@@ -1,6 +1,5 @@
 #pragma once
-#include <cmath>
-#include "definition/definition.h"
+#include "EasingCommon.h"
 
 namespace Easing
 {

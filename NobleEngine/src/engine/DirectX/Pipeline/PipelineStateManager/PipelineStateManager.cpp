@@ -4,6 +4,7 @@
 #include <Utilities/Logger/Logger.h>
 #include <Utilities/Converter/StringConverter/StringConverter.h>
 #include <externals/DirectXTex/d3dx12.h>
+#include <assert.h>
 
 #pragma comment(lib, "dxcompiler.lib")
 
@@ -275,15 +276,15 @@ namespace
 PipelineStateManager::PipelineStateManager(ID3D12Device2* device)
 	: device_(device)
 {
-    Log("コンストラクタ実行開始 : PipelineStateManager");
+    Logger::Log("コンストラクタ実行開始 : PipelineStateManager");
 
     InitializeDxc();
 
-    Log("成功");
+    Logger::Log("成功");
 }
 PipelineStateManager::~PipelineStateManager()
 {
-    Log("デストラクタ実行成功 : PipelineStateManager");
+    Logger::Log("デストラクタ実行成功 : PipelineStateManager");
 }
 void PipelineStateManager::InitializeDxc()
 {
@@ -312,7 +313,7 @@ ID3D12RootSignature* PipelineStateManager::GetRootSignature(const std::vector<Ro
 	// ルートシグネチャ生成
     auto rs = CreateRootSignature(params);
 	assert(rs);
-	Log("成功: キー %zu", key);
+	Logger::Log("成功: キー %zu", key);
 
     // キャッシュに保存してから返す
     return rootSignatureCache_.emplace(key, std::move(rs)).first->second.Get();
@@ -333,7 +334,7 @@ ID3D12PipelineState* PipelineStateManager::GetGraphicsPipelineState(const Graphi
     // パイプラインステート生成
     auto pso = CreateGraphicsPipelineState(psoConfig, layout);
     assert(pso);
-    Log("成功: キー %zu", psoKey);
+    Logger::Log("成功: キー %zu", psoKey);
 
     // キャッシュに保存してから返す
     return graphicsPsoCache_.emplace(psoKey, std::move(pso)).first->second.Get();
@@ -353,7 +354,7 @@ ID3D12PipelineState* PipelineStateManager::GetComputePipelineState(const Compute
     // パイプラインステート生成
     auto pso = CreateComputePipelineState(psoConfig, layout);
     assert(pso);
-    Log("成功: キー %zu", psoKey);
+    Logger::Log("成功: キー %zu", psoKey);
 
     // キャッシュに保存してから返す
     return computePsoCache_.emplace(psoKey, std::move(pso)).first->second.Get();
@@ -455,7 +456,7 @@ const RootLayout* PipelineStateManager::GetComputeRootLayout(const ComputePSOCon
 // ルートシグネチャ生成
 Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSignature(const std::vector<RootParam>& params)
 {
-    Log("ルートシグネチャ生成開始");
+    Logger::Log("ルートシグネチャ生成開始");
 
     size_t srvCount = 0;
     size_t cbvCount = 0;
@@ -590,7 +591,8 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> PipelineStateManager::CreateRootSign
     {
         if (errorBlob)
         {
-            Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+            //Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+            Logger::Error("%s", static_cast<const char*>(errorBlob->GetBufferPointer()));
         }
         assert(false);
         return nullptr;
@@ -609,8 +611,8 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
     bool isMeshShader = false;
     if (cfg.ms != "unknown") isMeshShader = true;
 
-    if (isMeshShader) Log("パイプラインステート生成開始: MS=%s, PS=%s", cfg.ms.c_str(), cfg.ps.c_str());
-    else Log("パイプラインステート生成開始: VS = %s, PS=%s", cfg.vs.c_str(), cfg.ps.c_str());
+    if (isMeshShader) Logger::Log("パイプラインステート生成開始: MS=%s, PS=%s", cfg.ms.c_str(), cfg.ps.c_str());
+    else Logger::Log("パイプラインステート生成開始: VS = %s, PS=%s", cfg.vs.c_str(), cfg.ps.c_str());
 
     HRESULT hr = S_OK;
     CD3DX12PipelineStateStream stream{};
@@ -680,7 +682,7 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateGraphics
 }
 Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineStateManager::CreateComputePipelineState(const ComputePSOConfig& cfg, const RootLayout& layout)
 {
-    Log("パイプラインステート生成開始: CS=%s", cfg.cs.c_str());
+    Logger::Log("パイプラインステート生成開始: CS=%s", cfg.cs.c_str());
 
     std::wstring csPath = StringConverter::Convert(cfg.cs);
     auto csBlob = GetShaderBlob(csPath.c_str(), ShaderType::ComputeShader);
@@ -704,7 +706,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
     //// 1 hlslファイルを読む
     ///////////////////////////////////////
     /// これからシェーダーをコンパイルする旨をログに出す
-    Log("シェーダーコンパイル開始 パス:%s", StringConverter::Convert(filePath).c_str());
+    Logger::Log("シェーダーコンパイル開始 パス:%s", StringConverter::Convert(filePath).c_str());
 
     // hlslファイルを読む
     Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource;
@@ -713,7 +715,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
     // 読めなかったら停止する
     if (FAILED(hr))
     {
-		Log("ファイルが見つかりませんでした:%s", StringConverter::Convert(filePath).c_str());
+		Logger::Log("ファイルが見つかりませんでした:%s", StringConverter::Convert(filePath).c_str());
         assert(false);
         return nullptr;
 	}
@@ -762,7 +764,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
     // コンパイルエラーではなくdxcが起動出来ないなど致命的な状況
 	if (FAILED(hr))
 	{
-		Log("シェーダーのコンパイルに失敗しました。多分dxcが起動できていません。");
+		Logger::Log("シェーダーのコンパイルに失敗しました。多分dxcが起動できていません。");
 		assert(false);
 		return nullptr;
 	}
@@ -777,7 +779,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
 
     if (shaderError != nullptr && shaderError->GetStringLength() != 0)
     {
-		Log("シェーダーのコンパイルに警告・エラーが出ました。%s", (const char*)shaderError->GetStringPointer());
+		Logger::Log("シェーダーのコンパイルに警告・エラーが出ました。%s", (const char*)shaderError->GetStringPointer());
         assert(false);
     }
 
@@ -798,12 +800,12 @@ Microsoft::WRL::ComPtr<IDxcBlob> PipelineStateManager::CompileShader(const std::
     }
     if (FAILED(hr) || shaderBlob == nullptr)
     {
-        Log("シェーダーのコンパイルに失敗しました。");
+        Logger::Log("シェーダーのコンパイルに失敗しました。");
         assert(false);
         return nullptr;
     }
     // 成功したログを出す;
-    Log("成功");
+    Logger::Log("成功");
     // 実行用のバイナリを返却
     return shaderBlob;
 }
@@ -820,7 +822,7 @@ RootLayout PipelineStateManager::BuildRootLayout(std::vector<RootParam> params, 
         const bool inserted = layout.hashToIndex.emplace(layout.params[i].hash, i).second;
         if (!inserted)
         {
-            Log("PipelineStateManager::BuildRootLayout() ルートパラメータのハッシュが衝突しました");
+            Logger::Log("PipelineStateManager::BuildRootLayout() ルートパラメータのハッシュが衝突しました");
             assert(false);
         }
     }

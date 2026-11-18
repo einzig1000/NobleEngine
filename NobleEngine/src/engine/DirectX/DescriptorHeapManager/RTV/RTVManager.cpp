@@ -1,11 +1,12 @@
 #include "RTVManager.h"
 #include "Utilities/Logger/Logger.h"
+#include <cassert>
 
 
 RTVManager::RTVManager(ID3D12Device2* device)
 	: device_(device)
 {
-	Log("コンストラクタ実行開始 : RTVManager");
+	Logger::Log("コンストラクタ実行開始 : RTVManager");
 
 	// RTVスロット一つ分のサイズを取得
 	descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -21,19 +22,19 @@ RTVManager::RTVManager(ID3D12Device2* device)
 	HRESULT hr = device_->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap_));
 	assert(SUCCEEDED(hr));
 
-	Log("成功");
+	Logger::Log("成功");
 }
 
 RTVManager::~RTVManager()
 {
-	Log("デストラクタ実行成功 : RTVManager");
+	Logger::Log("デストラクタ実行成功 : RTVManager");
 }
 
 uint32_t RTVManager::Allocate()
 {
 	if (nextIndex_ >= capacity_)
 	{
-		Log("RTVのスロットが足りません。容量を増やしてください。");
+		Logger::Log("RTVのスロットが足りません。容量を増やしてください。");
 		assert(false);
 		return UINT32_MAX;
 	}

@@ -8,7 +8,7 @@ class TextureBank
 public:
 
 	// テクスチャデータを追加
-	void AddTextureData(const std::string& filePath, const int32_t heapSlot, std::unique_ptr<TextureData> textureData);
+	void AddTextureData(const std::string& filePath, int32_t heapSlot, std::unique_ptr<TextureData> textureData);
 	// filePathが同じテクスチャデータが存在するか
 	int32_t IsTextureDataExist(const std::string& filePath) const;
 	// データ取得

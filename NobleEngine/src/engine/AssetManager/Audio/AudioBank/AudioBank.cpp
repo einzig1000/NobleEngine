@@ -12,7 +12,7 @@ AudioBank::~AudioBank()
     dataList_.clear();
 }
 
-void AudioBank::AddAudioData(const std::string& filePath, const int32_t ID, std::unique_ptr<AudioData> audioData)
+void AudioBank::AddAudioData(const std::string& filePath, int32_t ID, std::unique_ptr<AudioData> audioData)
 {
 	pathToIDMap_[filePath] = ID;
 	dataList_.push_back(std::move(audioData));

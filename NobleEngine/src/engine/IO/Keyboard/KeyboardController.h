@@ -1,10 +1,6 @@
 #pragma once
 #include <windows.h>
-#include "definition/definition.h"
-
-// DirectInput は Windows 8 以降 非推奨のため、
-// Win32 標準の GetAsyncKeyState に置き換えたバージョン。
-// dinput8.lib / dxguid.lib のリンクは不要になる。
+#include <EngineDefinition/EngineDefinition.h>
 
 /// <summary>
 /// キーボード管理クラス
@@ -31,6 +27,5 @@ private:
 
 	KeyState keys_[256];
 
-	// フォーカスが外れているフレームはキー全開放扱いにするために保持
 	HWND hwnd_;
 };

@@ -9,13 +9,12 @@ ShaderToyTestPhase::~ShaderToyTestPhase()
 
 void ShaderToyTestPhase::Initialize()
 {
-	draw_Seascape_ = std::make_unique<RenderObject>();
-	draw_Seascape_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
-	draw_Seascape_->psoConfig_.ps = "assets/shaders/FullScreen/ShaderToy/Seascape.PS.hlsl";
-	draw_Seascape_->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
-	draw_Seascape_->SetupFromShaders();
+	render_ = std::make_unique<RenderObject>();
+	render_->psoConfig_.vs = "assets/shaders/FullScreen/FullScreen.VS.hlsl";
+	render_->psoConfig_.ps = "assets/shaders/FullScreen/ShaderToy/Seascape.PS.hlsl";
+	render_->modelID_ = Game::Asset::Model::Load("assets/engine/model/plane/plane.obj");
+	render_->SetupFromShaders();
 
-	// 描画先(-1 = NobleScreen)は起動時のウィンドウサイズで作られている
 	seascapeResolution_ = Vector2(static_cast<float>(Constexprs::kInitialWindowWidth), static_cast<float>(Constexprs::kInitialWindowHeight));
 }
 
@@ -26,9 +25,9 @@ void ShaderToyTestPhase::Update()
 
 void ShaderToyTestPhase::Draw()
 {
-	draw_Seascape_->SetBRegisterData(0, ShaderType::PixelShader, &seascapeTime_);
-	draw_Seascape_->SetBRegisterData(1, ShaderType::PixelShader, &seascapeResolution_);
-	draw_Seascape_->Draw();
+	render_->SetBRegisterData(0, ShaderType::PixelShader, &seascapeTime_);
+	render_->SetBRegisterData(1, ShaderType::PixelShader, &seascapeResolution_);
+	render_->Draw();
 }
 
 void ShaderToyTestPhase::DrawImGui()

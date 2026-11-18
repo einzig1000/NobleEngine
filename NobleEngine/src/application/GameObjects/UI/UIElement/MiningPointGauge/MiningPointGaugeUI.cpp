@@ -91,7 +91,7 @@ void MiningPointGaugeUI::Draw(int32_t rt_ID)
 	gauge_.render->Draw(rt_ID);
 
 	// レベル
-	if (!miningGauge_ || levelText_.empty())
+	if (miningGauge_ && !levelText_.empty())
 	{
 		DrawOutlinedString(rt_ID, levelText_, levelCharSize_, levelTextPos_, gaugeParams_.fillColor, 2.0f);
 	}

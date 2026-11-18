@@ -34,6 +34,7 @@ void DrawSystem::Reset()
 	backBufferIndex_ = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
 
 	drawNodes_.clear();
+	rootParamValuePool_.clear();
 }
 
 ///// いつかRenderObjectリストをソートしたい
@@ -41,8 +42,19 @@ void DrawSystem::Reset()
 //② トポロジ
 //③ ルートシグネチャ
 
+// 描画リストに追加
 void DrawSystem::AddDrawList(const RenderObject* renderObject, int32_t RenderTargetID, const std::vector<int32_t>& deps)
 {
+	// SetupFromShadersを呼び忘れたオブジェクトは描画しない
+	if (!renderObject->GetRootLayout())
+	{
+		Logger::Error("%s : SetupFromShaders()が呼ばれていません", renderObject->name_);
+#ifdef _DEBUG
+		DebugBreak();
+#endif
+		return;
+	}
+
 	int32_t targetID = RenderTargetID;
 
 	if (targetID == -1)
@@ -50,15 +62,102 @@ void DrawSystem::AddDrawList(const RenderObject* renderObject, int32_t RenderTar
 		targetID = rt_nobleScreenID_;
 	}
 
-	// RenderTargetIDに書き込むRenderObjectを保存
-	drawNodes_[targetID].objects.push_back(renderObject);
+	DrawNode& node = drawNodes_[targetID];
+	// RenderTargetIDに書き込む描画パケットを保存
+	node.packets.push_back(BuildDrawPacket(renderObject));
 	// 自身を書き込む前に書き込み終了していてほしいRenderTargetIDを保存
 	for (int32_t dep : deps)
 	{
-		drawNodes_[targetID].deps.insert(dep);
+		node.deps.insert(dep);
 	}
 }
 
+// 描画パケットを作成
+DrawPacket DrawSystem::BuildDrawPacket(const RenderObject* renderObject)
+{
+	const RootLayout* layout = renderObject->GetRootLayout();
+	assert(layout);
+	const auto& values = renderObject->GetRootValues();
+
+	DrawPacket packet{};
+	packet.layout = layout;
+	packet.pso = dxManager_->GetPipelineStateManager()->GetGraphicsPipelineState(renderObject->psoConfig_, *layout);
+	packet.topology = renderObject->psoConfig_.topology;
+	packet.useMeshShader = (renderObject->psoConfig_.ms != "unknown");
+	packet.modelID = renderObject->modelID_;
+	packet.instanceNum = renderObject->instanceNum_;
+	packet.rootValuePoolOffset = static_cast<uint32_t>(rootParamValuePool_.size());
+	packet.rootValuePoolSize = static_cast<uint32_t>(values.size());
+
+	if (!values.empty())
+	{
+		rootParamValuePool_.resize(rootParamValuePool_.size() + values.size());
+		std::memcpy(rootParamValuePool_.data() + packet.rootValuePoolOffset, values.data(), values.size() * sizeof(RootParamValue));
+	}
+
+	return packet;
+}
+
+// 描画
+void DrawSystem::DrawObject(const DrawPacket* packet)
+{
+	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex_);
+	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
+
+	// 1) RootSignatureセット
+	cmdList->SetGraphicsRootSignature(packet->layout->rootSignature);
+	// 2) PSOセット
+	cmdList->SetPipelineState(packet->pso);
+	// 3) CBV・SRVセット
+	// iはルートパラメータの番号(0始まり)。プール上の位置はoffsetを足して求める
+	const RootParamValue* values = rootParamValuePool_.data() + packet->rootValuePoolOffset;
+	for (uint32_t i = 0; i < packet->rootValuePoolSize; ++i)
+	{
+		const auto& param = packet->layout->params[i];
+		const auto& value = values[i];
+
+		if (param.paramType == ParamType::CBV)
+		{
+			assert(value.gpuAddress != 0);
+			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), value.gpuAddress);
+		}
+		else if (param.paramType == ParamType::SRV)
+		{
+			assert(value.allocIndex != UINT32_MAX);
+			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(value.allocIndex));
+		}
+	}
+
+	// メッシュシェーダ使用かで分岐
+	if (packet->useMeshShader)
+	{
+		cmdList->DispatchMesh(packet->instanceNum, 1, 1);
+	}
+	else
+	{
+		// 4) トポロジーセット
+		cmdList->IASetPrimitiveTopology(packet->topology);
+
+		// モデルの検索
+		const ModelData* obj = assetManager_->GetModelManager()->GetModelBank()->GetModelData(packet->modelID);
+		if (!obj)return;
+		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
+
+		const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
+		if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
+		{
+			cmdList->IASetIndexBuffer(&obj->indexBufferView);
+			cmdList->DrawIndexedInstanced(indexCount, packet->instanceNum, 0, 0, 0);
+		}
+		else
+		{
+			const uint32_t vertexCount = static_cast<uint32_t>(obj->vertices.size());
+			cmdList->DrawInstanced(vertexCount, packet->instanceNum, 0, 0);
+		}
+	}
+}
+
+// 描画順をソート
 std::vector<int32_t> DrawSystem::SortNodes()
 {
 	// inDegree[rtID] = このrtIDのRTがあと何個のRTの完了を待っているか
@@ -112,72 +211,13 @@ std::vector<int32_t> DrawSystem::SortNodes()
 
 	if (order.size() != drawNodes_.size())
 	{
-		Log("DrawSystem: 依存グラフに循環があります。描画順序を解決できません。");
+		Logger::Log("DrawSystem: 依存グラフに循環があります。描画順序を解決できません。");
 		assert(false);
 	}
 	return order;
 }
 
-void DrawSystem::DrawObject(const RenderObject* renderObject)
-{
-	auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex_);
-	auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
-
-	const RootLayout* layout = renderObject->GetRootLayout();
-	assert(layout && "SetupFromShaders()が呼ばれていません");
-
-	// 1) RootSignatureセット
-	cmdList->SetGraphicsRootSignature(layout->rootSignature);
-	// 2) PSOセット
-	cmdList->SetPipelineState(dxManager_->GetPipelineStateManager()->GetGraphicsPipelineState(renderObject->psoConfig_, *layout));
-	// 3) CBV・SRVセット
-	const auto& values = renderObject->GetRootValues();
-	for (size_t i = 0; i < layout->params.size(); ++i)
-	{
-		const auto& param = layout->params[i];
-		const auto& value = values[i];
-
-		if (param.paramType == ParamType::CBV)
-		{
-			assert(value.gpuAddress != 0);
-			cmdList->SetGraphicsRootConstantBufferView(static_cast<UINT>(i), value.gpuAddress);
-		}
-		else if (param.paramType == ParamType::SRV)
-		{
-			assert(value.allocIndex != UINT32_MAX);
-			cmdList->SetGraphicsRootDescriptorTable(static_cast<UINT>(i), srvManager->GetGPUHandleAt(value.allocIndex));
-		}
-	}
-
-	// メッシュシェーダ使用かで分岐
-	if (renderObject->psoConfig_.ms != "unknown")
-	{
-		cmdList->DispatchMesh(renderObject->instanceNum_, 1, 1);
-	}
-	else
-	{
-		// 4) トポロジーセット
-		cmdList->IASetPrimitiveTopology(renderObject->psoConfig_.topology);
-
-		// モデルの検索
-		const ModelData* obj = assetManager_->GetModelManager()->GetModelBank()->GetModelData(renderObject->modelID_);
-		if (!obj)return;
-		cmdList->IASetVertexBuffers(0, 1, &obj->vertexBufferView);
-
-		const uint32_t indexCount = static_cast<uint32_t>(obj->indices.size());
-		if (obj->indexBufferView.BufferLocation != 0 && indexCount > 0)
-		{
-			cmdList->IASetIndexBuffer(&obj->indexBufferView);
-			cmdList->DrawIndexedInstanced(indexCount, renderObject->instanceNum_, 0, 0, 0);
-		}
-		else
-		{
-			const uint32_t vertexCount = static_cast<uint32_t>(obj->vertices.size());
-			cmdList->DrawInstanced(vertexCount, renderObject->instanceNum_, 0, 0);
-		}
-	}
-}
-
+// 一斉描画
 void DrawSystem::Execute()
 {
 	// 依存関係を満たす安全な描画順を取得
@@ -187,18 +227,20 @@ void DrawSystem::Execute()
 	for (int32_t rtID : order)
 	{
 		dxManager_->BeginRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), true);
-		for (const auto* renderObject : drawNodes_[rtID].objects)
+		for (const auto& packet : drawNodes_[rtID].packets)
 		{
-			DrawObject(renderObject);
+			DrawObject(&packet);
 		}
 		dxManager_->EndRenderPass(dxManager_->GetRenderTextureManager()->Get(rtID), true);
 	}
 }
 
+// NobleScreenに描画
 void DrawSystem::ScreenDraw()
 {
 	screenRenderObject_->SetBRegisterData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
-	DrawObject(screenRenderObject_.get());
+	DrawPacket packet = BuildDrawPacket(screenRenderObject_.get());
+	DrawObject(&packet);
 
 #ifdef _DEBUG
 
@@ -208,3 +250,4 @@ void DrawSystem::ScreenDraw()
 
 #endif // DEBUG
 }
+

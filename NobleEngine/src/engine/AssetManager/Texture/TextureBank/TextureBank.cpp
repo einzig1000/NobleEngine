@@ -1,7 +1,7 @@
 #include "TextureBank.h"
 #include <Utilities/Logger/Logger.h>
 
-void TextureBank::AddTextureData(const std::string& filePath, const int32_t heapSlot, std::unique_ptr<TextureData> textureData)
+void TextureBank::AddTextureData(const std::string& filePath, int32_t heapSlot, std::unique_ptr<TextureData> textureData)
 {
 	pathToIDMap_[filePath] = heapSlot;
 	dataMap_[heapSlot] = std::move(textureData);
@@ -25,6 +25,6 @@ const TextureData* TextureBank::GetTextureData(int32_t textureID) const
 	{
 		return it->second.get();
 	}
-	Log("存在しないテクスチャIDが要求されました: %d", textureID);
+	Logger::Log("存在しないテクスチャIDが要求されました: %d", textureID);
 	return nullptr;
 }

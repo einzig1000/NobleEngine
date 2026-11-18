@@ -7,16 +7,16 @@
 
 DescriptorHeapManager::DescriptorHeapManager(ID3D12Device2* device)
 {
-    Log("コンストラクタ実行開始 : DescriptorHeapManager");
+    Logger::Log("コンストラクタ実行開始 : DescriptorHeapManager");
 
 	srv_uavManager_ = std::make_unique<SRV_UAVManager>(device);
 	rtvManager_ = std::make_unique<RTVManager>(device);
 	dsvManager_ = std::make_unique<DSVManager>(device);
 
-	Log("成功");
+	Logger::Log("成功");
 }
 
 DescriptorHeapManager::~DescriptorHeapManager()
 {
-    Log("デストラクタ実行成功 : DescriptorHeapManager");
+    Logger::Log("デストラクタ実行成功 : DescriptorHeapManager");
 }

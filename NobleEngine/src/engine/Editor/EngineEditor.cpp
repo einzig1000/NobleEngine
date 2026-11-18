@@ -1,11 +1,8 @@
 #include "EngineEditor.h"
 #include "AssetsEditor/AssetsEditor.h"
-#include "AssetsEditor/ModelPreview/ModelPreview.h"
-#include "AssetsEditor/TexturePreview/TexturePreview.h"
-#include "AssetsEditor/AudioPreview/AudioPreview.h"
-#include "AssetsEditor/RenderTexturePreview/RenderTexturePreview.h"
 #include "TimeEditor/TimeEditor.h"
-#include "GPURespurcePreview/GPURespurcePreview.h"
+#include "GPUResourcePreview/GPUResourcePreview.h"
+#include "LogPanel/LogPanel.h"
 
 #include <IO/IOManager.h>
 #include <Window/WindowManager.h>
@@ -14,22 +11,21 @@
 #include <DrawSystem/DrawSystem.h>
 #include <Camera/CameraManager.h>
 #include <TimeManager/TimeManager.h>
-#include <ImGuiManager/ImGuiManager.h>
 
 EngineEditor::EngineEditor(
 	WindowManager* windowManager,
 	DirectXManager* dxManager,
-	DrawSystem* drawSystem, 
-	IOManager* ioManager, 
-	CameraManager* cameraManager, 
+	DrawSystem* drawSystem,
+	IOManager* ioManager,
+	CameraManager* cameraManager,
 	AssetManager* assetManager,
 	TimeManager* timeManager)
 {
 	panels_.push_back(std::make_unique<AssetsEditor>(dxManager, cameraManager, assetManager));
 	panels_.push_back(std::make_unique<TimeEditor>(timeManager, dxManager->GetFrameProfiler()));
-	panels_.push_back(std::make_unique<GPURespurcePreview>(dxManager->GetDescriptorHeapManager()));
+	panels_.push_back(std::make_unique<GPUResourcePreview>(dxManager->GetDescriptorHeapManager()));
+	panels_.push_back(std::make_unique<LogPanel>());
 }
-
 EngineEditor::~EngineEditor()
 {}
 

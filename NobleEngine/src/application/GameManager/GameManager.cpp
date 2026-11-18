@@ -12,7 +12,7 @@ GameManager::GameManager()
 {
 	currentPhase_ = Phase::Phase_None;
 	nextPhase_ = Phase::Phase_ShaderToyTest;
-	nextPhase_ = Phase::Phase_GameScene;
+	nextPhase_ = Phase::Phase_Title;
 
 	//JsonManager::LoadAll("assets/application/json");
 }
@@ -113,7 +113,7 @@ std::unique_ptr<IPhase> GameManager::CreatePhase(Phase phase)
 		return std::make_unique<ShaderToyTestPhase>();
 
 	default:
-		Log("Error : 該当するフェーズクラスが存在しません");
+		Logger::Log("Error : 該当するフェーズクラスが存在しません");
 		assert(false);
 		return nullptr;
 	}

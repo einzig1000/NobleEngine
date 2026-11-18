@@ -19,7 +19,7 @@ void IUIElement::BuildSprites(UIElementType type)
 	const std::vector<ElementData>* dataList = App::Data::UI::Get(type);
 	if (!dataList)
 	{
-		Log("UIデータがありません: %s", std::string(magic_enum::enum_name(type)).c_str());
+		Logger::Log("UIデータがありません: %s", std::string(magic_enum::enum_name(type)).c_str());
 		return;
 	}
 

@@ -525,7 +525,7 @@
     <ClCompile Include="src\application\definition\SkillTreeData\SkillTreeData.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.cpp">
+    <ClCompile Include="src\engine\Editor\GPUResourcePreview\GPUResourcePreview.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.cpp">
@@ -535,6 +535,12 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\Editor\AssetsEditor\AssetsEditor.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Utilities\Logger\LogSinks.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Editor\LogPanel\LogPanel.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1517,7 +1523,7 @@
     <ClInclude Include="src\application\definition\SkillTreeData\SkillTreeData.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.h">
+    <ClInclude Include="src\engine\Editor\GPUResourcePreview\GPUResourcePreview.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.h">
@@ -1527,6 +1533,21 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\Editor\AssetsEditor\AssetsEditor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Utilities\Easing\EasingCommon.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Utilities\Logger\LogTypes.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Utilities\Logger\ILogSink.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Utilities\Logger\LogSinks.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Editor\LogPanel\LogPanel.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

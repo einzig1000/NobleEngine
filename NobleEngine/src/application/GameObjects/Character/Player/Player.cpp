@@ -42,8 +42,8 @@ void Player::Initialize()
 	rotate_.velocity = Vector3{ 0.0f, 0.0f, 0.0f };
 	rotate_.acceleration = Vector3{ 0.0f, 0.0f, 0.0f };
 
-	normalSpeed_ = 15.0f * scale_.value.x;
-	dashSpeed_ = 30.0f * scale_.value.x;
+	normalSpeed_ = 13.0f * scale_.value.x;
+	dashSpeed_ = 13.0f * scale_.value.x;
 	speed_ = normalSpeed_;
 	jumpPower_ = 24.0f * scale_.value.x;
 	stepUpBlockCount_ = 0;

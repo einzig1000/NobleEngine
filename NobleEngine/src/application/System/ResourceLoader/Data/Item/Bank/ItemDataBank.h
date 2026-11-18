@@ -18,7 +18,7 @@ public:
 	const BlockInfo* GetBlockInfo(BlockID id);
 	const ToolInfo* GetToolInfo(ToolID id);
 	const ObjectInfo* GetObjectInfo(ObjectID id);
-	const int32_t GetBlockInfoTableHeapSlot() { return blockInfoTableHeapSlot_; }
+	int32_t GetBlockInfoTableHeapSlot() { return blockInfoTableHeapSlot_; }
 
 private:
 	std::unordered_map<ItemID, ItemInfo> itemInfoMap_;

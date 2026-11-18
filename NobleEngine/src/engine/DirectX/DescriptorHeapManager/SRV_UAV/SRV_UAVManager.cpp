@@ -8,7 +8,7 @@
 SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     :device_(device)
 {
-    Log("コンストラクタ実行開始 : SRV_UAVManager");
+    Logger::Log("コンストラクタ実行開始 : SRV_UAVManager");
 
     // SRVスロット一つ分のサイズ取得
     descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -23,12 +23,12 @@ SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
     HRESULT hr = device->CreateDescriptorHeap(&DescriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap_));
     assert(SUCCEEDED(hr));
 
-    Log("成功");
+    Logger::Log("成功");
 }
 
 SRV_UAVManager::~SRV_UAVManager()
 {
-    Log("デストラクタ実行成功 : SRV_UAVManager");
+    Logger::Log("デストラクタ実行成功 : SRV_UAVManager");
 }
 
 uint32_t SRV_UAVManager::Allocate()
@@ -49,7 +49,7 @@ uint32_t SRV_UAVManager::Allocate()
     // 容量オーバー
     else
     {
-        Log("SRVスロットが足りません。容量を増やしてください。");
+        Logger::Log("SRVスロットが足りません。容量を増やしてください。");
         __debugbreak();
         std::abort();
     }

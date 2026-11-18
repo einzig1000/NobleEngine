@@ -1,12 +1,15 @@
 #include "DSVManager.h"
-#include <Window/WindowManager.h>
 #include <Utilities/Logger/Logger.h>
+#include <cassert>
+#include <d3d12.h>
+#include <Windows.h>
+#include <cstdint>
 
 
 DSVManager::DSVManager(ID3D12Device2* device)
 	: device_(device)
 {
-	Log("コンストラクタ実行開始 : DSVManager");
+	Logger::Log("コンストラクタ実行開始 : DSVManager");
 
 	// DSVスロット一つ分のサイズを取得
 	descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
@@ -21,19 +24,19 @@ DSVManager::DSVManager(ID3D12Device2* device)
 	HRESULT hr = device_->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap_));
 	assert(SUCCEEDED(hr));
 
-	Log("成功");
+	Logger::Log("成功");
 }
 
 DSVManager::~DSVManager()
 {
-	Log("デストラクタ実行成功 : DSVManager");
+	Logger::Log("デストラクタ実行成功 : DSVManager");
 }
 
 uint32_t DSVManager::Allocate()
 {
 	if (nextIndex_ >= capacity_)
 	{
-		Log("DSVのスロットが足りません。容量を増やしてください。");
+		Logger::Log("DSVのスロットが足りません。容量を増やしてください。");
 		assert(false);
 		return UINT32_MAX;
 	}

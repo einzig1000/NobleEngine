@@ -18,7 +18,7 @@ int32_t AnimationLoader::LoadAnimation(const std::string & filePath, const std::
 		return animationID;
 	}
 
-	Log("アニメーション読み込み開始:%s / %s", filePath.c_str(), animationName.c_str());
+	Logger::Log("アニメーション読み込み開始:%s / %s", filePath.c_str(), animationName.c_str());
 
 	std::unique_ptr<AnimationData> animationData = std::make_unique<AnimationData>();
 
@@ -31,7 +31,7 @@ int32_t AnimationLoader::LoadAnimation(const std::string & filePath, const std::
 	// アニメーションデータをバンクに追加
 	animationID = bank_->AddAnimationData(filePath + ":" + animationName, std::move(animationData));
 
-	Log("成功 ID:%d", animationID);
+	Logger::Log("成功 ID:%d", animationID);
 
 	return animationID;
 }
@@ -47,15 +47,15 @@ bool AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 	);
 	if (!scene)
 	{
-		Log("アニメーションファイルを開けませんでした:%s / %s", filePath.c_str(), animationName.c_str());
-		Log("%s", importer.GetErrorString());
+		Logger::Log("アニメーションファイルを開けませんでした:%s / %s", filePath.c_str(), animationName.c_str());
+		Logger::Log("%s", importer.GetErrorString());
 		assert(false);
 		return false;
 	}
 
 	if (!scene->HasAnimations())
 	{
-		Log("アニメーションが含まれていません:%s / %s", filePath.c_str(), animationName.c_str());
+		Logger::Log("アニメーションが含まれていません:%s / %s", filePath.c_str(), animationName.c_str());
 		assert(false);
 		return false;
 	}
@@ -75,7 +75,7 @@ bool AnimationLoader::LoadAnimationFile(const std::string& filePath, const std::
 
 	if (!animationAssimp)
 	{
-		Log("指定したアニメーションが見つかりません:%s / %s", filePath.c_str(), animationName.c_str());
+		Logger::Log("指定したアニメーションが見つかりません:%s / %s", filePath.c_str(), animationName.c_str());
 		assert(false);
 		return false;
 	}

@@ -66,7 +66,7 @@ protected:
 				{
 					// あってはならないタイプのエラー
 					__debugbreak();
-					Log("%s の labelIndex が負の値です(%d)", name.data(), labelIndex);
+					Logger::Log("%s の labelIndex が負の値です(%d)", name.data(), labelIndex);
 					continue;
 				}
 				// vecterのサイズが足りなくなったら
@@ -79,7 +79,7 @@ protected:
 				{
 					// あってはならないタイプのエラー
 					__debugbreak();
-					Log("%s の %d 番が重複しています", name.data(), labelIndex);
+					Logger::Log("%s の %d 番が重複しています", name.data(), labelIndex);
 					continue;
 				}
 
@@ -91,7 +91,7 @@ protected:
 			if (indices.empty())
 			{
 				__debugbreak();
-				Log("UIConfig.json に %s がありません", name.data());
+				Logger::Log("UIConfig.json に %s がありません", name.data());
 			}
 
 			// 連番になっているか確認する
@@ -100,7 +100,7 @@ protected:
 				if (indices[k] < 0)
 				{
 					__debugbreak();
-					Log("%s の %d 番がありません", name.data(), k);
+					Logger::Log("%s の %d 番がありません", name.data(), k);
 				}
 			}
 		}

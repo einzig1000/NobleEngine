@@ -940,7 +940,7 @@ bool Terrain::IsOverlappingAnyCharacter(const AABB& aabb) const
 	//{
 	//	if (!c) continue;
 	//	const AABB& ca = c->data_.aabbs[0];
-	//	if (IsOverLap(aabb, ca))
+	//	if (IsOverlap(aabb, ca))
 	//		return true;
 	//}
 	return false;

@@ -1,5 +1,6 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
+#include <Utilities/Easing/EasingCommon.h>
 #include <array>
 
 // カメラは常にcenter_を見る

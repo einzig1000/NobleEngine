@@ -27,7 +27,7 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
 	int32_t existingTextureID = bank_->IsTextureDataExist(filePath);
 	if (existingTextureID != -1) return existingTextureID;
 
-    Log("テクスチャ読み込み開始:\"%s\"", filePath.c_str());
+    Logger::Log("テクスチャ読み込み開始:\"%s\"", filePath.c_str());
 
     std::unique_ptr<TextureData> text = std::make_unique<TextureData>();
 	uint32_t srvAllocationIndex = 0;
@@ -35,14 +35,14 @@ int32_t TextureLoader::LoadTexture(const std::string & filePath)
 	// テクスチャデータ読み込み
 	if (!LoadTextureFile(filePath, text.get(), srvAllocationIndex))
 	{
-		Log("読み込み失敗しました。デフォルトテクスチャが使用されます。");
+		Logger::Log("読み込み失敗しました。デフォルトテクスチャが使用されます。");
 		return defaultTextureID_;
 	}
 
 	// データ保存
 	bank_->AddTextureData(filePath, srvAllocationIndex, std::move(text));
 
-    Log("成功 ID:%d", srvAllocationIndex);
+    Logger::Log("成功 ID:%d", srvAllocationIndex);
 
     return srvAllocationIndex;
 }
@@ -77,7 +77,7 @@ bool TextureLoader::LoadTextureFile(const std::string& filePath, TextureData* te
     }
     if (FAILED(hr))
     {
-        Log("ファイルが見つかりませんでした:\"%s\"", filePath.c_str());
+        Logger::Log("ファイルが見つかりませんでした:\"%s\"", filePath.c_str());
         return false;
     }
 
@@ -92,7 +92,7 @@ bool TextureLoader::LoadTextureFile(const std::string& filePath, TextureData* te
         hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImageLocal);
         if (FAILED(hr))
         {
-            Log("ミップマップの生成に失敗しました:\"%s\" HRESULT: 0x%X", filePath.c_str(), hr);
+            Logger::Log("ミップマップの生成に失敗しました:\"%s\" HRESULT: 0x%X", filePath.c_str(), hr);
             return false;
         }
     }

@@ -3,18 +3,18 @@
 
 AudioManager::AudioManager()
 {
-    Log("コンストラクタ実行開始 : AudioManager");
+    Logger::Log("コンストラクタ実行開始 : AudioManager");
 
 	bank_ = std::make_unique<AudioBank>();
 	player_ = std::make_unique<AudioPlayer>(bank_.get());
 	loader_ = std::make_unique<AudioLoader>(bank_.get());
 
-	Log("成功");
+	Logger::Log("成功");
 }
 
 AudioManager::~AudioManager()
 {
-    Log("デストラクタ実行成功 : AudioManager");
+    Logger::Log("デストラクタ実行成功 : AudioManager");
 }
 
 void AudioManager::Update()

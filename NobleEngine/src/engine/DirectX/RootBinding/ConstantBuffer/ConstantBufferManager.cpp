@@ -20,10 +20,6 @@ void ConstantBufferManager::Reset()
 	cbAllocators_[backBufferIndex_].Reset();
 }
 
-void ConstantBufferManager::Update()
-{
-}
-
 D3D12_GPU_VIRTUAL_ADDRESS ConstantBufferManager::GetCurrentFrameCbGpuAddress(size_t sizeBytes, const void* data)
 {
 	const auto alloc = cbAllocators_[backBufferIndex_].Allocate(sizeBytes);

@@ -27,18 +27,6 @@ void KeyboardController::Update()
         if (ks.curr)
         {
             ks.holdSeconds += deltaSeconds;
-
-            //// 押されている → 連続フレーム数を増やす
-            //if (ks.prev)
-            //{
-            //    // 前フレームも押されていた
-            //    ++ks.holdFrames;
-            //}
-            //else
-            //{
-            //    // 押し始め（edge）
-            //    ks.holdFrames = 1;
-            //}
         }
         else
         {

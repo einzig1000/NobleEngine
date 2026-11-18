@@ -1,16 +1,15 @@
 #include "Camera.h"
-#include <Game.h>
 #include <Engine.h>
 #include <IO/IOManager.h>
 #include <IO/Mouse/MouseController.h>
 #include <IO/Keyboard/KeyboardController.h>
 #include <TimeManager/TimeManager.h>
-#include <Window/WindowManager.h>
-#include <algorithm>
-#include <numbers>
-#include <ImGuiManager/ImGuiManager.h>
+#include <EngineDefinition/EngineConstexprs.h>
 #include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
 #include <Utilities/Easing/Easing.h>
+#include <ImGuiManager/ImGuiManager.h>
+#include <algorithm>
+#include <numbers>
 
 Camera::Camera()
 {
@@ -54,13 +53,13 @@ void Camera::Update_Orbit()
 	if (enableControl_)
 	{
 		// マウス移動量
-		Vector2 mouseDelta = Game::IO::Mouse::Get2DPositionDelta();
+		Vector2 mouseDelta = Engine::Instance().GetIOManager()->GetMouseController()->Get2DPositionDelta();
 		// マウスホイール
-		int32_t mouseWheel = Game::IO::Mouse::GetWheel();
+		int32_t mouseWheel = Engine::Instance().GetIOManager()->GetMouseController()->GetWheelDelta();
 		// マウス中クリック
-		bool isMiddleHeld = Game::IO::Mouse::IsHeld(2);
+		bool isMiddleHeld = Engine::Instance().GetIOManager()->GetMouseController()->IsHeld(2);
 		// Shiftキー
-		bool isShiftHeld = Game::IO::Key::IsHeld(VK_LSHIFT);
+		bool isShiftHeld = Engine::Instance().GetIOManager()->GetKeyboardController()->IsHeld(VK_LSHIFT);
 
 
 		// パン
@@ -382,21 +381,10 @@ bool Camera::InCamera(const AABB& aabb)
 	return true; // どの平面の外側にもない場合は、視錐台内にあると判定
 }
 
-//Matrix4x4 Camera::GetViewProjectionMatrix()
-//{
-//	Vector3 localPos = CoordinateConverter::ToCartesian(sphericalEye_);
-//	eye_ = center_ + localPos;
-//
-//	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
-//	viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
-//
-//	return viewProjectionMatrix;
-//}
-
 // 実際に動かす
 void Camera::MovingCenter(float dt)
 {
-	if (!centerEasing_.easeing) return;
+	if (!centerEasing_.easing) return;
 
 	centerEasing_.elapsedMs += dt;
 
@@ -409,12 +397,12 @@ void Camera::MovingCenter(float dt)
 
 	if (centerEasing_.elapsedMs > centerEasing_.durationMs)
 	{
-		centerEasing_.easeing = false;
+		centerEasing_.easing = false;
 	}
 }
 void Camera::MovingPhi(float dt)
 {
-	if (!phiEasing_.easeing) return;
+	if (!phiEasing_.easing) return;
 
 	phiEasing_.elapsedMs += dt;
 
@@ -428,12 +416,12 @@ void Camera::MovingPhi(float dt)
 
 	if (phiEasing_.elapsedMs > phiEasing_.durationMs)
 	{
-		phiEasing_.easeing = false;
+		phiEasing_.easing = false;
 	}
 }
 void Camera::MovingTheta(float dt)
 {
-	if (!thetaEasing_.easeing) return;
+	if (!thetaEasing_.easing) return;
 	thetaEasing_.elapsedMs += dt;
 	float spherical = Easing::EasingValue(
 		thetaEasing_.start,
@@ -444,12 +432,12 @@ void Camera::MovingTheta(float dt)
 	sphericalEye_.theta = spherical;
 	if (thetaEasing_.elapsedMs > thetaEasing_.durationMs)
 	{
-		thetaEasing_.easeing = false;
+		thetaEasing_.easing = false;
 	}
 }
 void Camera::MovingDistance(float dt)
 {
-	if (!distanceEasing_.easeing) return;
+	if (!distanceEasing_.easing) return;
 
 	distanceEasing_.elapsedMs += dt;
 
@@ -462,12 +450,12 @@ void Camera::MovingDistance(float dt)
 
 	if (distanceEasing_.elapsedMs > distanceEasing_.durationMs)
 	{
-		distanceEasing_.easeing = false;
+		distanceEasing_.easing = false;
 	}
 }
 void Camera::MovingScreenSize(float dt)
 {
-	if (!screenSizeEasing_.easeing) return;
+	if (!screenSizeEasing_.easing) return;
 
 	screenSizeEasing_.elapsedMs += dt;
 
@@ -486,14 +474,14 @@ void Camera::MovingScreenSize(float dt)
 
 	if (screenSizeEasing_.elapsedMs > screenSizeEasing_.durationMs)
 	{
-		screenSizeEasing_.easeing = false;
+		screenSizeEasing_.easing = false;
 	}
 
 	Resize();
 }
 void Camera::MovingFov(float dt)
 {
-	if (!fovEasing_.easeing) return;
+	if (!fovEasing_.easing) return;
 
 	fovEasing_.elapsedMs += dt;
 
@@ -506,7 +494,7 @@ void Camera::MovingFov(float dt)
 
 	if (fovEasing_.elapsedMs > fovEasing_.durationMs)
 	{
-		fovEasing_.easeing = false;
+		fovEasing_.easing = false;
 	}
 
 	projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
@@ -521,7 +509,7 @@ void Camera::SetCenterTarget(Vector3 target, float durationSec, EaseType easetyp
 	centerEasing_.target = target;
 	centerEasing_.durationMs = durationMs;
 	centerEasing_.elapsedMs = 0.0f;
-	centerEasing_.easeing = true;
+	centerEasing_.easing = true;
 	centerEasing_.easetype = easetype;
 }
 void Camera::SetPhiTarget(float target, float durationSec, EaseType easetype)
@@ -532,7 +520,7 @@ void Camera::SetPhiTarget(float target, float durationSec, EaseType easetype)
 	phiEasing_.target = target;
 	phiEasing_.durationMs = durationMs;
 	phiEasing_.elapsedMs = 0.0f;
-	phiEasing_.easeing = true;
+	phiEasing_.easing = true;
 	phiEasing_.easetype = easetype;
 }
 void Camera::SetThetaTarget(float target, float durationSec, EaseType easetype)
@@ -542,7 +530,7 @@ void Camera::SetThetaTarget(float target, float durationSec, EaseType easetype)
 	thetaEasing_.target = target;
 	thetaEasing_.durationMs = durationMs;
 	thetaEasing_.elapsedMs = 0.0f;
-	thetaEasing_.easeing = true;
+	thetaEasing_.easing = true;
 	thetaEasing_.easetype = easetype;
 }
 void Camera::SetDistanceTarget(float target, float durationSec, EaseType easetype)
@@ -553,7 +541,7 @@ void Camera::SetDistanceTarget(float target, float durationSec, EaseType easetyp
 	distanceEasing_.target = target;
 	distanceEasing_.durationMs = durationMs;
 	distanceEasing_.elapsedMs = 0.0f;
-	distanceEasing_.easeing = true;
+	distanceEasing_.easing = true;
 	distanceEasing_.easetype = easetype;
 }
 void Camera::SetScreenSizeTarget(Vector2 target, float durationSec, EaseType easetype)
@@ -564,7 +552,7 @@ void Camera::SetScreenSizeTarget(Vector2 target, float durationSec, EaseType eas
 	screenSizeEasing_.target = target;
 	screenSizeEasing_.durationMs = durationMs;
 	screenSizeEasing_.elapsedMs = 0.0f;
-	screenSizeEasing_.easeing = true;
+	screenSizeEasing_.easing = true;
 	screenSizeEasing_.easetype = easetype;
 }
 void Camera::SetFovTarget(float target, float durationSec, EaseType easetype)
@@ -575,7 +563,7 @@ void Camera::SetFovTarget(float target, float durationSec, EaseType easetype)
 	fovEasing_.target = target;
 	fovEasing_.durationMs = durationMs;
 	fovEasing_.elapsedMs = 0.0f;
-	fovEasing_.easeing = true;
+	fovEasing_.easing = true;
 	fovEasing_.easetype = easetype;
 }
 

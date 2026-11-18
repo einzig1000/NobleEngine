@@ -147,7 +147,7 @@ void Chunk::CreateChunkDataFromJson()
 	//	{
 	//		if (blocks_[pos.x][pos.y][pos.z].GetBlockID() != BlockID::Air)
 	//		{
-	//			Log("セーブデータの破損：ブロックの重複配置");
+	//			Logger::Log("セーブデータの破損：ブロックの重複配置");
 	//			DebugBreak();
 	//			continue;
 	//		}
@@ -539,7 +539,7 @@ void Chunk::FinishBakeWithPageAssignment(uint32_t totalFaces)
 	std::vector<uint32_t> pages = pagePool_->ClaimPages(needPages);
 	if (pages.empty())
 	{
-		Log("面ページが足りません。FaceDataPagePoolのページ数を増やしてください。");
+		Logger::Log("面ページが足りません。FaceDataPagePoolのページ数を増やしてください。");
 		blockIdsDirty_ = true;
 		return;
 	}

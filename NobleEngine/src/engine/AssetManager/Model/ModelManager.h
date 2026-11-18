@@ -16,12 +16,12 @@ public:
 	~ModelManager();
 
 	ModelLoader* GetModelLoader() const { return loader_.get(); }
-	ModelCreator* GetModelCreater() const { return creater_.get(); }
+	ModelCreator* GetModelCreator() const { return creator_.get(); }
 	ModelBank* GetModelBank() const { return bank_.get(); }
 
 private:
 	std::unique_ptr<ModelLoader> loader_;
-	std::unique_ptr<ModelCreator> creater_;
+	std::unique_ptr<ModelCreator> creator_;
 	std::unique_ptr<ModelBank> bank_;
 };
 

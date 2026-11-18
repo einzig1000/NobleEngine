@@ -9,7 +9,7 @@ int32_t ModelBank::AddModelData(const std::string& filePath, std::unique_ptr<Mod
     return ID;
 }
 
-int32_t ModelBank::IsModelDataExist(const std::string filePath) const
+int32_t ModelBank::IsModelDataExist(const std::string& filePath) const
 {
 	auto it = pathToIDMap_.find(filePath);
 	if (it != pathToIDMap_.end())

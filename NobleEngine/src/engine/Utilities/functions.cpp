@@ -1,14 +1,13 @@
-#include "Utilities/functions.h"
-#include "definition/definition.h"
+#include "functions.h"
 
 #include <cassert>
 #include <cmath>
 #include <vector>
 #include <algorithm>
 
-
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "Dbghelp.lib")
+//#pragma comment(lib, "dxcompiler")
+//#pragma comment(lib, "d3d12.lib")
+//#pragma comment(lib, "Dbghelp.lib")
 
 
 
@@ -328,7 +327,7 @@ bool IsCollision(const AABB& aabb1, const AABB& aabb2)
     return true;
 }
 
-bool IsOverLap(const AABB& aabb1, const AABB& aabb2)
+bool IsOverlap(const AABB& aabb1, const AABB& aabb2)
 {
     // 各軸で分離していれば衝突していない
     if (aabb1.max.x <= aabb2.min.x || aabb1.min.x >= aabb2.max.x) return false;

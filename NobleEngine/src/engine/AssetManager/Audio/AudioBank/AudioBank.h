@@ -10,7 +10,7 @@ public:
 	~AudioBank();
 
 	// オーディオデータを追加
-	void AddAudioData(const std::string& filePath, const int32_t ID, std::unique_ptr<AudioData> audioData);
+	void AddAudioData(const std::string& filePath, int32_t ID, std::unique_ptr<AudioData> audioData);
 	// filePathが同じオーディオデータが存在するか
 	int32_t IsAudioDataExist(const std::string& filePath);
 	// 次のIDを取得

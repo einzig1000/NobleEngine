@@ -4,7 +4,7 @@
 SynchronizationManager::SynchronizationManager(ID3D12Device2* device)
     : currentFenceValue(0)
 {
-    Log("コンストラクタ実行開始 : SynchronizationManager");
+    Logger::Log("コンストラクタ実行開始 : SynchronizationManager");
     
     HRESULT hr = device->CreateFence(
         currentFenceValue,
@@ -18,7 +18,7 @@ SynchronizationManager::SynchronizationManager(ID3D12Device2* device)
     fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     assert(fenceEvent != nullptr);
 
-    Log("成功");
+    Logger::Log("成功");
 }
 
 SynchronizationManager::~SynchronizationManager()
@@ -27,7 +27,7 @@ SynchronizationManager::~SynchronizationManager()
     {
         CloseHandle(fenceEvent);
     }
-    Log("デストラクタ実行成功 : SynchronizationManager");
+    Logger::Log("デストラクタ実行成功 : SynchronizationManager");
 }
 
 void SynchronizationManager::Signal(ID3D12CommandQueue* commandQueue, UINT frameIndex)

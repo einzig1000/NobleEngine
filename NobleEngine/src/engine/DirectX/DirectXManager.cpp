@@ -30,7 +30,7 @@ namespace
 
 DirectXManager::DirectXManager(HWND hwnd)
 {
-    Log("コンストラクタ実行開始 : DirectXManager");
+    Logger::Log("コンストラクタ実行開始 : DirectXManager");
 
     deviceManager_ = std::make_unique<DeviceManager>();
     commandContextManager_ = std::make_unique<CommandContextManager>(deviceManager_->GetDevice());
@@ -42,7 +42,7 @@ DirectXManager::DirectXManager(HWND hwnd)
 	rootBindingManager_ = std::make_unique<RootBindingManager>(deviceManager_->GetDevice(), swapChainManager_.get(), commandContextManager_.get(), descriptorHeapManager_->GetSRV_UAVManager(), synchronizationManager_.get());
     frameProfiler_ = std::make_unique<FrameProfiler>(deviceManager_->GetDevice(), commandContextManager_->GetCommandQueue());
 
-    Log("成功");
+    Logger::Log("成功");
 }
 
 DirectXManager::~DirectXManager()
@@ -57,7 +57,7 @@ DirectXManager::~DirectXManager()
 	commandContextManager_.reset();
 	deviceManager_.reset();
 
-    Log("デストラクタ実行成功 : DirectXManager");
+    Logger::Log("デストラクタ実行成功 : DirectXManager");
 }
 
 ID3D12Device2* DirectXManager::GetDevice() const
@@ -164,7 +164,7 @@ void DirectXManager::EndFrame()
     HRESULT hr = commandContextManager_->GetCommandList(backBufferIndex)->Close();
     if (FAILED(hr))
     {
-        Log("コマンドリストの確定に失敗 %s", HrToString(hr));
+        Logger::Log("コマンドリストの確定に失敗 %s", Logger::HrToString(hr));
         assert(false);
     }
     ID3D12CommandList* commandLists[] = { commandContextManager_->GetCommandList(backBufferIndex) };

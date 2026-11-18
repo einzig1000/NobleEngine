@@ -40,7 +40,7 @@ public:
 
     static constexpr int32_t kSlotCount = 36;
     static constexpr int32_t kHotbarSlotCount = 9;
-    static constexpr uint32_t kMaxStackCount = 9999;
+    static constexpr uint32_t kMaxStackCount = 99999;
     static constexpr uint32_t kMaxAccessoryCount = 8;
 
     ItemInventory();
