@@ -3,7 +3,7 @@
 
 CommandContextManager::CommandContextManager(ID3D12Device2* device)
 {
-    Log("コンストラクタ実行開始 : CommandContextManager");
+    Logger::Log("コンストラクタ実行開始 : CommandContextManager");
 
     D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
     commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -24,12 +24,12 @@ CommandContextManager::CommandContextManager(ID3D12Device2* device)
         assert(SUCCEEDED(hr));
     }
 
-    Log("成功");
+    Logger::Log("成功");
 }
 
 CommandContextManager::~CommandContextManager()
 {
-    Log("デストラクタ実行成功 : CommandContextManager");
+    Logger::Log("デストラクタ実行成功 : CommandContextManager");
 }
 
 void CommandContextManager::ResetCommandList(UINT frameIndex)

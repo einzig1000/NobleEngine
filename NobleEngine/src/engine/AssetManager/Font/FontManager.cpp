@@ -61,7 +61,7 @@ FontManager::~FontManager()
 
 bool FontManager::Load(const std::string& filePath)
 {
-    Log("フォント読み込み開始:%s", filePath.c_str());
+    Logger::Log("フォント読み込み開始:%s", filePath.c_str());
 
     auto* device = dxManager_->GetDevice();
     auto* srvManager = dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager();
@@ -71,7 +71,7 @@ bool FontManager::Load(const std::string& filePath)
     std::ifstream file(filePath, std::ios::binary | std::ios::ate);
     if (!file)
     {
-		Log("ファイルが見つかりませんでした: %s", filePath.c_str());
+		Logger::Log("ファイルが見つかりませんでした: %s", filePath.c_str());
         return false;
     }
 
@@ -99,12 +99,12 @@ bool FontManager::Load(const std::string& filePath)
     fontInfo_ = std::make_unique<stbtt_fontinfo>();
     if (!stbtt_InitFont(fontInfo_.get(), fontFileBuffer_.data(), 0))
     {
-        Log("FontManager: フォント初期化に失敗しました: %s", filePath.c_str());
+        Logger::Log("FontManager: フォント初期化に失敗しました: %s", filePath.c_str());
         return false;
     }
 
     atlasSrvIndex_ = srvManager->CreateSRVforTexture(atlasResource_.Get(), meta).index;
-    Log("成功 ID:%d", atlasSrvIndex_);
+    Logger::Log("成功 ID:%d", atlasSrvIndex_);
 
     return true;
 }
@@ -189,7 +189,7 @@ const GlyphInfo* FontManager::GetOrBakeGlyph(char32_t codepoint, int32_t charSiz
     {
         if (!AllocateAtlasRect(width, height, atlasPos))
         {
-            Log("FontManager: フォントアトラスの空きがありません");
+            Logger::Log("FontManager: フォントアトラスの空きがありません");
             stbtt_FreeBitmap(bitmap, nullptr);
             return nullptr;
         }

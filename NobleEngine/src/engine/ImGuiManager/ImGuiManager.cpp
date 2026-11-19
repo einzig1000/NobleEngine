@@ -4,6 +4,7 @@
 #include <DirectX/DeviceManager/DeviceManager.h>
 #include <DirectX/CommandContextManager/CommandContextManager.h>
 #include <DirectX/RenderTarget/SwapChainManager/SwapChainManager.h>
+#include <DirectX/SynchronizationManager/SynchronizationManager.h>
 
 ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManager)
 	: dxManager_(dxManager), windowManager_(windowManager)
@@ -14,7 +15,7 @@ ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManag
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	// imguiのスタイルを設定
 	ImGui::StyleColorsDark();
@@ -36,7 +37,6 @@ ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManag
 		dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetCPUHandleAt(slot),                    // ImGuiフォントSRV用のCPUハンドル
 		dxManager_->GetDescriptorHeapManager()->GetSRV_UAVManager()->GetGPUHandleAt(slot)                     // ImGuiフォントSRV用のGPUハンドル
 	);
-
 
 #ifdef _RELEASE
 	isDraw_ = false;
@@ -76,6 +76,21 @@ void ImGuiManager::Draw()
 	{
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxManager_->GetCommandContextManager()->GetCommandList(dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex()));
 	}
+}
+
+void ImGuiManager::DrawPlatformWindows()
+{
+	ImGui::UpdatePlatformWindows();
+
+	// Viewports[0]はゲームのウィンドウ自身。1つしか無い = 外に出ている窓が無い
+	if (ImGui::GetPlatformIO().Viewports.Size <= 1) return;
+
+	// 外の窓はImGuiが窓ごとに作った別のコマンドキューで描かれ、メインのキューの完了を待たない。
+	// ゲーム画面のレンダーテクスチャを外の窓に映した時に書き込み途中を読まないよう、ここでGPUを待つ
+	dxManager_->GetSynchronizationManager()->WaitForGPU();
+
+	// 外に出た窓の描画とPresent
+	ImGui::RenderPlatformWindowsDefault();
 }
 
 void ImGuiManager::Finalize()

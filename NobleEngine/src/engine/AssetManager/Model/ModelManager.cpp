@@ -3,19 +3,19 @@
 
 ModelManager::ModelManager(DirectXManager* dxManager)
 {
-	Log("コンストラクタ実行開始 : ModelManager");
+	Logger::Log("コンストラクタ実行開始 : ModelManager");
 
 	// モデルバンク作成
 	bank_ = std::make_unique<ModelBank>();
 	// モデルローダー作成
 	loader_ = std::make_unique<ModelLoader>(dxManager, bank_.get());
 	// モデルクリエイター作成
-	creater_ = std::make_unique<ModelCreator>(dxManager, bank_.get());
+	creator_ = std::make_unique<ModelCreator>(dxManager, bank_.get());
 
-	Log("成功");
+	Logger::Log("成功");
 }
 
 ModelManager::~ModelManager()
 {
-	Log("デストラクタ実行成功 : ModelManager");
+	Logger::Log("デストラクタ実行成功 : ModelManager");
 }

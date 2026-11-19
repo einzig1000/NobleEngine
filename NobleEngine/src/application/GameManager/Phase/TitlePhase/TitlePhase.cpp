@@ -6,7 +6,6 @@
 #include <Utilities/Json/JsonManager.h>
 #include <Utilities/functions.h>
 #include <GameObjects/UI/UIManager.h>
-#include <externals/MagicEnum/magic_enum.hpp>
 
 namespace
 {
@@ -79,7 +78,8 @@ void TitlePhase::Update()
 	// カメラ更新
 	cameraController_->Update(c_title_);
 
-	if (Game::IO::Key::IsJustPressed(VK_SPACE) || Game::IO::Mouse::IsJustPressed(0))
+	//if (Game::IO::Key::IsJustPressed(VK_SPACE) || Game::IO::Mouse::IsJustPressed(0))
+	if (Game::IO::Key::IsJustPressed(VK_SPACE))
 	{
 		MoveCamera(Stage::Menu, 1.5f);
 	}
@@ -149,10 +149,6 @@ void TitlePhase::DrawImGui()
 	map_->GetTerrain()->DrawImGui();
 
 	screenDrawer_->DrawImGui();
-
-	ImGui::Begin("Camera");
-	ImGui::DragFloat3("Position", &generateCenterPosition_.x, 0.1f);
-	ImGui::End();
 
 	ImGui::Begin("Button");
 	for (auto& button : buttons_)

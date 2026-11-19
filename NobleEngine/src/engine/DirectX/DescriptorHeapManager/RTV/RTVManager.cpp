@@ -1,61 +1,27 @@
 #include "RTVManager.h"
-#include "Utilities/Logger/Logger.h"
-
+#include <Utilities/Logger/Logger.h>
 
 RTVManager::RTVManager(ID3D12Device2* device)
 	: device_(device)
+	, heap_(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 256, false, "RTV")
 {
-	Log("コンストラクタ実行開始 : RTVManager");
-
-	// RTVスロット一つ分のサイズを取得
-	descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-	// RTV用のディスクリプタヒープ作成
-	capacity_ = 256;
-	nextIndex_ = 0;
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.NumDescriptors = capacity_;
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-
-	HRESULT hr = device_->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&descriptorHeap_));
-	assert(SUCCEEDED(hr));
-
-	Log("成功");
+	Logger::Info("コンストラクタ実行成功 : RTVManager");
 }
 
 RTVManager::~RTVManager()
 {
-	Log("デストラクタ実行成功 : RTVManager");
-}
-
-uint32_t RTVManager::Allocate()
-{
-	if (nextIndex_ >= capacity_)
-	{
-		Log("RTVのスロットが足りません。容量を増やしてください。");
-		assert(false);
-		return UINT32_MAX;
-	}
-	return nextIndex_++;
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE RTVManager::GetCPUHandleAt(uint32_t index) const
-{
-	D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-	handle.ptr += (descriptorSize_ * index);
-	return handle;
+	Logger::Info("デストラクタ実行成功 : RTVManager");
 }
 
 RTVManager::Allocation RTVManager::CreateRTV(ID3D12Resource* resource, const D3D12_RENDER_TARGET_VIEW_DESC* desc)
 {
 	// 次スロットのインデックス取得
-	uint32_t index = Allocate();
+	uint32_t index = heap_.Allocate();
 
 	// ハンドル取得
-	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = GetCPUHandleAt(index);
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = heap_.GetCPUHandleAt(index);
 
-	// DSV作成
+	// RTV作成
 	device_->CreateRenderTargetView(resource, desc, cpuHandle);
 
 	return Allocation{ index, cpuHandle };

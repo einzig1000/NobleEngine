@@ -12,7 +12,7 @@
 SwapChainManager::SwapChainManager(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd, DescriptorHeapManager* descriptorHeapManager)
 	: device_(device), descriptorHeapManager_(descriptorHeapManager)
 {
-	Log("コンストラクタ実行開始 : SwapChainManager");
+	Logger::Log("コンストラクタ実行開始 : SwapChainManager");
 
 	InitializeSwapChainInternal(device, commandQueue, hwnd);
 	InitializeRenderTargetView(device);
@@ -22,12 +22,12 @@ SwapChainManager::SwapChainManager(ID3D12Device2* device, ID3D12CommandQueue* co
 	renderTargets_[0] = std::make_unique<RenderTarget>();
 	renderTargets_[1] = std::make_unique<RenderTarget>();
 
-    Log("成功");
+    Logger::Log("成功");
 }
 
 SwapChainManager::~SwapChainManager()
 {
-	Log("デストラクタ実行成功 : SwapChainManager");
+	Logger::Log("デストラクタ実行成功 : SwapChainManager");
 }
 
 void SwapChainManager::InitializeSwapChainInternal(ID3D12Device2* device, ID3D12CommandQueue* commandQueue, HWND hwnd)
@@ -119,7 +119,7 @@ void SwapChainManager::Present()
     {
         const HRESULT removed = device_->GetDeviceRemovedReason();
 
-        Log("SwapChainManager::Present failed. hr=0x%08X, GetDeviceRemovedReason=0x%08X",
+        Logger::Log("SwapChainManager::Present failed. hr=0x%08X, GetDeviceRemovedReason=0x%08X",
             static_cast<unsigned int>(hr),
             static_cast<unsigned int>(removed));
 

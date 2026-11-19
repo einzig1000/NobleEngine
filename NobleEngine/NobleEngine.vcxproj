@@ -11,10 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeap.cpp" />
+    <ClCompile Include="src\engine\Editor\LogPanel\LogPanel.cpp" />
     <ClCompile Include="src\engine\Editor\AssetsEditor\AssetsEditor.cpp" />
     <ClCompile Include="src\engine\Editor\IEditorPanel\IEditorPanel.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.cpp" />
-    <ClCompile Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.cpp" />
+    <ClCompile Include="src\engine\Editor\GPUResourcePreview\GPUResourcePreview.cpp" />
     <ClCompile Include="src\application\definition\SkillTreeData\SkillTreeData.cpp" />
     <ClCompile Include="src\application\Editor\SkillTreeEditor\SkillTreeEditor.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\SkillTreeView\SkillTreeView.cpp" />
@@ -162,6 +164,7 @@
     <ClCompile Include="src\engine\Utilities\functions.cpp" />
     <ClCompile Include="src\engine\Utilities\Json\JsonManager.cpp" />
     <ClCompile Include="src\engine\Utilities\Logger\Logger.cpp" />
+    <ClCompile Include="src\engine\Utilities\Logger\LogSinks.cpp" />
     <ClCompile Include="src\engine\Utilities\PerlinNoise.cpp" />
     <ClCompile Include="src\engine\Utilities\Random\Random.cpp" />
     <ClCompile Include="src\engine\Window\WindowManager.cpp" />
@@ -187,10 +190,12 @@
     <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeap.h" />
+    <ClInclude Include="src\engine\Editor\LogPanel\LogPanel.h" />
     <ClInclude Include="src\engine\Editor\AssetsEditor\AssetsEditor.h" />
     <ClInclude Include="src\engine\Editor\IEditorPanel\IEditorPanel.h" />
     <ClInclude Include="src\application\GameObjects\Map\Terrain\ChunkGpuSlotPool\ChunkGpuSlotPool.h" />
-    <ClInclude Include="src\engine\Editor\GPURespurcePreview\GPURespurcePreview.h" />
+    <ClInclude Include="src\engine\Editor\GPUResourcePreview\GPUResourcePreview.h" />
     <ClInclude Include="src\application\definition\SkillTreeData\SkillTreeData.h" />
     <ClInclude Include="src\application\Editor\SkillTreeEditor\SkillTreeEditor.h" />
     <ClInclude Include="src\application\GameObjects\UI\SkillTreeView\SkillTreeView.h" />
@@ -216,6 +221,7 @@
     <ClInclude Include="src\application\GameObjects\Effect\EffectManager.h" />
     <ClInclude Include="src\engine\Editor\AssetsEditor\AudioPreview\AudioPreview.h" />
     <ClInclude Include="src\engine\ImGuiManager\ImGuiExtensions.h" />
+    <ClInclude Include="src\engine\Utilities\Easing\EasingCommon.h" />
     <ClInclude Include="src\engine\Utilities\FileDialog\FileDialog.h" />
     <ClInclude Include="src\application\Test\TestParticle\Particle.h" />
     <ClInclude Include="src\application\GameManager\Phase\TestPhase\TestPhase.h" />
@@ -493,7 +499,10 @@
     <ClInclude Include="src\engine\Utilities\Easing\Easing.h" />
     <ClInclude Include="src\engine\Utilities\functions.h" />
     <ClInclude Include="src\engine\Utilities\Json\JsonManager.h" />
+    <ClInclude Include="src\engine\Utilities\Logger\ILogSink.h" />
     <ClInclude Include="src\engine\Utilities\Logger\Logger.h" />
+    <ClInclude Include="src\engine\Utilities\Logger\LogSinks.h" />
+    <ClInclude Include="src\engine\Utilities\Logger\LogTypes.h" />
     <ClInclude Include="src\engine\Utilities\PerlinNoise.h" />
     <ClInclude Include="src\engine\Utilities\Random\Random.h" />
     <ClInclude Include="src\engine\Window\WindowManager.h" />

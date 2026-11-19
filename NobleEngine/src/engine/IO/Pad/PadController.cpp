@@ -12,7 +12,6 @@ PadController::PadController()
     }
 
     {
-        // 明示的初期化
         std::memset(state, 0, sizeof(state));
         std::memset(preState, 0, sizeof(preState));
         std::memset(isConnect, 0, sizeof(isConnect));
@@ -22,6 +21,7 @@ PadController::PadController()
         std::memset(leftStickY, 0, sizeof(leftStickY));
         std::memset(rightStickX, 0, sizeof(rightStickX));
         std::memset(rightStickY, 0, sizeof(rightStickY));
+        std::memset(dwUserIndex, 0, sizeof(dwUserIndex));
         for (size_t i = 0; i < 4; ++i)
         {
             leftStickDir[i] = { 0.0f, 0.0f };

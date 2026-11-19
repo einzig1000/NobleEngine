@@ -161,6 +161,9 @@ void Engine::EndFrame()
 	// DirectX終了処理
 	dxManager_->EndFrame();
 
+	// ゲームのウィンドウの外に出したImGuiの窓を更新・描画(メインのPresentの後)
+	imguiManager_->DrawPlatformWindows();
+
 	// FPS制限
 	timeManager_->Update();
 }

@@ -1,11 +1,7 @@
 #pragma once
-#include <definition/definition.h>
-#include <externals/DirectXTex/d3dx12.h>
-#include <Windows.h>
+#include <EngineDefinition/EngineDefinition.h>
 #include <sstream>
-#include <dxcapi.h>
 #include <optional>
-#pragma comment(lib, "dxcompiler")
 
 template <typename T, size_t Rows, size_t Cols>
 void FlipYAxis(T(&arr)[Rows][Cols])
@@ -63,7 +59,7 @@ bool IsCollision(const Ray& r, const Plane& p);
 bool IsCollision(const Ray& r, const AABB& aabb);
 bool IsCollision(const Ray& r, const Triangle& t);
 bool IsCollision(const AABB& aabb1, const AABB& aabb2);
-bool IsOverLap(const AABB& aabb1, const AABB& aabb2);
+bool IsOverlap(const AABB& aabb1, const AABB& aabb2);
 bool IsLooseCollision(const AABB& aabb1, const AABB& aabb2, float threshold = 0.1f);
 bool IsCollision(const AABB& aabb, const Sphere& s);
 bool IsCollision(const AABB& aabb, const Segment& s);

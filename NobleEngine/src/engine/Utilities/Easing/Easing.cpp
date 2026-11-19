@@ -4,28 +4,6 @@
 
 namespace Easing
 {
-	float EasingFloat(float start, float end, EaseType easeType, float t)
-	{
-		if (t >= 1.0f)return end;
-		else if (t <= 0.0f)return start;
-
-		return CalculateEasedValue(start, end, easeType, t);
-	}
-
-	Vector3 EasingVector3(Vector3 start, Vector3 end, EaseType easeType, float t)
-	{
-		if (t >= 1.0f)return end;
-		else if (t <= 0.0f)return start;
-
-		Vector3 Return = start;
-		if (start.x != end.x)Return.x = CalculateEasedValue(start.x, end.x, easeType, t);
-		if (start.y != end.y)Return.y = CalculateEasedValue(start.y, end.y, easeType, t);
-		if (start.z != end.z)Return.z = CalculateEasedValue(start.z, end.z, easeType, t);
-
-		return Return;
-	}
-
-
 	float CalculateEasedValue(float start, float end, EaseType easeType, float t)
 	{
 		switch (easeType)
@@ -268,16 +246,7 @@ namespace Easing
 	}
 	float F_IN_BOUNCE(float start, float end, float t)
 	{
-		static const float n1 = 7.5625f;
-		static const float d1 = 2.75f;
-
-		float easedT = 0.0f;
-		if (t < 1.0f / d1)easedT = n1 * t * t;
-		else if (t < 2 / d1)easedT = n1 * (t -= 1.5f / d1) * t + 0.75f;
-		else if (t < 2.5 / d1)easedT = n1 * (t -= 2.25f / d1) * t + 0.9375f;
-		else easedT = n1 * (t -= 2.625f / d1) * t + 0.984375f;
-
-		return (1.0f - easedT) * end + easedT * start;
+		return F_OUT_BOUNCE(start, end, 1.0f - t);
 	}
 	float F_OUT_BOUNCE(float start, float end, float t)
 	{
@@ -288,12 +257,11 @@ namespace Easing
 		if (t < 1.0f / d1)easedT = n1 * t * t;
 		else if (t < 2 / d1)easedT = n1 * (t -= 1.5f / d1) * t + 0.75f;
 		else if (t < 2.5 / d1)easedT = n1 * (t -= 2.25f / d1) * t + 0.9375f;
-		else easedT = n1 * (t -= 2.625f / d1) * t + 0.984375f;
+		else
+		{
+			const float temp = t - 2.625f / d1;
+			easedT = n1 * temp * temp + 0.984375f;
+		}
 		return (1.0f - easedT) * start + easedT * end;
-	}
-
-	uint32_t COLOR(uint32_t startColor, uint32_t endColor, float t)
-	{
-		return uint32_t((1.0f - t) * startColor + t * endColor);
 	}
 }

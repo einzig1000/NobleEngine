@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <EngineDefinition/EngineDefinition.h>
 #include <Xinput.h>
-#pragma comment(lib, "xinput.lib") // XInputライブラリをリンク
+#pragma comment(lib, "xinput.lib")
 
 /// <summary>
 /// パッド管理クラス
@@ -11,16 +11,16 @@ class PadController
 {
 public:
     PadController();
-	~PadController();
+    ~PadController();
 
     void Update();
 
-	bool IsHeld(int32_t padIndex, BYTE button) const;
-	bool IsJustPressed(int32_t padIndex, BYTE button) const;
-	bool IsJustReleased(int32_t padIndex, BYTE button) const;
+    bool IsHeld(int32_t padIndex, BYTE button) const;
+    bool IsJustPressed(int32_t padIndex, BYTE button) const;
+    bool IsJustReleased(int32_t padIndex, BYTE button) const;
     float HoldSeconds(int32_t padIndex, BYTE button) const;	// 押されてからの経過秒数
-	Vector2 GetLeftStick(int32_t padIndex) const;	    // 左スティックの値取得 (-1.0f ～ 1.0f)
-	Vector2 GetRightStick(int32_t padIndex) const;	// 右スティックの値取得 (-1.0f ～ 1.0f)
+    Vector2 GetLeftStick(int32_t padIndex) const;	    // 左スティックの値取得 (-1.0f ～ 1.0f)
+    Vector2 GetRightStick(int32_t padIndex) const;	// 右スティックの値取得 (-1.0f ～ 1.0f)
 
     // トリガーの値取得（0.0f ～ 1.0f）
     float GetLeftTrigger(int32_t padIndex) const;
@@ -40,10 +40,10 @@ private:
 
     SHORT leftStickX[4];        // 左スティックX軸（-32768〜32767）
     SHORT leftStickY[4];        // 左スティックY軸（-32768〜32767）
-    SHORT rightStickX[4];        // 右スティックX軸（-32768〜32767）
-    SHORT rightStickY[4];        // 右スティックY軸（-32768〜32767）
-    Vector2 leftStickDir[4];        // 左スティック方向({-1〜1},{-1〜1})
-    Vector2 rightStickDir[4];        // 右スティック方向({-1〜1},{-1〜1})
+    SHORT rightStickX[4];       // 右スティックX軸（-32768〜32767）
+    SHORT rightStickY[4];       // 右スティックY軸（-32768〜32767）
+    Vector2 leftStickDir[4];    // 左スティック方向({-1〜1},{-1〜1})
+    Vector2 rightStickDir[4];   // 右スティック方向({-1〜1},{-1〜1})
 
 
 

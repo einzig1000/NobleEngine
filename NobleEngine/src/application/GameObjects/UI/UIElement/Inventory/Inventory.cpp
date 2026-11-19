@@ -154,7 +154,7 @@ void Inventory::Draw(int32_t rt_ID)
 			if (item.itemID == ItemID::MAX || !slot || item.count <= 1) continue;
 
 			const Vector2 pos = Vector2{ GetCenter(slot->data).x + countTextOffset_.x, GetCenter(slot->data).y + countTextOffset_.y };
-			Game::Asset::Font::DrawString(rt_ID, std::to_string(item.count), 46, pos, Vector4{ 0.0f, 0.0f, 0.0f, 1.0f });
+			Game::Asset::Font::DrawString(rt_ID, std::to_string(item.count), 32, pos, Vector4{ 0.0f, 0.0f, 0.0f, 1.0f });
 		}
 	}
 

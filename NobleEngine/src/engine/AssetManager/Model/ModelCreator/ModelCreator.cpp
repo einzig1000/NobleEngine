@@ -22,7 +22,7 @@ int32_t ModelCreator::CreateModel(const std::vector<VertexData>& vertices, const
 {
 	if (vertices.empty()) return -1;
 
-    Log("モデル作成開始:%s", name.c_str());
+    Logger::Log("モデル作成開始:%s", name.c_str());
 
     uint32_t backBufferIndex = dxManager_->GetSwapChainManager()->GetCurrentBackBufferIndex();
     auto* cmdList = dxManager_->GetCommandContextManager()->GetCommandList(backBufferIndex);
@@ -282,7 +282,7 @@ int32_t ModelCreator::CreateModel(const std::vector<VertexData>& vertices, const
     // モデルバンクに登録
     int32_t ID = bank_->AddModelData(filePath, std::move(modelData));
 
-    Log("成功 ID:%d", ID);
+    Logger::Log("成功 ID:%d", ID);
 
     return ID;
 }

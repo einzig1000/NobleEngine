@@ -23,7 +23,7 @@ int32_t CameraManager::AddCamera(const std::string& name)
 	return static_cast<int32_t>(camera_.size() - 1);
 }
 
-void CameraManager::Update(const int32_t cameraID)
+void CameraManager::Update(int32_t cameraID)
 {
 	Camera* targetCamera = GetCamera(cameraID);
 	if (!targetCamera) return;
@@ -50,7 +50,7 @@ void CameraManager::DrawImGui()
 	ImGui::End();
 }
 
-Camera* CameraManager::GetCamera(const int32_t cameraID)
+Camera* CameraManager::GetCamera(int32_t cameraID)
 {
 	if (cameraID < 0 || cameraID >= static_cast<int32_t>(camera_.size()))
 	{

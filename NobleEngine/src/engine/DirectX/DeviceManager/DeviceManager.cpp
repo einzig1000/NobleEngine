@@ -9,19 +9,19 @@
 
 DeviceManager::DeviceManager()
 {
-    Log("コンストラクタ実行開始 : DeviceManager");
+    Logger::Log("コンストラクタ実行開始 : DeviceManager");
 
 #ifdef _DEBUG
     EnableDebugLayer();
 #endif
     InitializeDeviceInternal();
 
-    Log("成功");
+    Logger::Log("成功");
 }
 
 DeviceManager::~DeviceManager()
 {
-    Log("デストラクタ実行成功 : DeviceManager");
+    Logger::Log("デストラクタ実行成功 : DeviceManager");
 }
 
 void DeviceManager::EnableDebugLayer()

@@ -3,7 +3,7 @@
     {
       "description": "",
       "effectType": "SwingScale",
-      "effectValue": 0.5,
+      "effectValue": 0.800000011920929,
       "iconPath": "assets/engine/texture/uvChecker.png",
       "id": 0,
       "itemCosts": [],
@@ -18,7 +18,7 @@
     {
       "description": "",
       "effectType": "SwingScale",
-      "effectValue": 0.699999988079071,
+      "effectValue": 1.5,
       "iconPath": "assets/engine/texture/uvChecker.png",
       "id": 1,
       "itemCosts": [
@@ -40,7 +40,7 @@
     {
       "description": "",
       "effectType": "SwingScale",
-      "effectValue": 1.0,
+      "effectValue": 3.0,
       "iconPath": "assets/engine/texture/uvChecker.png",
       "id": 2,
       "itemCosts": [
@@ -62,7 +62,7 @@
     {
       "description": "",
       "effectType": "SwingSpeed",
-      "effectValue": 0.10000000149011612,
+      "effectValue": 0.5,
       "iconPath": "assets/engine/texture/uvChecker.png",
       "id": 3,
       "itemCosts": [],
@@ -77,7 +77,7 @@
     {
       "description": "",
       "effectType": "SwingSpeed",
-      "effectValue": 0.20000000298023224,
+      "effectValue": 0.699999988079071,
       "iconPath": "assets/engine/texture/uvChecker.png",
       "id": 4,
       "itemCosts": [
@@ -99,7 +99,7 @@
     {
       "description": "",
       "effectType": "SwingSpeed",
-      "effectValue": 0.10000000149011612,
+      "effectValue": 1.0,
       "iconPath": "assets/engine/texture/uvChecker.png",
       "id": 5,
       "itemCosts": [

@@ -159,8 +159,7 @@ Matrix4x4 Matrix4x4::Inverse() const
         - (m[0][1] * m[1][2] * m[2][3] * m[3][0]) - (m[0][2] * m[1][3] * m[2][1] * m[3][0]) - (m[0][3] * m[1][1] * m[2][2] * m[3][0])
         + (m[0][3] * m[1][2] * m[2][1] * m[3][0]) + (m[0][2] * m[1][1] * m[2][3] * m[3][0]) + (m[0][1] * m[1][3] * m[2][2] * m[3][0]);
 
-    // Protect against near-zero determinant (use absolute value)
-    if (std::fabs(det) < Constexprs::eps) return Return;
+    if (det == 0.0f) return Return;
 
     const float invDet = 1.0f / det;
 

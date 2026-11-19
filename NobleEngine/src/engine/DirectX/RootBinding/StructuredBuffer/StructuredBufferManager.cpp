@@ -17,7 +17,7 @@ int32_t StructuredBufferManager::CreateStatic(const void* data, size_t elementSi
 {
 	if (data == nullptr || elementSize == 0 || elementCount == 0)
 	{
-		Log("StructuredBufferManager::CreateStatic() dataがnullptr、またはelementSize/elementCountが0です");
+		Logger::Log("StructuredBufferManager::CreateStatic() dataがnullptr、またはelementSize/elementCountが0です");
 		return -1;
 	}
 
@@ -55,7 +55,7 @@ int32_t StructuredBufferManager::CreateCompute(size_t elementSize, size_t elemen
 {
 	if (elementSize == 0 || elementCount == 0)
 	{
-		Log("StructuredBufferManager::CreateCompute() elementSize/elementCountが0です");
+		Logger::Log("StructuredBufferManager::CreateCompute() elementSize/elementCountが0です");
 		return -1;
 	}
 
@@ -82,13 +82,13 @@ void StructuredBufferManager::UpdateData(int32_t resourceID, const void* data, s
 {
 	if (bufferTypeMap_.find(resourceID) == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルのStructuredBufferを更新しようとしました。");
+		Logger::Log("存在しないハンドルのStructuredBufferを更新しようとしました。");
 		return;
 	}
 	
 	if (bufferTypeMap_.at(resourceID) != BufferType::Dynamic)
 	{
-		Log("Dynamicのバッファ以外はUpdateDataできません");
+		Logger::Log("Dynamicのバッファ以外はUpdateDataできません");
 		return;
 	}
 
@@ -127,13 +127,13 @@ void StructuredBufferManager::ZeroFillCompute(int32_t resourceID, size_t bytes)
 {
 	if (bufferTypeMap_.find(resourceID) == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルのComputeOutputバッファをゼロクリアしようとしました。");
+		Logger::Log("存在しないハンドルのComputeOutputバッファをゼロクリアしようとしました。");
 		__debugbreak();
 		return;
 	}
 	if (bufferTypeMap_.at(resourceID) != BufferType::ComputeOutput)
 	{
-		Log("ComputeOutput以外のバッファはZeroFillComputeOutputできません");
+		Logger::Log("ComputeOutput以外のバッファはZeroFillComputeOutputできません");
 		__debugbreak();
 		return;
 	}
@@ -160,7 +160,7 @@ void StructuredBufferManager::Destroy(int32_t resourceID)
 	auto type = bufferTypeMap_.find(resourceID);
 	if (type == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルのStructuredBufferを解放しようとしました。");
+		Logger::Log("存在しないハンドルのStructuredBufferを解放しようとしました。");
 		return;
 	}
 
@@ -274,7 +274,7 @@ uint32_t StructuredBufferManager::GetSRV(int32_t resourceID) const
 	auto it = bufferTypeMap_.find(resourceID);
 	if (it == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルのStructuredBufferのSRVを取得しようとしました。");
+		Logger::Log("存在しないハンドルのStructuredBufferのSRVを取得しようとしました。");
 		__debugbreak();
 		return UINT32_MAX;
 	}
@@ -295,14 +295,14 @@ uint32_t StructuredBufferManager::GetUAV(int32_t resourceID) const
 	auto it = bufferTypeMap_.find(resourceID);
 	if (it == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルのStructuredBufferのUAVを取得しようとしました。");
+		Logger::Log("存在しないハンドルのStructuredBufferのUAVを取得しようとしました。");
 		__debugbreak();
 		return UINT32_MAX;
 	}
 
 	if (it->second != BufferType::ComputeOutput)
 	{
-		Log("ComputeOutputのバッファ以外はUAVを取得できません");
+		Logger::Log("ComputeOutputのバッファ以外はUAVを取得できません");
 		__debugbreak();
 		return UINT32_MAX;
 	}
@@ -314,7 +314,7 @@ ID3D12Resource* StructuredBufferManager::GetResource(int32_t resourceID) const
 {
 	if (bufferTypeMap_.find(resourceID) == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルのStructuredBufferのResourceを取得しようとしました。");
+		Logger::Log("存在しないハンドルのStructuredBufferのResourceを取得しようとしました。");
 		return nullptr;
 	}
 
@@ -334,12 +334,12 @@ int32_t StructuredBufferManager::RequestReadback(int32_t resourceID, size_t byte
 {
 	if (bufferTypeMap_.find(resourceID) == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルの読み戻しを要求しようとしました。");
+		Logger::Log("存在しないハンドルの読み戻しを要求しようとしました。");
 		return -1;
 	}
 	if (bufferTypeMap_.at(resourceID) != BufferType::ComputeOutput)
 	{
-		Log("ComputeOutput以外のバッファは読み戻しできません");
+		Logger::Log("ComputeOutput以外のバッファは読み戻しできません");
 		return -1;
 	}
 
@@ -410,7 +410,7 @@ bool StructuredBufferManager::TryGetReadbackResult(int32_t readbackToken, void* 
 	HRESULT hr = pending.readbackResource->Map(0, &readRange, &mapped);
 	if (FAILED(hr))
 	{
-		Log("読み戻しバッファのMapに失敗しました。");
+		Logger::Log("読み戻しバッファのMapに失敗しました。");
 		pendingReadbacks_.erase(it);
 		return false;
 	}
@@ -432,13 +432,13 @@ void StructuredBufferManager::TransitionToUAV(int32_t resourceID, ID3D12Graphics
 {
 	if (bufferTypeMap_.find(resourceID) == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルのStructuredBufferをUAVに遷移しようとしました。");
+		Logger::Log("存在しないハンドルのStructuredBufferをUAVに遷移しようとしました。");
 		return;
 	}
 
 	if (bufferTypeMap_.at(resourceID) != BufferType::ComputeOutput)
 	{
-		Log("ComputeOutputのバッファ以外はUAVに遷移できません");
+		Logger::Log("ComputeOutputのバッファ以外はUAVに遷移できません");
 		return;
 	}
 
@@ -455,13 +455,13 @@ void StructuredBufferManager::TransitionToSRV(int32_t resourceID, ID3D12Graphics
 {
 	if (bufferTypeMap_.find(resourceID) == bufferTypeMap_.end())
 	{
-		Log("存在しないハンドルのStructuredBufferをSRVに遷移しようとしました。");
+		Logger::Log("存在しないハンドルのStructuredBufferをSRVに遷移しようとしました。");
 		return;
 	}
 
 	if (bufferTypeMap_.at(resourceID) != BufferType::ComputeOutput)
 	{
-		Log("ComputeOutputのバッファ以外はSRVに遷移できません");
+		Logger::Log("ComputeOutputのバッファ以外はSRVに遷移できません");
 		return;
 	}
 

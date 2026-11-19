@@ -47,7 +47,7 @@ void SkillTreeDataLoader::Load()
 		node.effectType = magic_enum::enum_cast<SkillEffectType>(effectName).value_or(SkillEffectType::None);
 		if (!effectName.empty() && !magic_enum::enum_cast<SkillEffectType>(effectName).has_value())
 		{
-			Log("SkillTree.json: ノード%d の効果 %s がありません", node.id, effectName.c_str());
+			Logger::Log("SkillTree.json: ノード%d の効果 %s がありません", node.id, effectName.c_str());
 		}
 
 		// 必要素材(無くなるまで読む)
@@ -62,7 +62,7 @@ void SkillTreeDataLoader::Load()
 			JsonManager::Load(kPath, costKey + "/count", cost.count);
 			if (cost.id == ItemID::MAX)
 			{
-				Log("SkillTree.json: ノード%d の素材 %s がありません", node.id, itemName.c_str());
+				Logger::Log("SkillTree.json: ノード%d の素材 %s がありません", node.id, itemName.c_str());
 				continue;
 			}
 			node.itemCosts.push_back(cost);
@@ -77,7 +77,7 @@ void SkillTreeDataLoader::Load()
 		// 番号の重複
 		if (!usedIDs.insert(node.id).second)
 		{
-			Log("SkillTree.json: ノード番号 %d が重複しています", node.id);
+			Logger::Log("SkillTree.json: ノード番号 %d が重複しています", node.id);
 		}
 	}
 

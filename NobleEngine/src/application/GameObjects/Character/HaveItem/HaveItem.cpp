@@ -196,7 +196,8 @@ void HaveItem::Update(int32_t cameraID)
 	{
 		if (Game::IO::Mouse::IsHeld(0))
 		{
-			animationTime_ += Game::Time::GetScaledDeltaTimeMs() * 0.001f * animationSpeed_;
+			const float speed = animationSpeed_ * (1.0f + skillSpeedRate_);
+			animationTime_ += Game::Time::GetScaledDeltaTimeMs() * 0.001f * speed;
 		}
 		else
 		{

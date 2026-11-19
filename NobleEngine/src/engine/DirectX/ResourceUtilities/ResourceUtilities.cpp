@@ -39,9 +39,9 @@ namespace Dx12ResourceFactory
         if (FAILED(hr) || !resource)
         {
             const HRESULT removed = device->GetDeviceRemovedReason();
-            Log("CreateBufferResource()に失敗しました。hr=%s removedReason=%s",
-                HrToString(hr),
-                HrToString(removed));
+            Logger::Log("CreateBufferResource()に失敗しました。hr=%s removedReason=%s",
+                Logger::HrToString(hr),
+                Logger::HrToString(removed));
             return nullptr;
         }
 
@@ -90,9 +90,9 @@ namespace Dx12ResourceFactory
         if (FAILED(hr) || !resource)
         {
             const HRESULT removed = device->GetDeviceRemovedReason();
-            Log("CreateDefaultBufferResource()に失敗しました。hr=%s removedReason=%s",
-                HrToString(hr),
-                HrToString(removed));
+            Logger::Log("CreateDefaultBufferResource()に失敗しました。hr=%s removedReason=%s",
+                Logger::HrToString(hr),
+                Logger::HrToString(removed));
             return nullptr;
         }
 
@@ -128,8 +128,8 @@ namespace Dx12ResourceFactory
         if (FAILED(hr) || !resource)
         {
             const HRESULT removed = device->GetDeviceRemovedReason();
-            Log("CreateReadbackResource()に失敗しました。hr=%s removedReason=%s",
-                HrToString(hr), HrToString(removed));
+            Logger::Log("CreateReadbackResource()に失敗しました。hr=%s removedReason=%s",
+                Logger::HrToString(hr), Logger::HrToString(removed));
             return nullptr;
         }
 
@@ -202,9 +202,9 @@ namespace Dx12ResourceFactory
         if (FAILED(hr) || !resource)
         {
             const HRESULT removed = device->GetDeviceRemovedReason();
-			Log("CreateTextureResource()に失敗しました。hr=%s removedReason=%s",
-                HrToString(hr),
-                HrToString(removed));
+			Logger::Log("CreateTextureResource()に失敗しました。hr=%s removedReason=%s",
+                Logger::HrToString(hr),
+                Logger::HrToString(removed));
             return nullptr;
         }
 
@@ -251,9 +251,9 @@ namespace Dx12ResourceFactory
 		if (FAILED(hr) || !resource)
 		{
 			const HRESULT removed = device->GetDeviceRemovedReason();
-			Log("CreateDepthStencilResource()に失敗しました。 hr=%s removedReason=%s",
-				HrToString(hr),
-				HrToString(removed));
+			Logger::Log("CreateDepthStencilResource()に失敗しました。 hr=%s removedReason=%s",
+				Logger::HrToString(hr),
+				Logger::HrToString(removed));
 			return nullptr;
 		}
 
@@ -302,9 +302,9 @@ namespace Dx12ResourceFactory
         if (FAILED(hr) || !resource)
         {
             const HRESULT removed = device->GetDeviceRemovedReason();
-            Log("CreateRenderTargetResource()に失敗しました。 hr=%s removedReason=%s",
-                HrToString(hr),
-                HrToString(removed));
+            Logger::Log("CreateRenderTargetResource()に失敗しました。 hr=%s removedReason=%s",
+                Logger::HrToString(hr),
+                Logger::HrToString(removed));
             return nullptr;
         }
 

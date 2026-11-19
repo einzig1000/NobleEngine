@@ -66,31 +66,6 @@ enum class ItemID
 {
 	Tool_Hammer,
 
-	// 防具
-	Armor_Head_of_Wood,
-	Armor_Head_of_Stone,
-	Armor_Head_of_Iron,
-	Armor_Head_of_Gold,
-	Armor_Head_of_Diamond,
-
-	Armor_Leg_of_Wood,
-	Armor_Leg_of_Stone,
-	Armor_Leg_of_Iron,
-	Armor_Leg_of_Gold,
-	Armor_Leg_of_Diamond,
-
-	Armor_Shoes_of_Wood,
-	Armor_Shoes_of_Stone,
-	Armor_Shoes_of_Iron,
-	Armor_Shoes_of_Gold,
-	Armor_Shoes_of_Diamond,
-
-	Armor_Body_of_Wood,
-	Armor_Body_of_Stone,
-	Armor_Body_of_Iron,
-	Armor_Body_of_Gold,
-	Armor_Body_of_Diamond,
-
 	// ブロック    
 	Block_Air,
 	Block_Stone,	// 石
@@ -103,13 +78,6 @@ enum class ItemID
 	Block_Grass,	// 芝
 	Block_Wood,		// 木
 	Block_Leaf,		// 葉
-
-	// アイテム
-	鉄インゴット,
-	金インゴット,
-	ダイヤモンド,
-
-    ビーコン,
 
     MAX,
 };

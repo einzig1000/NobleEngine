@@ -220,16 +220,39 @@ Ray MouseController::ComputeRay(Matrix4x4& viewProjection)
 	return ray;
 }
 
+//void MouseController::UpdateButtonState()
+//{
+//    leftButton_.prev = leftButton_.curr;
+//	rightButton_.prev = rightButton_.curr;
+//	middleButton_.prev = middleButton_.curr;
+//
+//    leftButton_.curr = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+//    rightButton_.curr = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
+//    middleButton_.curr = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
+//
+//    const float deltaSeconds = Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs() * 0.001f;
+//
+//    if (leftButton_.curr) leftButton_.holdSeconds += deltaSeconds;
+//    else leftButton_.holdSeconds = 0.0f;
+//    if (rightButton_.curr) rightButton_.holdSeconds += deltaSeconds;
+//    else rightButton_.holdSeconds = 0.0f;
+//    if (middleButton_.curr) middleButton_.holdSeconds += deltaSeconds;
+//    else middleButton_.holdSeconds = 0.0f;
+//}
+
 // マウスボタン状態取得
 void MouseController::UpdateButtonState()
 {
     leftButton_.prev = leftButton_.curr;
-	rightButton_.prev = rightButton_.curr;
-	middleButton_.prev = middleButton_.curr;
+    rightButton_.prev = rightButton_.curr;
+    middleButton_.prev = middleButton_.curr;
 
-    leftButton_.curr = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
-    rightButton_.curr = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
-    middleButton_.curr = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
+    // ゲームのウィンドウが前面の時だけ読む(外に出したImGuiの窓でのクリックをゲームに渡さない)
+    const bool hasFocus = (::GetForegroundWindow() == hwnd_);
+
+    leftButton_.curr = hasFocus && (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+    rightButton_.curr = hasFocus && (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
+    middleButton_.curr = hasFocus && (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
 
     const float deltaSeconds = Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs() * 0.001f;
 

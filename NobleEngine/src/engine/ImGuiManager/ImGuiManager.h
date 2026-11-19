@@ -20,6 +20,7 @@ public:
 	void BeginFrame();
 	void EndFrame();
 	void Draw();
+	void DrawPlatformWindows();
 	void Finalize();
 
 	void ToggleDraw() { isDraw_ = !isDraw_; }

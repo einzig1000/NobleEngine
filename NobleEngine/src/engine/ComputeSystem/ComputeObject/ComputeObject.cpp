@@ -27,7 +27,7 @@ void ComputeObject::SetupFromShaders()
 void ComputeObject::SetBRegisterData(const uint32_t key, const void* data, uint32_t space)
 {
 	if (!layout_) return;
-	const int32_t index = layout_->Find(ParamType::CBV, ShaderType::ComputeShader, key, space);
+	int32_t index = layout_->Find(ParamType::CBV, ShaderType::ComputeShader, key, space);
 	if (index < 0) return;
 
 	rootValues_[index].gpuAddress =  Engine::Instance().GetDirectXManager()->GetRootBindingManager()->GetConstantBufferManager()->GetCurrentFrameCbGpuAddress(layout_->params[index].sizeBytes, data);
@@ -45,7 +45,7 @@ void ComputeObject::SetTRegisterData(const uint32_t key, const uint32_t allocInd
 void ComputeObject::SetURegisterData(const uint32_t key, const uint32_t allocIndex, uint32_t space)
 {
 	if (!layout_) return;
-	const int32_t index = layout_->Find(ParamType::UAV, ShaderType::ComputeShader, key, space);
+	int32_t index = layout_->Find(ParamType::UAV, ShaderType::ComputeShader, key, space);
 	if (index < 0) return;
 
 	rootValues_[index].allocIndex = allocIndex;

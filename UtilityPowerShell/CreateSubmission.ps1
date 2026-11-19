@@ -26,7 +26,7 @@ $projectFolderName = "NobleEngine"                    # .vcxproj と assets が�
 $configuration     = "Release"
 $platform          = "x64"
 $submissionExeName = ""                               # 提出物の exe 名を変えたいときだけ指定（例: "MyCraftBuilders.exe"）。空ならビルドされた名前のまま
-$rootFiles         = @("README.md", ".editorconfig")  # ソリューションと一緒にソース側へコピーするファイル
+$rootFiles         = @("README.md", ".editorconfig", "ThirdPartyNotices.txt")  # ソリューションと一緒にソース側へコピーするファイル
 
 # ===== 小さな道具 =====
 
@@ -243,7 +243,7 @@ try {
         Write-Host "  ReadMe.md を空で作りました（内容は各自で記入）"
     }
 
-    # ----- 3. 実行ファイル一式（exe + 同じフォルダの dll + assets） -----
+    # ----- 3. 実行ファイル一式（exe + 同じフォルダの dll + assets + ThirdPartyNotices.txt） -----
     Write-Host "[3/4] 実行ファイル一式をコピーしています..."
     Copy-Item -LiteralPath $exe.FullName -Destination (Join-Path $exeFolder $exeDestName)
     $dlls = @(Get-ChildItem -LiteralPath $outDir -Filter "*.dll" -File)
@@ -251,6 +251,9 @@ try {
     if ($dlls.Count -eq 0) {
         Write-Host "  $outDir に dll が 1 つもありません（dxcompiler.dll / dxil.dll が無いと起動できないかもしれません）" -ForegroundColor Yellow
     }
+    $noticePath = Join-Path $projectRoot "ThirdPartyNotices.txt"
+    if (Test-Path -LiteralPath $noticePath) { Copy-Item -LiteralPath $noticePath -Destination $exeFolder }
+    else { Write-Host "  ThirdPartyNotices.txt が無いので、実行ファイル側にライセンス表記が入っていません" -ForegroundColor Yellow }
     $excludes = Get-CopyExcludes
     Copy-Folder $assetsDir (Join-Path $exeFolder "assets") $excludes
 

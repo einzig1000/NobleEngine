@@ -12,7 +12,7 @@ bool JsonManager::Load(const std::string& path)
     std::ifstream ifs(path);
     if (!ifs.is_open())
     {
-		Log("%s Json::LoadFailed パスが見つかりませんでした。\n", path.c_str());
+		Logger::Log("%s Json::LoadFailed パスが見つかりませんでした。\n", path.c_str());
         return false;
     }
 
@@ -27,7 +27,7 @@ void JsonManager::LoadAll(const std::string& directoryPath)
 {
     if (!std::filesystem::exists(directoryPath))
     {
-        Log("%s Json::LoadAllFailed ディレクトリが存在しません。\n", directoryPath.c_str());
+        Logger::Log("%s Json::LoadAllFailed ディレクトリが存在しません。\n", directoryPath.c_str());
         return;
     }
 
@@ -46,7 +46,7 @@ bool JsonManager::Save(const std::string& path)
     auto it = dataMap.find(path);
     if (it == dataMap.end())
     {
-		Log("%s Json::SaveFailed dataMapに該当データが見つかりませんでした。\n", path.c_str());
+		Logger::Log("%s Json::SaveFailed dataMapに該当データが見つかりませんでした。\n", path.c_str());
         return false;
     }
 
@@ -56,12 +56,12 @@ bool JsonManager::Save(const std::string& path)
     std::ofstream ofs(path);
     if (!ofs.is_open())
     {
-		Log("%s Json::SaveFailed ファイルを開けませんでした。\n", path.c_str());
+		Logger::Log("%s Json::SaveFailed ファイルを開けませんでした。\n", path.c_str());
         return false;
     }
 
     ofs << it->second.dump(2);
-	Log("%s Json::SaveSuccess\n", path.c_str());
+	Logger::Log("%s Json::SaveSuccess\n", path.c_str());
     return true;
 }
 

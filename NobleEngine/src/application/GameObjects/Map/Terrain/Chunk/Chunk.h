@@ -62,6 +62,7 @@ public:
 	// GPUスロットを借りているか
 	bool HasGpuSlot() const { return gpu_ != nullptr; }
 
+	bool inCamera() const { return inCamera_; }
 
 private:
 

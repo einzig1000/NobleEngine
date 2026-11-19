@@ -124,20 +124,20 @@ namespace Game
 			/// <param name="loop">ループ再生するか否か</param>
 			/// <param name="volume">音量(0.0f～1.0f)</param>
 			/// <returns>再生インスタンスID、失敗時は-1</returns>
-			int32_t PlayAudio(const int32_t& audioId, bool loop, float volume = 1.0f);
+			int32_t PlayAudio(int32_t audioId, bool loop, float volume = 1.0f);
 
 			/// <summary>
 			/// 再生停止
 			/// </summary>
 			/// <param name="playId">再生インスタンスID</param>
-			void StopAudio(const int32_t& playId);
+			void StopAudio(int32_t playId);
 
 			/// <summary>
 			/// 音量設定
 			/// </summary>
 			/// <param name="playId">再生インスタンスID</param>
 			/// <param name="volume">音量 (0.0f~1.0f)</param>
-			void SetAudioVolume(const int32_t& playId, float volume);
+			void SetAudioVolume(int32_t playId, float volume);
 
 			/// <summary>
 			/// マスターボリューム設定
@@ -150,7 +150,7 @@ namespace Game
 			/// </summary>
 			/// <param name="playId">再生インスタンスID</param>
 			/// <returns>音量 (0.0f~1.0f)</returns>
-			float GetVolume(const int32_t& playId);
+			float GetVolume(int32_t playId);
 
 			/// <summary>
 			/// マスターボリューム取得
@@ -163,7 +163,7 @@ namespace Game
 			/// </summary>
 			/// <param name="playId">再生インスタンスID</param>
 			/// <returns>再生中か？</returns>
-			bool IsAudioPlaying(const int32_t& playId);
+			bool IsAudioPlaying(int32_t playId);
 		}
 
 		namespace Font
@@ -844,7 +844,7 @@ namespace Game
 		/// <summary>
 		/// ゲーム終了
 		/// </summary>
-		void quit();
+		void Quit();
 
 		/// <summary>
 		/// ImGuiの描画切り替え

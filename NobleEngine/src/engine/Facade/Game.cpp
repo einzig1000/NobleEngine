@@ -30,7 +30,7 @@ namespace Game
 
 			int32_t Create(const std::vector<VertexData>& vertices, const std::string& name, const bool optimize)
 			{
-				return Engine::Instance().GetAssetManager()->GetModelManager()->GetModelCreater()->CreateModel(vertices, name, optimize);
+				return Engine::Instance().GetAssetManager()->GetModelManager()->GetModelCreator()->CreateModel(vertices, name, optimize);
 			}
 
 			const ModelData* GetData(int32_t modelID)
@@ -99,15 +99,15 @@ namespace Game
 			}
 
 
-			int32_t PlayAudio(const int32_t& audioId, bool loop, float volume)
+			int32_t PlayAudio(int32_t audioId, bool loop, float volume)
 			{
 				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->PlayAudio(audioId, loop, volume);
 			}
-			void StopAudio(const int32_t& playId)
+			void StopAudio(int32_t playId)
 			{
 				Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->StopAudio(playId);
 			}
-			void SetAudioVolume(const int32_t& playId, float volume)
+			void SetAudioVolume(int32_t playId, float volume)
 			{
 				Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetVolume(playId, volume);
 			}
@@ -115,7 +115,7 @@ namespace Game
 			{
 				Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->SetMasterVolume(volume);
 			}
-			float GetVolume(const int32_t& playId)
+			float GetVolume(int32_t playId)
 			{
 				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetVolume(playId);
 			}
@@ -123,7 +123,7 @@ namespace Game
 			{
 				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->GetMasterVolume();
 			}
-			bool IsAudioPlaying(const int32_t& playId)
+			bool IsAudioPlaying(int32_t playId)
 			{
 				return Engine::Instance().GetAssetManager()->GetAudioManager()->GetAudioPlayer()->IsAudioPlaying(playId);
 			}
@@ -637,7 +637,7 @@ namespace Game
 
 	namespace System
 	{
-		void quit()
+		void Quit()
 		{
 			Engine::Instance().Quit();
 		}

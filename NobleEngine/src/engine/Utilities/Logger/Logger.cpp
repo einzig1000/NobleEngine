@@ -1,246 +1,324 @@
 #include "Logger.h"
+#include "LogSinks.h"
+#include <externals/MagicEnum/magic_enum.hpp>
+#include <cstdarg>
+#include <cstdio>
 #include <format>
 #include <sstream>
-#include <fstream>
-#include <iostream>
 
-#ifdef _MSC_VER
-#define VSNPRINTF_FUNC _vsnprintf_s
-#else
-#define VSNPRINTF_FUNC vsnprintf
-#endif
+namespace
+{
+    using namespace Logger;
 
-#ifdef _DEBUG
-    // Debugビルドの時は普通の Log 関数を呼ぶ
-#define MY_LOG(format, ...) Log(format, __VA_ARGS__)
-#else
-    // Releaseビルドの時は何もしない
-#define MY_LOG(format, ...) do {} while(0)
-#endif
+    static_assert(magic_enum::enum_count<LogLevel>() == kLogLevelCount, "LogTypes.h の kLogLevelCount を LogLevel の数に合わせてください");
 
-// ログを出す関数
-void Log(const std::string& message)
-{
-    // string型からchar*型に変換した文字列
-    OutputDebugStringA((message + "\n").c_str());
-}
-// Vector4型用のオーバーロード
-void Log(const std::string& message, const Vector4& vector)
-{
-    Log(message);
-    std::string a = std::format("x={}, y={}, z={}, w={}", vector.x, vector.y, vector.z, vector.w);
-    Log(a);
-}
-// Matrix4x4型用のオーバーロード
-void Log(const std::string& message, const Matrix4x4& matrix)
-{
-    Log(message);
-    std::string a = ":\n";
-    for (int i = 0; i < 4; ++i)
+    // Logs フォルダとそこに残すファイルの本数（今回の分を含む）
+    constexpr const wchar_t* kLogDirectory = L"Logs";
+    constexpr size_t kMaxLogFiles = 10;
+
+    // D3D12_RESOURCE_STATES を文字列に変換する関数
+    // （値が 127 を超えるビットの組み合わせなので magic_enum では引けない）
+    std::string ResourceStateToString(D3D12_RESOURCE_STATES state)
     {
-        a += std::format("[{}, {}, {}, {}]\n", matrix.m[i][0], matrix.m[i][1], matrix.m[i][2], matrix.m[i][3]);
-    }
-    Log(a);
-}
-// barrier.Transitionの状態をログに出力する関数
-void Log(const std::string& message, const D3D12_RESOURCE_BARRIER& barrier)
-{
-    Log(message);
-    if (barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
-    {
-        std::string stateBefore = ResourceStateToString(barrier.Transition.StateBefore);
-        std::string stateAfter = ResourceStateToString(barrier.Transition.StateAfter);
-        std::string a = std::format("Barrier Transition - StateBefore: {}, StateAfter: {}", stateBefore, stateAfter);
-        Log(a);
-    }
-    else
-    {
-        Log("Barrier is not of type TRANSITION.");
-    }
-}
-// RootSignatureの状態をログに出力する関数
-void Log(const D3D12_ROOT_SIGNATURE_DESC& desc)
-{
-    std::ostringstream oss;
-    oss << "[Root Signature]\n"
-        << "NumParameters: " << desc.NumParameters << "\n"
-        << "NumStaticSamplers: " << desc.NumStaticSamplers << "\n"
-        << "Flags: " << desc.Flags << "\n";
-
-    Log(oss.str());
-
-    for (UINT i = 0; i < desc.NumParameters; ++i)
-    {
-        const auto& param = desc.pParameters[i];
-        oss.str(""); // バッファをクリア
-        oss.clear(); // 状態をリセット
-        oss << "[Root Parameter " << i << "]\n"
-            << "Type: " << param.ParameterType << "\n"
-            << "ShaderVisibility: " << param.ShaderVisibility << "\n";
-        Log(oss.str());
-
-        if (param.ParameterType == D3D12_ROOT_PARAMETER_TYPE_CBV ||
-            param.ParameterType == D3D12_ROOT_PARAMETER_TYPE_SRV ||
-            param.ParameterType == D3D12_ROOT_PARAMETER_TYPE_UAV)
+        switch (state)
         {
-            oss.str("");
-            oss.clear();
-            oss << "ShaderRegister: " << param.Descriptor.ShaderRegister << "\n"
-                << "RegisterSpace: " << param.Descriptor.RegisterSpace << "\n";
-            Log(oss.str());
+        case D3D12_RESOURCE_STATE_COMMON: return "COMMON";
+        case D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER: return "VERTEX_AND_CONSTANT_BUFFER";
+        case D3D12_RESOURCE_STATE_INDEX_BUFFER: return "INDEX_BUFFER";
+        case D3D12_RESOURCE_STATE_RENDER_TARGET: return "RENDER_TARGET";
+        case D3D12_RESOURCE_STATE_UNORDERED_ACCESS: return "UNORDERED_ACCESS";
+        case D3D12_RESOURCE_STATE_DEPTH_WRITE: return "DEPTH_WRITE";
+        case D3D12_RESOURCE_STATE_DEPTH_READ: return "DEPTH_READ";
+        case D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE: return "NON_PIXEL_SHADER_RESOURCE";
+        case D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE: return "PIXEL_SHADER_RESOURCE";
+        case D3D12_RESOURCE_STATE_STREAM_OUT: return "STREAM_OUT";
+        case D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT: return "INDIRECT_ARGUMENT";
+        case D3D12_RESOURCE_STATE_COPY_DEST: return "COPY_DEST";
+        case D3D12_RESOURCE_STATE_COPY_SOURCE: return "COPY_SOURCE";
+        case D3D12_RESOURCE_STATE_RESOLVE_DEST: return "RESOLVE_DEST";
+        case D3D12_RESOURCE_STATE_RESOLVE_SOURCE: return "RESOLVE_SOURCE";
+        case D3D12_RESOURCE_STATE_VIDEO_DECODE_READ: return "VIDEO_DECODE_READ";
+        case D3D12_RESOURCE_STATE_VIDEO_DECODE_WRITE: return "VIDEO_DECODE_WRITE";
+        case D3D12_RESOURCE_STATE_VIDEO_PROCESS_READ: return "VIDEO_PROCESS_READ";
+        case D3D12_RESOURCE_STATE_VIDEO_PROCESS_WRITE: return "VIDEO_PROCESS_WRITE";
+        case D3D12_RESOURCE_STATE_VIDEO_ENCODE_READ: return "VIDEO_ENCODE_READ";
+        case D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE: return "VIDEO_ENCODE_WRITE";
+        default: return "UNKNOWN_STATE";
         }
-        else if (param.ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
+    }
+
+    // ロガーの状態
+    struct LoggerState
+    {
+        std::vector<std::unique_ptr<ILogSink>> sinks; // 全部の出力先。ログはこの順に配られる
+
+        // 最初から持っている出力先（中身は sinks が持っている。ここは探す手間を省くための近道）
+        DebuggerSink* debugger = nullptr;
+        FileSink* file = nullptr;
+        HistorySink* history = nullptr;
+
+        uint64_t nextSerial = 1;
+
+        LoggerState()
         {
-            oss.str("");
-            oss.clear();
-            oss << "NumDescriptorRanges: " << param.DescriptorTable.NumDescriptorRanges << "\n";
-            Log(oss.str());
-            for (UINT j = 0; j < param.DescriptorTable.NumDescriptorRanges; ++j)
+            auto debuggerSink = std::make_unique<DebuggerSink>(kAllLogLevels);
+            auto fileSink = std::make_unique<FileSink>(ToMask({ LogLevel::Info, LogLevel::Warning, LogLevel::Error }), kLogDirectory, kMaxLogFiles);
+            auto historySink = std::make_unique<HistorySink>(kAllLogLevels, kHistoryCapacity);
+
+            debugger = debuggerSink.get();
+            file = fileSink.get();
+            history = historySink.get();
+
+            sinks.push_back(std::move(debuggerSink));
+            sinks.push_back(std::move(fileSink));
+            sinks.push_back(std::move(historySink));
+        }
+
+        ILogSink* GetBuiltInSink(LogOutput output) const
+        {
+            switch (output)
             {
-                const auto& range = param.DescriptorTable.pDescriptorRanges[j];
-                oss.str("");
-                oss.clear();
-                oss << "  [Descriptor Range " << j << "]\n"
-                    << "  RangeType: " << range.RangeType << "\n"
-                    << "  BaseShaderRegister: " << range.BaseShaderRegister << "\n"
-                    << "  NumDescriptors: " << range.NumDescriptors << "\n"
-                    << "  RegisterSpace: " << range.RegisterSpace << "\n";
-                Log(oss.str());
+            case LogOutput::Debugger: return debugger;
+            case LogOutput::File:     return file;
+            case LogOutput::History:  return history;
+            default:                  return nullptr;
             }
         }
+    };
+
+    // わざと解放しない。他のクラスのデストラクタ（終了処理の最後の方）から呼ばれても安全に書けるようにするため
+    // ファイルのハンドルはプロセス終了時に OS が閉じる
+    LoggerState& State()
+    {
+        static LoggerState* state = new LoggerState();
+        return *state;
     }
 
-    for (UINT i = 0; i < desc.NumStaticSamplers; ++i)
-    {
-        const auto& sampler = desc.pStaticSamplers[i];
-        oss.str("");
-        oss.clear();
-        oss << "[Static Sampler " << i << "]\n"
-            << "ShaderRegister: " << sampler.ShaderRegister << "\n"
-            << "Filter: " << sampler.Filter << "\n"
-            << "AddressU: " << sampler.AddressU << "\n"
-            << "AddressV: " << sampler.AddressV << "\n"
-            << "AddressW: " << sampler.AddressW << "\n"
-            << "ShaderVisibility: " << sampler.ShaderVisibility << "\n";
-        Log(oss.str());
-    }
+    // 別スレッドから同時に呼ばれても行が混ざらないようにする鍵（デストラクタが無い型なので終了時も安全）
+    SRWLOCK gLock = SRWLOCK_INIT;
 }
-// もはやこれしか使わないログ
-void Log(const char* format, ...)
+
+
+namespace Logger
 {
-    // 最大バッファサイズを設定 (文字列の最大長)
-    const int INITIAL_BUFFER_SIZE = 256;
-    std::vector<char> charBuffer(INITIAL_BUFFER_SIZE); // char 型の動的バッファ
-
-    va_list args;
-    va_start(args, format);
-
-    // 最初にバッファサイズを試行。BUFFER_SIZEが足りなければ、vsnprintf君は必要としているサイズをいつも返してくれる
-    int written = VSNPRINTF_FUNC(charBuffer.data(), charBuffer.size(), _TRUNCATE, format, args);
-    // _TRUNCATE は MSVC 固有のオプションで、バッファが足りない場合に切り詰める
-
-    if (written < 0 || written >= charBuffer.size())
+    // outputにはどのレベルのログを送るか指定する
+    void SetAcceptLevels(LogOutput output, std::initializer_list<LogLevel> levels)
     {
-        // バッファが足りなかった、またはエラーが発生した場合
-        // 必要なサイズを計算してバッファをリサイズし再試行
-        size_t required_size = charBuffer.size() * 2; // ジャスト必要な分あるはずだけど一応2倍にするとよいらしい
-        if (written > 0)
+        AcquireSRWLockShared(&gLock);
+        if (ILogSink* sink = State().GetBuiltInSink(output))
         {
-            required_size = static_cast<size_t>(written) + 1; // +1 for null terminator
+            sink->SetAcceptLevels(ToMask(levels));
         }
-        charBuffer.resize(required_size);
-        // va_list をリセットして再利用 (va_copy を使うのがより堅牢)
-        va_end(args); // 一度終了
-        va_start(args, format); // 再度開始
-
-        written = VSNPRINTF_FUNC(charBuffer.data(), charBuffer.size(), _TRUNCATE, format, args);
+        ReleaseSRWLockShared(&gLock);
     }
 
-    va_end(args); // 可変引数リストの終了
-
-    // ここで charBuffer.data() にフォーマットされた文字列が入っている
-
-    // char (マルチバイト) から wchar_t (ワイド文字) に変換
-    // 変換に必要なバッファサイズを取得
-    int wlen = MultiByteToWideChar(CP_UTF8, 0, charBuffer.data(), written, nullptr, 0);
-    if (wlen > 0)
+    void AddSink(std::unique_ptr<ILogSink> sink)
     {
-        std::vector<wchar_t> wcharBuffer(wlen + 2); // 改行とNULL終端のために+2
-        MultiByteToWideChar(CP_UTF8, 0, charBuffer.data(), written, wcharBuffer.data(), wlen);
-
-        // ワイド文字バッファに改行とNULL終端を追加
-        wcharBuffer[wlen] = L'\n';
-        wcharBuffer[wlen + 1] = L'\0';
-
-        // OutputDebugStringW で出力
-        OutputDebugStringW(wcharBuffer.data());
+        if (!sink) return;
+        AcquireSRWLockExclusive(&gLock);
+        State().sinks.push_back(std::move(sink));
+        ReleaseSRWLockExclusive(&gLock);
     }
-    else
+
+    /// 履歴のうちIDが最後尾より新しいものをoutの後ろに足す。戻り値は足した件数
+    /// 履歴は最新の kHistoryCapacity 件だけ残る
+    size_t CopyHistorySince(uint64_t lastSerial, std::vector<LogEntry>& out)
     {
-        // 変換エラーの場合
-        OutputDebugStringA("Log: Error converting multi-byte to wide-char.I can't speak Japanese hahaha Sushi\n");
-        // 元の charBuffer をそのまま出力 (文字化け覚悟)
-        OutputDebugStringA(charBuffer.data());
-        OutputDebugStringA("\n");
+        AcquireSRWLockShared(&gLock);
+        const size_t count = State().history->CopySince(lastSerial, out);
+        ReleaseSRWLockShared(&gLock);
+        return count;
     }
-}
 
-// ログをファイルに書き出す
-void Log(std::ofstream& os, const std::string& message)
-{
-    os << message << std::endl;
-    OutputDebugStringA(message.c_str());
-}
-// D3D12_RESOURCE_STATES を文字列に変換する関数
-std::string ResourceStateToString(D3D12_RESOURCE_STATES state)
-{
-    switch (state)
+    std::wstring GetLogFilePath()
     {
-    case D3D12_RESOURCE_STATE_COMMON: return "COMMON";
-    case D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER: return "VERTEX_AND_CONSTANT_BUFFER";
-    case D3D12_RESOURCE_STATE_INDEX_BUFFER: return "INDEX_BUFFER";
-    case D3D12_RESOURCE_STATE_RENDER_TARGET: return "RENDER_TARGET";
-    case D3D12_RESOURCE_STATE_UNORDERED_ACCESS: return "UNORDERED_ACCESS";
-    case D3D12_RESOURCE_STATE_DEPTH_WRITE: return "DEPTH_WRITE";
-    case D3D12_RESOURCE_STATE_DEPTH_READ: return "DEPTH_READ";
-    case D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE: return "NON_PIXEL_SHADER_RESOURCE";
-    case D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE: return "PIXEL_SHADER_RESOURCE";
-    case D3D12_RESOURCE_STATE_STREAM_OUT: return "STREAM_OUT";
-    case D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT: return "INDIRECT_ARGUMENT";
-    case D3D12_RESOURCE_STATE_COPY_DEST: return "COPY_DEST";
-    case D3D12_RESOURCE_STATE_COPY_SOURCE: return "COPY_SOURCE";
-    case D3D12_RESOURCE_STATE_RESOLVE_DEST: return "RESOLVE_DEST";
-    case D3D12_RESOURCE_STATE_RESOLVE_SOURCE: return "RESOLVE_SOURCE";
-    case D3D12_RESOURCE_STATE_VIDEO_DECODE_READ: return "VIDEO_DECODE_READ";
-    case D3D12_RESOURCE_STATE_VIDEO_DECODE_WRITE: return "VIDEO_DECODE_WRITE";
-    case D3D12_RESOURCE_STATE_VIDEO_PROCESS_READ: return "VIDEO_PROCESS_READ";
-    case D3D12_RESOURCE_STATE_VIDEO_PROCESS_WRITE: return "VIDEO_PROCESS_WRITE";
-    case D3D12_RESOURCE_STATE_VIDEO_ENCODE_READ: return "VIDEO_ENCODE_READ";
-    case D3D12_RESOURCE_STATE_VIDEO_ENCODE_WRITE: return "VIDEO_ENCODE_WRITE";
-    default: return "UNKNOWN_STATE";
+        AcquireSRWLockShared(&gLock);
+        std::wstring path = State().file->GetFilePath();
+        ReleaseSRWLockShared(&gLock);
+        return path;
     }
-}
-// HRESULT を文字列に変換する関数
-std::string HrToString(HRESULT hr)
-{
-    switch (hr)
+
+    std::string HrToString(HRESULT hr)
     {
-    case S_OK: return "S_OK";
-    case E_FAIL: return "E_FAIL";
-    case E_INVALIDARG: return "E_INVALIDARG";
-    case E_OUTOFMEMORY: return "E_OUTOFMEMORY";
+        const char* name = "UNKNOWN_HRESULT";
+        switch (hr)
+        {
+        case S_OK: name = "S_OK"; break;
+        case E_FAIL: name = "E_FAIL"; break;
+        case E_INVALIDARG: name = "E_INVALIDARG"; break;
+        case E_OUTOFMEMORY: name = "E_OUTOFMEMORY"; break;
+        case E_NOTIMPL: name = "E_NOTIMPL"; break;
+        case E_NOINTERFACE: name = "E_NOINTERFACE"; break;
+        case E_ACCESSDENIED: name = "E_ACCESSDENIED"; break;
 
-    case DXGI_ERROR_DEVICE_REMOVED: return "DXGI_ERROR_DEVICE_REMOVED";
-    case DXGI_ERROR_DEVICE_HUNG: return "DXGI_ERROR_DEVICE_HUNG";
-    case DXGI_ERROR_DEVICE_RESET: return "DXGI_ERROR_DEVICE_RESET";
-    case DXGI_ERROR_DRIVER_INTERNAL_ERROR: return "DXGI_ERROR_DRIVER_INTERNAL_ERROR";
-    case DXGI_ERROR_INVALID_CALL: return "DXGI_ERROR_INVALID_CALL";
-    case DXGI_ERROR_UNSUPPORTED: return "DXGI_ERROR_UNSUPPORTED";
-    case DXGI_ERROR_NOT_CURRENTLY_AVAILABLE: return "DXGI_ERROR_NOT_CURRENTLY_AVAILABLE";
+        case DXGI_ERROR_DEVICE_REMOVED: name = "DXGI_ERROR_DEVICE_REMOVED"; break;
+        case DXGI_ERROR_DEVICE_HUNG: name = "DXGI_ERROR_DEVICE_HUNG"; break;
+        case DXGI_ERROR_DEVICE_RESET: name = "DXGI_ERROR_DEVICE_RESET"; break;
+        case DXGI_ERROR_DRIVER_INTERNAL_ERROR: name = "DXGI_ERROR_DRIVER_INTERNAL_ERROR"; break;
+        case DXGI_ERROR_INVALID_CALL: name = "DXGI_ERROR_INVALID_CALL"; break;
+        case DXGI_ERROR_UNSUPPORTED: name = "DXGI_ERROR_UNSUPPORTED"; break;
+        case DXGI_ERROR_NOT_CURRENTLY_AVAILABLE: name = "DXGI_ERROR_NOT_CURRENTLY_AVAILABLE"; break;
 
-    case D3D12_ERROR_ADAPTER_NOT_FOUND: return "D3D12_ERROR_ADAPTER_NOT_FOUND";
-    case D3D12_ERROR_DRIVER_VERSION_MISMATCH: return "D3D12_ERROR_DRIVER_VERSION_MISMATCH";
+        case D3D12_ERROR_ADAPTER_NOT_FOUND: name = "D3D12_ERROR_ADAPTER_NOT_FOUND"; break;
+        case D3D12_ERROR_DRIVER_VERSION_MISMATCH: name = "D3D12_ERROR_DRIVER_VERSION_MISMATCH"; break;
+        default: break;
+        }
+        return std::format("{} (0x{:08X})", name, static_cast<uint32_t>(hr));
+    }
 
-    default: return "UNKNOWN_HRESULT";
+    // barrier.Transitionの状態をログに出力する関数
+    void Debug(const D3D12_RESOURCE_BARRIER& barrier)
+    {
+        if (barrier.Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
+        {
+            Debug("Barrier Transition - StateBefore: %s, StateAfter: %s",
+                ResourceStateToString(barrier.Transition.StateBefore),
+                ResourceStateToString(barrier.Transition.StateAfter));
+        }
+        else
+        {
+            Debug("Barrier is not of type TRANSITION.");
+        }
+    }
+
+    // RootSignatureDescの状態をログに出力する関数
+    void Debug(const D3D12_ROOT_SIGNATURE_DESC& desc)
+    {
+        std::ostringstream oss;
+        oss << "[Root Signature]\n"
+            << "NumParameters: " << desc.NumParameters << "\n"
+            << "NumStaticSamplers: " << desc.NumStaticSamplers << "\n"
+            << "Flags: " << desc.Flags << "\n";
+
+        Debug("%s", oss.str());
+
+        for (UINT i = 0; i < desc.NumParameters; ++i)
+        {
+            const auto& param = desc.pParameters[i];
+            oss.str(""); // バッファをクリア
+            oss.clear(); // 状態をリセット
+            oss << "[Root Parameter " << i << "]\n"
+                << "Type: " << param.ParameterType << "\n"
+                << "ShaderVisibility: " << param.ShaderVisibility << "\n";
+            Debug("%s", oss.str());
+
+            if (param.ParameterType == D3D12_ROOT_PARAMETER_TYPE_CBV ||
+                param.ParameterType == D3D12_ROOT_PARAMETER_TYPE_SRV ||
+                param.ParameterType == D3D12_ROOT_PARAMETER_TYPE_UAV)
+            {
+                oss.str("");
+                oss.clear();
+                oss << "ShaderRegister: " << param.Descriptor.ShaderRegister << "\n"
+                    << "RegisterSpace: " << param.Descriptor.RegisterSpace << "\n";
+                Debug("%s", oss.str());
+            }
+            else if (param.ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
+            {
+                oss.str("");
+                oss.clear();
+                oss << "NumDescriptorRanges: " << param.DescriptorTable.NumDescriptorRanges << "\n";
+                Debug("%s", oss.str());
+                for (UINT j = 0; j < param.DescriptorTable.NumDescriptorRanges; ++j)
+                {
+                    const auto& range = param.DescriptorTable.pDescriptorRanges[j];
+                    oss.str("");
+                    oss.clear();
+                    oss << "  [Descriptor Range " << j << "]\n"
+                        << "  RangeType: " << range.RangeType << "\n"
+                        << "  BaseShaderRegister: " << range.BaseShaderRegister << "\n"
+                        << "  NumDescriptors: " << range.NumDescriptors << "\n"
+                        << "  RegisterSpace: " << range.RegisterSpace << "\n";
+                    Debug("%s", oss.str());
+                }
+            }
+        }
+
+        for (UINT i = 0; i < desc.NumStaticSamplers; ++i)
+        {
+            const auto& sampler = desc.pStaticSamplers[i];
+            oss.str("");
+            oss.clear();
+            oss << "[Static Sampler " << i << "]\n"
+                << "ShaderRegister: " << sampler.ShaderRegister << "\n"
+                << "Filter: " << sampler.Filter << "\n"
+                << "AddressU: " << sampler.AddressU << "\n"
+                << "AddressV: " << sampler.AddressV << "\n"
+                << "AddressW: " << sampler.AddressW << "\n"
+                << "ShaderVisibility: " << sampler.ShaderVisibility << "\n";
+            Debug("%s", oss.str());
+        }
+    }
+
+    namespace Detail
+    {
+        bool IsEnabled(LogLevel level)
+        {
+            AcquireSRWLockShared(&gLock);
+            bool enabled = false;
+            for (const auto& sink : State().sinks)
+            {
+                if (sink->Accepts(level))
+                {
+                    enabled = true;
+                    break;
+                }
+            }
+            ReleaseSRWLockShared(&gLock);
+            return enabled;
+        }
+
+        // printf 形式の本体。長さを先に測ってから、ぴったりの大きさで書く
+        void WriteFormatted(LogLevel level, const std::source_location& location, const char* format, ...)
+        {
+            // 1. 整形する（鍵の外でやる）
+            va_list args;
+            va_start(args, format);
+
+            va_list argsForLength;               // va_list は1回しか使えないので、長さを測る用に複製する
+            va_copy(argsForLength, args);
+            const int length = _vscprintf(format, argsForLength);
+            va_end(argsForLength);
+
+            std::string message;
+            if (length < 0)
+            {
+                message = std::string("[Logger] 書式の展開に失敗しました: ") + format;
+            }
+            else
+            {
+                message.resize(static_cast<size_t>(length));
+                vsnprintf(message.data(), static_cast<size_t>(length) + 1, format, args); // +1 は終端の \0 の分
+            }
+            va_end(args);
+
+            // 末尾の改行は出力先の側で付けるので取る
+            while (!message.empty() && (message.back() == '\n' || message.back() == '\r'))
+            {
+                message.pop_back();
+            }
+
+            SYSTEMTIME now{};
+            GetLocalTime(&now);
+
+            LogEntry entry;
+            entry.level = level;
+            entry.time = std::format("{:02}:{:02}:{:02}.{:03}", now.wHour, now.wMinute, now.wSecond, now.wMilliseconds);
+            entry.message = std::move(message);
+            entry.file = location.file_name();
+            entry.line = location.line();
+
+            // 2. 受け取る出力先に配る
+            AcquireSRWLockExclusive(&gLock);
+            LoggerState& state = State();
+            entry.serial = state.nextSerial++;
+            for (const auto& sink : state.sinks)
+            {
+                if (sink->Accepts(level))
+                {
+                    sink->Write(entry);
+                }
+            }
+            ReleaseSRWLockExclusive(&gLock);
+        }
     }
 }
