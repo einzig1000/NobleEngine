@@ -1,101 +1,27 @@
 #include "DirectX/DescriptorHeapManager/SRV_UAV/SRV_UAVManager.h"
 #include <Utilities/functions.h>
 #include <Utilities/Logger/Logger.h>
-#include <algorithm>
-#include <cstdlib>
-#include <string>
 
 SRV_UAVManager::SRV_UAVManager(ID3D12Device2* device)
-    :device_(device)
+    : device_(device)
+    , heap_(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024 * 16 * 8, true, "SRV/UAV")
 {
-    Logger::Log("コンストラクタ実行開始 : SRV_UAVManager");
-
-    // SRVスロット一つ分のサイズ取得
-    descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-    // SRV用ディスクリプタヒープ作成
-    capacity_ = 1024 * 16 * 8;
-	nextBufferIndex_ = 0;
-    D3D12_DESCRIPTOR_HEAP_DESC DescriptorHeapDesc{};
-    DescriptorHeapDesc.NumDescriptors = capacity_;
-    DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    HRESULT hr = device->CreateDescriptorHeap(&DescriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap_));
-    assert(SUCCEEDED(hr));
-
-    Logger::Log("成功");
+    Logger::Info("コンストラクタ実行成功 : SRV_UAVManager");
 }
 
 SRV_UAVManager::~SRV_UAVManager()
 {
-    Logger::Log("デストラクタ実行成功 : SRV_UAVManager");
-}
-
-uint32_t SRV_UAVManager::Allocate()
-{
-    uint32_t index = UINT32_MAX;
-
-    // 空きスロットがあれば再利用
-    if (!freeIndices_.empty())
-    {
-        index = freeIndices_.back();
-        freeIndices_.pop_back();
-    }
-    // 無ければ新しいスロットを使う
-    else if (nextBufferIndex_ < capacity_)
-    {
-        index = nextBufferIndex_++;
-    }
-    // 容量オーバー
-    else
-    {
-        Logger::Log("SRVスロットが足りません。容量を増やしてください。");
-        __debugbreak();
-        std::abort();
-    }
-
-    peakUsedCount_ = std::max(peakUsedCount_, GetUsedCount());
-    return index;
-}
-
-
-
-
-
-
-void SRV_UAVManager::Free(uint32_t index)
-{
-    if (index == UINT32_MAX) { return; }
-    assert(index < nextBufferIndex_);
-#ifdef _DEBUG
-    // 二重解放チェック
-    assert(std::find(freeIndices_.begin(), freeIndices_.end(), index) == freeIndices_.end());
-#endif
-    freeIndices_.push_back(index);
-}
-
-D3D12_CPU_DESCRIPTOR_HANDLE SRV_UAVManager::GetCPUHandleAt(uint32_t i) const
-{
-    D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-    handle.ptr += (descriptorSize_ * i);
-    return handle;
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE SRV_UAVManager::GetGPUHandleAt(uint32_t i) const
-{
-    D3D12_GPU_DESCRIPTOR_HANDLE handle = descriptorHeap_->GetGPUDescriptorHandleForHeapStart();
-    handle.ptr += (descriptorSize_ * i);
-    return handle;
+    Logger::Info("デストラクタ実行成功 : SRV_UAVManager");
 }
 
 SRV_UAVManager::Allocation SRV_UAVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC* desc)
 {
     // 次スロットのインデックス取得
-    uint32_t index = Allocate();
+    uint32_t index = heap_.Allocate();
 
     // ハンドル取得
-    D3D12_CPU_DESCRIPTOR_HANDLE cpu = GetCPUHandleAt(index);
-    D3D12_GPU_DESCRIPTOR_HANDLE gpu = GetGPUHandleAt(index);
+    D3D12_CPU_DESCRIPTOR_HANDLE cpu = heap_.GetCPUHandleAt(index);
+    D3D12_GPU_DESCRIPTOR_HANDLE gpu = heap_.GetGPUHandleAt(index);
 
     // SRV作成
     device_->CreateShaderResourceView(resource, desc, cpu);
@@ -106,10 +32,10 @@ SRV_UAVManager::Allocation SRV_UAVManager::CreateSRV(ID3D12Resource* resource, c
 SRV_UAVManager::Allocation SRV_UAVManager::CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC* desc)
 {
     // 次スロットのインデックス取得
-    uint32_t index = Allocate();
+    uint32_t index = heap_.Allocate();
 
-    D3D12_CPU_DESCRIPTOR_HANDLE cpu = GetCPUHandleAt(index);
-    D3D12_GPU_DESCRIPTOR_HANDLE gpu = GetGPUHandleAt(index);
+    D3D12_CPU_DESCRIPTOR_HANDLE cpu = heap_.GetCPUHandleAt(index);
+    D3D12_GPU_DESCRIPTOR_HANDLE gpu = heap_.GetGPUHandleAt(index);
 
     // UAV作成
     device_->CreateUnorderedAccessView(resource, nullptr, desc, cpu);

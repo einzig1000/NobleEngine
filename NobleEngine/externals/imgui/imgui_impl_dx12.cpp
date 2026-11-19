@@ -923,6 +923,28 @@ void ImGui_ImplDX12_NewFrame()
 // If you are new to dear imgui or creating a new binding for dear imgui, it is recommended that you completely ignore this section first..
 //--------------------------------------------------------------------------------------------------------
 
+// NobleEngine: flip-model swap chains cannot use an sRGB format (CreateSwapChainForHwnd returns DXGI_ERROR_INVALID_CALL).
+// Create the buffers as UNORM and write through an sRGB RTV instead, the same way the main window does.
+static DXGI_FORMAT ImGui_ImplDX12_GetSwapChainFormat(DXGI_FORMAT rtv_format)
+{
+    switch (rtv_format)
+    {
+    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: return DXGI_FORMAT_B8G8R8A8_UNORM;
+    default:                              return rtv_format;
+    }
+}
+
+// NobleEngine: RTV with the same format as the pipeline state (bd->RTVFormat)
+static void ImGui_ImplDX12_CreateViewportRTV(ID3D12Resource* back_buffer, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle)
+{
+    ImGui_ImplDX12_Data* bd = ImGui_ImplDX12_GetBackendData();
+    D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {};
+    rtv_desc.Format = bd->RTVFormat;
+    rtv_desc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+    bd->pd3dDevice->CreateRenderTargetView(back_buffer, &rtv_desc, rtv_handle);
+}
+
 static void ImGui_ImplDX12_CreateWindow(ImGuiViewport* viewport)
 {
     ImGui_ImplDX12_Data* bd = ImGui_ImplDX12_GetBackendData();
@@ -971,7 +993,7 @@ static void ImGui_ImplDX12_CreateWindow(ImGuiViewport* viewport)
     sd1.BufferCount = bd->numFramesInFlight;
     sd1.Width = (UINT)viewport->Size.x;
     sd1.Height = (UINT)viewport->Size.y;
-    sd1.Format = bd->RTVFormat;
+    sd1.Format = ImGui_ImplDX12_GetSwapChainFormat(bd->RTVFormat); // NobleEngine: was bd->RTVFormat
     sd1.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     sd1.SampleDesc.Count = 1;
     sd1.SampleDesc.Quality = 0;
@@ -1020,7 +1042,7 @@ static void ImGui_ImplDX12_CreateWindow(ImGuiViewport* viewport)
         {
             IM_ASSERT(vd->FrameCtx[i].RenderTarget == nullptr);
             vd->SwapChain->GetBuffer(i, IID_PPV_ARGS(&back_buffer));
-            bd->pd3dDevice->CreateRenderTargetView(back_buffer, nullptr, vd->FrameCtx[i].RenderTargetCpuDescriptors);
+            ImGui_ImplDX12_CreateViewportRTV(back_buffer, vd->FrameCtx[i].RenderTargetCpuDescriptors); // NobleEngine: was CreateRenderTargetView(back_buffer, nullptr, ...)
             vd->FrameCtx[i].RenderTarget = back_buffer;
         }
     }
@@ -1087,7 +1109,7 @@ static void ImGui_ImplDX12_SetWindowSize(ImGuiViewport* viewport, ImVec2 size)
         for (UINT i = 0; i < bd->numFramesInFlight; i++)
         {
             vd->SwapChain->GetBuffer(i, IID_PPV_ARGS(&back_buffer));
-            bd->pd3dDevice->CreateRenderTargetView(back_buffer, nullptr, vd->FrameCtx[i].RenderTargetCpuDescriptors);
+            ImGui_ImplDX12_CreateViewportRTV(back_buffer, vd->FrameCtx[i].RenderTargetCpuDescriptors); // NobleEngine: was CreateRenderTargetView(back_buffer, nullptr, ...)
             vd->FrameCtx[i].RenderTarget = back_buffer;
         }
     }

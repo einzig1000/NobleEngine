@@ -73,9 +73,9 @@ Terrain::Terrain()
 
 #ifdef _DEBUG
 
-	drawRadius_.x = 2;
-	drawRadius_.y = 1;
-	drawRadius_.z = 2;
+	drawRadius_.x = 4;
+	drawRadius_.y = 2;
+	drawRadius_.z = 4;
 
 #endif
 
@@ -331,6 +331,13 @@ void Terrain::GenerateChunks(Vector3 pos)
 // このチャンクを消すべきか
 bool Terrain::ShouldUnload(const Vector3int& chunkPos) const
 {
+	//Chunk* chunk = GetChunk(chunkPos);
+	//if (!chunk) return false;
+	//if (!chunk->inCamera()) return true;
+	//return false;
+
+
+
 	return std::abs(chunkPos.x - centerChunkPos_.x) > drawRadius_.x + unloadMargin_.x ||
 		std::abs(chunkPos.y - centerChunkPos_.y) > drawRadius_.y + unloadMargin_.y ||
 		std::abs(chunkPos.z - centerChunkPos_.z) > drawRadius_.z + unloadMargin_.z;

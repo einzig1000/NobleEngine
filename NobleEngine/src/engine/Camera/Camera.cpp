@@ -13,7 +13,8 @@
 
 Camera::Camera()
 {
-	enableControl_ = true;
+	enableDebugControl_ = true;
+	isDrawEasingTestImGui_ = false;
 
 	fovY_ = 0.65f;
 
@@ -50,7 +51,7 @@ void Camera::Update_Orbit()
 {
 	float dt = Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs();
 
-	if (enableControl_)
+	if (enableDebugControl_)
 	{
 		// マウス移動量
 		Vector2 mouseDelta = Engine::Instance().GetIOManager()->GetMouseController()->Get2DPositionDelta();
@@ -156,81 +157,94 @@ void Camera::DrawImGui()
 	std::string radiusTag = "##radius";
 	tag = "radius" + radiusTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &sphericalEye_.radius, 0.1f);
-	tag = "duration" + radiusTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &distanceEasing_.durationMs, 1, 0, 1000);
-	tag = "target" + radiusTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &distanceEasing_.target, 0.1f);
-	tag = "easeType" + radiusTag + cameraTag;
-	int32_t easeType = static_cast<int32_t>(distanceEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	if (isDrawEasingTestImGui_)
 	{
-		distanceEasing_.easetype = static_cast<EaseType>(easeType);
+		tag = "duration" + radiusTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &radiusEasing_.durationMs, 1, 0, 1000);
+		tag = "target" + radiusTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &radiusEasing_.target, 0.1f);
+		tag = "easeType" + radiusTag + cameraTag;
+		int32_t easeType = static_cast<int32_t>(radiusEasing_.easetype);
+		if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+		{
+			radiusEasing_.easetype = static_cast<EaseType>(easeType);
+		}
+		tag = "start" + radiusTag + cameraTag;
+		if (ImGui::Button(tag.c_str()))
+		{
+			radiusEasing_.durationMs *= 0.001f;
+			SetDistanceTarget(radiusEasing_.target, radiusEasing_.durationMs, radiusEasing_.easetype);
+		}
 	}
-	tag = "start" + radiusTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		distanceEasing_.durationMs *= 0.001f;
-		SetDistanceTarget(distanceEasing_.target, distanceEasing_.durationMs, distanceEasing_.easetype);
-	}
+
 
 	std::string phiTag = "##phi";
 	tag = "phi" + phiTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &sphericalEye_.phi, 0.01f);
-	tag = "durationMs" + phiTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &phiEasing_.durationMs, 1, 0, 1000);
-	tag = "target" + phiTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &phiEasing_.target, 0.01f);
-	tag = "easeType" + phiTag + cameraTag;
-	int32_t easeType2 = static_cast<int32_t>(phiEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType2, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	if (isDrawEasingTestImGui_)
 	{
-		phiEasing_.easetype = static_cast<EaseType>(easeType2);
-	}
-	tag = "start" + phiTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		phiEasing_.durationMs *= 0.001f;
-		SetPhiTarget(phiEasing_.target, phiEasing_.durationMs, phiEasing_.easetype);
+		tag = "durationMs" + phiTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &phiEasing_.durationMs, 1, 0, 1000);
+		tag = "target" + phiTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &phiEasing_.target, 0.01f);
+		tag = "easeType" + phiTag + cameraTag;
+		int32_t easeType2 = static_cast<int32_t>(phiEasing_.easetype);
+		if (ImGui::Combo(tag.c_str(), &easeType2, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+		{
+			phiEasing_.easetype = static_cast<EaseType>(easeType2);
+		}
+		tag = "start" + phiTag + cameraTag;
+		if (ImGui::Button(tag.c_str()))
+		{
+			phiEasing_.durationMs *= 0.001f;
+			SetPhiTarget(phiEasing_.target, phiEasing_.durationMs, phiEasing_.easetype);
+		}
 	}
 
 	std::string thetaTag = "##theta";
 	tag = "theta" + thetaTag + cameraTag;
 	ImGui::DragFloat(tag.c_str(), &sphericalEye_.theta, 0.01f);
-	tag = "durationMs" + thetaTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &thetaEasing_.durationMs, 1, 0, 1000);
-	tag = "target" + thetaTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &thetaEasing_.target, 0.01f);
-	tag = "easeType" + thetaTag + cameraTag;
-	int32_t easeType3 = static_cast<int32_t>(thetaEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType3, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	if (isDrawEasingTestImGui_)
 	{
-		thetaEasing_.easetype = static_cast<EaseType>(easeType3);
-	}
-	tag = "start" + thetaTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		thetaEasing_.durationMs *= 0.001f;
-		SetThetaTarget(thetaEasing_.target, thetaEasing_.durationMs, thetaEasing_.easetype);
+		tag = "durationMs" + thetaTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &thetaEasing_.durationMs, 1, 0, 1000);
+		tag = "target" + thetaTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &thetaEasing_.target, 0.01f);
+		tag = "easeType" + thetaTag + cameraTag;
+		int32_t easeType3 = static_cast<int32_t>(thetaEasing_.easetype);
+		if (ImGui::Combo(tag.c_str(), &easeType3, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+		{
+			thetaEasing_.easetype = static_cast<EaseType>(easeType3);
+		}
+		tag = "start" + thetaTag + cameraTag;
+		if (ImGui::Button(tag.c_str()))
+		{
+			thetaEasing_.durationMs *= 0.001f;
+			SetThetaTarget(thetaEasing_.target, thetaEasing_.durationMs, thetaEasing_.easetype);
+		}
 	}
 
 	std::string centerTag = "##Center";
 	tag = "center" + centerTag + cameraTag;
 	ImGui::DragFloat3(tag.c_str(), &center_.x, 0.1f);
-	tag = "durationMs" + centerTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &centerEasing_.durationMs, 1, 0, 1000);
-	tag = "target" + centerTag + cameraTag;
-	ImGui::DragFloat3(tag.c_str(), &centerEasing_.target.x, 0.1f);
-	tag = "easeType" + centerTag + cameraTag;
-	int32_t easeType4 = static_cast<int32_t>(centerEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType4, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	if (isDrawEasingTestImGui_)
 	{
-		centerEasing_.easetype = static_cast<EaseType>(easeType4);
-	}
-	tag = "start" + centerTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		centerEasing_.durationMs *= 0.001f;
-		SetCenterTarget(centerEasing_.target, centerEasing_.durationMs, centerEasing_.easetype);
+		tag = "durationMs" + centerTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &centerEasing_.durationMs, 1, 0, 1000);
+		tag = "target" + centerTag + cameraTag;
+		ImGui::DragFloat3(tag.c_str(), &centerEasing_.target.x, 0.1f);
+		tag = "easeType" + centerTag + cameraTag;
+		int32_t easeType4 = static_cast<int32_t>(centerEasing_.easetype);
+		if (ImGui::Combo(tag.c_str(), &easeType4, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+		{
+			centerEasing_.easetype = static_cast<EaseType>(easeType4);
+		}
+		tag = "start" + centerTag + cameraTag;
+		if (ImGui::Button(tag.c_str()))
+		{
+			centerEasing_.durationMs *= 0.001f;
+			SetCenterTarget(centerEasing_.target, centerEasing_.durationMs, centerEasing_.easetype);
+		}
 	}
 
 	ImGui::Separator();
@@ -241,21 +255,24 @@ void Camera::DrawImGui()
 	{
 		Resize();
 	}
-	tag = "durationMs" + screenSizeTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &screenSizeEasing_.durationMs, 1, 0, 1000);
-	tag = "target" + screenSizeTag + cameraTag;
-	ImGui::DragFloat2(tag.c_str(), &screenSizeEasing_.target.x, 1.0f);
-	tag = "easeType" + screenSizeTag + cameraTag;
-	int32_t easeType6 = static_cast<int32_t>(screenSizeEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType6, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	if (isDrawEasingTestImGui_)
 	{
-		screenSizeEasing_.easetype = static_cast<EaseType>(easeType6);
-	}
-	tag = "start" + screenSizeTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		screenSizeEasing_.durationMs *= 0.001f;
-		SetScreenSizeTarget(screenSizeEasing_.target, screenSizeEasing_.durationMs, screenSizeEasing_.easetype);
+		tag = "durationMs" + screenSizeTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &screenSizeEasing_.durationMs, 1, 0, 1000);
+		tag = "target" + screenSizeTag + cameraTag;
+		ImGui::DragFloat2(tag.c_str(), &screenSizeEasing_.target.x, 1.0f);
+		tag = "easeType" + screenSizeTag + cameraTag;
+		int32_t easeType6 = static_cast<int32_t>(screenSizeEasing_.easetype);
+		if (ImGui::Combo(tag.c_str(), &easeType6, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+		{
+			screenSizeEasing_.easetype = static_cast<EaseType>(easeType6);
+		}
+		tag = "start" + screenSizeTag + cameraTag;
+		if (ImGui::Button(tag.c_str()))
+		{
+			screenSizeEasing_.durationMs *= 0.001f;
+			SetScreenSizeTarget(screenSizeEasing_.target, screenSizeEasing_.durationMs, screenSizeEasing_.easetype);
+		}
 	}
 
 	std::string fovYTag = "##fovY";
@@ -264,27 +281,29 @@ void Camera::DrawImGui()
 	{
 		projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
 	}
-	tag = "durationMs" + fovYTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &fovEasing_.durationMs, 1, 0, 1000);
-	tag = "target" + fovYTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &fovEasing_.target, 0.01f);
-	tag = "easeType" + fovYTag + cameraTag;
-	int32_t easeType5 = static_cast<int32_t>(fovEasing_.easetype);
-	if (ImGui::Combo(tag.c_str(), &easeType5, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	if (isDrawEasingTestImGui_)
 	{
-		fovEasing_.easetype = static_cast<EaseType>(easeType5);
+		tag = "durationMs" + fovYTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &fovEasing_.durationMs, 1, 0, 1000);
+		tag = "target" + fovYTag + cameraTag;
+		ImGui::DragFloat(tag.c_str(), &fovEasing_.target, 0.01f);
+		tag = "easeType" + fovYTag + cameraTag;
+		int32_t easeType5 = static_cast<int32_t>(fovEasing_.easetype);
+		if (ImGui::Combo(tag.c_str(), &easeType5, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+		{
+			fovEasing_.easetype = static_cast<EaseType>(easeType5);
+		}
+		tag = "start" + fovYTag + cameraTag;
+		if (ImGui::Button(tag.c_str()))
+		{
+			fovEasing_.durationMs *= 0.001f;
+			SetFovTarget(fovEasing_.target, fovEasing_.durationMs, fovEasing_.easetype);
+		}
 	}
-	tag = "start" + fovYTag + cameraTag;
-	if (ImGui::Button(tag.c_str()))
-	{
-		fovEasing_.durationMs *= 0.001f;
-		SetFovTarget(fovEasing_.target, fovEasing_.durationMs, fovEasing_.easetype);
-	}
-
 
 
 	std::string enableControlTag = tag + ".enableControl";
-	ImGui::Checkbox(enableControlTag.c_str(), &enableControl_);
+	ImGui::Checkbox(enableControlTag.c_str(), &enableDebugControl_);
 	ImGui::SameLine();
 	ImGui::Text("enableControl");
 
@@ -437,20 +456,20 @@ void Camera::MovingTheta(float dt)
 }
 void Camera::MovingDistance(float dt)
 {
-	if (!distanceEasing_.easing) return;
+	if (!radiusEasing_.easing) return;
 
-	distanceEasing_.elapsedMs += dt;
+	radiusEasing_.elapsedMs += dt;
 
 	sphericalEye_.radius = Easing::EasingValue(
-		distanceEasing_.start,
-		distanceEasing_.target,
-		distanceEasing_.easetype,
-		(distanceEasing_.elapsedMs / distanceEasing_.durationMs)
+		radiusEasing_.start,
+		radiusEasing_.target,
+		radiusEasing_.easetype,
+		(radiusEasing_.elapsedMs / radiusEasing_.durationMs)
 	);
 
-	if (distanceEasing_.elapsedMs > distanceEasing_.durationMs)
+	if (radiusEasing_.elapsedMs > radiusEasing_.durationMs)
 	{
-		distanceEasing_.easing = false;
+		radiusEasing_.easing = false;
 	}
 }
 void Camera::MovingScreenSize(float dt)
@@ -537,12 +556,12 @@ void Camera::SetDistanceTarget(float target, float durationSec, EaseType easetyp
 {
 	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
 
-	distanceEasing_.start = sphericalEye_.radius;
-	distanceEasing_.target = target;
-	distanceEasing_.durationMs = durationMs;
-	distanceEasing_.elapsedMs = 0.0f;
-	distanceEasing_.easing = true;
-	distanceEasing_.easetype = easetype;
+	radiusEasing_.start = sphericalEye_.radius;
+	radiusEasing_.target = target;
+	radiusEasing_.durationMs = durationMs;
+	radiusEasing_.elapsedMs = 0.0f;
+	radiusEasing_.easing = true;
+	radiusEasing_.easetype = easetype;
 }
 void Camera::SetScreenSizeTarget(Vector2 target, float durationSec, EaseType easetype)
 {

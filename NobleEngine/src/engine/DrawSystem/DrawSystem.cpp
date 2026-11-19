@@ -37,10 +37,6 @@ void DrawSystem::Reset()
 	rootParamValuePool_.clear();
 }
 
-///// いつかRenderObjectリストをソートしたい
-//① PSO
-//② トポロジ
-//③ ルートシグネチャ
 
 // 描画リストに追加
 void DrawSystem::AddDrawList(const RenderObject* renderObject, int32_t RenderTargetID, const std::vector<int32_t>& deps)
@@ -73,7 +69,7 @@ void DrawSystem::AddDrawList(const RenderObject* renderObject, int32_t RenderTar
 }
 
 // 描画パケットを作成
-DrawPacket DrawSystem::BuildDrawPacket(const RenderObject* renderObject)
+DrawSystem::DrawPacket DrawSystem::BuildDrawPacket(const RenderObject* renderObject)
 {
 	const RootLayout* layout = renderObject->GetRootLayout();
 	assert(layout);
@@ -98,6 +94,7 @@ DrawPacket DrawSystem::BuildDrawPacket(const RenderObject* renderObject)
 	return packet;
 }
 
+
 // 描画
 void DrawSystem::DrawObject(const DrawPacket* packet)
 {
@@ -109,7 +106,6 @@ void DrawSystem::DrawObject(const DrawPacket* packet)
 	// 2) PSOセット
 	cmdList->SetPipelineState(packet->pso);
 	// 3) CBV・SRVセット
-	// iはルートパラメータの番号(0始まり)。プール上の位置はoffsetを足して求める
 	const RootParamValue* values = rootParamValuePool_.data() + packet->rootValuePoolOffset;
 	for (uint32_t i = 0; i < packet->rootValuePoolSize; ++i)
 	{
@@ -241,13 +237,5 @@ void DrawSystem::ScreenDraw()
 	screenRenderObject_->SetBRegisterData(0, ShaderType::PixelShader, &rt_nobleScreenID_);
 	DrawPacket packet = BuildDrawPacket(screenRenderObject_.get());
 	DrawObject(&packet);
-
-#ifdef _DEBUG
-
-	ImGui::Begin("mainDisplay");
-	ImGui::Image(ImTextureID(dxManager_->GetRenderTextureManager()->Get(rt_nobleScreenID_)->colorsrvAlloc.gpu.ptr), ImVec2(800, 450));
-	ImGui::End();
-
-#endif // DEBUG
 }
 

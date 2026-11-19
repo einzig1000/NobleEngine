@@ -6,7 +6,6 @@
 #include <Utilities/Json/JsonManager.h>
 #include <Utilities/functions.h>
 #include <GameObjects/UI/UIManager.h>
-#include <externals/MagicEnum/magic_enum.hpp>
 
 namespace
 {
@@ -150,10 +149,6 @@ void TitlePhase::DrawImGui()
 	map_->GetTerrain()->DrawImGui();
 
 	screenDrawer_->DrawImGui();
-
-	ImGui::Begin("Camera");
-	ImGui::DragFloat3("Position", &generateCenterPosition_.x, 0.1f);
-	ImGui::End();
 
 	ImGui::Begin("Button");
 	for (auto& button : buttons_)

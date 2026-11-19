@@ -3,9 +3,9 @@
 #include <Utilities/Easing/EasingCommon.h>
 #include <array>
 
-// カメラは常にcenter_を見る
-// ↳オービットの時はcenterを中心に、カメラが回転する。
-//  FPSの時はカメラを中心に、centerが回転する
+/// <summary>
+/// カメラ機能そのもの
+/// </summary>
 class Camera
 {
 public:
@@ -37,7 +37,7 @@ public:
     bool InCamera(const AABB& aabb);
 
     // 操作可能か設定
-    void SetEnableControl(bool enable) { enableControl_ = enable; }
+    void SetEnableControl(bool enable) { enableDebugControl_ = enable; }
 
     void SetCameraMode(CameraMode_ORBIT_FPS mode) { cameraMode_ = mode; }
 
@@ -69,8 +69,11 @@ private:
     // 名前
     std::string name_ = "Camera";
 
-    // 操作可能か
-    bool enableControl_;
+    // マウスでデバッグ操作可能か
+    bool enableDebugControl_ = true;
+	// イージングテストのImGuiを表示するか
+	bool isDrawEasingTestImGui_ = false;
+
 
     // カメラ位置
     Coordinate_spherical sphericalEye_ = { 20.0f, 1.57f, -1.57f };
@@ -93,7 +96,7 @@ private:
     EasingSet<float> thetaEasing_;
     /// カメラ距離
     void MovingDistance(float dt);
-    EasingSet<float> distanceEasing_;
+    EasingSet<float> radiusEasing_;
     /// 画面サイズ
     void MovingScreenSize(float dt);
     EasingSet<Vector2> screenSizeEasing_;

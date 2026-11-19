@@ -1,8 +1,8 @@
 #pragma once
 #include <d3d12.h>
-#include <wrl.h>
 #include <cstdint>
 #include <externals/DirectXTex/DirectXTex.h>
+#include <DirectX/DescriptorHeapManager/DescriptorHeap.h>
 
 
 class SRV_UAVManager
@@ -28,39 +28,30 @@ public:
         Texture2D,
         TextureCube,
         StructuredBuffer
-	};
-    
+    };
+
 
     SRV_UAVManager(ID3D12Device2* device);
     ~SRV_UAVManager();
 
-    ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return descriptorHeap_.Get(); }
-    uint32_t GetDescriptorSizeSRV() const { return descriptorSize_; }
+    ID3D12DescriptorHeap* GetSRVDescriptorHeap() const { return heap_.GetD3D12Heap(); }
 
-    // 空いてるスロットインデックスを取得しnextIndex_をインクリメント
-    uint32_t Allocate();
-    // スロットを空きに戻す。
-    void Free(uint32_t index);
+    // スロット管理はヒープに任せる
+    uint32_t Allocate() { return heap_.Allocate(); }
+    void Free(uint32_t index) { heap_.Free(index); }
+    D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandleAt(uint32_t index) const { return heap_.GetCPUHandleAt(index); }
+    D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandleAt(uint32_t index) const { return heap_.GetGPUHandleAt(index); }
 
+    // 使用数などの表示用
+    const DescriptorHeap& GetHeap() const { return heap_; }
 
-    // 使用中のスロット数(デバッグ表示用)
-    uint32_t GetUsedCount() const { return nextBufferIndex_ - static_cast<uint32_t>(freeIndices_.size()); }
-    // 最大スロット数(デバッグ表示用)
-    uint32_t GetCapacity() const { return capacity_; }
-    // 起動してから一番多く使った時のスロット数(デバッグ表示用)
-    uint32_t GetPeakUsedCount() const { return peakUsedCount_; }
-
-    // Allocate()で取得したスロットインデックスのCPU/GPUハンドルを取得
-    D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandleAt(uint32_t index) const;
-    D3D12_GPU_DESCRIPTOR_HANDLE GetGPUHandleAt(uint32_t index) const;
-   
     Allocation CreateUAVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride);
 
     Allocation CreateSRVforTexture(ID3D12Resource* resource, const DirectX::TexMetadata& metadata);
     Allocation CreateSRVforDDS(ID3D12Resource* resource, const DirectX::TexMetadata& metadata);
     Allocation CreateSRVforStructuredBuffer(ID3D12Resource* resource, UINT numElements, UINT structureByteStride);
-	Allocation CreateSRVforRenderTarget(ID3D12Resource* resource);
-	Allocation CreateSRVforDepthTexture(ID3D12Resource* resource);
+    Allocation CreateSRVforRenderTarget(ID3D12Resource* resource);
+    Allocation CreateSRVforDepthTexture(ID3D12Resource* resource);
     void RewriteSRVforStructuredBuffer(Allocation& allocation, ID3D12Resource* resource, UINT numElements, UINT structureByteStride);
 
 private:
@@ -71,19 +62,6 @@ private:
 
     // デバイス
     ID3D12Device2* device_ = nullptr;
-
-    // SRV用のディスクリプタヒープ
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap_;
-
-    // 解放済みで再利用できるスロット
-    std::vector<uint32_t> freeIndices_;
-
-    // ディスクリプタサイズ
-    uint32_t descriptorSize_;
-    // 最大スロット数
-    uint32_t capacity_ = 0;
-    // 次のスロットインデックス
-    uint32_t nextBufferIndex_ = 0;
-    // 使用数の最大値
-    uint32_t peakUsedCount_ = 0;
+    // SRV・UAV用のディスクリプタヒープ
+    DescriptorHeap heap_;
 };

@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeap.cpp" />
     <ClCompile Include="src\engine\Editor\LogPanel\LogPanel.cpp" />
     <ClCompile Include="src\engine\Editor\AssetsEditor\AssetsEditor.cpp" />
     <ClCompile Include="src\engine\Editor\IEditorPanel\IEditorPanel.cpp" />
@@ -189,6 +190,7 @@
     <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeap.h" />
     <ClInclude Include="src\engine\Editor\LogPanel\LogPanel.h" />
     <ClInclude Include="src\engine\Editor\AssetsEditor\AssetsEditor.h" />
     <ClInclude Include="src\engine\Editor\IEditorPanel\IEditorPanel.h" />
