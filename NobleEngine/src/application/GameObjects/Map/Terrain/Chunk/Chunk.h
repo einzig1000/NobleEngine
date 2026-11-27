@@ -8,10 +8,12 @@ class FaceDataPagePool;
 class ChunkGpuSlotPool;
 struct ChunkGpuSlot;
 
+
+// シェーダーに渡すチャンク情報
 struct ChunkInfo
 {
-	// このチャンクの左下奥ワールド座標原点(x-,y-,z-)
-	Vector3 chunkWorldOrigin;
+	// このチャンクの左下奥(x-,y-,z-)のブロックがワールドで言うと何個目にあるか
+	Vector3int chunkWorldBlockIndex;
 	// ブロックサイズ (Constexprs::kBlockSize)
 	float blockSize = Constexprs::kBlockSize;
 	// 各軸のブロック数 (Constexprs::kChunkBlockCount)

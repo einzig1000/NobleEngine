@@ -1,7 +1,11 @@
 #pragma once
 #include <EngineDefinition/EngineDefinition.h>
-#include <Utilities/Easing/EasingCommon.h>
+#include <Camera/CameraPose.h>
+#include <Camera/CameraState/ICameraState.h>
 #include <array>
+#include <memory>
+
+class IOManager;
 
 /// <summary>
 /// カメラ機能そのもの
@@ -9,8 +13,13 @@
 class Camera
 {
 public:
-    Camera();
+    Camera(IOManager* ioManager);
     ~Camera();
+
+    Camera(const Camera&) = delete;
+    Camera& operator=(const Camera&) = delete;
+    Camera(Camera&&) noexcept = default;
+    Camera& operator=(Camera&&) noexcept = default;
 
     void Update();
     void Draw();
@@ -22,6 +31,7 @@ public:
 
     // 動かす先の設定
     void SetCenterTarget(Vector3 target, float durationSec, EaseType easetype);
+    void SetEyeTarget(Vector3 target, float durationSec, EaseType easetype);
     void SetPhiTarget(float target, float durationSec, EaseType easetype);
     void SetThetaTarget(float target, float durationSec, EaseType easetype);
     void SetDistanceTarget(float target, float durationSec, EaseType easetype);
@@ -39,7 +49,9 @@ public:
     // 操作可能か設定
     void SetEnableControl(bool enable) { enableDebugControl_ = enable; }
 
-    void SetCameraMode(CameraMode_ORBIT_FPS mode) { cameraMode_ = mode; }
+    // カメラモードの切り替え
+    void SetCameraMode(CameraMode_ORBIT_FPS mode);
+    CameraMode_ORBIT_FPS GetCameraMode() const { return state_->GetMode(); }
 
 public:
     // 情報取得
@@ -49,22 +61,30 @@ public:
     Matrix4x4 GetProjectionMatrix() const { return projectionMatrix_; }
     Matrix4x4 GetOrthoProjectionMatrix() const { return orthoProjectionMatrix_; }
     Matrix4x4 GetBillboardMatrix() const { return billboardMatrix_; }
-    Vector3 GetCenter() const { return center_; }
-    Vector3 GetTranslate() const { return eye_; }
+    Vector3 GetCenter() const { return pose_.center; }
+    Vector3 GetTranslate() const { return pose_.eye; }
     Vector3 GetCameraDirection() const { return cameraDirection_; }
-    float GetDistance() const { return sphericalEye_.radius; }
-	float GetPhi() const { return sphericalEye_.phi; }
-	float GetTheta() const { return sphericalEye_.theta; }
+    float GetDistance() const { return pose_.spherical.radius; }
+    float GetPhi() const { return pose_.spherical.phi; }
+    float GetTheta() const { return pose_.spherical.theta; }
 
 private:
     Vector3 GetShakeOffset() const;
 
-    void Update_Orbit();
-    void Update_FPS();
+    // 球面座標を使える範囲に収める
+    void ClampSpherical();
+    // eye と center から行列と視錐台を作る
+    void UpdateMatrices();
+
+    // 1フレーム分の操作入力を集める
+    CameraInput ReadCameraInput();
 
 private:
+	IOManager* ioManager_ = nullptr;
 
-    CameraMode_ORBIT_FPS cameraMode_ = CameraMode_ORBIT_FPS::ORBIT;
+
+	// カメラモード
+    std::unique_ptr<ICameraState> state_;
 
     // 名前
     std::string name_ = "Camera";
@@ -75,20 +95,20 @@ private:
 	bool isDrawEasingTestImGui_ = false;
 
 
-    // カメラ位置
-    Coordinate_spherical sphericalEye_ = { 20.0f, 1.57f, -1.57f };
-    Vector3 eye_ = { 0.0f, 0.0f, 0.0f };
-    // 注視点
-    Vector3 center_ = { 0.0f, 0.0f, 0.0f };
+    // 姿勢(球面座標・カメラ位置・注視点)。状態クラスに渡すのはこれだけ
+    CameraPose pose_;
     // カメラ方向
     Vector3 cameraDirection_ = { 0.0f, 1.0f, 0.0f };
     // スクリーンサイズ
     Vector2 screenSize_;
 
 
-    /// カメラ回転
+    /// 注視点
     void MovingCenter(float dt);
     EasingSet<Vector3> centerEasing_;
+    /// カメラ位置
+    void MovingEye(float dt);
+    EasingSet<Vector3> eyeEasing_;
     /// 回転
     void MovingPhi(float dt);
     EasingSet<float> phiEasing_;
@@ -96,13 +116,14 @@ private:
     EasingSet<float> thetaEasing_;
     /// カメラ距離
     void MovingDistance(float dt);
-    EasingSet<float> radiusEasing_;
+    EasingSet<float> distanceEasing_;
     /// 画面サイズ
     void MovingScreenSize(float dt);
     EasingSet<Vector2> screenSizeEasing_;
     /// FOV
     void MovingFov(float dt);
     EasingSet<float> fovEasing_;
+
 
 
     /// 視錐台判定用

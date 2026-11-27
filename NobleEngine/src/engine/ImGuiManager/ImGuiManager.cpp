@@ -15,10 +15,17 @@ ImGuiManager::ImGuiManager(DirectXManager* dxManager, WindowManager* windowManag
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#ifndef _RELEASE
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+#endif
+
 
 	// imguiのスタイルを設定
 	ImGui::StyleColorsDark();
+
+	// Windowサイズ分をここで拡大する(125%のモニターなら1.25倍)
+	const float dpiScale = ImGui_ImplWin32_GetDpiScaleForHwnd(windowManager_->GetHwnd());
+	ImGui::GetStyle().ScaleAllSizes(dpiScale);
 
 	// フォント指定
 	io.Fonts->AddFontFromFileTTF("assets/engine/fonts/Noto_Serif_JP/static/NotoSerifJP-Medium.ttf", 16.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());

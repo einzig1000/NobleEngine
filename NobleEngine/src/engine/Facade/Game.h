@@ -8,6 +8,7 @@
 #include <DrawSystem/RenderObject/RenderObject.h>
 #include <ComputeSystem/ComputeObject/ComputeObject.h>
 #include <iterator>
+#include <Utilities/Easing/EasingCommon.h>
 
 /// <summary>
 /// ファサードクラス
@@ -513,13 +514,22 @@ namespace Game
 		namespace Setter
 		{
 			/// <summary>
-			/// カメラの回転中心座標の変更
+			/// カメラの回転中心座標の変更(ORBIT モードのときだけ効く)
 			/// </summary>
 			/// <param name="target">目標座標</param>
 			/// <param name="duration">変更にかけるフレーム数(0で即時変更)</param>
 			/// <param name="easeType">変更補完イージングタイプ</param>
 			/// </param name="cameraID">カメラID</param>
 			void CenterTarget(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID);
+
+			/// <summary>
+			/// カメラ位置の変更(FPS モードのときだけ効く)
+			/// </summary>
+			/// <param name="target">目標座標</param>
+			/// <param name="durationSec">変更にかける秒数(0で即時変更)</param>
+			/// <param name="easetype">変更補完イージングタイプ</param>
+			/// <param name="cameraID">カメラID</param>
+			void EyeTarget(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID);
 
 			/// <summary>
 			///	カメラの回転量変更

@@ -79,7 +79,7 @@ std::unique_ptr<ChunkGpuSlot> ChunkGpuSlotPool::CreateSlot()
 
 	// 描画オブジェクト
 	slot->render = std::make_unique<RenderObject>();
-	slot->render->psoConfig_.ms = "assets/shaders/Block/4.3.0/Block.MS.hlsl";
+	slot->render->psoConfig_.ms = "assets/shaders/Block/4.4.1/Block.MS.hlsl";
 	slot->render->psoConfig_.ps = "assets/shaders/Block/2.0.0/Block.PS.hlsl";
 	slot->render->psoConfig_.as = "assets/shaders/Block/4.3.0/Block.AS.hlsl";
 	slot->render->psoConfig_.rasterizerID = RasterizerID::Solid_FrontCull;

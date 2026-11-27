@@ -1,6 +1,6 @@
 #include "Player.h"
-#include <GameObjects/Character/SwingMining/SwingMining.h>
-#include <GameObjects/Character/RangeMining/RangeMining.h>
+#include <GameObjects/Character/MiningState/SwingMining/SwingMining.h>
+#include <GameObjects/Character/MiningState/RangeMining/RangeMining.h>
 #include <GameObjects/Map/Terrain/Terrain.h>
 #include <GameObjects/Effect/Particle/GoTargetCurving/GoTargetCurving.h>
 #include <App.h>
@@ -8,6 +8,13 @@
 
 #include <numbers>
 #include <algorithm>
+
+namespace
+{
+	// 目の位置を体の中心から視線と逆向きにずらす量。0にすると体の中心が目になる
+	constexpr float kEyeBackDistance = 0.1f;
+}
+
 
 Player::Player()
 {
@@ -20,8 +27,15 @@ Player::Player()
 	render_.psoConfig_.ps = "assets/shaders/SimpleModel/SimpleModel.PS.hlsl";
 	render_.SetupFromShaders();
 
-	swingMining_ = std::make_unique<SwingMining>(this);
-	rangeMining_ = std::make_unique<RangeMining>(this);
+	// 採掘モード(MiningPattern の順に並べる)
+	miningStates_[static_cast<size_t>(MiningPattern::Swing)] = std::make_unique<SwingMining>(this);
+	miningStates_[static_cast<size_t>(MiningPattern::Range)] = std::make_unique<RangeMining>(this);
+	// 並びと GetPattern() が食い違っていないか(モードを増やしたときの入れ忘れ・入れ間違い防止)
+	for (size_t i = 0; i < miningStates_.size(); ++i)
+	{
+		assert(miningStates_[i] && miningStates_[i]->GetPattern() == static_cast<MiningPattern>(i));
+	}
+	SetMiningPattern(MiningPattern::Swing);
 }
 
 Player::~Player()
@@ -73,7 +87,8 @@ void Player::Update(int32_t cameraID)
 	// 移動後の視線レイ更新
 	ComputeViewRay(cameraID);
 
-	Game::Camera::Setter::CenterTarget(translate_.value, 0, EaseType::IN_BACK, cameraID);
+	// 視点カメラの位置をプレイヤーの目に合わせる
+	Game::Camera::Setter::EyeTarget(ComputeEyePosition(), 0, EaseType::IN_BACK, cameraID);
 
 	// 視線レイからターゲットブロック取得
 	SetTargetBlock();
@@ -81,19 +96,8 @@ void Player::Update(int32_t cameraID)
 	// 持ってるアイテムの更新
 	UpdateHaveItem(cameraID);
 
-	// 採掘モードに応じて処理を切り替え
-	switch (miningMode_)
-	{
-	case MiningPattern::Swing:
-		swingMining_->Update();
-		break;
-	case MiningPattern::Range:
-		rangeMining_->Update();
-		break;
-	default:
-		break;
-	}
-
+	// 採掘処理
+	currentMining_->Update();
 
 	wvpMatrix_ = worldMatrix_ * Game::Camera::Getter::GetViewProjectionMatrix(cameraID);
 }
@@ -207,7 +211,7 @@ void Player::CheckExternalEvents()
 			// 範囲採掘はスキルで解放するまで使えない
 			if (pattern != MiningPattern::Range || skillState_.HasFeature(SkillEffectType::UnlockRangeMining))
 			{
-				miningMode_ = pattern;
+				SetMiningPattern(pattern);
 			}
 		}
 
@@ -262,21 +266,19 @@ void Player::DrawImGui()
 	ImGui::DragFloat3("Scale", &scale_.value.x, 0.1f);
 	ImGui::DragFloat3("Velocity", &translate_.velocity.x, 1.0f);
 
-	if (ImGui::RadioButton("Swing", miningMode_ == MiningPattern::Swing))
+	// 採掘モード
+	if (ImGui::RadioButton("Swing", GetMiningPattern() == MiningPattern::Swing))
 	{
 		SetMiningPattern(MiningPattern::Swing);
 	}
 	ImGui::SameLine();
-	if (ImGui::RadioButton("Range", miningMode_ == MiningPattern::Range))
+	if (ImGui::RadioButton("Range", GetMiningPattern() == MiningPattern::Range))
 	{
 		SetMiningPattern(MiningPattern::Range);
 	}
-	if (miningMode_ == MiningPattern::Range)
-	{
-		ImGui::Text(rangeMining_->HasStartPoint() ? "Range: waiting for 2nd point" : "Range: waiting for 1st point");
-	}
+	currentMining_->DrawImGui();
 
-	// スキル(確認用)
+	// スキル
 	ImGui::SeparatorText("スキル");
 	ImGui::Text("開放済み: %zu", skillState_.GetUnlockedCount());
 	for (SkillEffectType type : magic_enum::enum_values<SkillEffectType>())
@@ -304,18 +306,31 @@ void Player::ApplySkillEffects()
 
 void Player::SetMiningPattern(MiningPattern pattern)
 {
-	// Range切り替え時は選択途中の状態を持ち越さない
-	if (pattern == MiningPattern::Range && miningMode_ != MiningPattern::Range)
-	{
-		rangeMining_->Reset();
-	}
-	miningMode_ = pattern;
+	const size_t index = static_cast<size_t>(pattern);
+	if (index >= miningStates_.size()) return;
+
+	// 同じモードへの切り替えは何もしない(範囲採掘の選択途中を消さない)
+	IMiningState* next = miningStates_[index].get();
+	if (next == currentMining_) return;
+
+	// 切り替えたら必ず Enter を呼ぶ(範囲採掘なら選択途中の状態がここで消える)
+	currentMining_ = next;
+	currentMining_->Enter();
 }
+
 
 void Player::SetViewCamera(int32_t cameraID)
 {
 	c_viewCameraID_ = cameraID;
-	Game::Camera::Setter::DistanceTarget(0.1f, 0, EaseType::IN_BACK, c_viewCameraID_);
+	Game::Camera::Setter::CameraMode(CameraMode_ORBIT_FPS::FPS, c_viewCameraID_);
+	Game::Camera::Setter::EnableControl(false, c_viewCameraID_);
+}
+
+Vector3 Player::ComputeEyePosition() const
+{
+	// 視線と逆向き(カメラの球面座標と同じ向き)に kEyeBackDistance だけ下げる
+	const Coordinate_spherical back{ kEyeBackDistance, viewTheta_, viewPhi_ };
+	return translate_.value + Game::Math::Converter::ToCartesian(back);
 }
 
 

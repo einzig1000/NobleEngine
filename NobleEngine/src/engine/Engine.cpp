@@ -52,6 +52,8 @@ Engine& Engine::Instance()
 // 初期化用
 void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title)
 {
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
 	// COM の初期化
 	HRESULT hr = CoInitializeEx(0, COINIT_MULTITHREADED);
 	assert(SUCCEEDED(hr));
@@ -66,8 +68,8 @@ void Engine::Initialize(int32_t width, int32_t height, const std::wstring& title
 
 	imguiManager_ = std::make_unique<ImGuiManager>(dxManager_.get(), windowManager_.get());
 	assetManager_ = std::make_unique<AssetManager>(dxManager_.get());
-	cameraManager_ = std::make_unique<CameraManager>();
 	ioManager_ = std::make_unique<IOManager>(windowManager_->GetHwnd());
+	cameraManager_ = std::make_unique<CameraManager>(ioManager_.get());
 	drawSystem_ = std::make_unique<DrawSystem>(dxManager_.get(), assetManager_.get(), dxManager_->GetRootBindingManager());
 	computeSystem_ = std::make_unique<ComputeSystem>(dxManager_.get(), dxManager_->GetRootBindingManager());
 	timeManager_ = std::make_unique<TimeManager>();

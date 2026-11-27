@@ -8,6 +8,7 @@
 #include <map>
 #include <unordered_map>
 #include <optional>
+#include <Utilities/Easing/EasingCommon.h>
 
 #include <initguid.h>
 #include <dxgidebug.h>

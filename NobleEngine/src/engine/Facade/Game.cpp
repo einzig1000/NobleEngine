@@ -403,6 +403,11 @@ namespace Game
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetCenterTarget(target, durationSec, easetype);
 			}
 
+			void EyeTarget(Vector3 target, float durationSec, EaseType easetype, int32_t cameraID)
+			{
+				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetEyeTarget(target, durationSec, easetype);
+			}
+
 			void PhiTarget(float target, float durationSec, EaseType easetype, int32_t cameraID)
 			{
 				Engine::Instance().GetCameraManager()->GetCamera(cameraID)->SetPhiTarget(target, durationSec, easetype);

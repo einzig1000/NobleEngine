@@ -381,10 +381,10 @@
     <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\Character\SwingMining\SwingMining.cpp">
+    <ClCompile Include="src\application\GameObjects\Character\MiningState\SwingMining\SwingMining.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="src\application\GameObjects\Character\RangeMining\RangeMining.cpp">
+    <ClCompile Include="src\application\GameObjects\Character\MiningState\RangeMining\RangeMining.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\application\GameObjects\Map\Terrain\FaceDataPagePool\FaceDataPagePool.cpp">
@@ -544,6 +544,15 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeap.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Camera\CameraState\OrbitCameraState\OrbitCameraState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Camera\CameraState\FpsCameraState\FpsCameraState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine\Camera\CameraPose.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1370,10 +1379,10 @@
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\Character\SwingMining\SwingMining.h">
+    <ClInclude Include="src\application\GameObjects\Character\MiningState\SwingMining\SwingMining.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="src\application\GameObjects\Character\RangeMining\RangeMining.h">
+    <ClInclude Include="src\application\GameObjects\Character\MiningState\RangeMining\RangeMining.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h">
@@ -1554,6 +1563,21 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeap.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Camera\CameraPose.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Camera\CameraState\ICameraState.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Camera\CameraState\OrbitCameraState\OrbitCameraState.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\Camera\CameraState\FpsCameraState\FpsCameraState.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="src\application\GameObjects\Character\MiningState\IMiningState.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

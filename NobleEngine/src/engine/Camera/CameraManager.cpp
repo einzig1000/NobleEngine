@@ -2,7 +2,8 @@
 #include <Camera/Camera.h>
 #include <ImGuiManager/ImGuiManager.h>
 
-CameraManager::CameraManager()
+CameraManager::CameraManager(IOManager* ioManager)
+	: ioManager_(ioManager)
 {
 }
 
@@ -12,14 +13,13 @@ CameraManager::~CameraManager()
 
 int32_t CameraManager::AddCamera(const std::string& name)
 {
-	Camera def;
 	std::string cameraName = name;
 	if (cameraName == "")
 	{
 		cameraName = "Camera" + std::to_string(camera_.size());
 	}
-	def.SetName(cameraName);
-	camera_.push_back(def);
+	Camera& camera = camera_.emplace_back(ioManager_);
+	camera.SetName(cameraName);
 	return static_cast<int32_t>(camera_.size() - 1);
 }
 

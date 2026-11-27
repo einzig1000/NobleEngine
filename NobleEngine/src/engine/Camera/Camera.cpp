@@ -1,28 +1,53 @@
 #include "Camera.h"
+#include <Camera/CameraState/OrbitCameraState/OrbitCameraState.h>
+#include <Camera/CameraState/FpsCameraState/FpsCameraState.h>
 #include <Engine.h>
 #include <IO/IOManager.h>
 #include <IO/Mouse/MouseController.h>
 #include <IO/Keyboard/KeyboardController.h>
 #include <TimeManager/TimeManager.h>
-#include <EngineDefinition/EngineConstexprs.h>
-#include <Utilities/Converter/CoordinateConverter/CoordinateConverter.h>
-#include <Utilities/Easing/Easing.h>
-#include <ImGuiManager/ImGuiManager.h>
+#include <Window/WindowManager.h>
 #include <algorithm>
 #include <numbers>
+#include <ImGuiManager/ImGuiManager.h>
+#include <Utilities/Easing/Easing.h>
 
-Camera::Camera()
+namespace
+{
+	// center に近づける距離の下限
+	constexpr float kMinDistance = 0.1f;
+	// 真上・真下を向かないようにする余裕(ラジアン)
+	constexpr float kPhiMargin = 0.001f;
+
+	// 操作モードに合った状態クラスを作る(enum から型を選ぶのはここだけ)
+	std::unique_ptr<ICameraState> CreateCameraState(CameraMode_ORBIT_FPS mode)
+	{
+		switch (mode)
+		{
+		case CameraMode_ORBIT_FPS::FPS:
+			return std::make_unique<FpsCameraState>();
+		case CameraMode_ORBIT_FPS::ORBIT:
+		default:
+			return std::make_unique<OrbitCameraState>();
+		}
+	}
+}
+
+Camera::Camera(IOManager* ioManager)
+	: ioManager_(ioManager)
 {
 	enableDebugControl_ = true;
 	isDrawEasingTestImGui_ = false;
+
+	state_ = CreateCameraState(CameraMode_ORBIT_FPS::ORBIT);
 
 	fovY_ = 0.65f;
 
 	screenSize_ = Vector2{ float(Constexprs::kInitialWindowWidth) , float(Constexprs::kInitialWindowHeight) };
 
-	sphericalEye_.radius = 10.0f;
-	sphericalEye_.theta = std::numbers::pi_v<float> / 2.0f;
-	sphericalEye_.phi = 1.0f;
+	pose_.spherical.radius = 10.0f;
+	pose_.spherical.theta = std::numbers::pi_v<float> / 2.0f;
+	pose_.spherical.phi = 1.0f;
 
 	backToFrontMatrix_ = Matrix4x4::MakeRotateYMatrix(std::numbers::pi_v<float>);
 
@@ -34,80 +59,63 @@ Camera::~Camera()
 
 void Camera::Update()
 {
-	switch (cameraMode_)
-	{
-	case CameraMode_ORBIT_FPS::ORBIT:
-		Update_Orbit();
-		break;
-	case CameraMode_ORBIT_FPS::FPS:
-		Update_FPS();
-		break;
-	default:
-		break;
-	}
-}
 
-void Camera::Update_Orbit()
-{
 	float dt = Engine::Instance().GetTimeManager()->GetScaledDeltaTimeMs();
 
+	// 操作
 	if (enableDebugControl_)
 	{
-		// マウス移動量
-		Vector2 mouseDelta = Engine::Instance().GetIOManager()->GetMouseController()->Get2DPositionDelta();
-		// マウスホイール
-		int32_t mouseWheel = Engine::Instance().GetIOManager()->GetMouseController()->GetWheelDelta();
-		// マウス中クリック
-		bool isMiddleHeld = Engine::Instance().GetIOManager()->GetMouseController()->IsHeld(2);
-		// Shiftキー
-		bool isShiftHeld = Engine::Instance().GetIOManager()->GetKeyboardController()->IsHeld(VK_LSHIFT);
-
-
-		// パン
-		if (isMiddleHeld && isShiftHeld)
-		{
-			Matrix4x4 rot = Matrix4x4::MakeRotateXMatrix(sphericalEye_.phi) * Matrix4x4::MakeRotateYMatrix(-sphericalEye_.theta);
-			Vector3 right = { rot.m[0][0], rot.m[1][0], rot.m[2][0] };
-			Vector3 up = { rot.m[0][1], rot.m[1][1], rot.m[2][1] };
-
-			float speed = sphericalEye_.radius * 0.02f;
-			center_ += (right * mouseDelta.x + up * mouseDelta.y) * 0.1f * speed;
-		}
-		// 回転
-		if (isMiddleHeld && !isShiftHeld)
-		{
-			sphericalEye_.phi -= mouseDelta.y * -0.01f;
-			sphericalEye_.theta -= mouseDelta.x * 0.01f;
-		}
-		sphericalEye_.radius -= mouseWheel * sphericalEye_.radius * 0.001f;
+		state_->HandleInput(pose_, ReadCameraInput());
 	}
 
 	// イージング
 	MovingCenter(dt);
+	MovingEye(dt);
 	MovingPhi(dt);
 	MovingTheta(dt);
 	MovingDistance(dt);
 	MovingScreenSize(dt);
 	MovingFov(dt);
 
+	// 距離と上下の向きを範囲に収める
+	ClampSpherical();
+
+	// eyeとcenterを決める
+	state_->ResolvePose(pose_);
+
+	// 行列と視錐台
+	UpdateMatrices();
+}
+
+void Camera::SetCameraMode(CameraMode_ORBIT_FPS mode)
+{
+	// 同じモードなら作り直さない
+	if (state_ && state_->GetMode() == mode) return;
+
+	// 姿勢は Camera が持っているので、状態を差し替えても画面は飛ばない
+	state_ = CreateCameraState(mode);
+}
+
+void Camera::ClampSpherical()
+{
 	// 距離をクランプ
-	if (sphericalEye_.radius < 0.1f) sphericalEye_.radius = 0.1f;
+	if (pose_.spherical.radius < kMinDistance) pose_.spherical.radius = kMinDistance;
 
 	// ピッチのクランプ
-	sphericalEye_.phi = std::clamp(
-		sphericalEye_.phi,
-		-std::numbers::pi_v<float> / 2 + 0.001f,
-		+std::numbers::pi_v<float> / 2 - 0.001f
+	pose_.spherical.phi = std::clamp(
+		pose_.spherical.phi,
+		-std::numbers::pi_v<float> / 2 + kPhiMargin,
+		+std::numbers::pi_v<float> / 2 - kPhiMargin
 	);
+}
 
-	// カメラ位置
-	Vector3 localPos = CoordinateConverter::ToCartesian(sphericalEye_);
-	eye_ = center_ + localPos;
 
+void Camera::UpdateMatrices()
+{
 	// 視線ベクトル
-	cameraDirection_ = (center_ - eye_).Normalized();
+	cameraDirection_ = (pose_.center - pose_.eye).Normalized();
 
-	viewMatrix_ = Matrix4x4::LookAtMatrix(eye_, center_, { 0.0f, 1.0f, 0.0f });
+	viewMatrix_ = Matrix4x4::LookAtMatrix(pose_.eye, pose_.center, { 0.0f, 1.0f, 0.0f });
 	viewProjectionMatrix = viewMatrix_ * projectionMatrix_;
 
 	billboardMatrix_ = backToFrontMatrix_ * viewMatrix_.Inverse();
@@ -118,11 +126,22 @@ void Camera::Update_Orbit()
 	CreateFrustumPlanes();
 }
 
-// 移動(回転)するものをcenter_にして、カメラ座標を固定
-void Camera::Update_FPS()
+CameraInput Camera::ReadCameraInput()
 {
+	// マウス中クリック
+	const bool isMiddleHeld = ioManager_->GetMouseController()->IsHeld(2);
+	// Shiftキー
+	const bool isShiftHeld = ioManager_->GetKeyboardController()->IsHeld(VK_LSHIFT);
 
+	CameraInput input;
+	input.mouseDelta = ioManager_->GetMouseController()->Get2DPositionDelta();
+	input.wheel = ioManager_->GetMouseController()->GetWheelDelta();
+	// 中ボタンだけ: 回転、Shift+中ボタン: 平行移動
+	input.isRotating = isMiddleHeld && !isShiftHeld;
+	input.isPanning = isMiddleHeld && isShiftHeld;
+	return input;
 }
+
 
 void Camera::Resize()
 {
@@ -156,95 +175,102 @@ void Camera::DrawImGui()
 
 	std::string radiusTag = "##radius";
 	tag = "radius" + radiusTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &sphericalEye_.radius, 0.1f);
-	if (isDrawEasingTestImGui_)
+	ImGui::DragFloat(tag.c_str(), &pose_.spherical.radius, 0.1f);
+	tag = "duration" + radiusTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &distanceEasing_.durationMs, 1, 0, 1000);
+	tag = "target" + radiusTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &distanceEasing_.target, 0.1f);
+	tag = "easeType" + radiusTag + cameraTag;
+	int32_t easeType = static_cast<int32_t>(distanceEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
-		tag = "duration" + radiusTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &radiusEasing_.durationMs, 1, 0, 1000);
-		tag = "target" + radiusTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &radiusEasing_.target, 0.1f);
-		tag = "easeType" + radiusTag + cameraTag;
-		int32_t easeType = static_cast<int32_t>(radiusEasing_.easetype);
-		if (ImGui::Combo(tag.c_str(), &easeType, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-		{
-			radiusEasing_.easetype = static_cast<EaseType>(easeType);
-		}
-		tag = "start" + radiusTag + cameraTag;
-		if (ImGui::Button(tag.c_str()))
-		{
-			radiusEasing_.durationMs *= 0.001f;
-			SetDistanceTarget(radiusEasing_.target, radiusEasing_.durationMs, radiusEasing_.easetype);
-		}
+		distanceEasing_.easetype = static_cast<EaseType>(easeType);
 	}
-
+	tag = "start" + radiusTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		distanceEasing_.durationMs *= 0.001f;
+		SetDistanceTarget(distanceEasing_.target, distanceEasing_.durationMs, distanceEasing_.easetype);
+	}
 
 	std::string phiTag = "##phi";
 	tag = "phi" + phiTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &sphericalEye_.phi, 0.01f);
-	if (isDrawEasingTestImGui_)
+	ImGui::DragFloat(tag.c_str(), &pose_.spherical.phi, 0.01f);
+	tag = "durationMs" + phiTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &phiEasing_.durationMs, 1, 0, 1000);
+	tag = "target" + phiTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &phiEasing_.target, 0.01f);
+	tag = "easeType" + phiTag + cameraTag;
+	int32_t easeType2 = static_cast<int32_t>(phiEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType2, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
-		tag = "durationMs" + phiTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &phiEasing_.durationMs, 1, 0, 1000);
-		tag = "target" + phiTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &phiEasing_.target, 0.01f);
-		tag = "easeType" + phiTag + cameraTag;
-		int32_t easeType2 = static_cast<int32_t>(phiEasing_.easetype);
-		if (ImGui::Combo(tag.c_str(), &easeType2, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-		{
-			phiEasing_.easetype = static_cast<EaseType>(easeType2);
-		}
-		tag = "start" + phiTag + cameraTag;
-		if (ImGui::Button(tag.c_str()))
-		{
-			phiEasing_.durationMs *= 0.001f;
-			SetPhiTarget(phiEasing_.target, phiEasing_.durationMs, phiEasing_.easetype);
-		}
+		phiEasing_.easetype = static_cast<EaseType>(easeType2);
+	}
+	tag = "start" + phiTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		phiEasing_.durationMs *= 0.001f;
+		SetPhiTarget(phiEasing_.target, phiEasing_.durationMs, phiEasing_.easetype);
 	}
 
 	std::string thetaTag = "##theta";
 	tag = "theta" + thetaTag + cameraTag;
-	ImGui::DragFloat(tag.c_str(), &sphericalEye_.theta, 0.01f);
-	if (isDrawEasingTestImGui_)
+	ImGui::DragFloat(tag.c_str(), &pose_.spherical.theta, 0.01f);
+	tag = "durationMs" + thetaTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &thetaEasing_.durationMs, 1, 0, 1000);
+	tag = "target" + thetaTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &thetaEasing_.target, 0.01f);
+	tag = "easeType" + thetaTag + cameraTag;
+	int32_t easeType3 = static_cast<int32_t>(thetaEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType3, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
-		tag = "durationMs" + thetaTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &thetaEasing_.durationMs, 1, 0, 1000);
-		tag = "target" + thetaTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &thetaEasing_.target, 0.01f);
-		tag = "easeType" + thetaTag + cameraTag;
-		int32_t easeType3 = static_cast<int32_t>(thetaEasing_.easetype);
-		if (ImGui::Combo(tag.c_str(), &easeType3, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-		{
-			thetaEasing_.easetype = static_cast<EaseType>(easeType3);
-		}
-		tag = "start" + thetaTag + cameraTag;
-		if (ImGui::Button(tag.c_str()))
-		{
-			thetaEasing_.durationMs *= 0.001f;
-			SetThetaTarget(thetaEasing_.target, thetaEasing_.durationMs, thetaEasing_.easetype);
-		}
+		thetaEasing_.easetype = static_cast<EaseType>(easeType3);
+	}
+	tag = "start" + thetaTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		thetaEasing_.durationMs *= 0.001f;
+		SetThetaTarget(thetaEasing_.target, thetaEasing_.durationMs, thetaEasing_.easetype);
 	}
 
 	std::string centerTag = "##Center";
 	tag = "center" + centerTag + cameraTag;
-	ImGui::DragFloat3(tag.c_str(), &center_.x, 0.1f);
-	if (isDrawEasingTestImGui_)
+	ImGui::DragFloat3(tag.c_str(), &pose_.center.x, 0.1f);
+	tag = "durationMs" + centerTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &centerEasing_.durationMs, 1, 0, 1000);
+	tag = "target" + centerTag + cameraTag;
+	ImGui::DragFloat3(tag.c_str(), &centerEasing_.target.x, 0.1f);
+	tag = "easeType" + centerTag + cameraTag;
+	int32_t easeType4 = static_cast<int32_t>(centerEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType4, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
-		tag = "durationMs" + centerTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &centerEasing_.durationMs, 1, 0, 1000);
-		tag = "target" + centerTag + cameraTag;
-		ImGui::DragFloat3(tag.c_str(), &centerEasing_.target.x, 0.1f);
-		tag = "easeType" + centerTag + cameraTag;
-		int32_t easeType4 = static_cast<int32_t>(centerEasing_.easetype);
-		if (ImGui::Combo(tag.c_str(), &easeType4, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-		{
-			centerEasing_.easetype = static_cast<EaseType>(easeType4);
-		}
-		tag = "start" + centerTag + cameraTag;
-		if (ImGui::Button(tag.c_str()))
-		{
-			centerEasing_.durationMs *= 0.001f;
-			SetCenterTarget(centerEasing_.target, centerEasing_.durationMs, centerEasing_.easetype);
-		}
+		centerEasing_.easetype = static_cast<EaseType>(easeType4);
+	}
+	tag = "start" + centerTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		centerEasing_.durationMs *= 0.001f;
+		SetCenterTarget(centerEasing_.target, centerEasing_.durationMs, centerEasing_.easetype);
+	}
+
+	std::string eyeTag = "##Eye";
+	tag = "eye" + eyeTag + cameraTag;
+	ImGui::DragFloat3(tag.c_str(), &pose_.eye.x, 0.1f);
+	tag = "durationMs" + eyeTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &eyeEasing_.durationMs, 1, 0, 1000);
+	tag = "target" + eyeTag + cameraTag;
+	ImGui::DragFloat3(tag.c_str(), &eyeEasing_.target.x, 0.1f);
+	tag = "easeType" + eyeTag + cameraTag;
+	int32_t easeType7 = static_cast<int32_t>(eyeEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType7, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
+	{
+		eyeEasing_.easetype = static_cast<EaseType>(easeType7);
+	}
+	tag = "start" + eyeTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		eyeEasing_.durationMs *= 0.001f;
+		SetEyeTarget(eyeEasing_.target, eyeEasing_.durationMs, eyeEasing_.easetype);
 	}
 
 	ImGui::Separator();
@@ -255,24 +281,21 @@ void Camera::DrawImGui()
 	{
 		Resize();
 	}
-	if (isDrawEasingTestImGui_)
+	tag = "durationMs" + screenSizeTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &screenSizeEasing_.durationMs, 1, 0, 1000);
+	tag = "target" + screenSizeTag + cameraTag;
+	ImGui::DragFloat2(tag.c_str(), &screenSizeEasing_.target.x, 1.0f);
+	tag = "easeType" + screenSizeTag + cameraTag;
+	int32_t easeType6 = static_cast<int32_t>(screenSizeEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType6, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
-		tag = "durationMs" + screenSizeTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &screenSizeEasing_.durationMs, 1, 0, 1000);
-		tag = "target" + screenSizeTag + cameraTag;
-		ImGui::DragFloat2(tag.c_str(), &screenSizeEasing_.target.x, 1.0f);
-		tag = "easeType" + screenSizeTag + cameraTag;
-		int32_t easeType6 = static_cast<int32_t>(screenSizeEasing_.easetype);
-		if (ImGui::Combo(tag.c_str(), &easeType6, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-		{
-			screenSizeEasing_.easetype = static_cast<EaseType>(easeType6);
-		}
-		tag = "start" + screenSizeTag + cameraTag;
-		if (ImGui::Button(tag.c_str()))
-		{
-			screenSizeEasing_.durationMs *= 0.001f;
-			SetScreenSizeTarget(screenSizeEasing_.target, screenSizeEasing_.durationMs, screenSizeEasing_.easetype);
-		}
+		screenSizeEasing_.easetype = static_cast<EaseType>(easeType6);
+	}
+	tag = "start" + screenSizeTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		screenSizeEasing_.durationMs *= 0.001f;
+		SetScreenSizeTarget(screenSizeEasing_.target, screenSizeEasing_.durationMs, screenSizeEasing_.easetype);
 	}
 
 	std::string fovYTag = "##fovY";
@@ -281,25 +304,23 @@ void Camera::DrawImGui()
 	{
 		projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
 	}
-	if (isDrawEasingTestImGui_)
+	tag = "durationMs" + fovYTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &fovEasing_.durationMs, 1, 0, 1000);
+	tag = "target" + fovYTag + cameraTag;
+	ImGui::DragFloat(tag.c_str(), &fovEasing_.target, 0.01f);
+	tag = "easeType" + fovYTag + cameraTag;
+	int32_t easeType5 = static_cast<int32_t>(fovEasing_.easetype);
+	if (ImGui::Combo(tag.c_str(), &easeType5, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
 	{
-		tag = "durationMs" + fovYTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &fovEasing_.durationMs, 1, 0, 1000);
-		tag = "target" + fovYTag + cameraTag;
-		ImGui::DragFloat(tag.c_str(), &fovEasing_.target, 0.01f);
-		tag = "easeType" + fovYTag + cameraTag;
-		int32_t easeType5 = static_cast<int32_t>(fovEasing_.easetype);
-		if (ImGui::Combo(tag.c_str(), &easeType5, EaseTypeNames, IM_ARRAYSIZE(EaseTypeNames)))
-		{
-			fovEasing_.easetype = static_cast<EaseType>(easeType5);
-		}
-		tag = "start" + fovYTag + cameraTag;
-		if (ImGui::Button(tag.c_str()))
-		{
-			fovEasing_.durationMs *= 0.001f;
-			SetFovTarget(fovEasing_.target, fovEasing_.durationMs, fovEasing_.easetype);
-		}
+		fovEasing_.easetype = static_cast<EaseType>(easeType5);
 	}
+	tag = "start" + fovYTag + cameraTag;
+	if (ImGui::Button(tag.c_str()))
+	{
+		fovEasing_.durationMs *= 0.001f;
+		SetFovTarget(fovEasing_.target, fovEasing_.durationMs, fovEasing_.easetype);
+	}
+
 
 
 	std::string enableControlTag = tag + ".enableControl";
@@ -308,15 +329,17 @@ void Camera::DrawImGui()
 	ImGui::Text("enableControl");
 
 	std::string cameraModeTag = tag + ".cameraMode";
-	int32_t currentMode = static_cast<int32_t>(cameraMode_);
+	int32_t currentMode = static_cast<int32_t>(GetCameraMode());
 	static const char* items[] = { "ORBIT", "FPS" };
 	if (ImGui::Combo(cameraModeTag.c_str(), &currentMode, items, IM_ARRAYSIZE(items)))
 	{
-		cameraMode_ = static_cast<CameraMode_ORBIT_FPS>(currentMode);
+		// 直接書き換えず、状態クラスの作り直しを通す
+		SetCameraMode(static_cast<CameraMode_ORBIT_FPS>(currentMode));
 	}
 	ImGui::SameLine();
 	ImGui::Text("cameraMode");
 }
+
 
 void Camera::CreateFrustumPlanes()
 {
@@ -407,7 +430,7 @@ void Camera::MovingCenter(float dt)
 
 	centerEasing_.elapsedMs += dt;
 
-	center_ = Easing::EasingValue(
+	pose_.center = Easing::EasingValue(
 		centerEasing_.start,
 		centerEasing_.target,
 		centerEasing_.easetype,
@@ -417,6 +440,24 @@ void Camera::MovingCenter(float dt)
 	if (centerEasing_.elapsedMs > centerEasing_.durationMs)
 	{
 		centerEasing_.easing = false;
+	}
+}
+void Camera::MovingEye(float dt)
+{
+	if (!eyeEasing_.easing) return;
+
+	eyeEasing_.elapsedMs += dt;
+
+	pose_.eye = Easing::EasingValue(
+		eyeEasing_.start,
+		eyeEasing_.target,
+		eyeEasing_.easetype,
+		(eyeEasing_.elapsedMs / eyeEasing_.durationMs)
+	);
+
+	if (eyeEasing_.elapsedMs > eyeEasing_.durationMs)
+	{
+		eyeEasing_.easing = false;
 	}
 }
 void Camera::MovingPhi(float dt)
@@ -431,7 +472,7 @@ void Camera::MovingPhi(float dt)
 		phiEasing_.easetype,
 		(phiEasing_.elapsedMs / phiEasing_.durationMs)
 	);
-	sphericalEye_.phi = spherical;
+	pose_.spherical.phi = spherical;
 
 	if (phiEasing_.elapsedMs > phiEasing_.durationMs)
 	{
@@ -448,7 +489,7 @@ void Camera::MovingTheta(float dt)
 		thetaEasing_.easetype,
 		(thetaEasing_.elapsedMs / thetaEasing_.durationMs)
 	);
-	sphericalEye_.theta = spherical;
+	pose_.spherical.theta = spherical;
 	if (thetaEasing_.elapsedMs > thetaEasing_.durationMs)
 	{
 		thetaEasing_.easing = false;
@@ -456,20 +497,20 @@ void Camera::MovingTheta(float dt)
 }
 void Camera::MovingDistance(float dt)
 {
-	if (!radiusEasing_.easing) return;
+	if (!distanceEasing_.easing) return;
 
-	radiusEasing_.elapsedMs += dt;
+	distanceEasing_.elapsedMs += dt;
 
-	sphericalEye_.radius = Easing::EasingValue(
-		radiusEasing_.start,
-		radiusEasing_.target,
-		radiusEasing_.easetype,
-		(radiusEasing_.elapsedMs / radiusEasing_.durationMs)
+	pose_.spherical.radius = Easing::EasingValue(
+		distanceEasing_.start,
+		distanceEasing_.target,
+		distanceEasing_.easetype,
+		(distanceEasing_.elapsedMs / distanceEasing_.durationMs)
 	);
 
-	if (radiusEasing_.elapsedMs > radiusEasing_.durationMs)
+	if (distanceEasing_.elapsedMs > distanceEasing_.durationMs)
 	{
-		radiusEasing_.easing = false;
+		distanceEasing_.easing = false;
 	}
 }
 void Camera::MovingScreenSize(float dt)
@@ -519,23 +560,35 @@ void Camera::MovingFov(float dt)
 	projectionMatrix_ = Matrix4x4::MakePerspectiveFovMatrix(fovY_, aspect_, nearZ_, farZ_);
 }
 
+
 // 動かす先の設定
 void Camera::SetCenterTarget(Vector3 target, float durationSec, EaseType easetype)
 {
 	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
 
-	centerEasing_.start = center_;
+	centerEasing_.start = pose_.center;
 	centerEasing_.target = target;
 	centerEasing_.durationMs = durationMs;
 	centerEasing_.elapsedMs = 0.0f;
 	centerEasing_.easing = true;
 	centerEasing_.easetype = easetype;
 }
+void Camera::SetEyeTarget(Vector3 target, float durationSec, EaseType easetype)
+{
+	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
+
+	eyeEasing_.start = pose_.eye;
+	eyeEasing_.target = target;
+	eyeEasing_.durationMs = durationMs;
+	eyeEasing_.elapsedMs = 0.0f;
+	eyeEasing_.easing = true;
+	eyeEasing_.easetype = easetype;
+}
 void Camera::SetPhiTarget(float target, float durationSec, EaseType easetype)
 {
 	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
 
-	phiEasing_.start = sphericalEye_.phi;
+	phiEasing_.start = pose_.spherical.phi;
 	phiEasing_.target = target;
 	phiEasing_.durationMs = durationMs;
 	phiEasing_.elapsedMs = 0.0f;
@@ -545,7 +598,7 @@ void Camera::SetPhiTarget(float target, float durationSec, EaseType easetype)
 void Camera::SetThetaTarget(float target, float durationSec, EaseType easetype)
 {
 	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
-	thetaEasing_.start = sphericalEye_.theta;
+	thetaEasing_.start = pose_.spherical.theta;
 	thetaEasing_.target = target;
 	thetaEasing_.durationMs = durationMs;
 	thetaEasing_.elapsedMs = 0.0f;
@@ -556,12 +609,12 @@ void Camera::SetDistanceTarget(float target, float durationSec, EaseType easetyp
 {
 	float durationMs = (durationSec > 0.0f) ? durationSec * 1000.0f : 0.001f;
 
-	radiusEasing_.start = sphericalEye_.radius;
-	radiusEasing_.target = target;
-	radiusEasing_.durationMs = durationMs;
-	radiusEasing_.elapsedMs = 0.0f;
-	radiusEasing_.easing = true;
-	radiusEasing_.easetype = easetype;
+	distanceEasing_.start = pose_.spherical.radius;
+	distanceEasing_.target = target;
+	distanceEasing_.durationMs = durationMs;
+	distanceEasing_.elapsedMs = 0.0f;
+	distanceEasing_.easing = true;
+	distanceEasing_.easetype = easetype;
 }
 void Camera::SetScreenSizeTarget(Vector2 target, float durationSec, EaseType easetype)
 {
@@ -585,6 +638,7 @@ void Camera::SetFovTarget(float target, float durationSec, EaseType easetype)
 	fovEasing_.easing = true;
 	fovEasing_.easetype = easetype;
 }
+
 
 // シェイク
 void Camera::StartShake(float intensity, float duration, float frequency)

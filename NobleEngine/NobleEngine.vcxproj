@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\Camera\CameraPose.cpp" />
+    <ClCompile Include="src\engine\Camera\CameraState\FpsCameraState\FpsCameraState.cpp" />
+    <ClCompile Include="src\engine\Camera\CameraState\OrbitCameraState\OrbitCameraState.cpp" />
     <ClCompile Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeap.cpp" />
     <ClCompile Include="src\engine\Editor\LogPanel\LogPanel.cpp" />
     <ClCompile Include="src\engine\Editor\AssetsEditor\AssetsEditor.cpp" />
@@ -50,8 +53,8 @@
     <ClCompile Include="src\application\GameObjects\Character\CharacterManager.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\Terrain\FaceDataPagePool\FaceDataPagePool.cpp" />
     <ClCompile Include="src\application\GameObjects\Map\SkyBox\SkyBox.cpp" />
-    <ClCompile Include="src\application\GameObjects\Character\SwingMining\SwingMining.cpp" />
-    <ClCompile Include="src\application\GameObjects\Character\RangeMining\RangeMining.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\MiningState\SwingMining\SwingMining.cpp" />
+    <ClCompile Include="src\application\GameObjects\Character\MiningState\RangeMining\RangeMining.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.cpp" />
     <ClCompile Include="src\application\GameObjects\UI\UIScreen\MiningModeScreen\MiningModeScreen.cpp" />
     <ClCompile Include="src\engine\DirectX\FrameProfiler\FrameProfiler.cpp" />
@@ -190,6 +193,11 @@
     <ClCompile Include="src\application\System\ResourceLoader\Data\UI\Saver\UIDataSaver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\application\GameObjects\Character\MiningState\IMiningState.h" />
+    <ClInclude Include="src\engine\Camera\CameraState\FpsCameraState\FpsCameraState.h" />
+    <ClInclude Include="src\engine\Camera\CameraState\OrbitCameraState\OrbitCameraState.h" />
+    <ClInclude Include="src\engine\Camera\CameraPose.h" />
+    <ClInclude Include="src\engine\Camera\CameraState\ICameraState.h" />
     <ClInclude Include="src\engine\DirectX\DescriptorHeapManager\DescriptorHeap.h" />
     <ClInclude Include="src\engine\Editor\LogPanel\LogPanel.h" />
     <ClInclude Include="src\engine\Editor\AssetsEditor\AssetsEditor.h" />
@@ -233,8 +241,8 @@
     <ClInclude Include="src\application\GameObjects\Character\CharacterManager.h" />
     <ClInclude Include="src\application\GameObjects\Map\Terrain\FaceDataPagePool\FaceDataPagePool.h" />
     <ClInclude Include="src\application\GameObjects\Map\SkyBox\SkyBox.h" />
-    <ClInclude Include="src\application\GameObjects\Character\SwingMining\SwingMining.h" />
-    <ClInclude Include="src\application\GameObjects\Character\RangeMining\RangeMining.h" />
+    <ClInclude Include="src\application\GameObjects\Character\MiningState\SwingMining\SwingMining.h" />
+    <ClInclude Include="src\application\GameObjects\Character\MiningState\RangeMining\RangeMining.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIElement\MiningMode\MiningMode.h" />
     <ClInclude Include="src\application\GameObjects\UI\UIScreen\MiningModeScreen\MiningModeScreen.h" />
     <ClInclude Include="src\engine\DirectX\FrameProfiler\FrameProfiler.h" />

@@ -75,11 +75,14 @@ namespace
 		return result;
 	}
 
-	// チャンクの各軸の長さ
-	constexpr Vector3 kChunkSize = Vector3{
-		static_cast<float>(Constexprs::kChunkBlockCountX) * Constexprs::kBlockSize,
-		static_cast<float>(Constexprs::kChunkBlockCountY) * Constexprs::kBlockSize,
-		static_cast<float>(Constexprs::kChunkBlockCountZ) * Constexprs::kBlockSize };
+	// ブロック単位の整数座標をワールド座標に変換する(シェーダーのBlockToWorld参照)
+	Vector3 BlockToWorld(const Vector3int& blockPos)
+	{
+		return Vector3{
+			static_cast<float>(blockPos.x) * Constexprs::kBlockSize,
+			static_cast<float>(blockPos.y) * Constexprs::kBlockSize,
+			static_cast<float>(blockPos.z) * Constexprs::kBlockSize };
+	}
 }
 
 Chunk::Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, FaceDataPagePool* pagePool, ChunkGpuSlotPool* gpuPool)
@@ -87,11 +90,20 @@ Chunk::Chunk(const TerrainGenerator& generator, const Vector3int& chunkIndex, Fa
 {
 	// チャンク情報保存
 	chunkIndex_ = chunkIndex;
-	chunkInfo_.chunkWorldOrigin = Vector3{
-		static_cast<float>(chunkIndex.x) * kChunkSize.x,
-		static_cast<float>(chunkIndex.y) * kChunkSize.y,
-		static_cast<float>(chunkIndex.z) * kChunkSize.z };
-	chunkAABB_ = AABB(chunkInfo_.chunkWorldOrigin, chunkInfo_.chunkWorldOrigin + kChunkSize);
+
+	chunkInfo_.chunkWorldBlockIndex = Vector3int{
+		chunkIndex.x * Constexprs::kChunkBlockCountX,
+		chunkIndex.y * Constexprs::kChunkBlockCountY,
+		chunkIndex.z * Constexprs::kChunkBlockCountZ };
+
+	// カリング用のAABB
+	const Vector3int chunkBlockMax = chunkInfo_.chunkWorldBlockIndex + Vector3int{
+		Constexprs::kChunkBlockCountX,
+		Constexprs::kChunkBlockCountY,
+		Constexprs::kChunkBlockCountZ };
+	chunkAABB_ = AABB(BlockToWorld(chunkInfo_.chunkWorldBlockIndex), BlockToWorld(chunkBlockMax));
+
+	// blockIds_初期化
 
 	// blockIds_初期化
 	std::fill(std::begin(blockIds_), std::end(blockIds_), static_cast<uint32_t>(BlockID::Stone));

@@ -48,3 +48,8 @@ void RangeMining::Update()
 
 	state_ = State::WaitingForStart;
 }
+
+void RangeMining::DrawImGui()
+{
+	ImGui::Text(state_ == State::WaitingForEnd ? "Range: waiting for 2nd point" : "Range: waiting for 1st point");
+}

@@ -4,11 +4,9 @@
 #include <GameObjects/Character/ICharacter.h>
 #include <GameObjects/Character/MiningPointGauge/MiningPointGauge.h>
 #include <GameObjects/Character/SkillState/SkillState.h>
+#include <GameObjects/Character/MiningState/IMiningState.h>
 
 class UIManager;
-class SwingMining;
-class RangeMining;
-
 
 class Player : public ICharacter
 {
@@ -40,7 +38,7 @@ public:
 
 	// 採掘モード切り替え
 	void SetMiningPattern(MiningPattern pattern);
-	MiningPattern GetMiningPattern() const { return miningMode_; }
+	MiningPattern GetMiningPattern() const { return currentMining_->GetPattern(); }
 
 	void SetViewCamera(int32_t cameraID);
 
@@ -59,6 +57,8 @@ private:
 	int32_t c_viewCameraID_ = -1;
 	// マウス感度
 	float lookSensitivity_ = 0.003f;
+	// 視点カメラの位置(FPSモードのeye)を求める
+	Vector3 ComputeEyePosition() const;
 
 	// 速度関連
 	CounterSec dashBufferTimer_;
@@ -79,9 +79,9 @@ private:
 	// hp
 	float previousHP_ = 0.0f;
 
-	// 採掘
-	std::unique_ptr<SwingMining> swingMining_;
-	std::unique_ptr<RangeMining> rangeMining_;
-	MiningPattern miningMode_ = MiningPattern::Swing;
+	// 採掘モード
+	std::array<std::unique_ptr<IMiningState>, static_cast<size_t>(MiningPattern::MAX)> miningStates_;
+	// 今の採掘モード(miningStates_ のどれか)
+	IMiningState* currentMining_ = nullptr;
 };
 

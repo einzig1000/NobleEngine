@@ -55,7 +55,7 @@ void GameScenePhase::Update()
 	eventBus_->Update();
 
 	int32_t targetCameraID = c_player_;
-	Vector3 cameraPos = Game::Camera::Getter::GetCenter(targetCameraID);
+	Vector3 cameraPos = Game::Camera::Getter::GetWorldPosition(targetCameraID);
 
 	// キャラクターマネージャー更新
 	charcterManager_->Update(targetCameraID);

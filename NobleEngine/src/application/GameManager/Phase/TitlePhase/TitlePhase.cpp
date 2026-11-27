@@ -88,6 +88,7 @@ void TitlePhase::Update()
 	Matrix4x4 viewProjection = Game::Camera::Getter::GetViewProjectionMatrix(c_title_);
 	Ray mouseRay = Game::IO::Mouse::GetRay(viewProjection);
 
+	bool isAnyButtonFocused = false;
 	for (int32_t i = 0; i < buttons_.size(); ++i)
 	{
 		Matrix4x4 worldMatrix = buttons_[i].worldMatrix;
@@ -97,19 +98,27 @@ void TitlePhase::Update()
 		worldMatrix = Matrix4x4::MakeAffineMatrix(buttons_[i].transforms.scale, buttons_[i].transforms.rotate, buttons_[i].transforms.translate);
 
 #endif
-
 		
 		if (IsCollision(mouseRay, *buttonColliderModel_, worldMatrix) || i == 0)
 		{
+			isAnyButtonFocused = true;
 			selectedButtonIndex_ = i;
 			if (Game::IO::Mouse::IsJustPressed(0) && i != 0)
 			{
 				buttons_[i].onClick();
 			}
 
+			if (!buttonFocusFrame_)
+			{
+				buttonFocusTime_ = 0.0f;
+				buttonFocusFrame_ = true;
+			}
+			else
+			{
+				buttonFocusTime_ += Game::Time::GetElapsedSecTime();
+			}
 			Vector3 scale = buttons_[i].transforms.scale;
-			float elapsedTime = Game::Time::GetElapsedSecTime();
-			scale *= 1.0f + std::sin(elapsedTime * 3.0f) * 0.15f;
+			scale *= 1.0f + std::sin(buttonFocusTime_ * 3.0f) * 0.15f;
 
 			worldMatrix = Matrix4x4::MakeAffineMatrix(scale, buttons_[i].transforms.rotate, buttons_[i].transforms.translate);
 		}

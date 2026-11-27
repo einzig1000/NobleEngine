@@ -2,11 +2,12 @@
 #include <EngineDefinition/EngineDefinition.h>
 
 class Camera;
+class IOManager;
 
 class CameraManager
 {
 public:
-	CameraManager();
+	CameraManager(IOManager* ioManager);
 	~CameraManager();
 
 	int32_t AddCamera(const std::string& name);
@@ -17,6 +18,8 @@ public:
 	Camera* GetCamera(int32_t cameraID);
 
 private:
+	IOManager* ioManager_ = nullptr;
+
 	std::vector<Camera> camera_;
 };
  

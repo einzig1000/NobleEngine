@@ -103,4 +103,6 @@ private:
 	int32_t buttonModelID_ = -1;
 
 	int32_t selectedButtonIndex_ = -1;
+	float buttonFocusTime_ = 0.0f;
+	bool buttonFocusFrame_ = false;
 };
